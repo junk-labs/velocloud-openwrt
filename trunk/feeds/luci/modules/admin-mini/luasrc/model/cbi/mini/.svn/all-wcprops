@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/8953/luci/trunk/modules/admin-mini/luasrc/model/cbi/mini
+END
+index.lua
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/3591/luci/trunk/modules/admin-mini/luasrc/model/cbi/mini/index.lua
+END
+network.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/5948/luci/trunk/modules/admin-mini/luasrc/model/cbi/mini/network.lua
+END
+luci.lua
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/5813/luci/trunk/modules/admin-mini/luasrc/model/cbi/mini/luci.lua
+END
+dhcp.lua
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/6019/luci/trunk/modules/admin-mini/luasrc/model/cbi/mini/dhcp.lua
+END
+wifi.lua
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/8953/luci/trunk/modules/admin-mini/luasrc/model/cbi/mini/wifi.lua
+END
+passwd.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/5448/luci/trunk/modules/admin-mini/luasrc/model/cbi/mini/passwd.lua
+END
+system.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/5472/luci/trunk/modules/admin-mini/luasrc/model/cbi/mini/system.lua
+END

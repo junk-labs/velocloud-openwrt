@@ -1,0 +1,107 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/5634/luci/trunk/contrib/fwd/src
+END
+ucix.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/5608/luci/trunk/contrib/fwd/src/ucix.c
+END
+fwd_config.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/5630/luci/trunk/contrib/fwd/src/fwd_config.h
+END
+fwd_addr.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/5632/luci/trunk/contrib/fwd/src/fwd_addr.c
+END
+fwd_ipc.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/5629/luci/trunk/contrib/fwd/src/fwd_ipc.c
+END
+ucix.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/5608/luci/trunk/contrib/fwd/src/ucix.h
+END
+fwd_addr.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/5632/luci/trunk/contrib/fwd/src/fwd_addr.h
+END
+fwd_ipc.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/5629/luci/trunk/contrib/fwd/src/fwd_ipc.h
+END
+fwd.c
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/5634/luci/trunk/contrib/fwd/src/fwd.c
+END
+fwd.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/5632/luci/trunk/contrib/fwd/src/fwd.h
+END
+fwd_rules.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/5634/luci/trunk/contrib/fwd/src/fwd_rules.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/5633/luci/trunk/contrib/fwd/src/Makefile
+END
+fwd_rules.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/5631/luci/trunk/contrib/fwd/src/fwd_rules.h
+END
+fwd_utils.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/5628/luci/trunk/contrib/fwd/src/fwd_utils.c
+END
+fwd_xtables.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/5632/luci/trunk/contrib/fwd/src/fwd_xtables.c
+END
+fwd_utils.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/5628/luci/trunk/contrib/fwd/src/fwd_utils.h
+END
+fwd_config.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/5634/luci/trunk/contrib/fwd/src/fwd_config.c
+END
+fwd_xtables.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/5632/luci/trunk/contrib/fwd/src/fwd_xtables.h
+END

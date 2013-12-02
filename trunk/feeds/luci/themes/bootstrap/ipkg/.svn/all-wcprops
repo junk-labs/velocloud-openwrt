@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/8248/luci/trunk/themes/bootstrap/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/8248/luci/trunk/themes/bootstrap/ipkg/postinst
+END

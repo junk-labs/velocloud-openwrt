@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/9507/luci/trunk/applications/luci-freifunk-policyrouting/luasrc/controller/freifunk
+END
+policy-routing.lua
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/!svn/ver/9507/luci/trunk/applications/luci-freifunk-policyrouting/luasrc/controller/freifunk/policy-routing.lua
+END

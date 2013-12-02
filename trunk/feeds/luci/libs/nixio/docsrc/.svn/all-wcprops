@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/7353/luci/trunk/libs/nixio/docsrc
+END
+nixio.bit.lua
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/5064/luci/trunk/libs/nixio/docsrc/nixio.bit.lua
+END
+nixio.File.lua
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4437/luci/trunk/libs/nixio/docsrc/nixio.File.lua
+END
+nixio.crypto.lua
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/4437/luci/trunk/libs/nixio/docsrc/nixio.crypto.lua
+END
+nixio.lua
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/7353/luci/trunk/libs/nixio/docsrc/nixio.lua
+END
+CHANGELOG.lua
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/5060/luci/trunk/libs/nixio/docsrc/CHANGELOG.lua
+END
+nixio.CryptoHash.lua
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/4437/luci/trunk/libs/nixio/docsrc/nixio.CryptoHash.lua
+END
+nixio.TLSContext.lua
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/4437/luci/trunk/libs/nixio/docsrc/nixio.TLSContext.lua
+END
+README.lua
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/5059/luci/trunk/libs/nixio/docsrc/README.lua
+END
+nixio.Socket.lua
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/4437/luci/trunk/libs/nixio/docsrc/nixio.Socket.lua
+END
+nixio.bin.lua
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/4437/luci/trunk/libs/nixio/docsrc/nixio.bin.lua
+END
+nixio.fs.lua
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/4437/luci/trunk/libs/nixio/docsrc/nixio.fs.lua
+END
+nixio.TLSSocket.lua
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/4437/luci/trunk/libs/nixio/docsrc/nixio.TLSSocket.lua
+END
+nixio.UnifiedIO.lua
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/5059/luci/trunk/libs/nixio/docsrc/nixio.UnifiedIO.lua
+END

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/9484/luci/trunk/modules/admin-core/luasrc/controller/admin
+END
+servicectl.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/9484/luci/trunk/modules/admin-core/luasrc/controller/admin/servicectl.lua
+END

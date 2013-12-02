@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/9507/luci/trunk/applications/luci-polipo/luasrc/controller
+END
+polipo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9507/luci/trunk/applications/luci-polipo/luasrc/controller/polipo.lua
+END

@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/7979/luci/trunk/applications/luci-pbx/root/etc/config
+END
+pbx-google
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/config/pbx-google
+END
+pbx-voip
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/config/pbx-voip
+END
+pbx-calls
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/config/pbx-calls
+END
+pbx-users
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/config/pbx-users
+END
+pbx
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/config/pbx
+END
+pbx-advanced
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/7979/luci/trunk/applications/luci-pbx/root/etc/config/pbx-advanced
+END

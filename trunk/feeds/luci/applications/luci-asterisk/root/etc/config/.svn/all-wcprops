@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4399/luci/trunk/applications/luci-asterisk/root/etc/config
+END
+asterisk
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/4399/luci/trunk/applications/luci-asterisk/root/etc/config/asterisk
+END

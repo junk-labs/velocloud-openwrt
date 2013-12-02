@@ -1,0 +1,694 @@
+10
+
+dir
+38900
+svn://svn.openwrt.org/openwrt/packages/libs
+svn://svn.openwrt.org/openwrt
+
+
+
+2013-11-10T18:13:15.055269Z
+38709
+tripolar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+shflags
+dir
+
+libimobiledevice
+dir
+
+libamsel
+dir
+
+iksemel
+dir
+
+libyaml
+dir
+
+gupnp
+dir
+
+libcap
+dir
+
+libpar2
+dir
+
+libv4l
+dir
+
+glib2
+dir
+
+nmeap
+dir
+
+postgresql
+dir
+
+gupnp-dlna
+dir
+
+cyrus-sasl
+dir
+
+re
+dir
+
+id3lib
+dir
+
+libowfat
+dir
+
+bluez-libs
+dir
+
+libsynce
+dir
+
+libevent
+dir
+
+liboil
+dir
+
+c-ares
+dir
+
+jansson
+dir
+
+libgssapi
+dir
+
+libqmi
+dir
+
+file
+dir
+
+libvorbisidec
+dir
+
+libmodbus
+dir
+
+libxslt
+dir
+
+libfreenect
+dir
+
+ucl
+dir
+
+libmms
+dir
+
+rrdtool-1.0.x
+dir
+
+pcre
+dir
+
+ossp-js
+dir
+
+libdvdread
+dir
+
+libinklevel
+dir
+
+db47
+dir
+
+liblo
+dir
+
+orbit2
+dir
+
+taglib
+dir
+
+libtwin
+dir
+
+rblibtorrent
+dir
+
+libtheora
+dir
+
+unixodbc
+dir
+
+libmicroxml
+dir
+
+eventlog
+dir
+
+speex
+dir
+
+libsamplerate
+dir
+
+google-authenticator
+dir
+
+xmlrpc-c
+dir
+
+libnatpmp
+dir
+
+radiusclient-ng
+dir
+
+libshout
+dir
+
+wxbase
+dir
+
+cgilib
+dir
+
+libgpg-error
+dir
+
+libdaq
+dir
+
+apr-util
+dir
+
+libspe2
+dir
+
+poco
+dir
+
+libpam
+dir
+
+libvncserver
+dir
+
+glibmm
+dir
+
+libcunit
+dir
+
+credis
+dir
+
+libxml2
+dir
+
+libsndfile
+dir
+
+gnutls
+dir
+
+libsoup
+dir
+
+libnet-1.0.x
+dir
+
+ftplib
+dir
+
+libdnet
+dir
+
+opencdk
+dir
+
+librpcsecgss
+dir
+
+libdbi
+dir
+
+matrixssl
+dir
+
+ustl
+dir
+
+xmpp4r
+dir
+
+libffi
+dir
+
+libnfc
+dir
+
+libcli
+dir
+
+ldns
+dir
+
+libdbi-drivers
+dir
+
+libnetfilter-log
+dir
+
+libid3tag
+dir
+
+libsigc++
+dir
+
+flac
+dir
+
+zaptel-1.4.x
+dir
+
+libnetfilter-queue
+dir
+
+libipfix
+dir
+
+libssh2
+dir
+
+libmpd
+dir
+
+libsdl
+dir
+
+libupnp
+dir
+
+clearsilver
+dir
+
+libftdi
+dir
+
+libdvbpsi
+dir
+
+protobuf-c
+dir
+
+libsdl_sound
+dir
+
+libassuan
+dir
+
+expat
+dir
+
+libplist
+dir
+
+jpeg
+dir
+
+librsync
+dir
+
+libgee
+dir
+
+libmad
+dir
+
+libotr
+dir
+
+libvorbis
+dir
+
+libaio
+dir
+
+neon
+dir
+
+protobuf
+dir
+
+serdisplib
+dir
+
+libol
+dir
+
+clinkc
+dir
+
+libmcrypt
+dir
+
+liburcu
+dir
+
+spandsp
+dir
+
+sctp
+dir
+
+tcp_wrappers
+dir
+
+libugpio
+dir
+
+newt
+dir
+
+faad2
+dir
+
+keynote
+dir
+
+libcelt
+dir
+
+libnet-1.1.x
+dir
+
+libsml
+dir
+
+libmpcdec
+dir
+
+rem
+dir
+
+libdmapsharing
+dir
+
+libtorrent
+dir
+
+gsl
+dir
+
+gsm
+dir
+
+boost
+dir
+
+tiff
+dir
+
+gd
+dir
+
+tokyocabinet
+dir
+
+giflib
+dir
+
+libcroco
+dir
+
+st2205tool
+dir
+
+gpgme
+dir
+
+qrencode
+dir
+
+lttng-ust
+dir
+
+libmpeg2
+dir
+
+confuse
+dir
+
+openldap
+dir
+
+libmicrohttpd
+dir
+
+mysql
+dir
+
+libmpdclient
+dir
+
+libxapian
+dir
+
+libmikmod
+dir
+
+aalib
+dir
+
+libdirectfb
+dir
+
+libpthread-stubs
+dir
+
+mxml
+dir
+
+libart
+dir
+
+leptonica
+dir
+
+argp-standalone
+dir
+
+gssdp
+dir
+
+vips
+dir
+
+libexif
+dir
+
+apr
+dir
+
+libnids
+dir
+
+alsa-lib
+dir
+
+libptmalloc3
+dir
+
+libatomicops
+dir
+
+libao
+dir
+
+elfutils
+dir
+
+uclibc++
+dir
+
+avahi
+dir
+
+fftw3
+dir
+
+libdaemon
+dir
+
+wt
+dir
+
+libmbus
+dir
+
+radlib
+dir
+
+libgcrypt
+dir
+
+libfreecwmp
+dir
+
+ezxml
+dir
+
+gperf
+dir
+
+libogg
+dir
+
+liboping
+dir
+
+curl
+dir
+
+dbus-glib
+dir
+
+fribidi
+dir
+
+howl
+dir
+
+gupnp-vala
+dir
+
+libsdl_mixer
+dir
+
+glib
+dir
+
+check
+dir
+
+loudmouth
+dir
+
+argtable
+dir
+
+classpath
+dir
+
+sqlite2
+dir
+
+gmp
+dir
+
+ortp
+dir
+
+sqlite3
+dir
+
+slang2
+dir
+
+phidget21
+dir
+
+libaudiofile
+dir
+
+libnfsidmap
+dir
+
+libzip
+dir
+
+axtls
+dir
+
+libcrypto++
+dir
+
+gupnp-av
+dir
+
+zaptel
+dir
+
+pthsem
+dir
+
+libidn
+dir
+
+intltool
+dir
+
+libdlna
+dir
+
+libfreefare
+dir
+
+fcgi
+dir
+
+libgphoto2
+dir
+
+gdbm
+dir
+
+libpfm
+dir
+
+libpng
+dir
+
+libzstream
+dir
+
+libtasn1
+dir
+
+nacl
+dir
+
+libsrtp
+dir
+
+libIDL2
+dir
+
+freetype
+dir
+
+libosip2
+dir
+

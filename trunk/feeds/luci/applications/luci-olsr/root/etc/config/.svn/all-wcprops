@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/6874/luci/trunk/applications/luci-olsr/root/etc/config
+END
+luci_olsr
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/6874/luci/trunk/applications/luci-olsr/root/etc/config/luci_olsr
+END

@@ -1,0 +1,107 @@
+K 25
+svn:wc:ra_dav:version-url
+V 31
+/!svn/ver/9770/luci/trunk/build
+END
+zoneinfo2lua.pl
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/6666/luci/trunk/build/zoneinfo2lua.pl
+END
+mkversion.sh
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/6937/luci/trunk/build/mkversion.sh
+END
+gccconfig.mk
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/5712/luci/trunk/build/gccconfig.mk
+END
+i18n-po2lua.pl
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/6753/luci/trunk/build/i18n-po2lua.pl
+END
+i18n-init.sh
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/9463/luci/trunk/build/i18n-init.sh
+END
+module.mk
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/7390/luci/trunk/build/module.mk
+END
+luci.cgi
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/!svn/ver/6075/luci/trunk/build/luci.cgi
+END
+mkbasepot.sh
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/7801/luci/trunk/build/mkbasepot.sh
+END
+mkrevision.sh
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/!svn/ver/9770/luci/trunk/build/mkrevision.sh
+END
+makedocs.sh
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/3591/luci/trunk/build/makedocs.sh
+END
+hostenv.sh
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/!svn/ver/6912/luci/trunk/build/hostenv.sh
+END
+i18n-sync.sh
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/8868/luci/trunk/build/i18n-sync.sh
+END
+i18n-update.pl
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/8866/luci/trunk/build/i18n-update.pl
+END
+i18n-scan.pl
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/8644/luci/trunk/build/i18n-scan.pl
+END
+config.mk
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/4563/luci/trunk/build/config.mk
+END
+setup.lua
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/8353/luci/trunk/build/setup.lua
+END
+lucid.lua
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/4872/luci/trunk/build/lucid.lua
+END

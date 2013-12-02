@@ -1,0 +1,95 @@
+10
+
+dir
+38900
+svn://svn.openwrt.org/openwrt/packages
+svn://svn.openwrt.org/openwrt
+
+
+
+2013-11-21T12:57:29.672675Z
+38887
+tripolar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+ipv6
+dir
+
+.gitignore
+file
+
+
+
+
+2013-12-02T22:38:15.318324Z
+da87fa36d74e7258ba8ef5edfec5e3c7
+2013-09-25T14:20:37.988576Z
+38176
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+20
+
+net
+dir
+
+admin
+dir
+
+sound
+dir
+
+libs
+dir
+
+multimedia
+dir
+
+devel
+dir
+
+utils
+dir
+
+lang
+dir
+
+skels
+dir
+
+mail
+dir
+

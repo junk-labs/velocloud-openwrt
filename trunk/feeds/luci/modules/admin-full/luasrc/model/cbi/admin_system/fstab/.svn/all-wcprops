@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9866/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/fstab
+END
+mount.lua
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/9866/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/fstab/mount.lua
+END
+swap.lua
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/6562/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/fstab/swap.lua
+END

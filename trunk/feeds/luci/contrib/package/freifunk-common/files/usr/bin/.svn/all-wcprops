@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/9920/luci/trunk/contrib/package/freifunk-common/files/usr/bin
+END
+ffdzero
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/7576/luci/trunk/contrib/package/freifunk-common/files/usr/bin/ffdzero
+END
+watch.sh
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/8686/luci/trunk/contrib/package/freifunk-common/files/usr/bin/watch.sh
+END
+neigh.sh
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9920/luci/trunk/contrib/package/freifunk-common/files/usr/bin/neigh.sh
+END

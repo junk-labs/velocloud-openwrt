@@ -1,0 +1,82 @@
+10
+
+dir
+9934
+http://svn.luci.subsignal.org/luci/trunk/libs
+http://svn.luci.subsignal.org
+
+
+
+2013-07-07T12:45:59.912213Z
+9864
+stargieg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+json
+dir
+
+sgi-luci
+dir
+
+web
+dir
+
+lucid-http
+dir
+
+httpclient
+dir
+
+sys
+dir
+
+sgi-cgi
+dir
+
+lucid-rpc
+dir
+
+px5g
+dir
+
+fastindex
+dir
+
+nixio
+dir
+
+rpcc
+dir
+
+sgi-uhttpd
+dir
+
+core
+dir
+
+ipkg
+dir
+
+luaneightbl
+dir
+
+lucid
+dir
+
+sgi-wsapi
+dir
+

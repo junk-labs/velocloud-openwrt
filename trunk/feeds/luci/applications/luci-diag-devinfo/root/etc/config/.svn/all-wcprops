@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/5097/luci/trunk/applications/luci-diag-devinfo/root/etc/config
+END
+luci_devinfo
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/5097/luci/trunk/applications/luci-diag-devinfo/root/etc/config/luci_devinfo
+END

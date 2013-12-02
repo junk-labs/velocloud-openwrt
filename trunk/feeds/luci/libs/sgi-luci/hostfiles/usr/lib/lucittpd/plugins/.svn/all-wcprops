@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/3843/luci/trunk/libs/sgi-luci/hostfiles/usr/lib/lucittpd/plugins
+END
+luci-webui.lua
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/3843/luci/trunk/libs/sgi-luci/hostfiles/usr/lib/lucittpd/plugins/luci-webui.lua
+END

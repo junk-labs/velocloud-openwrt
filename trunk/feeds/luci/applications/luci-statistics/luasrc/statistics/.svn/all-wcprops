@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/9812/luci/trunk/applications/luci-statistics/luasrc/statistics
+END
+i18n.lua
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/9507/luci/trunk/applications/luci-statistics/luasrc/statistics/i18n.lua
+END
+rrdtool.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9540/luci/trunk/applications/luci-statistics/luasrc/statistics/rrdtool.lua
+END
+datatree.lua
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/8312/luci/trunk/applications/luci-statistics/luasrc/statistics/datatree.lua
+END

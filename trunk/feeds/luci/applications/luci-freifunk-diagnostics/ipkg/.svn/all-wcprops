@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/9602/luci/trunk/applications/luci-freifunk-diagnostics/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/9602/luci/trunk/applications/luci-freifunk-diagnostics/ipkg/postinst
+END

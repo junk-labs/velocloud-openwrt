@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/6025/luci/trunk/libs/nixio/root/lib/upgrade
+END
+luci-add-conffiles.sh
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/6025/luci/trunk/libs/nixio/root/lib/upgrade/luci-add-conffiles.sh
+END

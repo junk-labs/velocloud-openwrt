@@ -1,0 +1,40 @@
+10
+
+dir
+9934
+http://svn.luci.subsignal.org/luci/trunk/applications/luci-statistics/luasrc
+http://svn.luci.subsignal.org
+
+
+
+2013-10-18T10:42:15.595232Z
+9926
+stargieg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+controller
+dir
+
+statistics
+dir
+
+view
+dir
+
+model
+dir
+

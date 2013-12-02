@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/5536/luci/trunk/modules/niu/luasrc/model/cbi/niu/system
+END
+general.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/5536/luci/trunk/modules/niu/luasrc/model/cbi/niu/system/general.lua
+END
+general1.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/5536/luci/trunk/modules/niu/luasrc/model/cbi/niu/system/general1.lua
+END
+reboot.lua
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/5527/luci/trunk/modules/niu/luasrc/model/cbi/niu/system/reboot.lua
+END

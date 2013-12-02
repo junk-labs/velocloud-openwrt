@@ -1,0 +1,82 @@
+10
+
+dir
+38900
+svn://svn.openwrt.org/openwrt/packages/sound
+svn://svn.openwrt.org/openwrt
+
+
+
+2013-09-22T17:46:39.208588Z
+38123
+tripolar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+empcd
+dir
+
+pianobar
+dir
+
+mocp
+dir
+
+flite
+dir
+
+mpdas
+dir
+
+scmpc
+dir
+
+shell-fm
+dir
+
+cmus
+dir
+
+sox
+dir
+
+pulseaudio
+dir
+
+streamripper
+dir
+
+lame
+dir
+
+mpc
+dir
+
+mpd
+dir
+
+ices
+dir
+
+listener
+dir
+
+mt-daapd
+dir
+
+madplay
+dir
+

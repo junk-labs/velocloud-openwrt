@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/9825/luci/trunk/modules/admin-core/luasrc/tools
+END
+status.lua
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/9825/luci/trunk/modules/admin-core/luasrc/tools/status.lua
+END
+webadmin.lua
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4168/luci/trunk/modules/admin-core/luasrc/tools/webadmin.lua
+END

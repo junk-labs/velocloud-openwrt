@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/6527/luci/trunk/applications/luci-radvd/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/6527/luci/trunk/applications/luci-radvd/ipkg/postinst
+END

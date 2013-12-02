@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/!svn/ver/5264/luci/trunk/libs/lucid-rpc
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/!svn/ver/4837/luci/trunk/libs/lucid-rpc/Makefile
+END

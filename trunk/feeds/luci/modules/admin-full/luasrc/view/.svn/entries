@@ -1,0 +1,40 @@
+10
+
+dir
+9934
+http://svn.luci.subsignal.org/luci/trunk/modules/admin-full/luasrc/view
+http://svn.luci.subsignal.org
+
+
+
+2013-10-09T11:17:55.930062Z
+9916
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+admin_uci
+dir
+
+admin_status
+dir
+
+admin_system
+dir
+
+admin_network
+dir
+

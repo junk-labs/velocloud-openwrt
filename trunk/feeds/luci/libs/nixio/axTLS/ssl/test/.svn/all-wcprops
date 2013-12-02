@@ -1,0 +1,353 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test
+END
+axTLS.x509_2048.cer
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_2048.cer
+END
+axTLS.key_4096.pem
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_4096.pem
+END
+gnutls.cer
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/gnutls.cer
+END
+axTLS.x509_device.cer
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_device.cer
+END
+make_certs.sh
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/make_certs.sh
+END
+socgen.cer
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/socgen.cer
+END
+axTLS.key_aes256.pem
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_aes256.pem
+END
+ms_iis.cer
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/ms_iis.cer
+END
+axTLS.x509_2048.pem
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_2048.pem
+END
+verisign.x509_my_cert.pem
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/verisign.x509_my_cert.pem
+END
+verisign.x509_ca
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/verisign.x509_ca
+END
+axTLS.x509_device.pem
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_device.pem
+END
+axTLS.key_2048
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_2048
+END
+axTLS.device_key
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.device_key
+END
+axTLS.withoutCA.p12
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.withoutCA.p12
+END
+test_axssl.sh
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/test_axssl.sh
+END
+axTLS.x509_aes128.pem
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_aes128.pem
+END
+thawte.x509_ca
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/thawte.x509_ca
+END
+datatest.c.old
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/datatest.c.old
+END
+axTLS.noname.p12
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.noname.p12
+END
+axTLS.key_512
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_512
+END
+equifax.x509_ca
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/equifax.x509_ca
+END
+perf_bigint.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/perf_bigint.c
+END
+axTLS.ca_x509.cer
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.ca_x509.cer
+END
+microsoft.x509_ca
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/microsoft.x509_ca
+END
+axTLS.x509_1024.cer
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_1024.cer
+END
+axTLS.encrypted.p8
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.encrypted.p8
+END
+verisign.x509_ca.pem
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/verisign.x509_ca.pem
+END
+ssltest.c.bak
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/ssltest.c.bak
+END
+axTLS.encrypted_pem.p8
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.encrypted_pem.p8
+END
+axTLS.key_2048.pem
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_2048.pem
+END
+axTLS.unencrypted.p8
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.unencrypted.p8
+END
+axTLS.unencrypted_pem.p8
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.unencrypted_pem.p8
+END
+axTLS.device_key.pem
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.device_key.pem
+END
+axTLS.ca_x509.pem
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.ca_x509.pem
+END
+ssltest.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/ssltest.c
+END
+axTLS.key_aes128.pem
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_aes128.pem
+END
+axTLS.x509_1024.pem
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_1024.pem
+END
+axTLS.key_1024
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_1024
+END
+axTLS.x509_4096.cer
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_4096.cer
+END
+axTLS.key_512.pem
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_512.pem
+END
+datatest.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/datatest.c
+END
+microsoft.x509_ca.pem
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/microsoft.x509_ca.pem
+END
+axTLS.x509_512.cer
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_512.cer
+END
+axTLS.x509_4096.pem
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_4096.pem
+END
+axTLS.key_4096
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_4096
+END
+axTLS.x509_aes256.pem
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_aes256.pem
+END
+axTLS.ca_key.pem
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.ca_key.pem
+END
+axTLS.x509_512.pem
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_512.pem
+END
+axTLS.x509_bad_after.pem
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_bad_after.pem
+END
+header_issue.dat
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/header_issue.dat
+END
+axTLS.x509_bad_before.pem
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.x509_bad_before.pem
+END
+axTLS.key_1024.pem
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.key_1024.pem
+END
+killopenssl.sh
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/killopenssl.sh
+END
+axTLS.withCA.p12
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/axTLS.withCA.p12
+END
+verisign.x509_my_cert
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/verisign.x509_my_cert
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/Makefile
+END
+deutsche_telecom.x509_ca
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/test/deutsche_telecom.x509_ca
+END

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/3591/luci/trunk/i18n/russian/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/3591/luci/trunk/i18n/russian/ipkg/postinst
+END

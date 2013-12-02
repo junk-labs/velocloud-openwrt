@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/!svn/ver/4760/luci/trunk/libs/nixio/axTLS/config
+END
+makefile.dotnet.conf
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/makefile.dotnet.conf
+END
+axtls.rc
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/axtls.rc
+END
+Rules.mak
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/Rules.mak
+END
+makefile.conf
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/makefile.conf
+END
+makefile.java.conf
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/makefile.java.conf
+END
+makefile.post
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/makefile.post
+END
+.config
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/4760/luci/trunk/libs/nixio/axTLS/config/.config
+END
+JMeter.jmx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/JMeter.jmx
+END
+axtls.RES
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/axtls.RES
+END
+axhttpd.aip
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/axhttpd.aip
+END
+linuxconfig
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/linuxconfig
+END
+win32config
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/win32config
+END
+Config.in
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/Config.in
+END
+config.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4760/luci/trunk/libs/nixio/axTLS/config/config.h
+END

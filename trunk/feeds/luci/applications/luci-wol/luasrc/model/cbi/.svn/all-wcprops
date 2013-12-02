@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/8961/luci/trunk/applications/luci-wol/luasrc/model/cbi
+END
+wol.lua
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/8961/luci/trunk/applications/luci-wol/luasrc/model/cbi/wol.lua
+END

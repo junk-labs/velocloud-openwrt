@@ -1,0 +1,15 @@
+diff -ruN prettytable-0.7.2.orig/setup.py prettytable-0.7.2/setup.py
+--- prettytable-0.7.2.orig/setup.py	2013-02-17 23:26:08.000000000 +0530
++++ prettytable-0.7.2/setup.py	2013-06-05 20:30:29.056940951 +0530
+@@ -1,5 +1,10 @@
+ #!/usr/bin/env python
+-from setuptools import setup
++
++try:
++    from setuptools import setup
++except ImportError:
++    from distutils.core import setup
++
+ from prettytable import __version__ as version
+ 
+ setup(

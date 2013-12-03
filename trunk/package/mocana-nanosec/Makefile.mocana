@@ -1,0 +1,104 @@
+#
+# This Makefile was provided by Mocana Online Support as an example of
+# how to build all the components with one call. It does clean the
+# objects between each target (so no incremental builds!), but that's
+# how it needs to be done for these sources..
+#
+
+# This MUST be overridden when invoked, to point to the "real" kernel.
+KDIR ?= '/usr/src/linux/.'
+
+# IPv6 support
+IPV6 ?= y
+
+# by default, enable debug output
+DEBUG ?= y
+
+# by default, do a clean build
+CLEAN ?= clean
+
+COMMON_DEFINES = \
+  -D__RTOS_LINUX__ \
+  -D__ENABLE_MOCANA_IKE_SERVER__= \
+  -D__ENABLE_IPSEC_NAT_T__= \
+  -D__ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__= \
+  -D__ENABLE_MOCANA_MEM_PART__=
+
+# optional defines
+OPT_DEFINES += \
+  -D__IKE_MULTI_HOMING__=
+
+COMMON_DEFINES += $(OPT_DEFINES)
+
+ifeq "$(IPV6)" "y"
+  COMMON_DEFINES += -D__ENABLE_MOCANA_IPV6__=
+endif
+
+ifeq "$(DEBUG)" "y"
+  COMMON_DEFINES += \
+    -D__ENABLE_ALL_DEBUGGING__= \
+    -D__ENABLE_MOCANA_DEBUG_CONSOLE__= \
+    -D__MOCANA_DUMP_CONSOLE_TO_STDOUT__=
+endif
+
+IPSEC_DEFINES = $(COMMON_DEFINES) \
+  -DKERNEL_CREATE_DEVICE= \
+  -D__DISABLE_MOCANA_FILE_SYSTEM_HELPER__= \
+  -D__DISABLE_MOCANA_RAND_ENTROPY_THREADS__= \
+  -D__ENABLE_MOCANA_IPSEC_SERVICE__=
+
+IKE_DEFINES = $(COMMON_DEFINES) \
+  -DMOCANA_IKEADM_PORT=4968 \
+  -D__ENABLE_MOCANA_CERTIFICATE_SEARCH_SUPPORT__= \
+  -D__ENABLE_MOCANA_EXAMPLES__= \
+  -D__PLATFORM_HAS_GETOPT__=
+
+LOADCONFIG_DEFINES = $(COMMON_DEFINES) \
+ -D__ENABLE_MOCANA_IPSEC_SERVICE__= \
+ -D__DISABLE_MOCANA_RAND_ENTROPY_THREADS__= \
+ -D__DISABLE_MOCANA_RNG__= \
+ -D__DISABLE_MOCANA_INIT__= \
+ -D__DISABLE_MOCANA_ADD_ENTROPY__= \
+ -D__PLATFORM_HAS_GETOPT__=
+
+IKEADM_DEFINES = $(IKE_DEFINES) \
+  -DMOCANA_IKEADM_CLIENT=
+
+INCLUDE_FILES= -include $(shell pwd)/src/common/moptions.h \
+			   -include $(shell pwd)/src/common/mtypes.h \
+			   -include $(shell pwd)/src/common/merrors.h \
+			   -include $(shell pwd)/src/crypto/hw_accel.h \
+			   -include $(shell pwd)/src/crypto/aes.h \
+			  -include $(shell pwd)/src/crypto/des.h \
+			  -include $(shell pwd)/src/crypto/blowfish.h \
+			  -include $(shell pwd)/src/crypto/md5.h
+
+all: modules ike loadConfig
+
+modules:
+	$(MAKE) -f make/Makefile.linux.mb \
+		EXTRA_CFLAGS='-I$(shell pwd)/src/examples $(IPSEC_DEFINES) $(INCLUDE_FILES)' \
+		KDIR=$(KDIR) RTOS='__RTOS_LINUX__' IMG_EXT='linux.native' \
+		LD=$(KLD) \
+		$(CLEAN) ipsec_module memdrv_module
+
+ike:
+	$(MAKE) -f make/Makefile.linux \
+		MB_OS='linux' \
+		CFLAGS='-I$(shell pwd)/src/examples $(IKE_DEFINES)' \
+		$(CLEAN) ike
+
+ikeadm:
+	$(MAKE) -f make/Makefile.linux \
+		CFLAGS='-I$(shell pwd)/src/examples $(IKEADM_DEFINES)' \
+		$(CLEAN) ikeadm
+
+loadConfig:
+	$(MAKE) -f make/Makefile.linux \
+		CFLAGS='-I$(shell pwd)/src/examples $(LOADCONFIG_DEFINES)' \
+		ipsec_loadconfig
+
+clean:
+	$(MAKE) -f ./make/Makefile.linux.mb clean
+	$(MAKE) -f ./make/Makefile.linux clean
+

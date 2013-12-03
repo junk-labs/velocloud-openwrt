@@ -1,0 +1,20 @@
+diff -ruN requests-1.2.3.orig/setup.py requests-1.2.3/setup.py
+--- requests-1.2.3.orig/setup.py	2013-05-29 20:03:37.333810650 +0530
++++ requests-1.2.3/setup.py	2013-05-29 20:05:59.745812867 +0530
+@@ -3,7 +3,6 @@
+ import os
+ import sys
+ 
+-import requests
+ 
+ try:
+     from setuptools import setup
+@@ -28,7 +27,7 @@
+ 
+ setup(
+     name='requests',
+-    version=requests.__version__,
++    version='1.2.3',
+     description='Python HTTP for Humans.',
+     long_description=open('README.rst').read() + '\n\n' +
+                      open('HISTORY.rst').read(),

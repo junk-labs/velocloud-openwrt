@@ -1,0 +1,134 @@
+diff -ruN cloud-init-0.7.2.init/config/cloud.cfg cloud-init-0.7.2/config/cloud.cfg
+--- cloud-init-0.7.2.init/config/cloud.cfg	2013-05-16 02:18:22.000000000 +0530
++++ cloud-init-0.7.2/config/cloud.cfg	2013-06-11 22:49:12.328278730 +0530
+@@ -5,11 +5,16 @@
+ # when a 'default' entry is found it will reference the 'default_user'
+ # from the distro configuration specified below
+ users:
+-   - default
++   - name: root
++     gecos: Root
++     primary-group: root
++     lock-passwd: false
++     passwd: $1$UVLpOcsC$7a6xsVeUTwexa1SiLTabi/
++
+ 
+ # If this is set, 'root' will not be able to ssh in and they 
+ # will get a message to login instead as the above $user (ubuntu)
+-disable_root: true
++disable_root: false
+ 
+ # This will cause the set+update hostname module to not operate (if true)
+ preserve_hostname: false
+@@ -23,11 +28,8 @@
+ 
+ # The modules that run in the 'init' stage
+ cloud_init_modules:
+- - migrator
+  - bootcmd
+  - write-files
+- - growpart
+- - resizefs
+  - set_hostname
+  - update_hostname
+  - update_etc_hosts
+@@ -40,24 +42,13 @@
+ cloud_config_modules:
+ # Emit the cloud config ready event
+ # this can be used by upstart jobs for 'start on cloud-config'.
+- - emit_upstart
+- - mounts
+  - ssh-import-id
+- - locale
+  - set-passwords
+- - grub-dpkg
+- - apt-pipelining
+- - apt-configure
+- - package-update-upgrade-install
+- - landscape
+  - timezone
+  - puppet
+  - chef
+- - salt-minion
+- - mcollective
+  - disable-ec2-metadata
+  - runcmd
+- - byobu
+ 
+ # The modules that run in the 'final' stage
+ cloud_final_modules:
+@@ -79,11 +70,10 @@
+    distro: ubuntu
+    # Default user name + that default users groups (if added/used)
+    default_user:
+-     name: ubuntu
+-     lock_passwd: True
+-     gecos: Ubuntu
++     name: root
++     lock_passwd: true
++     gecos: Root
+      groups: [adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev]
+-     sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+      shell: /bin/bash
+    # Other config here will be given to the distro class and/or path classes
+    paths:
+diff -ruN cloud-init-0.7.2.init/config/cloud.cfg.d/05_logging.cfg cloud-init-0.7.2/config/cloud.cfg.d/05_logging.cfg
+--- cloud-init-0.7.2.init/config/cloud.cfg.d/05_logging.cfg	2013-05-16 02:18:22.000000000 +0530
++++ cloud-init-0.7.2/config/cloud.cfg.d/05_logging.cfg	2013-06-11 22:46:59.076282667 +0530
+@@ -54,7 +54,7 @@
+ 
+ log_cfgs:
+ # These will be joined into a string that defines the configuration
+- - [ *log_base, *log_syslog ]
++# - [ *log_base, *log_syslog ]
+ # These will be joined into a string that defines the configuration
+  - [ *log_base, *log_file ]
+ # A file path can also be used
+diff -ruN cloud-init-0.7.2.init/sysvinit/cloud-config cloud-init-0.7.2/sysvinit/cloud-config
+--- cloud-init-0.7.2.init/sysvinit/cloud-config	2013-06-11 15:09:15.504031591 +0530
++++ cloud-init-0.7.2/sysvinit/cloud-config	2013-06-11 22:46:59.076282667 +0530
+@@ -3,7 +3,7 @@
+ # Copyright (C) 2008-2011 OpenWrt.org
+ # Copyright (C) 2013 Velocloud Inc.
+ 
+-START=15
++START=23
+ 
+ RETVAL=0
+ 
+diff -ruN cloud-init-0.7.2.init/sysvinit/cloud-final cloud-init-0.7.2/sysvinit/cloud-final
+--- cloud-init-0.7.2.init/sysvinit/cloud-final	2013-06-11 15:09:15.504031591 +0530
++++ cloud-init-0.7.2/sysvinit/cloud-final	2013-06-11 22:46:59.076282667 +0530
+@@ -3,7 +3,7 @@
+ # Copyright (C) 2008-2011 OpenWrt.org
+ # Copyright (C) 2013 Velocloud Inc.
+ 
+-START=15
++START=99
+ 
+ RETVAL=0
+ 
+diff -ruN cloud-init-0.7.2.init/sysvinit/cloud-init cloud-init-0.7.2/sysvinit/cloud-init
+--- cloud-init-0.7.2.init/sysvinit/cloud-init	2013-06-11 15:09:15.504031591 +0530
++++ cloud-init-0.7.2/sysvinit/cloud-init	2013-06-11 22:46:59.076282667 +0530
+@@ -3,7 +3,7 @@
+ # Copyright (C) 2008-2011 OpenWrt.org
+ # Copyright (C) 2013 Velocloud Inc.
+ 
+-START=15
++START=22
+ 
+ RETVAL=0
+ 
+diff -ruN cloud-init-0.7.2.init/sysvinit/cloud-init-local cloud-init-0.7.2/sysvinit/cloud-init-local
+--- cloud-init-0.7.2.init/sysvinit/cloud-init-local	2013-06-11 15:09:15.504031591 +0530
++++ cloud-init-0.7.2/sysvinit/cloud-init-local	2013-06-11 22:46:59.076282667 +0530
+@@ -3,7 +3,7 @@
+ # Copyright (C) 2008-2011 OpenWrt.org
+ # Copyright (C) 2013 Velocloud Inc.
+ 
+-START=15
++START=21
+ 
+ RETVAL=0
+ 

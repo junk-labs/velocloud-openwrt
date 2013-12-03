@@ -1,0 +1,71 @@
+--- a/configure.in	2012-01-23 16:00:26.000000000 -0800
++++ b/configure.in	2013-02-19 03:00:33.839348158 -0800
+@@ -179,68 +179,6 @@
+ AC_MSG_RESULT(no)
+ ])
+ 
+-AC_MSG_CHECKING(whether PTHREAD_MUTEX_RECURSIVE is supported)
+-AC_TRY_RUN([
+-#define GNU_SOURCE
+-#include <pthread.h>
+-
+-int main(void) 
+-{
+-    int rc;
+-    pthread_mutex_t m;
+-    pthread_mutexattr_t a;
+-
+-    if ((rc = pthread_mutexattr_init(&a))) return rc;
+-    if ((rc = pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE)))
+-        return rc;
+-
+-    if ((rc = pthread_mutex_init(&m, &a))) return rc;
+-    if ((rc = pthread_mutex_lock(&m))) return rc;
+-    if ((rc = pthread_mutex_trylock(&m))) return rc;
+-    pthread_mutex_unlock(&m);
+-    pthread_mutex_unlock(&m);
+-
+-    return 0;
+-}
+-],
+-recursive_mutex=yes
+-AC_MSG_RESULT(yes)
+-AC_DEFINE(CP_HAS_PTHREAD_MUTEX_RECURSIVE, [1], 
+-              [Define to 1 if PTHREAD_MUTEX_RECURSIVE is supported]),
+-AC_MSG_RESULT(no))
+-
+-if test "x$recursive_mutex" = "x" ; then
+-AC_MSG_CHECKING(whether PTHREAD_MUTEX_RECURSIVE_NP is supported)
+-AC_TRY_RUN([
+-#define GNU_SOURCE
+-#include <pthread.h>
+-
+-int main(void) 
+-{
+-    int rc;
+-    pthread_mutex_t m;
+-    pthread_mutexattr_t a;
+-
+-    if ((rc = pthread_mutexattr_init(&a))) return rc;
+-    if ((rc = pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE_NP)))
+-        return rc;
+-
+-    if ((rc = pthread_mutex_init(&m, &a))) return rc;
+-    if ((rc = pthread_mutex_lock(&m))) return rc;
+-    if ((rc = pthread_mutex_trylock(&m))) return rc;
+-    pthread_mutex_unlock(&m);
+-    pthread_mutex_unlock(&m);
+-
+-    return 0;
+-}
+-],
+-recursive_mutex=yes
+-AC_MSG_RESULT(yes)
+-AC_DEFINE(CP_HAS_PTHREAD_MUTEX_RECURSIVE_NP, [1], 
+-              [Define to 1 if PTHREAD_MUTEX_RECURSIVE_NP is supported]),
+-AC_MSG_RESULT(no))
+-fi
+-
+ dnl check for gnu gethostbyname_r (6 param version)
+ 
+ AC_MSG_CHECKING(if gnu style gethostbyname_r is available)

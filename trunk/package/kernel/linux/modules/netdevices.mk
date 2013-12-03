@@ -443,6 +443,46 @@ endef
 $(eval $(call KernelPackage,e1000e))
 
 
+define KernelPackage/intel-igb
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=Intel(R) IGB 825xx cards kernel support
+  DEPENDS:=@PCIE_SUPPORT
+  KCONFIG:=CONFIG_IGB
+  FILES:=$(LINUX_DIR)/drivers/net/ethernet/intel/igb/igb.ko
+  AUTOLOAD:=$(call AutoLoad,51,igb)
+endef
+
+define KernelPackage/intel-igb/description
+ Kernel modules for Intel(R) IGB 825xx Ethernet Controllers.
+endef
+
+$(eval $(call KernelPackage,intel-igb))
+
+
+define KernelPackage/dsa-mv-6123-6161-6165
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=Switch support for Marvell 6123/6161/6165
+  DEPENDS:=@PCIE_SUPPORT
+  KCONFIG:= \
+	CONFIG_NET_DSA \
+	CONFIG_NET_DSA_TAG_EDSA \
+	CONFIG_NET_DSA_MV88E6XXX \
+	CONFIG_NET_DSA_MV88E6123_61_65 \
+	CONFIG_VELOCLOUD_DSA
+  FILES:= \
+	$(LINUX_DIR)/net/dsa/dsa_core.ko \
+	$(LINUX_DIR)/drivers/net/dsa/mv88e6xxx_drv.ko \
+	$(LINUX_DIR)/drivers/platform/x86/velocloud-dsa.ko
+  AUTOLOAD:=$(call AutoLoad,52,dsa_core mv88e6xxx_drv velocloud-dsa)
+endef
+
+define KernelPackage/dsa-mv-6123-6161-6165/description
+ Switch support for Marvell 6123/6161/6165.
+endef
+
+$(eval $(call KernelPackage,dsa-mv-6123-6161-6165))
+
+
 define KernelPackage/b44
   TITLE:=Broadcom 44xx driver
   KCONFIG:=CONFIG_B44

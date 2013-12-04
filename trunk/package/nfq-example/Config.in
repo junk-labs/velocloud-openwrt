@@ -1,0 +1,12 @@
+
+# nfq-example configuration
+
+if PACKAGE_nfq-example
+
+	config NFQ_EXAMPLE_CONFIG
+		bool "nfq-example config blurb"
+		help
+			just for kicks
+		default n
+
+endif

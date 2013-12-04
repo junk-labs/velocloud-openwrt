@@ -1,0 +1,178 @@
+diff -ruN cloud-init-0.7.2.init/setup.py cloud-init-0.7.2/setup.py
+--- cloud-init-0.7.2.init/setup.py	2013-06-06 10:11:30.088271306 +0530
++++ cloud-init-0.7.2/setup.py	2013-06-07 16:23:47.204112840 +0530
+@@ -22,19 +22,11 @@
+ 
+ from glob import glob
+ 
+-import os
++import os, re
+ 
+-try:
+-    import setuptools
+-    from setuptools.command.install import install
+-    packages=setuptools.find_packages(exclude=['tests'])
+-except ImportError:
+-    import distutils
+-    from distutils.core import setup
+-    from distutils.command.install import install
+-    packages = []
+-
+-from distutils.errors import DistutilsArgError
++import distutils
++from distutils.core import setup
++from distutils.command.install_data import install_data
+ 
+ import subprocess
+ 
+@@ -42,22 +34,6 @@
+ def is_f(p):
+     return os.path.isfile(p)
+ 
+-
+-INITSYS_FILES = {
+-    'sysvinit': [f for f in glob('sysvinit/*') if is_f(f)],
+-    'sysvinit_deb': [f for f in glob('sysvinit/*') if is_f(f)],
+-    'systemd': [f for f in glob('systemd/*') if is_f(f)],
+-    'upstart': [f for f in glob('upstart/*') if is_f(f)],
+-}
+-INITSYS_ROOTS = {
+-    'sysvinit': '/etc/rc.d/init.d',
+-    'sysvinit_deb': '/etc/init.d',
+-    'systemd': '/etc/systemd/system/',
+-    'upstart': '/etc/init/',
+-}
+-INITSYS_TYPES = sorted(list(INITSYS_ROOTS.keys()))
+-
+-
+ def tiny_p(cmd, capture=True):
+     # Darn python 2.6 doesn't have check_output (argggg)
+     stdout = subprocess.PIPE
+@@ -87,33 +63,67 @@
+     return str(deps).splitlines()
+ 
+ 
+-# TODO: Is there a better way to do this??
+-class InitsysInstallData(install):
+-    init_system = None
+-    user_options = install.user_options + [
+-        # This will magically show up in member variable 'init_sys'
+-        ('init-system=', None,
+-            ('init system to configure (%s) [default: None]') %
+-                (", ".join(INITSYS_TYPES))
+-        ),
+-    ]
+-
+-    def initialize_options(self):
+-        install.initialize_options(self)
+-        self.init_system = None
+-
+-    def finalize_options(self):
+-        install.finalize_options(self)
+-        if self.init_system and self.init_system not in INITSYS_TYPES:
+-            raise DistutilsArgError(("You must specify one of (%s) when"
+-                 " specifying a init system!") % (", ".join(INITSYS_TYPES)))
+-        elif self.init_system:
+-            self.distribution.data_files.append(
+-                (INITSYS_ROOTS[self.init_system], 
+-                 INITSYS_FILES[self.init_system]))
+-            # Force that command to reinitalize (with new file list)
+-            self.distribution.reinitialize_command('install_data', True)
+-
++def find_packages(path='.'):
++        ret = []
++        for root, dirs, files in os.walk(path):
++                if '__init__.py' in files:
++                        ret.append(re.sub('^[^A-z0-9_]+', '', root.replace('/', '.')))
++        return ret
++
++
++data_files=[
++          ('/etc/init.d', [f for f in glob('sysvinit/*') if is_f(f)]),
++          ('/etc/cloud', glob('config/*.cfg')),
++          ('/etc/cloud/cloud.cfg.d', glob('config/cloud.cfg.d/*')),
++          ('/etc/cloud/templates', glob('templates/*')),
++          ('/usr/share/cloud-init', []),
++          ('/usr/lib/cloud-init', ['tools/uncloud-init', 'tools/write-ssh-key-fingerprints']),
++          ('/usr/share/doc/cloud-init', [f for f in glob('doc/*') if is_f(f)]),
++          ('/usr/share/doc/cloud-init/examples', [f for f in glob('doc/examples/*') if is_f(f)]),
++          ('/usr/share/doc/cloud-init/examples/seed', [f for f in glob('doc/examples/seed/*') if is_f(f)])]
++
++scripts = ['bin/cloud-init', 'tools/cloud-init-per']
++
++packages = find_packages()
++
++
++class mod_install_data(install_data):
++        """ A modified version of install_data to dump
++        all the data_files
++        """
++
++        def initialize_options(self):
++                install_data.initialize_options(self)
++
++        def finalize_options(self):
++                if self.install_dir is None:
++                        installobj = self.distribution.get_command_obj('install')
++                        self.install_dir = installobj.install_data
++                install_data.finalize_options(self)
++
++        def run(self):
++                if not self.dry_run:
++                        self.mkpath(self.install_dir)
++                data_files = self.get_inputs()
++                pkgDirDict = self.distribution.package_dir
++
++                print "self.install_dir : ", self.install_dir
++
++                for (dirname,filelist) in data_files:
++                        #pkgDir = dirname
++                        pkgDir = os.path.join(self.install_dir, os.sep.join(dirname.split(os.sep)[1:]))
++
++                        for filename in filelist:
++                                f = os.path.basename(filename)
++                                dstpath = os.path.join(pkgDir, f)
++                                print dstpath, '<======', filename #os.sep.join(filename.split(os.sep)[1:]))
++                                dstdir = os.path.split(dstpath)[0]
++                                if not self.dry_run:
++                                        self.mkpath(dstdir)
++                                        outfile = self.copy_file(filename, dstpath)[0]
++                                else:
++                                        outfile = dstpath
++                                self.outfiles.append(outfile)
+ 
+ setup(name='cloud-init',
+       version=get_version(),
+@@ -122,28 +132,11 @@
+       author_email='scott.moser@canonical.com',
+       url='http://launchpad.net/cloud-init/',
+       packages=packages,
+-      scripts=['bin/cloud-init',
+-               'tools/cloud-init-per',
+-               ],
++      scripts=scripts,
+       license='GPLv3',
+-      data_files=[('/etc/cloud', glob('config/*.cfg')),
+-                  ('/etc/cloud/cloud.cfg.d', glob('config/cloud.cfg.d/*')),
+-                  ('/etc/cloud/templates', glob('templates/*')),
+-                  ('/usr/share/cloud-init', []),
+-                  ('/usr/lib/cloud-init',
+-                    ['tools/uncloud-init',
+-                     'tools/write-ssh-key-fingerprints']),
+-                  ('/usr/share/doc/cloud-init',
+-                   [f for f in glob('doc/*') if is_f(f)]),
+-                  ('/usr/share/doc/cloud-init/examples',
+-                   [f for f in glob('doc/examples/*') if is_f(f)]),
+-                  ('/usr/share/doc/cloud-init/examples/seed',
+-                   [f for f in glob('doc/examples/seed/*') if is_f(f)]),
+-                 ],
++      data_files=data_files,
+       requires=read_requires(),
+       cmdclass = {
+-          # Use a subclass for install that handles
+-          # adding on the right init system configuration files
+-          'install': InitsysInstallData,
+-      },
++              'install_data': mod_install_data,
++              },
+       )

@@ -1,0 +1,138 @@
+diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cloudinit/distros/openwrt.py
+--- cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py	1970-01-01 05:30:00.000000000 +0530
++++ cloud-init-0.7.2/cloudinit/distros/openwrt.py	2013-06-13 20:33:06.211274974 +0530
+@@ -0,0 +1,134 @@
++# vi: ts=4 expandtab
++#
++#    Copyright (C) 2012 Canonical Ltd.
++#    Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
++#    Copyright (C) 2012 Yahoo! Inc.
++#
++#    Author: Scott Moser <scott.moser@canonical.com>
++#    Author: Juerg Haefliger <juerg.haefliger@hp.com>
++#    Author: Joshua Harlow <harlowja@yahoo-inc.com>
++#    Author: Ben Howard <ben.howard@canonical.com>
++#
++#    This program is free software: you can redistribute it and/or modify
++#    it under the terms of the GNU General Public License version 3, as
++#    published by the Free Software Foundation.
++#
++#    This program is distributed in the hope that it will be useful,
++#    but WITHOUT ANY WARRANTY; without even the implied warranty of
++#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++#    GNU General Public License for more details.
++#
++#    You should have received a copy of the GNU General Public License
++#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++import os
++from cloudinit import distros
++from cloudinit import helpers
++from cloudinit import log as logging
++from cloudinit import util
++
++from cloudinit.distros.parsers.hostname import HostnameConf
++
++from cloudinit.settings import PER_INSTANCE
++
++LOG = logging.getLogger(__name__)
++
++
++
++
++
++
++class Distro(distros.Distro):
++    hostname_conf_fn = "/etc/hostname"
++    locale_conf_fn = "/etc/default/locale" # This _isnt_ there on OWRT
++    network_conf_fn = "/etc/network/interfaces"
++    tz_conf_fn = "/etc/timezone" # This _isnt_ there on OWRT
++    tz_local_fn = "/etc/localtime"
++    tz_zone_dir = "/usr/share/zoneinfo"
++
++
++    def __init__(self, name, cfg, paths):
++        distros.Distro.__init__(self, name, cfg, paths)
++        self._runner = helpers.Runners(paths)
++        self.osfamily = 'openwrt'
++
++    def apply_locale(self, locale, out_fn=None):
++        return
++
++    def install_packages(self, pkglist):
++        return
++
++    def update_package_sources(self):
++        return
++
++    def _write_network(self, settings):
++        util.write_file(self.network_conf_fn, settings)
++        return ['all']
++
++    def _select_hostname(self, hostname, fqdn):
++        if not hostname:
++            return fqdn
++        return hostname
++
++    def _write_hostname(self, your_hostname, out_fn):
++        # uci set system.@system[0].hostname=<your_hostname>
++        # uci commit system
++        cmd_set = ['uci', 'set', 'system.@system[0].hostname='+your_hostname]
++        cmd_commit = ['uci', 'commit', 'system']
++
++        try:
++                util.subp(cmd_set)
++                util.subp(cmd_commit)
++        except IOError:
++                pass
++        return
++
++    def _read_hostname(self, filename, default=None):
++        hostname = None
++        try:
++            hostname = self._read_system_hostname()
++        except IOError:
++            pass
++        if not hostname:
++            return default
++        return hostname
++
++    def _read_system_hostname(self):
++        # Read from UCI
++        # uci get system.@system[0].hostname
++        sys_hostname = None
++        cmd = ['uci', 'get', 'system.@system[0].hostname']
++        try:
++            (sys_hostname, _err) = util.subp(cmd)
++        except IOError:
++            pass
++        except Exception as e:
++            raise e
++
++        if not sys_hostname:
++                return None
++
++        return sys_hostname
++
++    def _get_localhost_ip(self):
++        return "127.0.0.1"
++
++    def set_timezone(self, tz):
++        # timezone on openwrt is written in /etc/config/system
++        # under:
++        # config system
++        #       option timezone <timezone>
++        # We should use UCI to update this:
++        # uci set system.timezone=<timezone>
++        #
++        cmd = ['uci', 'set', 'system.@system[0].timezone=']
++        try:
++            util.subp(cmd)
++            util.subp(['uci', 'commit', 'system'])
++        except IOError:
++            pass
++
++    def package_command(self, command, args=None, pkgs=None):
++        pass
++
++

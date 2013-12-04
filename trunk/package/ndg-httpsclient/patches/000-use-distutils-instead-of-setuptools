@@ -1,0 +1,29 @@
+diff -ruN ndg_httpsclient-0.3.2.orig/setup.py ndg_httpsclient-0.3.2/setup.py
+--- ndg_httpsclient-0.3.2.orig/setup.py	2013-05-30 16:28:53.159261849 +0530
++++ ndg_httpsclient-0.3.2/setup.py	2013-05-30 16:31:10.979257777 +0530
+@@ -1,10 +1,15 @@
+ try:
+-    from setuptools import setup, find_packages
++    from distutils.core import setup
+ except ImportError:
+     from ez_setup import use_setuptools
+     use_setuptools()
+     from setuptools import setup, find_packages
+ 
++packages = [
++    'ndg',
++    'ndg.httpsclient'
++]
++
+ _long_description = '''
+ This is a HTTPS client implementation for httplib and urllib2 based on
+ PyOpenSSL.  PyOpenSSL provides a more fully featured SSL implementation over the
+@@ -99,7 +104,7 @@
+     long_description=_long_description,
+     license='BSD - See LICENCE file for details',
+     namespace_packages=['ndg'],
+-    packages=find_packages(),
++    packages=packages,
+     package_dir={'ndg.httpsclient': 'ndg/httpsclient'},
+     package_data={
+         'ndg.httpsclient': [

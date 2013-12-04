@@ -738,7 +738,7 @@ define KernelPackage/usb-net
   KCONFIG:=CONFIG_USB_USBNET CONFIG_MII=y
   AUTOLOAD:=$(call AutoProbe,usbnet)
   FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/usbnet.ko
-  $(call AddDepends/usb)
+  $(call AddDepends/usb,+kmod-mii)
 endef
 
 define KernelPackage/usb-net/description

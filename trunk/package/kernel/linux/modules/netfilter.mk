@@ -314,13 +314,13 @@ define KernelPackage/ipt-tproxy
   TITLE:=Transparent proxying support
   DEPENDS+=+kmod-ipt-conntrack +IPV6:kmod-ipv6 +IPV6:kmod-ip6tables
   KCONFIG:= \
-  	CONFIG_NETFILTER_TPROXY \
+  	CONFIG_NETFILTER_XT_TPROXY \
   	CONFIG_NETFILTER_XT_MATCH_SOCKET \
   	CONFIG_NETFILTER_XT_TARGET_TPROXY
   FILES:= \
-  	$(LINUX_DIR)/net/netfilter/nf_tproxy_core.ko \
+  	$(LINUX_DIR)/net/netfilter/xt_TPROXY.ko \
   	$(foreach mod,$(IPT_TPROXY-m),$(LINUX_DIR)/net/$(mod).ko)
-  AUTOLOAD:=$(call AutoProbe,$(notdir nf_tproxy_core $(IPT_TPROXY-m)))
+  AUTOLOAD:=$(call AutoProbe,$(notdir xt_TPROXY $(IPT_TPROXY-m)))
   $(call AddDepends/ipt)
 endef
 
@@ -365,6 +365,28 @@ define KernelPackage/ipt-u32/description
 endef
 
 $(eval $(call KernelPackage,ipt-u32))
+
+
+define KernelPackage/ipt-nfqueue
+  TITLE:=NFQUEUE target support
+  KCONFIG:= \
+    CONFIG_NETFILTER_ADVANCED \
+    CONFIG_NETFILTER_NETLINK \
+    CONFIG_NETFILTER_NETLINK_QUEUE \
+    CONFIG_NETFILTER_XTABLE \
+    CONFIG_NETFILTER_XT_TARGET_NFQUEUE
+  FILES:= \
+  	$(LINUX_DIR)/net/netfilter/xt_NFQUEUE.ko \
+  	$(foreach mod,$(IPT_NFQUEUE-m),$(LINUX_DIR)/net/$(mod).ko)
+  AUTOLOAD:=$(call AutoLoad,50,xt_NFQUEUE)
+  $(call AddDepends/ipt)
+endef
+
+define KernelPackage/ipt-nfqueue/description
+  Kernel modules for NFQUEUE
+endef
+
+$(eval $(call KernelPackage,ipt-nfqueue))
 
 
 define KernelPackage/ipt-iprange

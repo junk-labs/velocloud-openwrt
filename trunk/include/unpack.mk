@@ -62,6 +62,10 @@ ifeq ($(strip $(UNPACK_CMD)),)
     ifeq ($(PKG_CAT),zcat)
       UNPACK_CMD=gzip -dc $(DL_DIR)/$(PKG_SOURCE) | $(TAR_CMD)
     endif
+    # support direct rsync;
+    ifeq ($(PKG_SOURCE_PROTO),none)
+      UNPACK_CMD=$(PKG_CAT) $(1)/
+    endif
   endif
   ifneq ($(strip $(CRLF_WORKAROUND)),)
     CRLF_CMD := && find $(PKG_BUILD_DIR) -type f -print0 | xargs -0 perl -pi -e 's!\r$$$$!!g'

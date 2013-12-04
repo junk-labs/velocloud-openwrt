@@ -17,7 +17,9 @@ $(strip \
           $(if $(filter cvs://%,$(1)),cvs, \
             $(if $(filter hg://%,$(1)),hg, \
               $(if $(filter sftp://%,$(1)),bzr, \
-                unknown \
+                $(if $(filter none,$(1)),none, \
+                  unknown \
+                ) \
               ) \
             ) \
           ) \
@@ -142,6 +144,10 @@ define DownloadMethod/darcs
 		mv $(TMP_DIR)/dl/$(FILE) $(DL_DIR)/ && \
 		rm -rf $(SUBDIR); \
 	)
+endef
+
+define DownloadMethod/none
+	@echo "Checking out files via PKG_CAT method..."
 endef
 
 Validate/cvs=VERSION SUBDIR

@@ -15,7 +15,7 @@ override MAKEFLAGS=
 override MAKE:=$(SUBMAKE)
 KDIR=$(KERNEL_BUILD_DIR)
 
-IMG_PREFIX:=openwrt-$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))
+IMG_PREFIX?=openwrt-$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))
 
 MKFS_DEVTABLE_OPT := -D $(INCLUDE_DIR)/device_table.txt
 

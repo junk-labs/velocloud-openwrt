@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/9915/luci/trunk/contrib/package/freifunk-gwcheck/files/usr/sbin
+END
+ff_olsr_test_gw.sh
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/9915/luci/trunk/contrib/package/freifunk-gwcheck/files/usr/sbin/ff_olsr_test_gw.sh
+END

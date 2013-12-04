@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/8220/luci/trunk/i18n/portuguese-brazilian/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/8220/luci/trunk/i18n/portuguese-brazilian/ipkg/postinst
+END

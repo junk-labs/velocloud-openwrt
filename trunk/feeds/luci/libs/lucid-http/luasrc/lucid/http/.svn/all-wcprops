@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/8159/luci/trunk/libs/lucid-http/luasrc/lucid/http
+END
+DirectoryPublisher.lua
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/5655/luci/trunk/libs/lucid-http/luasrc/lucid/http/DirectoryPublisher.lua
+END
+Redirector.lua
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/5655/luci/trunk/libs/lucid-http/luasrc/lucid/http/Redirector.lua
+END
+server.lua
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/5501/luci/trunk/libs/lucid-http/luasrc/lucid/http/server.lua
+END
+LuciWebPublisher.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/5655/luci/trunk/libs/lucid-http/luasrc/lucid/http/LuciWebPublisher.lua
+END

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/7771/luci/trunk/contrib/package/remote-update
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/7771/luci/trunk/contrib/package/remote-update/Makefile
+END

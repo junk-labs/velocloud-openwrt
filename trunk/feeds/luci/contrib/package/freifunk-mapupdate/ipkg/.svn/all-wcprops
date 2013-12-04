@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/7553/luci/trunk/contrib/package/freifunk-mapupdate/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/7553/luci/trunk/contrib/package/freifunk-mapupdate/ipkg/postinst
+END
+postrm
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/7553/luci/trunk/contrib/package/freifunk-mapupdate/ipkg/postrm
+END

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/bin
+END
+.htaccess
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/bin/.htaccess
+END

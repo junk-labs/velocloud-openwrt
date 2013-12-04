@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/9867/luci/trunk/applications/luci-olsr/luasrc/tools
+END
+olsr.lua
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/9867/luci/trunk/applications/luci-olsr/luasrc/tools/olsr.lua
+END

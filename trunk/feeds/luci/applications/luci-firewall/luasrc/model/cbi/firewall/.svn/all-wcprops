@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/9842/luci/trunk/applications/luci-firewall/luasrc/model/cbi/firewall
+END
+custom.lua
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/8108/luci/trunk/applications/luci-firewall/luasrc/model/cbi/firewall/custom.lua
+END
+rule-details.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9685/luci/trunk/applications/luci-firewall/luasrc/model/cbi/firewall/rule-details.lua
+END
+rules.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/9686/luci/trunk/applications/luci-firewall/luasrc/model/cbi/firewall/rules.lua
+END
+zone-details.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/8169/luci/trunk/applications/luci-firewall/luasrc/model/cbi/firewall/zone-details.lua
+END
+zones.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/8108/luci/trunk/applications/luci-firewall/luasrc/model/cbi/firewall/zones.lua
+END
+forward-details.lua
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/9842/luci/trunk/applications/luci-firewall/luasrc/model/cbi/firewall/forward-details.lua
+END
+forwards.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9261/luci/trunk/applications/luci-firewall/luasrc/model/cbi/firewall/forwards.lua
+END

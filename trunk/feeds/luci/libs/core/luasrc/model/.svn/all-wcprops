@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/9800/luci/trunk/libs/core/luasrc/model
+END
+uci.lua
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/8127/luci/trunk/libs/core/luasrc/model/uci.lua
+END
+firewall.lua
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/9495/luci/trunk/libs/core/luasrc/model/firewall.lua
+END
+network.lua
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/9800/luci/trunk/libs/core/luasrc/model/network.lua
+END

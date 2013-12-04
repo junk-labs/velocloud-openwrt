@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/7719/luci/trunk/applications/luci-openvpn/luasrc/view/openvpn
+END
+cbi-select-input-add.htm
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/5448/luci/trunk/applications/luci-openvpn/luasrc/view/openvpn/cbi-select-input-add.htm
+END
+pageswitch.htm
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/7719/luci/trunk/applications/luci-openvpn/luasrc/view/openvpn/pageswitch.htm
+END

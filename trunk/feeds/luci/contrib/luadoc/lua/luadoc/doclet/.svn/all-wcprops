@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4889/luci/trunk/contrib/luadoc/lua/luadoc/doclet
+END
+formatter.lua
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/3591/luci/trunk/contrib/luadoc/lua/luadoc/doclet/formatter.lua
+END
+html.lua
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4889/luci/trunk/contrib/luadoc/lua/luadoc/doclet/html.lua
+END
+debug.lua
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/3591/luci/trunk/contrib/luadoc/lua/luadoc/doclet/debug.lua
+END
+raw.lua
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/3591/luci/trunk/contrib/luadoc/lua/luadoc/doclet/raw.lua
+END

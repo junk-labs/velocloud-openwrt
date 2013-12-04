@@ -1,0 +1,12 @@
+K 10
+svn:ignore
+V 10
+docs
+host
+
+K 13
+svn:mergeinfo
+V 68
+/luci/branches/luci-0.11:9403-9410
+/luci/branches/luci-0.8:4367-4369
+END

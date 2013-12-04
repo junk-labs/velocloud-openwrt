@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/9571/luci/trunk/contrib/uhttpd/patches
+END
+002-link-order.patch
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/9571/luci/trunk/contrib/uhttpd/patches/002-link-order.patch
+END
+001-pass-env.patch
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/9571/luci/trunk/contrib/uhttpd/patches/001-pass-env.patch
+END
+series
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/9571/luci/trunk/contrib/uhttpd/patches/series
+END

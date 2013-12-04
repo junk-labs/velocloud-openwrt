@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/7011/luci/trunk/applications/luci-asterisk/luasrc/view/asterisk
+END
+dialplans.htm
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/4399/luci/trunk/applications/luci-asterisk/luasrc/view/asterisk/dialplans.htm
+END
+dialzones.htm
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/7011/luci/trunk/applications/luci-asterisk/luasrc/view/asterisk/dialzones.htm
+END

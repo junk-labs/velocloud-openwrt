@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 25
+/!svn/ver/9934/luci/trunk
+END
+NOTICE
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/!svn/ver/4268/luci/trunk/NOTICE
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/!svn/ver/3591/luci/trunk/LICENSE
+END
+THANKYOU
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/!svn/ver/3634/luci/trunk/THANKYOU
+END
+.project
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/!svn/ver/3797/luci/trunk/.project
+END
+.gitignore
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/!svn/ver/3591/luci/trunk/.gitignore
+END
+INSTALL
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/!svn/ver/3988/luci/trunk/INSTALL
+END
+.cproject
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/!svn/ver/3799/luci/trunk/.cproject
+END
+.buildpath
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/!svn/ver/3591/luci/trunk/.buildpath
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/!svn/ver/9493/luci/trunk/Makefile
+END

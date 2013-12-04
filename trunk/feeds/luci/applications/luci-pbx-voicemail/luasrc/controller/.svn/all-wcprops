@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/7971/luci/trunk/applications/luci-pbx-voicemail/luasrc/controller
+END
+pbx-voicemail.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/7971/luci/trunk/applications/luci-pbx-voicemail/luasrc/controller/pbx-voicemail.lua
+END

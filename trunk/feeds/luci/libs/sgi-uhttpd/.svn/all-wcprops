@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/6648/luci/trunk/libs/sgi-uhttpd
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/5902/luci/trunk/libs/sgi-uhttpd/Makefile
+END

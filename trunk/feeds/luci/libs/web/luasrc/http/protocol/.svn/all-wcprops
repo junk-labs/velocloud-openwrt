@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/6284/luci/trunk/libs/web/luasrc/http/protocol
+END
+conditionals.lua
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/6284/luci/trunk/libs/web/luasrc/http/protocol/conditionals.lua
+END
+mime.lua
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/6284/luci/trunk/libs/web/luasrc/http/protocol/mime.lua
+END
+date.lua
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/6284/luci/trunk/libs/web/luasrc/http/protocol/date.lua
+END

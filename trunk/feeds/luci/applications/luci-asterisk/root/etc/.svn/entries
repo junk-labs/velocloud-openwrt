@@ -1,0 +1,34 @@
+10
+
+dir
+9934
+http://svn.luci.subsignal.org/luci/trunk/applications/luci-asterisk/root/etc
+http://svn.luci.subsignal.org
+
+
+
+2011-01-14T17:48:44.090565Z
+6728
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+config
+dir
+
+uci-defaults
+dir
+

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/9507/luci/trunk/applications/luci-transmission
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/8572/luci/trunk/applications/luci-transmission/Makefile
+END

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/8231/luci/trunk/applications/luci-ltqtapi/luasrc/model/cbi/luci_ltqtapi
+END
+contact.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/8231/luci/trunk/applications/luci-ltqtapi/luasrc/model/cbi/luci_ltqtapi/contact.lua
+END
+account.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/8231/luci/trunk/applications/luci-ltqtapi/luasrc/model/cbi/luci_ltqtapi/account.lua
+END

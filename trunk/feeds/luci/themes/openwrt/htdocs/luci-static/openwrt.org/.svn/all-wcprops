@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/9464/luci/trunk/themes/openwrt/htdocs/luci-static/openwrt.org
+END
+cascade.css
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/9464/luci/trunk/themes/openwrt/htdocs/luci-static/openwrt.org/cascade.css
+END
+ie6.css
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/7035/luci/trunk/themes/openwrt/htdocs/luci-static/openwrt.org/ie6.css
+END
+ie7.css
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/6844/luci/trunk/themes/openwrt/htdocs/luci-static/openwrt.org/ie7.css
+END
+ie8.css
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/6844/luci/trunk/themes/openwrt/htdocs/luci-static/openwrt.org/ie8.css
+END
+tabbg.png
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/6384/luci/trunk/themes/openwrt/htdocs/luci-static/openwrt.org/tabbg.png
+END

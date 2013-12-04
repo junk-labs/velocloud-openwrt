@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/7572/luci/trunk/modules/admin-full/htdocs/luci-static/resources
+END
+wifirate.svg
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/7572/luci/trunk/modules/admin-full/htdocs/luci-static/resources/wifirate.svg
+END
+wireless.svg
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/7487/luci/trunk/modules/admin-full/htdocs/luci-static/resources/wireless.svg
+END
+load.svg
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/6581/luci/trunk/modules/admin-full/htdocs/luci-static/resources/load.svg
+END
+connections.svg
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/6587/luci/trunk/modules/admin-full/htdocs/luci-static/resources/connections.svg
+END
+bandwidth.svg
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/6574/luci/trunk/modules/admin-full/htdocs/luci-static/resources/bandwidth.svg
+END

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/9531/luci/trunk/contrib/package/freifunk-p2pblock/files
+END
+freifunk-p2pblock.config
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/4802/luci/trunk/contrib/package/freifunk-p2pblock/files/freifunk-p2pblock.config
+END
+freifunk-p2pblock.init
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/9531/luci/trunk/contrib/package/freifunk-p2pblock/files/freifunk-p2pblock.init
+END

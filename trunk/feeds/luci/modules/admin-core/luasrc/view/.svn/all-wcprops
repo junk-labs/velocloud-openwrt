@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/9900/luci/trunk/modules/admin-core/luasrc/view
+END
+error500.htm
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/9014/luci/trunk/modules/admin-core/luasrc/view/error500.htm
+END
+footer.htm
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/3591/luci/trunk/modules/admin-core/luasrc/view/footer.htm
+END
+indexer.htm
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/3591/luci/trunk/modules/admin-core/luasrc/view/indexer.htm
+END
+sysauth.htm
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/9900/luci/trunk/modules/admin-core/luasrc/view/sysauth.htm
+END
+error404.htm
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/9014/luci/trunk/modules/admin-core/luasrc/view/error404.htm
+END
+header.htm
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4234/luci/trunk/modules/admin-core/luasrc/view/header.htm
+END

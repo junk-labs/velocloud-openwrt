@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/5448/luci/trunk/applications/luci-p2pblock/luasrc/model/cbi/luci_fw
+END
+p2pblock.lua
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/5448/luci/trunk/applications/luci-p2pblock/luasrc/model/cbi/luci_fw/p2pblock.lua
+END

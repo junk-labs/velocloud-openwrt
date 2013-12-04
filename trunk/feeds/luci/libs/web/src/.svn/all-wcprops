@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/!svn/ver/9654/luci/trunk/libs/web/src
+END
+template_lmo.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/9618/luci/trunk/libs/web/src/template_lmo.h
+END
+template_parser.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/9509/luci/trunk/libs/web/src/template_parser.c
+END
+po2lmo.c
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/9648/luci/trunk/libs/web/src/po2lmo.c
+END
+template_lualib.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/9492/luci/trunk/libs/web/src/template_lualib.h
+END
+template_utils.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/9509/luci/trunk/libs/web/src/template_utils.c
+END
+template_parser.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/9492/luci/trunk/libs/web/src/template_parser.h
+END
+template_utils.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/9509/luci/trunk/libs/web/src/template_utils.h
+END
+template_lmo.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/9654/luci/trunk/libs/web/src/template_lmo.c
+END
+template_lualib.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/9509/luci/trunk/libs/web/src/template_lualib.c
+END

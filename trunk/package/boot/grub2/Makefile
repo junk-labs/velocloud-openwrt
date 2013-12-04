@@ -59,8 +59,14 @@ HOST_MAKE_FLAGS += \
 	LIBLZMA=$(STAGING_DIR_HOST)/lib/liblzma.a
 
 define Host/Configure
+	(cd $(HOST_BUILD_DIR); rm -rf config.{cache,status}; ./autogen.sh );
 	$(SED) 's,(RANLIB),(TARGET_RANLIB),' $(HOST_BUILD_DIR)/grub-core/Makefile.in
 	$(Host/Configure/Default)
+endef
+
+define Build/Configure
+	(cd $(PKG_BUILD_DIR); rm -rf config.{cache,status}; ./autogen.sh );
+	$(call Build/Configure/Default, --disable-werror --disable-nls)
 endef
 
 define Package/grub2-editenv/install

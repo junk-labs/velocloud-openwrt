@@ -166,6 +166,7 @@ endif
 
 CONFIGURE_VARS += LD="$(TARGET_CC)"
 
+TARGET_LDFLAGS += -lrt
 ifeq ($(BUILD_VARIANT),with-pam)
 TARGET_LDFLAGS += -lpthread
 endif

@@ -9,14 +9,14 @@ include $(INCLUDE_DIR)/image.mk
 
 export PATH=$(TARGET_PATH):/sbin
 
-GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos reboot serial vga
-GRUB2_MODULES_ISO = biosdisk boot chain configfile iso9660 linux ls part_msdos reboot serial vga
+GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos reboot vga
+GRUB2_MODULES_ISO = biosdisk boot chain configfile iso9660 linux ls part_msdos reboot vga
 GRUB_TERMINALS =
 GRUB_SERIAL_CONFIG =
 GRUB_TERMINAL_CONFIG =
 GRUB_CONSOLE_CMDLINE =
 
-USE_ATKBD = generic kvm_guest
+USE_ATKBD = kvm_guest
 
 ifneq ($(strip $(foreach subtarget,$(USE_ATKBD),$(CONFIG_TARGET_x86_$(subtarget)))),)
   GRUB2_MODULES += at_keyboard
@@ -30,9 +30,15 @@ endif
 
 GRUB_SERIAL:=$(call qstrip,$(CONFIG_X86_GRUB_SERIAL))
 
+GRUB_UNIT:=0
+ifneq ($(CONFIG_X86_GRUB_SERIAL_UNIT),)
+  GRUB_UNIT:=$(call qstrip,$(CONFIG_X86_GRUB_SERIAL_UNIT))
+endif
+
 ifneq ($(GRUB_SERIAL),)
+  GRUB2_MODULES += extcmd terminfo serial
   GRUB_CONSOLE_CMDLINE += console=$(GRUB_SERIAL),$(CONFIG_X86_GRUB_BAUDRATE)n8
-  GRUB_SERIAL_CONFIG := serial --unit=0 --speed=$(CONFIG_X86_GRUB_BAUDRATE) --word=8 --parity=no --stop=1
+  GRUB_SERIAL_CONFIG := serial --unit=$(GRUB_UNIT) --speed=$(CONFIG_X86_GRUB_BAUDRATE) --word=8 --parity=no --stop=1
   GRUB_TERMINALS += serial
 endif
 
@@ -64,6 +70,10 @@ ifneq ($(CONFIG_X86_GRUB_IMAGES),)
     block2mtd.block2mtd=$(ROOTPART),65536,rootfs root=/dev/mtdblock0 rootfstype=squashfs rootwait
   endef
 
+  define Image/cmdline/velocloud
+    rootfstype=ext4 rootwait
+  endef
+
   define Image/Build/grub2
 	# left here because the image builder doesnt need these
 	$(INSTALL_DIR) $(KDIR)/root.grub/boot/grub $(KDIR)/grub2
@@ -86,7 +96,7 @@ ifneq ($(CONFIG_X86_GRUB_IMAGES),)
 		$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img \
 		$(CONFIG_TARGET_KERNEL_PARTSIZE) $(KDIR)/root.grub \
 		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $(KDIR)/root.$(1) \
-		256
+		1024
 	grub-bios-setup \
 		--device-map="$(KDIR)/grub2/device.map" \
 		-d "$(KDIR)/grub2" \
@@ -208,6 +218,7 @@ endif
 
 define Image/BuildKernel
 	$(CP) $(KDIR)/bzImage $(BIN_DIR)/$(IMG_PREFIX)-vmlinuz
+	$(CP) $(KDIR)/bzImage $(TARGET_DIR)/vmlinuz
   ifneq ($(CONFIG_X86_ETHERBOOT_IMAGES),)
 	rm -f $(BIN_DIR)/$(IMG_PREFIX)-etherboot
 	$(STAGING_DIR_HOST)/bin/mkelfImage \
@@ -234,6 +245,34 @@ define Image/Build/Profile/sitecom
 	cat $(KDIR)/root.$(1) >> $(KDIR)/tmp.img
 	cp $(KDIR)/tmp.img $(BIN_DIR)/$(IMG_PREFIX)-$(1)-sitecom.img
 	rm $(KDIR)/tmp.img $(KDIR)/bzImage.tmp
+endef
+
+define Image/Build/Profile/Velocloud
+	echo "Building Velocloud Installer Image."
+	$(INSTALL_DIR) $(KDIR)/inst.grub/boot/grub
+	sed \
+		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
+		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
+		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/velocloud) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
+		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
+		./grub-velocloud.cfg > $(KDIR)/inst.grub/boot/grub/grub-velocloud.cfg
+	cp ./grub.cfg $(KDIR)/inst.grub/boot/grub/grub-simple-tmpl.cfg
+	chmod u+x ./gen_image_velocloud.sh
+	GRUB2_MODULES="$(GRUB2_MODULES)" PATH="$(TARGET_PATH)" ./gen_image_velocloud.sh \
+		$(BIN_DIR)/$(IMG_PREFIX)-installer-$(1).img \
+		1024 \
+		$(CONFIG_TARGET_KERNEL_PARTSIZE) $(KDIR)/root.grub \
+		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $(KDIR)/root.$(1) \
+		$(CONFIG_TARGET_ROOTFS_INSTSIZE) \
+		$(TARGET_DIR) \
+		$(KDIR)/root.grub \
+		$(KDIR)/inst.grub
+	grub-bios-setup \
+		--device-map="$(KDIR)/grub2/device.map" \
+		-d "$(KDIR)/grub2" \
+		-r "hd0,msdos1" \
+		"$(BIN_DIR)/$(IMG_PREFIX)-installer-$(1).img"
+	$(call Image/Build/grub/$(1))
 endef
 
 define Image/Build/Profile/bifferboard

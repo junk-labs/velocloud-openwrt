@@ -15,8 +15,10 @@ ALIGN="$6"
 
 rm -f "$OUTPUT"
 
-head=16
-sect=63
+# fix to align to 1MB boundaries;
+
+head=32
+sect=64
 cyl=$(( ($KERNELSIZE + $ROOTFSSIZE) * 1024 * 1024 / ($head * $sect * 512)))
 
 # create partition table

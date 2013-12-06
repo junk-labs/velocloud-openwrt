@@ -10,10 +10,9 @@ ARCH:=i386
 BOARD:=x86
 BOARDNAME:=x86
 FEATURES:=squashfs ext4 vdi vmdk pcmcia targz
-SUBTARGETS=generic olpc xen_domu ep80579 net5501 kvm_guest geos alix2 thincan \
-	   rdc
+SUBTARGETS=generic pw-dev32
 
-LINUX_VERSION:=3.3.8
+LINUX_VERSION:=3.12.1
 
 KERNELNAME:=bzImage
 

@@ -1,0 +1,35 @@
+--- a/initd/preinit.c	2013-11-20
++++ b/initd/preinit.c
+@@ -35,6 +35,7 @@
+ {
+ 	char *wdt_fd = watchdog_fd();
+ 	char *argv[] = { "/sbin/procd", "-d", "0", NULL };
++	char dbgl[4];
+ 	struct stat s;
+ 
+ 	if (plugd_proc.pid > 0)
+@@ -49,9 +50,10 @@
+ 	DEBUG(2, "Exec to real procd now\n");
+ 	if (wdt_fd)
+ 		setenv("WDTFD", wdt_fd, 1);
+-	if (debug)
+-		snprintf(argv[2], 2, "%d", debug & 0xf);
+-	else
++	if (debug) {
++		snprintf(dbgl, 2, "%d", debug & 0xf);
++		argv[2] = dbgl;
++	} else
+ 		argv[1] = NULL;
+ 	execvp(argv[0], argv);
+ }
+--- a/service/service.c	2013-11-20
++++ b/service/service.c
+@@ -439,7 +439,7 @@
+ 	instances = blobmsg_open_table(&b, "instances");
+ 	instance = blobmsg_open_table(&b, "instance1");
+ 	command = blobmsg_open_array(&b, "command");
+-	t = strtok(cmdline, " ");
++	t = strtok(strdup(cmdline), " ");
+ 	while (t) {
+ 		blobmsg_add_string(&b, NULL, t);
+ 		t = strtok(NULL, " ");

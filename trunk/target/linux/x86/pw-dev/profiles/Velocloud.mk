@@ -1,12 +1,11 @@
-# profile for XXX
+# profile for generic velocloud build;
 
 define Profile/Velocloud
 	NAME:=Velocloud
-	#PACKAGES:=${VC_PACKAGES} ${WIRELESS}
 endef
 
 define Profile/Velocloud/Description
-	Build Image for Portwell Dev Board
+	Build Image for Generic Velocloud Distro
 endef
 
 $(eval $(call Profile,Velocloud))

@@ -31,13 +31,15 @@ config X86_GRUB_SERIAL
 	depends on X86_GRUB_IMAGES
 	default "hvc0" if TARGET_x86_xen_domu
 	default "ttyS0" if ! TARGET_x86_xen_domu
+	default "ttyPCH0" if TARGET_x86_sb_itc
+	default "ttyS1" if TARGET_x86_pw_dev
 	help
 	  Name of serial port device.
 
 config X86_GRUB_SERIAL_UNIT
 	string "Serial port grub unit"
 	depends on X86_GRUB_IMAGES
-	default "1" if TARGET_x86_pw_dev32 || TARGET_x86_pw_dev64
+	default "1" if TARGET_x86_pw_dev
 	help
 	  Unit name of serial port device for grub itself.
 	  This could be different from X86_GRUB_SERIAL, depending on grub serial device order.
@@ -112,5 +114,5 @@ config TARGET_ROOTFS_PARTNAME
 
 config TARGET_ROOTFS_INSTSIZE
 	int "Installed root partition size (in MB)"
-	depends on X86_GRUB_IMAGES && TARGET_x86_pw_dev_Velocloud
+	depends on X86_GRUB_IMAGES && (TARGET_x86_sb_itc_Velocloud || TARGET_x86_pw_dev_Velocloud)
 	default 1024

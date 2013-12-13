@@ -30,9 +30,9 @@ config X86_GRUB_SERIAL
 	string "Serial port device"
 	depends on X86_GRUB_IMAGES
 	default "hvc0" if TARGET_x86_xen_domu
-	default "ttyS0" if ! TARGET_x86_xen_domu
 	default "ttyPCH0" if TARGET_x86_sb_itc
 	default "ttyS1" if TARGET_x86_pw_dev
+	default "ttyS0" if ! TARGET_x86_xen_domu
 	help
 	  Name of serial port device.
 
@@ -40,6 +40,7 @@ config X86_GRUB_SERIAL_UNIT
 	string "Serial port grub unit"
 	depends on X86_GRUB_IMAGES
 	default "1" if TARGET_x86_pw_dev
+	default "0"
 	help
 	  Unit name of serial port device for grub itself.
 	  This could be different from X86_GRUB_SERIAL, depending on grub serial device order.
@@ -56,6 +57,8 @@ config X86_GRUB_BOOTOPTS
 	string "Extra kernel boot options"
 	depends on X86_GRUB_IMAGES
 	default "xencons=hvc" if TARGET_x86_xen_domu
+	default "earlyprintk=pch,0x3058,115200" if TARGET_x86_sb_itc
+	default "earlyprintk=serial,ttyS1,115200" if TARGET_x86_pw_dev
 	help
 	  If you don't know, just leave it blank.
 

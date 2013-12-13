@@ -10,9 +10,9 @@ ARCH:=i386
 BOARD:=x86
 BOARDNAME:=x86
 FEATURES:=squashfs ext4 vdi vmdk pcmcia targz
-SUBTARGETS=generic pw-dev32
+SUBTARGETS=generic sb-itc pw-dev
 
-LINUX_VERSION:=3.12.1
+LINUX_VERSION:=3.12.3
 
 KERNELNAME:=bzImage
 

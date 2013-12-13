@@ -417,7 +417,7 @@ define KernelPackage/e1000
     CONFIG_E1000_DISABLE_PACKET_SPLIT=n \
     CONFIG_E1000_NAPI=y
   FILES:=$(LINUX_DIR)/drivers/net/ethernet/intel/e1000/e1000.ko
-  AUTOLOAD:=$(call AutoLoad,35,e1000)
+  AUTOLOAD:=$(call AutoProbe,e1000)
 endef
 
 define KernelPackage/e1000/description
@@ -449,7 +449,7 @@ define KernelPackage/intel-igb
   DEPENDS:=@PCIE_SUPPORT
   KCONFIG:=CONFIG_IGB
   FILES:=$(LINUX_DIR)/drivers/net/ethernet/intel/igb/igb.ko
-  AUTOLOAD:=$(call AutoLoad,51,igb)
+  AUTOLOAD:=$(call AutoProbe,igb)
 endef
 
 define KernelPackage/intel-igb/description
@@ -459,28 +459,56 @@ endef
 $(eval $(call KernelPackage,intel-igb))
 
 
-define KernelPackage/dsa-mv-6123-6161-6165
+define KernelPackage/dsa-core
   SUBMENU:=$(NETWORK_DEVICES_MENU)
-  TITLE:=Switch support for Marvell 6123/6161/6165
+  TITLE:=DSA Switch support
   DEPENDS:=@PCIE_SUPPORT
   KCONFIG:= \
 	CONFIG_NET_DSA \
-	CONFIG_NET_DSA_TAG_EDSA \
+	CONFIG_NET_DSA_TAG_EDSA=y
+  FILES:= $(LINUX_DIR)/net/dsa/dsa_core.ko
+  AUTOLOAD:=$(call AutoProbe,dsa_core)
+endef
+
+define KernelPackage/dsa-core/description
+ DSA Switch support
+endef
+
+$(eval $(call KernelPackage,dsa-core))
+
+
+define KernelPackage/dsa-mv88e6xxx
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=DSA support for Marvell 6123/6161/6165
+  DEPENDS:=@PCIE_SUPPORT +kmod-dsa-core
+  KCONFIG:= \
 	CONFIG_NET_DSA_MV88E6XXX \
-	CONFIG_NET_DSA_MV88E6123_61_65 \
-	CONFIG_VELOCLOUD_DSA
-  FILES:= \
-	$(LINUX_DIR)/net/dsa/dsa_core.ko \
-	$(LINUX_DIR)/drivers/net/dsa/mv88e6xxx_drv.ko \
-	$(LINUX_DIR)/drivers/platform/x86/velocloud-dsa.ko
-  AUTOLOAD:=$(call AutoLoad,52,dsa_core mv88e6xxx_drv velocloud-dsa)
+	CONFIG_NET_DSA_MV88E6123_61_65
+  FILES:= $(LINUX_DIR)/drivers/net/dsa/mv88e6xxx_drv.ko
+  AUTOLOAD:=$(call AutoProbe,mv88e6xxx_drv)
 endef
 
-define KernelPackage/dsa-mv-6123-6161-6165/description
- Switch support for Marvell 6123/6161/6165.
+define KernelPackage/dsa-mv88e6xxx/description
+ DSA support for Marvell 6123/6161/6165.
 endef
 
-$(eval $(call KernelPackage,dsa-mv-6123-6161-6165))
+$(eval $(call KernelPackage,dsa-mv88e6xxx))
+
+
+define KernelPackage/dsa-velocloud
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=Velocloud driver for DSA switches
+  DEPENDS:=@PCIE_SUPPORT +kmod-dsa-mv88e6xxx
+  KCONFIG:= CONFIG_VELOCLOUD_DSA
+  FILES:= $(LINUX_DIR)/drivers/platform/x86/velocloud-dsa.ko
+  AUTOLOAD:=$(call AutoProbe,velocloud-dsa)
+endef
+
+define KernelPackage/dsa-velocloud/description
+ Velocloud driver for DSA switches.
+endef
+
+$(eval $(call KernelPackage,dsa-velocloud))
 
 
 define KernelPackage/b44

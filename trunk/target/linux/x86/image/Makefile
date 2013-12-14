@@ -14,7 +14,7 @@ GRUB2_MODULES_ISO = biosdisk boot chain configfile iso9660 linux ls part_msdos r
 GRUB_TERMINALS =
 GRUB_SERIAL_CONFIG =
 GRUB_TERMINAL_CONFIG =
-GRUB_CONSOLE_CMDLINE =
+GRUB_CONSOLE_CMDLINE = maxcpus=2
 
 USE_ATKBD = kvm_guest
 
@@ -36,10 +36,16 @@ ifneq ($(CONFIG_X86_GRUB_SERIAL_UNIT),)
 endif
 
 ifneq ($(GRUB_SERIAL),)
-  GRUB2_MODULES += extcmd terminfo serial
+  GRUB2_MODULES += pci extcmd terminfo serial
   GRUB_CONSOLE_CMDLINE += console=$(GRUB_SERIAL),$(CONFIG_X86_GRUB_BAUDRATE)n8
+  GRUB_SERIAL_PCH:=$(subst PCH,pch,$(subst tty,,$(GRUB_SERIAL)))
+ifeq ($(shell echo $(GRUB_SERIAL_PCH) | grep pch),)
   GRUB_SERIAL_CONFIG := serial --unit=$(GRUB_UNIT) --speed=$(CONFIG_X86_GRUB_BAUDRATE) --word=8 --parity=no --stop=1
   GRUB_TERMINALS += serial
+else
+  GRUB_SERIAL_CONFIG := serial $(GRUB_SERIAL_PCH) --speed=$(CONFIG_X86_GRUB_BAUDRATE)
+  GRUB_TERMINALS += serial_$(GRUB_SERIAL_PCH)
+endif
 endif
 
 ifneq ($(GRUB_TERMINALS),)
@@ -256,6 +262,7 @@ define Image/Build/Profile/Velocloud
 		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/velocloud) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
 		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
 		./grub-velocloud.cfg > $(KDIR)/inst.grub/boot/grub/grub-velocloud.cfg
+	echo '#### fix grub.cfg per-subtarget $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)'
 	cp ./grub.cfg $(KDIR)/inst.grub/boot/grub/grub-simple-tmpl.cfg
 	chmod u+x ./gen_image_velocloud.sh
 	GRUB2_MODULES="$(GRUB2_MODULES)" PATH="$(TARGET_PATH)" ./gen_image_velocloud.sh \

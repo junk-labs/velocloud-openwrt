@@ -1,0 +1,119 @@
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.c
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+@@ -255,6 +255,11 @@
+ 	nvm->delay_usec = 1;
+ 
+ 	switch (nvm->override) {
++	case e1000_nvm_override_spi_vc:
++		nvm->page_size = 32;
++		nvm->address_bits = 16;
++		nvm->word_size = 256*1024/16;
++		break;
+ 	case e1000_nvm_override_spi_large:
+ 		nvm->page_size = 32;
+ 		nvm->address_bits = 16;
+@@ -440,6 +445,7 @@
+ static s32 igb_get_invariants_82575(struct e1000_hw *hw)
+ {
+ 	struct e1000_mac_info *mac = &hw->mac;
++	struct e1000_nvm_info *nvm = &hw->nvm;
+ 	struct e1000_dev_spec_82575 * dev_spec = &hw->dev_spec._82575;
+ 	s32 ret_val;
+ 	u32 ctrl_ext = 0;
+@@ -461,6 +467,10 @@
+ 	case E1000_DEV_ID_82576_SERDES_QUAD:
+ 		mac->type = e1000_82576;
+ 		break;
++	case E1000_DEV_ID_82580_VC:
++		nvm->override = e1000_nvm_override_spi_vc;
++		mac->type = e1000_82580;
++		break;
+ 	case E1000_DEV_ID_82580_COPPER:
+ 	case E1000_DEV_ID_82580_FIBER:
+ 	case E1000_DEV_ID_82580_QUAD_FIBER:
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -742,9 +742,12 @@
+ #define NVM_A8_OPCODE_SPI          0x08 /* opcode bit-3 = address bit-8 */
+ #define NVM_WREN_OPCODE_SPI        0x06 /* NVM set Write Enable latch */
+ #define NVM_RDSR_OPCODE_SPI        0x05 /* NVM read Status register */
++#define NVM_WRSR_OPCODE_SPI        0x01 /* NVM write Status register */
+ 
+ /* SPI NVM Status Register */
+ #define NVM_STATUS_RDY_SPI         0x01
++#define NVM_STATUS_WEN_SPI         0x02
++#define NVM_STATUS_WPEN_SPI        0x80
+ 
+ /* Word definitions for ID LED Settings */
+ #define ID_LED_RESERVED_0000 0x0000
+--- a/drivers/net/ethernet/intel/igb/e1000_hw.h
++++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
+@@ -49,6 +49,7 @@
+ #define E1000_DEV_ID_82575EB_COPPER		0x10A7
+ #define E1000_DEV_ID_82575EB_FIBER_SERDES	0x10A9
+ #define E1000_DEV_ID_82575GB_QUAD_COPPER	0x10D6
++#define E1000_DEV_ID_82580_VC			0x1509
+ #define E1000_DEV_ID_82580_COPPER		0x150E
+ #define E1000_DEV_ID_82580_FIBER		0x150F
+ #define E1000_DEV_ID_82580_SERDES		0x1510
+@@ -120,6 +121,7 @@
+ 	e1000_nvm_override_none = 0,
+ 	e1000_nvm_override_spi_small,
+ 	e1000_nvm_override_spi_large,
++	e1000_nvm_override_spi_vc,
+ };
+ 
+ enum e1000_phy_type {
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -91,6 +91,7 @@
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_FIBER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_SERDES), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I350_SGMII), board_82575 },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_VC), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_FIBER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_QUAD_FIBER), board_82575 },
+@@ -2198,8 +2199,12 @@
+ 	default:
+ 		if (hw->nvm.ops.validate(hw) < 0) {
+ 			dev_err(&pdev->dev, "The NVM Checksum Is Not Valid\n");
++#ifndef CONFIG_IGB_IGN_NVM_CSUM
+ 			err = -EIO;
+ 			goto err_eeprom;
++#else
++			dev_err(&pdev->dev, "Invalid NVM Checksum Ignored\n");
++#endif // !CONFIG_IGB_IGN_NVM_CSUM
+ 		}
+ 		break;
+ 	}
+@@ -2212,8 +2217,12 @@
+ 
+ 	if (!is_valid_ether_addr(netdev->dev_addr)) {
+ 		dev_err(&pdev->dev, "Invalid MAC Address\n");
++#ifndef CONFIG_IGB_IGN_NVM_CSUM
+ 		err = -EIO;
+ 		goto err_eeprom;
++#else
++		dev_err(&pdev->dev, "Invalid MAC Address Ignored\n");
++#endif // !CONFIG_IGB_IGN_NVM_CSUM
+ 	}
+ 
+ 	/* get firmware version for ethtool -i */
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -150,6 +150,14 @@
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called igbvf.
+ 
++config IGB_IGN_NVM_CSUM
++	bool "Ignore Invalid NVM Checksum"
++	default n
++	depends on NET_VENDOR_INTEL
++	---help---
++	  Ignore a bad or unprogrammed NVM so we can the interface up
++	  for ethtool to fix it.
++
+ config IXGB
+ 	tristate "Intel(R) PRO/10GbE support"
+ 	depends on PCI

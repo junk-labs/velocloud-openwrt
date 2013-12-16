@@ -1,0 +1,945 @@
+--- a/drivers/platform/x86/Makefile
++++ b/drivers/platform/x86/Makefile
+@@ -55,3 +55,4 @@
+ obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
+ 
+ obj-$(CONFIG_PVPANIC)           += pvpanic.o
++obj-$(CONFIG_VELOCLOUD_VE1000)	+= velocloud-ve1000.o
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -819,4 +819,12 @@
+ 	  a paravirtualized device provided by QEMU; it lets a virtual machine
+ 	  (guest) communicate panic events to the host.
+ 
++config VELOCLOUD_VE1000
++	tristate "Support for the Velocloud Ve1000"
++	depends on I2C && GPIO_PCH
++	help
++	  This option enables support for the Velocloud Ve1000 GPIO,
++	  RGB LEDs and PWM fan on I2C.
++	  Say Y to enable support for the Velocloud VE1000.
++
+ endif # X86_PLATFORM_DEVICES
+--- a/drivers/platform/x86/velocloud-ve1000.c
++++ b/drivers/platform/x86/velocloud-ve1000.c
+@@ -0,0 +1,920 @@
++/* velocloud-ve1000.c
++ * (c) Sandra Berndt (sberndt@velocloud.net)
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/jiffies.h>
++#include <linux/i2c.h>
++#include <linux/err.h>
++#include <linux/mutex.h>
++#include <linux/sysfs.h>
++#include <linux/printk.h>
++#include <linux/pm_runtime.h>
++#include <linux/leds.h>
++#include <linux/delay.h>
++#include <linux/gpio.h>
++
++#define VC_NAME "vc"
++#define VC_LEDS "leds"
++#define VC_FAN "fan"
++
++// max7314 wiring, 2 chips;
++// both have their RST_L line wired to cm-itc gpio10, EG20T gpio8;
++// both have their BLINK_L line wire to cm-itc gpio11, EG20T gpio9;
++
++#define VC_GPIO_BASE 244
++#define VC_FAN_GPIO_IN (VC_GPIO_BASE + 0)
++#define VC_FAN_GPIO_OUT (VC_GPIO_BASE + 1)
++#define VC_GPIO_RESET_BTN (VC_GPIO_BASE + 2)
++#define VC_I2C_GPIO_RST (VC_GPIO_BASE + 8)
++#define VC_I2C_GPIO_BLINK (VC_GPIO_BASE + 9)
++
++// i2c addresses to scan;
++
++#define VC_I2C_DEV1 0x20
++#define VC_I2C_DEV2 0x24
++static const unsigned short vc_i2c_addrs[] = { VC_I2C_DEV1, VC_I2C_DEV2, I2C_CLIENT_END };
++
++// max7314 registers;
++
++#define	MAX7314_READ_INPUT_L 0x00
++#define	MAX7314_READ_INPUT_H 0x01
++#define	MAX7314_BLINK_PH0_L 0x02
++#define	MAX7314_BLINK_PH0_H 0x03
++#define	MAX7314_CONFIG_L 0x06
++#define	MAX7314_CONFIG_H 0x07
++#define	MAX7314_BLINK_PH1_L 0x0a
++#define	MAX7314_BLINK_PH1_H 0x0b
++#define	MAX7314_MASTER_O16 0x0e
++#define	MAX7314_CONFIG 0x0f
++#define	MAX7314_INTENS_1_0 0x10
++#define	MAX7314_INTENS_3_2 0x11
++#define	MAX7314_INTENS_5_4 0x12
++#define	MAX7314_INTENS_7_6 0x13
++#define	MAX7314_INTENS_9_8 0x14
++#define	MAX7314_INTENS_11_10 0x15
++#define	MAX7314_INTENS_13_12 0x16
++#define	MAX7314_INTENS_15_14 0x17
++
++// types;
++
++typedef struct vc_leds vc_leds_t;
++typedef struct vc_data vc_data_t;
++
++// port assignments;
++
++enum vc_led_idx {
++	VC_LED_WIFI = 0,
++	VC_LED_LOGO,
++	VC_LED_BAR_1,
++	VC_LED_BAR_2,
++	VC_LED_BAR_3,
++	VC_LED_BAR_4,
++	VC_LED_BAR_5,
++	VC_LED_USB_LEFT,
++	VC_LED_USB_RIGHT,
++	VC_LED_USB_BOTTOM,
++	VC_LED_USB_TOP,
++	N_VC_LEDS,
++};
++
++struct vc_leds {
++	struct {
++		unsigned char dev;		// device index the LED is on;
++		unsigned char reg;		// port the LED is on;
++		unsigned char upper;	// 0=lower 1=upper nibble;
++		unsigned char inv;		// invert the value;
++	} rgb[3];
++};
++
++enum vc_i2c_idx {
++	VC_I2C_0 = 0,
++	VC_I2C_1,
++};
++
++static vc_leds_t vc_leds[N_VC_LEDS] = {
++	[ VC_LED_WIFI ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_3_2, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_1_0, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_1_0, 0, 1 } } },
++	[ VC_LED_LOGO ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_5_4, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_5_4, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_3_2, 1, 1 } } },
++	[ VC_LED_USB_RIGHT ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_9_8, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_7_6, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_7_6, 0, 1 } } },
++	[ VC_LED_USB_TOP ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_11_10, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_11_10, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_9_8, 1, 1 } } },
++	[ VC_LED_USB_LEFT ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_15_14, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_13_12, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_13_12, 0, 1 } } },
++	[ VC_LED_USB_BOTTOM ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_1_0, 0, 1 },
++		{ VC_I2C_0, MAX7314_MASTER_O16, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_15_14, 1, 1 } } },
++	[ VC_LED_BAR_1 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_3_2, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_3_2, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_1_0, 1, 1 } } },
++	[ VC_LED_BAR_2 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_7_6, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_5_4, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_5_4, 0, 1 } } },
++	[ VC_LED_BAR_3 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_9_8, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_9_8, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_7_6, 1, 1 } } },
++	[ VC_LED_BAR_4 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_13_12, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_11_10, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_11_10, 0, 1 } } },
++	[ VC_LED_BAR_5 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_15_14, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_15_14, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_13_12, 1, 1 } } },
++};
++
++// driver state;
++
++struct vc_data {
++	struct {
++		struct i2c_client *client[2];
++		struct mutex lock;
++		u32 led_cur[N_VC_LEDS];
++	} i2c;
++	struct {
++		u32 pwm;
++		int rpm;
++	} fan;
++};
++
++static vc_data_t vc_data;
++static struct platform_device *vc_pdev;
++
++// write a byte to i2c chip;
++
++static inline int
++vc_write_byte(struct i2c_client *client, u8 reg, u8 val)
++{
++	int ret;
++
++	ret = i2c_smbus_write_byte_data(client, reg, val);
++	return(ret);
++}
++
++// write a word to i2c chip;
++
++static inline int
++vc_write_word(struct i2c_client *client, u8 reg, u16 val)
++{
++	int ret;
++
++	ret = i2c_smbus_write_word_data(client, reg, val);
++    return(ret);
++}
++
++// read a byte from i2c chip;
++// returns byte value, or errno;
++
++static inline int
++vc_read_byte(struct i2c_client *client, u8 reg)
++{
++	int ret;
++
++	ret = i2c_smbus_read_byte_data(client, reg);
++    return(ret);
++}
++
++// set all RGB LEDs to one value;
++
++static int
++vc_leds_all(struct i2c_client *client, u8 value)
++{
++	int err = 0;
++	u8 cmd;
++
++	for(cmd = MAX7314_INTENS_1_0; cmd <= MAX7314_INTENS_15_14; cmd++) {
++		err = vc_write_byte(client, cmd, value);
++		if(err < 0)
++			break;
++	}
++	return(err);
++}
++
++// turn all RGB LEDs off;
++// leave fan pwn on VC_I2C_1/MAX7314_MASTER_O16 untouched;
++
++static int
++vc_leds_off(vc_data_t *vcd)
++{
++	int err;
++
++	err = vc_leds_all(vcd->i2c.client[VC_I2C_0], 0xff);
++	if(err < 0)
++		return(0);
++	err = vc_leds_all(vcd->i2c.client[VC_I2C_1], 0xff);
++	if(err < 0)
++		return(0);
++	err = vc_write_byte(vcd->i2c.client[VC_I2C_0], MAX7314_MASTER_O16, 0xff);
++	return(err);
++}
++
++// program new color value into LEDs;
++
++static int
++vc_set_color(unsigned index, u32 value)
++{
++	int ret, n;
++	vc_data_t *vcd = &vc_data;
++	vc_leds_t *led;
++	struct i2c_client *client;
++	u8 brightness, mask, reg, new;
++
++	// lock per RGB change;
++
++	if(mutex_lock_interruptible(&vcd->i2c.lock) < 0)
++		return(-EAGAIN);
++
++	// must do read-modify-write since two LEDs share one register;
++
++	vcd->i2c.led_cur[index] = value;
++	led = vc_leds + index;
++	ret = 0;
++	for(n = 0; n < 3; n++) {
++		brightness = value >> (8 * n);
++		if(led->rgb[n].upper)
++			mask = 0xf0;
++		else {
++			brightness >>= 4;
++			mask = 0x0f;
++		}
++		client = vcd->i2c.client[led->rgb[n].dev];
++		reg = led->rgb[n].reg;
++		ret = vc_read_byte(client, reg);
++		if(ret < 0)
++			break;
++		if(led->rgb[n].inv)
++			brightness = ~brightness;
++		new = (ret & ~mask) | (brightness & mask);
++		ret = vc_write_byte(client, reg, new);
++		if(ret < 0)
++			break;
++	}
++	mutex_unlock(&vcd->i2c.lock);
++	return(ret);
++}
++
++// show led color;
++
++static ssize_t
++show_rgba(struct device *dev, char *buf, unsigned index)
++{
++	int ret;
++
++	if(index >= N_VC_LEDS)
++		return(-EINVAL);
++
++	ret = scnprintf(buf, PAGE_SIZE, "0x%08x\n", vc_data.i2c.led_cur[index]);
++	return(ret);
++}
++
++// store led color;
++
++static int
++store_rgba(struct device *dev, const char *buf, size_t len, unsigned index)
++{
++	int ret;
++	u32 value;
++
++	// get new value;
++	// is color hex value, 0xBBGGRR;
++
++	if(index >= N_VC_LEDS)
++		return(-EINVAL);
++
++	ret = kstrtou32(buf, 0, &value);
++	if(ret < 0) {
++		dev_err(dev, "vc: bad value: %s\n", buf);
++		return(ret);
++	}
++	// reprogram the brightness of all 3 colors;
++
++	ret = vc_set_color(index, value);
++	if(ret < 0)
++		return(ret);
++	return(len);
++}
++
++// all leds off;
++
++static int
++store_off(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int err;
++	vc_data_t *vcd = &vc_data;
++
++	// lock per RGB change;
++
++	if(mutex_lock_interruptible(&vcd->i2c.lock) < 0)
++		return(-EAGAIN);
++	err = vc_leds_off(vcd);
++	mutex_unlock(&vcd->i2c.lock);
++	if(err < 0)
++		return(err);
++	return(len);
++}
++
++// attribute wrappers;
++
++#define SHOW_RGBA(name,index) \
++static ssize_t show_rgba_##name(struct device *dev, \
++		struct device_attribute *attr, \
++		char *buf) \
++{ \
++	return(show_rgba(dev, buf, index)); \
++}
++
++SHOW_RGBA(wifi,VC_LED_WIFI)
++SHOW_RGBA(logo,VC_LED_LOGO)
++SHOW_RGBA(bar1,VC_LED_BAR_1)
++SHOW_RGBA(bar2,VC_LED_BAR_2)
++SHOW_RGBA(bar3,VC_LED_BAR_3)
++SHOW_RGBA(bar4,VC_LED_BAR_4)
++SHOW_RGBA(bar5,VC_LED_BAR_5)
++SHOW_RGBA(usb_left,VC_LED_USB_LEFT)
++SHOW_RGBA(usb_right,VC_LED_USB_RIGHT)
++SHOW_RGBA(usb_top,VC_LED_USB_TOP)
++SHOW_RGBA(usb_bottom,VC_LED_USB_BOTTOM)
++
++#define STORE_RGBA(name,index) \
++static ssize_t store_rgba_##name(struct device *dev, \
++		struct device_attribute *attr, \
++		const char *buf, size_t len) \
++{ \
++	return(store_rgba(dev, buf, len, index)); \
++}
++
++STORE_RGBA(wifi,VC_LED_WIFI)
++STORE_RGBA(logo,VC_LED_LOGO)
++STORE_RGBA(bar1,VC_LED_BAR_1)
++STORE_RGBA(bar2,VC_LED_BAR_2)
++STORE_RGBA(bar3,VC_LED_BAR_3)
++STORE_RGBA(bar4,VC_LED_BAR_4)
++STORE_RGBA(bar5,VC_LED_BAR_5)
++STORE_RGBA(usb_left,VC_LED_USB_LEFT)
++STORE_RGBA(usb_right,VC_LED_USB_RIGHT)
++STORE_RGBA(usb_top,VC_LED_USB_TOP)
++STORE_RGBA(usb_bottom,VC_LED_USB_BOTTOM)
++
++#define ATTR_RGBA(name) \
++static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_rgba_##name, store_rgba_##name);
++
++static DEVICE_ATTR(off, S_IRUGO | S_IWUSR, NULL, store_off);
++ATTR_RGBA(wifi);
++ATTR_RGBA(logo);
++ATTR_RGBA(bar1);
++ATTR_RGBA(bar2);
++ATTR_RGBA(bar3);
++ATTR_RGBA(bar4);
++ATTR_RGBA(bar5);
++ATTR_RGBA(usb_left);
++ATTR_RGBA(usb_right);
++ATTR_RGBA(usb_top);
++ATTR_RGBA(usb_bottom);
++
++// all leds attributes;
++
++static struct attribute *vc_leds_attrs[] = {
++	&dev_attr_off.attr,
++	&dev_attr_wifi.attr,
++	&dev_attr_logo.attr,
++	&dev_attr_bar1.attr,
++	&dev_attr_bar2.attr,
++	&dev_attr_bar3.attr,
++	&dev_attr_bar4.attr,
++	&dev_attr_bar5.attr,
++	&dev_attr_usb_left.attr,
++	&dev_attr_usb_right.attr,
++	&dev_attr_usb_top.attr,
++	&dev_attr_usb_bottom.attr,
++	NULL,
++};
++
++static struct attribute_group vc_leds_group = {
++	.name = VC_LEDS,
++	.attrs = vc_leds_attrs,
++};
++
++// set fan pwm value;
++
++static int
++vc_set_fan_pwm(u32 value)
++{
++	int ret;
++	vc_data_t *vcd = &vc_data;
++	struct i2c_client *client;
++	u8 rpm, mask, reg, new;
++
++	// lock due to rmw;
++
++	if(mutex_lock_interruptible(&vcd->i2c.lock) < 0)
++		return(-EAGAIN);
++
++	rpm = value & 0xff;
++	mask = 0xf0;
++	reg = MAX7314_MASTER_O16;
++
++	// must do read-modify-write since two LEDs share one register;
++
++	client = vcd->i2c.client[VC_I2C_1];
++	ret = vc_read_byte(client, reg);
++	if(ret < 0)
++		goto fail;
++	new = (ret & ~mask) | (rpm & mask);
++	ret = vc_write_byte(client, reg, new);
++fail:
++	mutex_unlock(&vcd->i2c.lock);
++	return(ret);
++}
++
++// show fan pwm value;
++
++static ssize_t
++show_fan_pwm(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int ret;
++	u32 value;
++
++	value = vc_data.fan.pwm;
++	ret = scnprintf(buf, PAGE_SIZE, "0x%08x\n", value);
++	return(ret);
++}
++
++// show fan gpio value;
++
++static ssize_t
++show_fan_gpio(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int ret;
++	u8 gpio;
++	bool on;
++
++	gpio = gpio_get_value(VC_FAN_GPIO_IN);
++	on = (gpio != 0);
++	ret = scnprintf(buf, PAGE_SIZE, "%d\n", on);
++	return(ret);
++}
++
++// show fan rpm value;
++// needs to be enable first;
++
++static ssize_t
++show_fan_rpm(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int ret;
++	int value;
++
++	value = vc_data.fan.rpm;
++	ret = scnprintf(buf, PAGE_SIZE, "%d\n", value);
++	return(ret);
++}
++
++// store fan gpio;
++
++static int
++store_fan_gpio(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++	u32 value;
++	bool on;
++
++	// get new value;
++
++	ret = kstrtou32(buf, 0, &value);
++	if(ret < 0) {
++		dev_err(dev, "vc: bad value: %s\n", buf);
++		return(ret);
++	}
++	on = (value != 0);
++	gpio_set_value(VC_FAN_GPIO_OUT, on);
++	return(len);
++}
++
++// store fan pwm;
++
++static int
++store_fan_pwm(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++	u32 value;
++
++	// get new value;
++
++	ret = kstrtou32(buf, 0, &value);
++	if(ret < 0) {
++		dev_err(dev, "vc: bad value: %s\n", buf);
++		return(ret);
++	}
++	// reprogram the pwm bits;
++
++	ret = vc_set_fan_pwm(value);
++	if(ret < 0)
++		return(ret);
++	return(len);
++}
++
++// store fan rpm;
++// write 0 to disable rpm counting interrupts, else enable;
++
++static int
++store_fan_rpm(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++	u32 value;
++
++	// get new value;
++
++	ret = kstrtou32(buf, 0, &value);
++	if(ret < 0) {
++		dev_err(dev, "vc: bad value: %s\n", buf);
++		return(ret);
++	}
++	//XXX enable/disable rpm gpio interrupts;
++
++	return(len);
++}
++
++#define ATTR_FAN(name) \
++static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_fan_##name, store_fan_##name);
++
++ATTR_FAN(gpio);
++ATTR_FAN(pwm);
++ATTR_FAN(rpm);
++
++// all fan attributes;
++
++static struct attribute *vc_fan_attrs[] = {
++	&dev_attr_gpio.attr,
++	&dev_attr_pwm.attr,
++	&dev_attr_rpm.attr,
++	NULL,
++};
++
++static struct attribute_group vc_fan_group = {
++	.name = VC_FAN,
++	.attrs = vc_fan_attrs,
++};
++
++// create low-pulse on VC_I2C_GPIO_RST to reset controllers;
++// keept BLINK input low;
++
++static void
++vc_i2c_gpio_reset(void)
++{
++	gpio_set_value(VC_I2C_GPIO_RST, 0);
++	usleep_range(1000, 2000);
++	gpio_set_value(VC_I2C_GPIO_RST, 1);
++}
++
++// request i2c GPIOs;
++// set them to the reset state;
++
++static int
++vc_request_i2c_gpio(void)
++{
++	int err;
++	static bool vc_gpio_requested = 0;
++
++	if(vc_gpio_requested)
++		return(0);
++	vc_gpio_requested = 1;
++	err = gpio_request_one(VC_I2C_GPIO_RST, GPIOF_OUT_INIT_LOW, "vc-i2c-reset");
++	if(err)
++		return(err);
++	err = gpio_request_one(VC_I2C_GPIO_BLINK, GPIOF_OUT_INIT_LOW, "vc-i2c-blink");
++	if(err)
++		return(err);
++	vc_i2c_gpio_reset();
++	return(0);
++}
++
++// request reset GPIO and read status;
++// button can be pushed to cause reset;
++// the reset logic deasserts reset on it's own;
++// the button can be read back to determine if it is still pushed,
++// for things like restoring to factory defaults;
++// GPIO pin can be made output and write 0, to cause reset;
++
++static int
++vc_request_reset_gpio(void)
++{
++	int err;
++
++	err = gpio_request_one(VC_GPIO_RESET_BTN, GPIOF_IN, "vc-reset-button");
++	if(err)
++		return(err);
++	return(gpio_get_value(VC_GPIO_RESET_BTN));
++}
++
++// request fan gpio;
++
++static int
++vc_request_fan_gpio(void)
++{
++	int err;
++
++	err = gpio_request_one(VC_FAN_GPIO_IN, GPIOF_IN, "vc-fan-tach");
++	if(err)
++		return(err);
++	err = gpio_request_one(VC_FAN_GPIO_OUT, GPIOF_OUT_INIT_HIGH, "vc-fan-gpio");
++	return(err);
++}
++
++// init i2c LED drivers;
++
++#define MAX7314_CFG 0x12
++
++static int
++vc_init_ports(struct i2c_client *client)
++{
++	int err;
++
++	// enable global intensity control for all-fade;
++	// OUT16 is output port;
++
++	err = vc_write_byte(client, MAX7314_CONFIG, MAX7314_CFG);
++	if(err < 0)
++		return(err);
++	err = vc_read_byte(client, MAX7314_CONFIG);
++	if(err < 0)
++		return(err);
++	if((err & 0x3f) != MAX7314_CFG)
++		return(-ENODEV);
++
++	// configure all ports as outputs;
++
++	err = vc_write_word(client, MAX7314_CONFIG_L, 0x0000);
++	if(err < 0)
++		return(err);
++
++	// turn all LEDs full on;
++	// use BLINK=1 to be able to all LEDs fully off, but only 15/16 on;
++	// on second i2c device, turn fan fully on;
++
++	err = vc_write_word(client, MAX7314_BLINK_PH0_L, 0xffff);
++	if(err < 0)
++		return(err);
++	err = vc_write_byte(client, MAX7314_MASTER_O16, 0xf0);
++	if(err < 0)
++		return(err);
++
++	err = vc_leds_all(client, 0x00);
++	return(err);
++}
++
++// detect i2c devices;
++// called for each i2c device before probing, by the i2c core;
++// device addresses are in struct i2c_driver.address_list;
++// caveat: this is not being called if GPIOs come up driving VC_I2C_GPIO_RST low,
++// thus no device responding on i2c bus, and so failing the default probe;
++
++static int
++vc_i2c_detect(struct i2c_client *client, struct i2c_board_info *info)
++{
++	struct i2c_adapter *adapter = client->adapter;
++	int err, n;
++
++	// request GPIOs that control i2c controllers;
++
++	err = vc_request_i2c_gpio();
++	if(err)
++		goto fail;
++
++	if( !i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA
++		| I2C_FUNC_SMBUS_WORD_DATA | I2C_FUNC_SMBUS_WRITE_BYTE)) {
++		return(-ENODEV);
++	}
++
++	// configure for LED operation;
++	// use this as the detect mechanism;
++
++	err = vc_init_ports(client);
++    if(err < 0)
++		goto fail;
++	for(n = 0; n < N_VC_LEDS; n++)
++		vc_data.i2c.led_cur[n] = 0x00f0f0f0;
++	vc_data.fan.pwm = 0xf0;
++
++	// success;
++
++	strlcpy(info->type, VC_LEDS, I2C_NAME_SIZE);
++	return(0);
++fail:
++	return(err);
++}
++
++// probe vc leds;
++// called for each i2c device after detecting, by the i2c core;
++// much of the probing has been done in detect;
++// bond the two i2c devices together;
++
++static int
++vc_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
++{
++	vc_data_t *vcd = &vc_data;
++	int i, err;
++
++	// ignore more than two devices;
++
++	if(client->addr == VC_I2C_DEV1)
++		i = VC_I2C_0;
++	else if(client->addr == VC_I2C_DEV2)
++		i = VC_I2C_1;
++	else
++		return(-ENODEV);
++	if(vcd->i2c.client[i])
++		return(-EEXIST);
++	vcd->i2c.client[i] = client;
++	dev_info(&client->dev, "i2c index %d\n", i);
++
++	// wait for both devices to have been probed;
++
++	if( !vcd->i2c.client[0] || !vcd->i2c.client[1])
++		return(0);
++
++	mutex_init(&vcd->i2c.lock);
++
++	// register sysfs hooks;
++	// this is a RGB driver, not really a led class;
++
++	if( !vc_pdev) {
++		dev_err(&client->dev, "no vc platform device\n");
++		err = -ENODEV;
++		goto fail;
++	}
++	err = sysfs_create_group(&vc_pdev->dev.kobj, &vc_leds_group);
++	if(err < 0) {
++		dev_err(&vc_pdev->dev, "couldn't register sysfs leds\n");
++		goto fail;
++	}
++	err = sysfs_create_group(&vc_pdev->dev.kobj, &vc_fan_group);
++	if(err < 0) {
++		dev_err(&vc_pdev->dev, "couldn't register sysfs fan\n");
++		goto fail;
++	}
++
++
++	return(0);
++
++	// failed;
++fail:
++	return(err);
++}
++
++// remove driver;
++
++static int
++vc_i2c_remove(struct i2c_client *client)
++{
++	vc_leds_off(&vc_data);
++	sysfs_remove_group(&vc_pdev->dev.kobj, &vc_fan_group);
++	sysfs_remove_group(&vc_pdev->dev.kobj, &vc_leds_group);
++	gpio_free(VC_I2C_GPIO_RST);
++	gpio_free(VC_I2C_GPIO_BLINK);
++	return(0);
++}
++
++// i2 device id;
++
++static const struct i2c_device_id vc_i2c_id[] = {
++	{ VC_LEDS, 0 },
++	{},
++};
++
++MODULE_DEVICE_TABLE(i2c, vc_id);
++
++// i2c driver struct;
++// can't have module_i2c_driver(vc_i2c_driver);
++
++static struct i2c_driver vc_i2c_driver = {
++	.class = I2C_CLASS_HWMON,
++	.driver = {
++		.name = VC_LEDS,
++	},
++	.probe = vc_i2c_probe,
++	.remove = vc_i2c_remove,
++	.id_table = vc_i2c_id,
++	.detect = vc_i2c_detect,
++	.address_list = vc_i2c_addrs,
++};
++
++// platform driver;
++
++static DEVICE_ATTR(reset, S_IRUGO | S_IWUSR, NULL, NULL);
++
++// platform driver init;
++
++static int __init
++vc_init(void)
++{
++	int err;
++	int reset = 0;
++
++	// read the reset pin first;
++	// reset gpio is active low;
++
++	err = vc_request_reset_gpio();
++	if(err < 0)
++		pr_err("ve1000: couldn't request reset gpio\n");
++	if(err >= 0)
++		reset = (err == 0);
++
++	// request the fan gpio;
++
++	err = vc_request_fan_gpio();
++	if(err < 0) {
++		pr_err("ve1000: couldn't request fan gpio\n");
++		goto fail_pdev;
++	}
++	vc_data.fan.rpm = -1;
++
++	// create platform device;
++
++	vc_pdev = platform_device_register_simple(VC_NAME, -1, NULL, 0);
++	if(IS_ERR(vc_pdev)) {
++		err = PTR_ERR(vc_pdev);
++		pr_err("ve1000: couldn't register platform device\n");
++		goto fail_pdev;
++	}
++
++	// add i2c leds driver;
++
++	err = i2c_add_driver(&vc_i2c_driver);
++	if(err < 0) {
++		dev_err(&vc_pdev->dev, "couldn't add i2c driver\n");
++		goto fail_i2c;
++	}
++
++	// create reset button file only when it was pushed long;
++
++	if(reset) {
++		err = sysfs_create_file(&vc_pdev->dev.kobj, &dev_attr_reset.attr);
++		if(err < 0)
++			dev_err(&vc_pdev->dev, "couldn't register sysfs reset\n");
++	}
++
++	return(0);
++
++fail_i2c:
++	platform_device_unregister(vc_pdev);
++fail_pdev:
++	vc_pdev = NULL;
++	return(err);
++}
++
++// platform driver exit;
++
++static void __exit
++vc_exit(void)
++{
++	sysfs_remove_file(&vc_pdev->dev.kobj, &dev_attr_reset.attr);
++	i2c_del_driver(&vc_i2c_driver);
++	platform_device_unregister(vc_pdev);
++
++	// turn fan fully on, as a safety measure;
++ 
++	gpio_set_value(VC_FAN_GPIO_OUT, 1);
++	gpio_free(VC_FAN_GPIO_OUT);
++	gpio_free(VC_FAN_GPIO_IN);
++	gpio_free(VC_GPIO_RESET_BTN);
++}
++
++module_init(vc_init);
++module_exit(vc_exit);
++
++MODULE_AUTHOR("Sandra Berndt <sberndt@velocloud.net>");
++MODULE_DESCRIPTION("Velocloud Ve1000 Platform Driver");
++MODULE_LICENSE("GPL");
++

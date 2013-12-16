@@ -77,7 +77,7 @@ ifneq ($(CONFIG_X86_GRUB_IMAGES),)
   endef
 
   define Image/cmdline/velocloud
-    rootfstype=ext4 rootwait
+    root=$(ROOTPART) rootfstype=ext4 rootwait
   endef
 
   define Image/Build/grub2
@@ -261,9 +261,15 @@ define Image/Build/Profile/Velocloud
 		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
 		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/velocloud) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
 		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
-		./grub-velocloud.cfg > $(KDIR)/inst.grub/boot/grub/grub-velocloud.cfg
-	echo '#### fix grub.cfg per-subtarget $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)'
-	cp ./grub.cfg $(KDIR)/inst.grub/boot/grub/grub-simple-tmpl.cfg
+		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/grub-velocloud.cfg \
+		> $(KDIR)/inst.grub/boot/grub/grub-velocloud.cfg
+	sed \
+		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
+		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
+		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/velocloud) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
+		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
+		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/grub-installer.cfg \
+		> $(KDIR)/root.grub/boot/grub/grub.cfg
 	chmod u+x ./gen_image_velocloud.sh
 	GRUB2_MODULES="$(GRUB2_MODULES)" PATH="$(TARGET_PATH)" ./gen_image_velocloud.sh \
 		$(BIN_DIR)/$(IMG_PREFIX)-installer-$(1).img \

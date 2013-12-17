@@ -77,7 +77,7 @@ ifneq ($(CONFIG_X86_GRUB_IMAGES),)
   endef
 
   define Image/cmdline/velocloud
-    root=$(ROOTPART) rootfstype=ext4 rootwait
+    rootfstype=ext4 rootwait
   endef
 
   define Image/Build/grub2
@@ -266,7 +266,7 @@ define Image/Build/Profile/Velocloud
 	sed \
 		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
 		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
-		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/velocloud) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
+		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/ext4) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
 		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
 		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/grub-installer.cfg \
 		> $(KDIR)/root.grub/boot/grub/grub.cfg

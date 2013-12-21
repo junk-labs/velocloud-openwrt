@@ -26,9 +26,8 @@ OPENWRT_ROOT = $(OPENWRT_NAME)
 # auto-detect # of cores
 NCPU ?= $(shell grep -c ^processor /proc/cpuinfo)
 
-# nothing to do for default;
-nothing:
-	@echo "nothing default to do, on" $(NCPU) cores
+# default is to build all targets;
+default: $(OPENWRT_TSYS)
 
 # --------------------------------------------------
 # for whoever pulls specific or latest openwrt tree;

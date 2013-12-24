@@ -8,7 +8,8 @@ OPENWRT_CONFIG = openwrt.config
 OPENWRT_VC_VERSION = 1
 OPENWRT_TSYS = \
 	sb-itc \
-	pw-dev
+	pw-dev \
+	vc-vmdk
 
 # name can be changed to pull a specific branch;
 OPENWRT_NAME ?= trunk
@@ -112,6 +113,8 @@ define OpenwrtConfig
 		-e '/CONFIG_X86_GRUB_SERIAL/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL_UNIT/d' \
 		-e '/CONFIG_X86_GRUB_BOOTOPTS/d' \
+		-e '/CONFIG_X86_GRUB_CONSOLE/d' \
+		-e '/CONFIG_X86_VMDK_IMAGES/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_x86_$(call target_conf,$(1))=y' \
 		-e '$$ aCONFIG_TARGET_x86_$(call target_conf,$(1))_Velocloud=y' \

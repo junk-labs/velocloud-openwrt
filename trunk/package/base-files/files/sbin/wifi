@@ -62,7 +62,7 @@ prepare_key_wep() {
 wifi_fixup_hwmode() {
 	local device="$1"
 	local default="$2"
-	local hwmode hwmode_11n
+	local hwmode hwmode_11n hwmode_11ac
 
 	config_get channel "$device" channel
 	config_get hwmode "$device" hwmode
@@ -78,6 +78,12 @@ wifi_fixup_hwmode() {
 				default) hwmode_11n="$default"
 			esac
 			config_set "$device" hwmode_11n "$hwmode_11n"
+		;;
+		11ac*)
+			hwmode_11n=a
+			hwmode_11ac=a
+			config_set "$device" hwmode_11n "$hwmode_11n"
+			config_set "$device" hwmode_11ac "$hwmode_11ac"
 		;;
 		*)
 			hwmode=

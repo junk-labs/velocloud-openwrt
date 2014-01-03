@@ -1,0 +1,3085 @@
+diff --git a/drivers/net/wireless/ath/ath10k/ce.c b/drivers/net/wireless/ath/ath10k/ce.c
+index e46951b..d44d618 100644
+--- a/drivers/net/wireless/ath/ath10k/ce.c
++++ b/drivers/net/wireless/ath/ath10k/ce.c
+@@ -243,6 +243,16 @@ static inline void ath10k_ce_error_intr_enable(struct ath10k *ar,
+ 			   misc_ie_addr | CE_ERROR_MASK);
+ }
+ 
++static inline void ath10k_ce_error_intr_disable(struct ath10k *ar,
++						u32 ce_ctrl_addr)
++{
++	u32 misc_ie_addr = ath10k_pci_read32(ar,
++					     ce_ctrl_addr + MISC_IE_ADDRESS);
++
++	ath10k_pci_write32(ar, ce_ctrl_addr + MISC_IE_ADDRESS,
++			   misc_ie_addr & ~CE_ERROR_MASK);
++}
++
+ static inline void ath10k_ce_engine_int_status_clear(struct ath10k *ar,
+ 						     u32 ce_ctrl_addr,
+ 						     unsigned int mask)
+@@ -731,7 +741,6 @@ void ath10k_ce_per_engine_service(struct ath10k *ar, unsigned int ce_id)
+ 
+ void ath10k_ce_per_engine_service_any(struct ath10k *ar)
+ {
+-	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 	int ce_id, ret;
+ 	u32 intr_summary;
+ 
+@@ -741,7 +750,7 @@ void ath10k_ce_per_engine_service_any(struct ath10k *ar)
+ 
+ 	intr_summary = CE_INTERRUPT_SUMMARY(ar);
+ 
+-	for (ce_id = 0; intr_summary && (ce_id < ar_pci->ce_count); ce_id++) {
++	for (ce_id = 0; intr_summary && (ce_id < CE_COUNT); ce_id++) {
+ 		if (intr_summary & (1 << ce_id))
+ 			intr_summary &= ~(1 << ce_id);
+ 		else
+@@ -783,22 +792,25 @@ static void ath10k_ce_per_engine_handler_adjust(struct ath10k_ce_pipe *ce_state,
+ 	ath10k_pci_sleep(ar);
+ }
+ 
+-void ath10k_ce_disable_interrupts(struct ath10k *ar)
++int ath10k_ce_disable_interrupts(struct ath10k *ar)
+ {
+-	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 	int ce_id, ret;
+ 
+ 	ret = ath10k_pci_wake(ar);
+ 	if (ret)
+-		return;
++		return ret;
+ 
+-	for (ce_id = 0; ce_id < ar_pci->ce_count; ce_id++) {
+-		struct ath10k_ce_pipe *ce_state = &ar_pci->ce_states[ce_id];
+-		u32 ctrl_addr = ce_state->ctrl_addr;
++	for (ce_id = 0; ce_id < CE_COUNT; ce_id++) {
++		u32 ctrl_addr = ath10k_ce_base_address(ce_id);
+ 
+ 		ath10k_ce_copy_complete_intr_disable(ar, ctrl_addr);
++		ath10k_ce_error_intr_disable(ar, ctrl_addr);
++		ath10k_ce_watermark_intr_disable(ar, ctrl_addr);
+ 	}
++
+ 	ath10k_pci_sleep(ar);
++
++	return 0;
+ }
+ 
+ void ath10k_ce_send_cb_register(struct ath10k_ce_pipe *ce_state,
+@@ -1047,9 +1059,19 @@ struct ath10k_ce_pipe *ath10k_ce_init(struct ath10k *ar,
+ 				const struct ce_attr *attr)
+ {
+ 	struct ath10k_ce_pipe *ce_state;
+-	u32 ctrl_addr = ath10k_ce_base_address(ce_id);
+ 	int ret;
+ 
++	/*
++	 * Make sure there's enough CE ringbuffer entries for HTT TX to avoid
++	 * additional TX locking checks.
++	 *
++	 * For the lack of a better place do the check here.
++	 */
++	BUILD_BUG_ON(TARGET_NUM_MSDU_DESC >
++		     (CE_HTT_H2T_MSG_SRC_NENTRIES - 1));
++	BUILD_BUG_ON(TARGET_10X_NUM_MSDU_DESC >
++		     (CE_HTT_H2T_MSG_SRC_NENTRIES - 1));
++
+ 	ret = ath10k_pci_wake(ar);
+ 	if (ret)
+ 		return NULL;
+@@ -1057,7 +1079,7 @@ struct ath10k_ce_pipe *ath10k_ce_init(struct ath10k *ar,
+ 	ce_state = ath10k_ce_init_state(ar, ce_id, attr);
+ 	if (!ce_state) {
+ 		ath10k_err("Failed to initialize CE state for ID: %d\n", ce_id);
+-		return NULL;
++		goto out;
+ 	}
+ 
+ 	if (attr->src_nentries) {
+@@ -1066,7 +1088,8 @@ struct ath10k_ce_pipe *ath10k_ce_init(struct ath10k *ar,
+ 			ath10k_err("Failed to initialize CE src ring for ID: %d (%d)\n",
+ 				   ce_id, ret);
+ 			ath10k_ce_deinit(ce_state);
+-			return NULL;
++			ce_state = NULL;
++			goto out;
+ 		}
+ 	}
+ 
+@@ -1076,15 +1099,13 @@ struct ath10k_ce_pipe *ath10k_ce_init(struct ath10k *ar,
+ 			ath10k_err("Failed to initialize CE dest ring for ID: %d (%d)\n",
+ 				   ce_id, ret);
+ 			ath10k_ce_deinit(ce_state);
+-			return NULL;
++			ce_state = NULL;
++			goto out;
+ 		}
+ 	}
+ 
+-	/* Enable CE error interrupts */
+-	ath10k_ce_error_intr_enable(ar, ctrl_addr);
+-
++out:
+ 	ath10k_pci_sleep(ar);
+-
+ 	return ce_state;
+ }
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/ce.h b/drivers/net/wireless/ath/ath10k/ce.h
+index 15d45b5..67dbde6 100644
+--- a/drivers/net/wireless/ath/ath10k/ce.h
++++ b/drivers/net/wireless/ath/ath10k/ce.h
+@@ -234,7 +234,7 @@ void ath10k_ce_deinit(struct ath10k_ce_pipe *ce_state);
+ /*==================CE Interrupt Handlers====================*/
+ void ath10k_ce_per_engine_service_any(struct ath10k *ar);
+ void ath10k_ce_per_engine_service(struct ath10k *ar, unsigned int ce_id);
+-void ath10k_ce_disable_interrupts(struct ath10k *ar);
++int ath10k_ce_disable_interrupts(struct ath10k *ar);
+ 
+ /* ce_attr.flags values */
+ /* Use NonSnooping PCIe accesses? */
+diff --git a/drivers/net/wireless/ath/ath10k/core.c b/drivers/net/wireless/ath/ath10k/core.c
+index 1129994..3b59af3 100644
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -597,10 +597,8 @@ static int ath10k_init_uart(struct ath10k *ar)
+ 		return ret;
+ 	}
+ 
+-	if (!uart_print) {
+-		ath10k_info("UART prints disabled\n");
++	if (!uart_print)
+ 		return 0;
+-	}
+ 
+ 	ret = ath10k_bmi_write32(ar, hi_dbg_uart_txpin, 7);
+ 	if (ret) {
+@@ -645,8 +643,8 @@ static int ath10k_init_hw_params(struct ath10k *ar)
+ 
+ 	ar->hw_params = *hw_params;
+ 
+-	ath10k_info("Hardware name %s version 0x%x\n",
+-		    ar->hw_params.name, ar->target_version);
++	ath10k_dbg(ATH10K_DBG_BOOT, "Hardware name %s version 0x%x\n",
++		   ar->hw_params.name, ar->target_version);
+ 
+ 	return 0;
+ }
+@@ -664,7 +662,8 @@ static void ath10k_core_restart(struct work_struct *work)
+ 		ieee80211_restart_hw(ar->hw);
+ 		break;
+ 	case ATH10K_STATE_OFF:
+-		/* this can happen if driver is being unloaded */
++		/* this can happen if driver is being unloaded
++		 * or if the crash happens during FW probing */
+ 		ath10k_warn("cannot restart a device that hasn't been started\n");
+ 		break;
+ 	case ATH10K_STATE_RESTARTING:
+@@ -737,8 +736,6 @@ EXPORT_SYMBOL(ath10k_core_create);
+ 
+ void ath10k_core_destroy(struct ath10k *ar)
+ {
+-	ath10k_debug_destroy(ar);
+-
+ 	flush_workqueue(ar->workqueue);
+ 	destroy_workqueue(ar->workqueue);
+ 
+@@ -786,21 +783,30 @@ int ath10k_core_start(struct ath10k *ar)
+ 		goto err;
+ 	}
+ 
+-	status = ath10k_htc_wait_target(&ar->htc);
+-	if (status)
++	status = ath10k_hif_start(ar);
++	if (status) {
++		ath10k_err("could not start HIF: %d\n", status);
+ 		goto err_wmi_detach;
++	}
++
++	status = ath10k_htc_wait_target(&ar->htc);
++	if (status) {
++		ath10k_err("failed to connect to HTC: %d\n", status);
++		goto err_hif_stop;
++	}
+ 
+ 	status = ath10k_htt_attach(ar);
+ 	if (status) {
+ 		ath10k_err("could not attach htt (%d)\n", status);
+-		goto err_wmi_detach;
++		goto err_hif_stop;
+ 	}
+ 
+ 	status = ath10k_init_connect_htc(ar);
+ 	if (status)
+ 		goto err_htt_detach;
+ 
+-	ath10k_info("firmware %s booted\n", ar->hw->wiphy->fw_version);
++	ath10k_dbg(ATH10K_DBG_BOOT, "firmware %s booted\n",
++		   ar->hw->wiphy->fw_version);
+ 
+ 	status = ath10k_wmi_cmd_init(ar);
+ 	if (status) {
+@@ -826,12 +832,23 @@ int ath10k_core_start(struct ath10k *ar)
+ 	ar->free_vdev_map = (1 << TARGET_NUM_VDEVS) - 1;
+ 	INIT_LIST_HEAD(&ar->arvifs);
+ 
++	if (!test_bit(ATH10K_FLAG_FIRST_BOOT_DONE, &ar->dev_flags))
++		ath10k_info("%s (0x%x) fw %s api %d htt %d.%d\n",
++			    ar->hw_params.name, ar->target_version,
++			    ar->hw->wiphy->fw_version, ar->fw_api,
++			    ar->htt.target_version_major,
++			    ar->htt.target_version_minor);
++
++	__set_bit(ATH10K_FLAG_FIRST_BOOT_DONE, &ar->dev_flags);
++
+ 	return 0;
+ 
+ err_disconnect_htc:
+ 	ath10k_htc_stop(&ar->htc);
+ err_htt_detach:
+ 	ath10k_htt_detach(&ar->htt);
++err_hif_stop:
++	ath10k_hif_stop(ar);
+ err_wmi_detach:
+ 	ath10k_wmi_detach(ar);
+ err:
+@@ -985,6 +1002,8 @@ void ath10k_core_unregister(struct ath10k *ar)
+ 	ath10k_mac_unregister(ar);
+ 
+ 	ath10k_core_free_firmware_files(ar);
++
++	ath10k_debug_destroy(ar);
+ }
+ EXPORT_SYMBOL(ath10k_core_unregister);
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/core.h b/drivers/net/wireless/ath/ath10k/core.h
+index 0934f76..79726e0 100644
+--- a/drivers/net/wireless/ath/ath10k/core.h
++++ b/drivers/net/wireless/ath/ath10k/core.h
+@@ -30,6 +30,7 @@
+ #include "wmi.h"
+ #include "../ath.h"
+ #include "../regd.h"
++#include "../dfs_pattern_detector.h"
+ 
+ #define MS(_v, _f) (((_v) & _f##_MASK) >> _f##_LSB)
+ #define SM(_v, _f) (((_v) << _f##_LSB) & _f##_MASK)
+@@ -43,7 +44,7 @@
+ /* Antenna noise floor */
+ #define ATH10K_DEFAULT_NOISE_FLOOR -95
+ 
+-#define ATH10K_MAX_NUM_MGMT_PENDING 16
++#define ATH10K_MAX_NUM_MGMT_PENDING 128
+ 
+ struct ath10k;
+ 
+@@ -192,6 +193,14 @@ struct ath10k_target_stats {
+ 
+ };
+ 
++struct ath10k_dfs_stats {
++	u32 phy_errors;
++	u32 pulses_total;
++	u32 pulses_detected;
++	u32 pulses_discarded;
++	u32 radar_detected;
++};
++
+ #define ATH10K_MAX_NUM_PEER_IDS (1 << 11) /* htt rx_desc limit */
+ 
+ struct ath10k_peer {
+@@ -261,6 +270,8 @@ struct ath10k_debug {
+ 
+ 	unsigned long htt_stats_mask;
+ 	struct delayed_work htt_stats_dwork;
++	struct ath10k_dfs_stats dfs_stats;
++	struct ath_dfs_pool_stats dfs_pool_stats;
+ };
+ 
+ enum ath10k_state {
+@@ -299,6 +310,12 @@ enum ath10k_fw_features {
+ 	ATH10K_FW_FEATURE_COUNT,
+ };
+ 
++enum ath10k_dev_flags {
++	/* Indicates that ath10k device is during CAC phase of DFS */
++	ATH10K_CAC_RUNNING,
++	ATH10K_FLAG_FIRST_BOOT_DONE,
++};
++
+ struct ath10k {
+ 	struct ath_common ath_common;
+ 	struct ieee80211_hw *hw;
+@@ -392,6 +409,8 @@ struct ath10k {
+ 	bool monitor_enabled;
+ 	bool monitor_present;
+ 	unsigned int filter_flags;
++	unsigned long dev_flags;
++	u32 dfs_block_radar_events;
+ 
+ 	struct wmi_pdev_set_wmm_params_arg wmm_params;
+ 	struct completion install_key_done;
+@@ -428,6 +447,8 @@ struct ath10k {
+ 	u32 survey_last_cycle_count;
+ 	struct survey_info survey[ATH10K_NUM_CHANS];
+ 
++	struct dfs_pattern_detector *dfs_detector;
++
+ #ifdef CPTCFG_ATH10K_DEBUGFS
+ 	struct ath10k_debug debug;
+ #endif
+diff --git a/drivers/net/wireless/ath/ath10k/debug.c b/drivers/net/wireless/ath/ath10k/debug.c
+index 760ff22..6bdfad3 100644
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -639,6 +639,86 @@ void ath10k_debug_stop(struct ath10k *ar)
+ 		cancel_delayed_work(&ar->debug.htt_stats_dwork);
+ }
+ 
++static ssize_t ath10k_write_simulate_radar(struct file *file,
++					   const char __user *user_buf,
++					   size_t count, loff_t *ppos)
++{
++	struct ath10k *ar = file->private_data;
++
++	ieee80211_radar_detected(ar->hw);
++
++	return count;
++}
++
++static const struct file_operations fops_simulate_radar = {
++	.write = ath10k_write_simulate_radar,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
++#define ATH10K_DFS_STAT(s, p) (\
++	len += scnprintf(buf + len, size - len, "%-28s : %10u\n", s, \
++			 ar->debug.dfs_stats.p))
++
++#define ATH10K_DFS_POOL_STAT(s, p) (\
++	len += scnprintf(buf + len, size - len, "%-28s : %10u\n", s, \
++			 ar->debug.dfs_pool_stats.p))
++
++static ssize_t ath10k_read_dfs_stats(struct file *file, char __user *user_buf,
++				     size_t count, loff_t *ppos)
++{
++	int retval = 0, len = 0;
++	const int size = 8000;
++	struct ath10k *ar = file->private_data;
++	char *buf;
++
++	buf = kzalloc(size, GFP_KERNEL);
++	if (buf == NULL)
++		return -ENOMEM;
++
++	if (!ar->dfs_detector) {
++		len += scnprintf(buf + len, size - len, "DFS not enabled\n");
++		goto exit;
++	}
++
++	ar->debug.dfs_pool_stats =
++			ar->dfs_detector->get_stats(ar->dfs_detector);
++
++	len += scnprintf(buf + len, size - len, "Pulse detector statistics:\n");
++
++	ATH10K_DFS_STAT("reported phy errors", phy_errors);
++	ATH10K_DFS_STAT("pulse events reported", pulses_total);
++	ATH10K_DFS_STAT("DFS pulses detected", pulses_detected);
++	ATH10K_DFS_STAT("DFS pulses discarded", pulses_discarded);
++	ATH10K_DFS_STAT("Radars detected", radar_detected);
++
++	len += scnprintf(buf + len, size - len, "Global Pool statistics:\n");
++	ATH10K_DFS_POOL_STAT("Pool references", pool_reference);
++	ATH10K_DFS_POOL_STAT("Pulses allocated", pulse_allocated);
++	ATH10K_DFS_POOL_STAT("Pulses alloc error", pulse_alloc_error);
++	ATH10K_DFS_POOL_STAT("Pulses in use", pulse_used);
++	ATH10K_DFS_POOL_STAT("Seqs. allocated", pseq_allocated);
++	ATH10K_DFS_POOL_STAT("Seqs. alloc error", pseq_alloc_error);
++	ATH10K_DFS_POOL_STAT("Seqs. in use", pseq_used);
++
++exit:
++	if (len > size)
++		len = size;
++
++	retval = simple_read_from_buffer(user_buf, count, ppos, buf, len);
++	kfree(buf);
++
++	return retval;
++}
++
++static const struct file_operations fops_dfs_stats = {
++	.read = ath10k_read_dfs_stats,
++	.open = simple_open,
++	.owner = THIS_MODULE,
++	.llseek = default_llseek,
++};
++
+ int ath10k_debug_create(struct ath10k *ar)
+ {
+ 	ar->debug.debugfs_phy = debugfs_create_dir("ath10k",
+@@ -667,6 +747,20 @@ int ath10k_debug_create(struct ath10k *ar)
+ 	debugfs_create_file("htt_stats_mask", S_IRUSR, ar->debug.debugfs_phy,
+ 			    ar, &fops_htt_stats_mask);
+ 
++	if (config_enabled(CONFIG_ATH10K_DFS_CERTIFIED)) {
++		debugfs_create_file("dfs_simulate_radar", S_IWUSR,
++				    ar->debug.debugfs_phy, ar,
++				    &fops_simulate_radar);
++
++		debugfs_create_bool("dfs_block_radar_events", S_IWUSR,
++				    ar->debug.debugfs_phy,
++				    &ar->dfs_block_radar_events);
++
++		debugfs_create_file("dfs_stats", S_IRUSR,
++				    ar->debug.debugfs_phy, ar,
++				    &fops_dfs_stats);
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/debug.h b/drivers/net/wireless/ath/ath10k/debug.h
+index 46e640a..92f1a5e 100644
+--- a/drivers/net/wireless/ath/ath10k/debug.h
++++ b/drivers/net/wireless/ath/ath10k/debug.h
+@@ -33,6 +33,7 @@ enum ath10k_debug_mask {
+ 	ATH10K_DBG_MGMT		= 0x00000100,
+ 	ATH10K_DBG_DATA		= 0x00000200,
+ 	ATH10K_DBG_BMI		= 0x00000400,
++	ATH10K_DBG_REGULATORY	= 0x00000800,
+ 	ATH10K_DBG_ANY		= 0xffffffff,
+ };
+ 
+@@ -53,6 +54,8 @@ void ath10k_debug_read_service_map(struct ath10k *ar,
+ void ath10k_debug_read_target_stats(struct ath10k *ar,
+ 				    struct wmi_stats_event *ev);
+ 
++#define ATH10K_DFS_STAT_INC(ar, c) (ar->debug.dfs_stats.c++)
++
+ #else
+ static inline int ath10k_debug_start(struct ath10k *ar)
+ {
+@@ -82,6 +85,9 @@ static inline void ath10k_debug_read_target_stats(struct ath10k *ar,
+ 						  struct wmi_stats_event *ev)
+ {
+ }
++
++#define ATH10K_DFS_STAT_INC(ar, c) do { } while (0)
++
+ #endif /* CPTCFG_ATH10K_DEBUGFS */
+ 
+ #ifdef CPTCFG_ATH10K_DEBUG
+diff --git a/drivers/net/wireless/ath/ath10k/htc.c b/drivers/net/wireless/ath/ath10k/htc.c
+index 3118d75..b068ae0 100644
+--- a/drivers/net/wireless/ath/ath10k/htc.c
++++ b/drivers/net/wireless/ath/ath10k/htc.c
+@@ -191,6 +191,11 @@ static int ath10k_htc_tx_completion_handler(struct ath10k *ar,
+ 	struct ath10k_htc *htc = &ar->htc;
+ 	struct ath10k_htc_ep *ep = &htc->endpoint[eid];
+ 
++	if (!skb) {
++		ath10k_warn("invalid sk_buff completion - NULL pointer. firmware crashed?\n");
++		return 0;
++	}
++
+ 	ath10k_htc_notify_tx_completion(ep, skb);
+ 	/* the skb now belongs to the completion handler */
+ 
+@@ -534,14 +539,6 @@ int ath10k_htc_wait_target(struct ath10k_htc *htc)
+ 	u16 credit_count;
+ 	u16 credit_size;
+ 
+-	INIT_COMPLETION(htc->ctl_resp);
+-
+-	status = ath10k_hif_start(htc->ar);
+-	if (status) {
+-		ath10k_err("could not start HIF (%d)\n", status);
+-		goto err_start;
+-	}
+-
+ 	status = wait_for_completion_timeout(&htc->ctl_resp,
+ 					     ATH10K_HTC_WAIT_TIMEOUT_HZ);
+ 	if (status <= 0) {
+@@ -549,15 +546,13 @@ int ath10k_htc_wait_target(struct ath10k_htc *htc)
+ 			status = -ETIMEDOUT;
+ 
+ 		ath10k_err("ctl_resp never came in (%d)\n", status);
+-		goto err_target;
++		return status;
+ 	}
+ 
+ 	if (htc->control_resp_len < sizeof(msg->hdr) + sizeof(msg->ready)) {
+ 		ath10k_err("Invalid HTC ready msg len:%d\n",
+ 			   htc->control_resp_len);
+-
+-		status = -ECOMM;
+-		goto err_target;
++		return -ECOMM;
+ 	}
+ 
+ 	msg = (struct ath10k_htc_msg *)htc->control_resp_buffer;
+@@ -567,8 +562,7 @@ int ath10k_htc_wait_target(struct ath10k_htc *htc)
+ 
+ 	if (message_id != ATH10K_HTC_MSG_READY_ID) {
+ 		ath10k_err("Invalid HTC ready msg: 0x%x\n", message_id);
+-		status = -ECOMM;
+-		goto err_target;
++		return -ECOMM;
+ 	}
+ 
+ 	htc->total_transmit_credits = credit_count;
+@@ -581,9 +575,8 @@ int ath10k_htc_wait_target(struct ath10k_htc *htc)
+ 
+ 	if ((htc->total_transmit_credits == 0) ||
+ 	    (htc->target_credit_size == 0)) {
+-		status = -ECOMM;
+ 		ath10k_err("Invalid credit size received\n");
+-		goto err_target;
++		return -ECOMM;
+ 	}
+ 
+ 	ath10k_htc_setup_target_buffer_assignments(htc);
+@@ -600,14 +593,10 @@ int ath10k_htc_wait_target(struct ath10k_htc *htc)
+ 	status = ath10k_htc_connect_service(htc, &conn_req, &conn_resp);
+ 	if (status) {
+ 		ath10k_err("could not connect to htc service (%d)\n", status);
+-		goto err_target;
++		return status;
+ 	}
+ 
+ 	return 0;
+-err_target:
+-	ath10k_hif_stop(htc->ar);
+-err_start:
+-	return status;
+ }
+ 
+ int ath10k_htc_connect_service(struct ath10k_htc *htc,
+diff --git a/drivers/net/wireless/ath/ath10k/htt.c b/drivers/net/wireless/ath/ath10k/htt.c
+index 5f7eeeb..69697af5 100644
+--- a/drivers/net/wireless/ath/ath10k/htt.c
++++ b/drivers/net/wireless/ath/ath10k/htt.c
+@@ -104,8 +104,8 @@ err_htc_attach:
+ 
+ static int ath10k_htt_verify_version(struct ath10k_htt *htt)
+ {
+-	ath10k_info("htt target version %d.%d\n",
+-		    htt->target_version_major, htt->target_version_minor);
++	ath10k_dbg(ATH10K_DBG_BOOT, "htt target version %d.%d\n",
++		   htt->target_version_major, htt->target_version_minor);
+ 
+ 	if (htt->target_version_major != 2 &&
+ 	    htt->target_version_major != 3) {
+diff --git a/drivers/net/wireless/ath/ath10k/htt.h b/drivers/net/wireless/ath/ath10k/htt.h
+index 1a337e9..7fc7919 100644
+--- a/drivers/net/wireless/ath/ath10k/htt.h
++++ b/drivers/net/wireless/ath/ath10k/htt.h
+@@ -1182,6 +1182,7 @@ struct htt_rx_info {
+ 		u32 info2;
+ 	} rate;
+ 	bool fcs_err;
++	bool amsdu_more;
+ };
+ 
+ struct ath10k_htt {
+diff --git a/drivers/net/wireless/ath/ath10k/htt_rx.c b/drivers/net/wireless/ath/ath10k/htt_rx.c
+index 90d4f74..fcb534f 100644
+--- a/drivers/net/wireless/ath/ath10k/htt_rx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_rx.c
+@@ -659,23 +659,6 @@ static void ath10k_htt_rx_amsdu(struct ath10k_htt *htt,
+ 	memcpy(hdr_buf, hdr, hdr_len);
+ 	hdr = (struct ieee80211_hdr *)hdr_buf;
+ 
+-	/* FIXME: Hopefully this is a temporary measure.
+-	 *
+-	 * Reporting individual A-MSDU subframes means each reported frame
+-	 * shares the same sequence number.
+-	 *
+-	 * mac80211 drops frames it recognizes as duplicates, i.e.
+-	 * retransmission flag is set and sequence number matches sequence
+-	 * number from a previous frame (as per IEEE 802.11-2012: 9.3.2.10
+-	 * "Duplicate detection and recovery")
+-	 *
+-	 * To avoid frames being dropped clear retransmission flag for all
+-	 * received A-MSDUs.
+-	 *
+-	 * Worst case: actual duplicate frames will be reported but this should
+-	 * still be handled gracefully by other OSI/ISO layers. */
+-	hdr->frame_control &= cpu_to_le16(~IEEE80211_FCTL_RETRY);
+-
+ 	first = skb;
+ 	while (skb) {
+ 		void *decap_hdr;
+@@ -746,6 +729,9 @@ static void ath10k_htt_rx_amsdu(struct ath10k_htt *htt,
+ 		skb = skb->next;
+ 		info->skb->next = NULL;
+ 
++		if (skb)
++			info->amsdu_more = true;
++
+ 		ath10k_process_rx(htt->ar, info);
+ 	}
+ 
+@@ -959,6 +945,11 @@ static void ath10k_htt_rx_handler(struct ath10k_htt *htt,
+ 				continue;
+ 			}
+ 
++			if (test_bit(ATH10K_CAC_RUNNING, &htt->ar->dev_flags)) {
++				ath10k_htt_rx_free_msdu_chain(msdu_head);
++				continue;
++			}
++
+ 			/* FIXME: we do not support chaining yet.
+ 			 * this needs investigation */
+ 			if (msdu_chaining) {
+diff --git a/drivers/net/wireless/ath/ath10k/htt_tx.c b/drivers/net/wireless/ath/ath10k/htt_tx.c
+index d9335e9..f1d36d2 100644
+--- a/drivers/net/wireless/ath/ath10k/htt_tx.c
++++ b/drivers/net/wireless/ath/ath10k/htt_tx.c
+@@ -85,16 +85,13 @@ void ath10k_htt_tx_free_msdu_id(struct ath10k_htt *htt, u16 msdu_id)
+ 
+ int ath10k_htt_tx_attach(struct ath10k_htt *htt)
+ {
+-	u8 pipe;
+-
+ 	spin_lock_init(&htt->tx_lock);
+ 	init_waitqueue_head(&htt->empty_tx_wq);
+ 
+-	/* At the beginning free queue number should hint us the maximum
+-	 * queue length */
+-	pipe = htt->ar->htc.endpoint[htt->eid].ul_pipe_id;
+-	htt->max_num_pending_tx = ath10k_hif_get_free_queue_number(htt->ar,
+-								   pipe);
++	if (test_bit(ATH10K_FW_FEATURE_WMI_10X, htt->ar->fw_features))
++		htt->max_num_pending_tx = TARGET_10X_NUM_MSDU_DESC;
++	else
++		htt->max_num_pending_tx = TARGET_NUM_MSDU_DESC;
+ 
+ 	ath10k_dbg(ATH10K_DBG_BOOT, "htt tx max num pending tx %d\n",
+ 		   htt->max_num_pending_tx);
+diff --git a/drivers/net/wireless/ath/ath10k/hw.h b/drivers/net/wireless/ath/ath10k/hw.h
+index 8aeb46d..9535eaa 100644
+--- a/drivers/net/wireless/ath/ath10k/hw.h
++++ b/drivers/net/wireless/ath/ath10k/hw.h
+@@ -269,6 +269,7 @@ enum ath10k_mcast2ucast_mode {
+ #define CORE_CTRL_CPU_INTR_MASK			0x00002000
+ #define CORE_CTRL_ADDRESS			0x0000
+ #define PCIE_INTR_ENABLE_ADDRESS		0x0008
++#define PCIE_INTR_CAUSE_ADDRESS			0x000c
+ #define PCIE_INTR_CLR_ADDRESS			0x0014
+ #define SCRATCH_3_ADDRESS			0x0030
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/mac.c b/drivers/net/wireless/ath/ath10k/mac.c
+index 0b1cc51..b70a3b2 100644
+--- a/drivers/net/wireless/ath/ath10k/mac.c
++++ b/drivers/net/wireless/ath/ath10k/mac.c
+@@ -322,12 +322,16 @@ static int ath10k_peer_create(struct ath10k *ar, u32 vdev_id, const u8 *addr)
+ 	lockdep_assert_held(&ar->conf_mutex);
+ 
+ 	ret = ath10k_wmi_peer_create(ar, vdev_id, addr);
+-	if (ret)
++	if (ret) {
++		ath10k_warn("Failed to create wmi peer: %i\n", ret);
+ 		return ret;
++	}
+ 
+ 	ret = ath10k_wait_for_peer_created(ar, vdev_id, addr);
+-	if (ret)
++	if (ret) {
++		ath10k_warn("Failed to wait for created wmi peer: %i\n", ret);
+ 		return ret;
++	}
+ 
+ 	return 0;
+ }
+@@ -450,15 +454,19 @@ static int ath10k_vdev_start(struct ath10k_vif *arvif)
+ 
+ 	arg.channel.mode = chan_to_phymode(&conf->chandef);
+ 
+-	arg.channel.min_power = channel->max_power * 3;
+-	arg.channel.max_power = channel->max_power * 4;
+-	arg.channel.max_reg_power = channel->max_reg_power * 4;
+-	arg.channel.max_antenna_gain = channel->max_antenna_gain;
++	arg.channel.min_power = 0;
++	arg.channel.max_power = channel->max_power * 2;
++	arg.channel.max_reg_power = channel->max_reg_power * 2;
++	arg.channel.max_antenna_gain = channel->max_antenna_gain * 2;
+ 
+ 	if (arvif->vdev_type == WMI_VDEV_TYPE_AP) {
+ 		arg.ssid = arvif->u.ap.ssid;
+ 		arg.ssid_len = arvif->u.ap.ssid_len;
+ 		arg.hidden_ssid = arvif->u.ap.hidden_ssid;
++
++		/* For now allow DFS for AP mode */
++		arg.channel.chan_radar =
++			!!(channel->flags & IEEE80211_CHAN_RADAR);
+ 	} else if (arvif->vdev_type == WMI_VDEV_TYPE_IBSS) {
+ 		arg.ssid = arvif->vif->bss_conf.ssid;
+ 		arg.ssid_len = arvif->vif->bss_conf.ssid_len;
+@@ -516,6 +524,11 @@ static int ath10k_monitor_start(struct ath10k *ar, int vdev_id)
+ 
+ 	lockdep_assert_held(&ar->conf_mutex);
+ 
++	if (!ar->monitor_present) {
++		ath10k_warn("mac montor stop -- monitor is not present\n");
++		return -EINVAL;
++	}
++
+ 	arg.vdev_id = vdev_id;
+ 	arg.channel.freq = channel->center_freq;
+ 	arg.channel.band_center_freq1 = ar->hw->conf.chandef.center_freq1;
+@@ -523,11 +536,13 @@ static int ath10k_monitor_start(struct ath10k *ar, int vdev_id)
+ 	/* TODO setup this dynamically, what in case we
+ 	   don't have any vifs? */
+ 	arg.channel.mode = chan_to_phymode(&ar->hw->conf.chandef);
++	arg.channel.chan_radar =
++			!!(channel->flags & IEEE80211_CHAN_RADAR);
+ 
+-	arg.channel.min_power = channel->max_power * 3;
+-	arg.channel.max_power = channel->max_power * 4;
+-	arg.channel.max_reg_power = channel->max_reg_power * 4;
+-	arg.channel.max_antenna_gain = channel->max_antenna_gain;
++	arg.channel.min_power = 0;
++	arg.channel.max_power = channel->max_power * 2;
++	arg.channel.max_reg_power = channel->max_reg_power * 2;
++	arg.channel.max_antenna_gain = channel->max_antenna_gain * 2;
+ 
+ 	ret = ath10k_wmi_vdev_start(ar, &arg);
+ 	if (ret) {
+@@ -566,6 +581,16 @@ static int ath10k_monitor_stop(struct ath10k *ar)
+ 
+ 	lockdep_assert_held(&ar->conf_mutex);
+ 
++	if (!ar->monitor_present) {
++		ath10k_warn("mac montor stop -- monitor is not present\n");
++		return -EINVAL;
++	}
++
++	if (!ar->monitor_enabled) {
++		ath10k_warn("mac montor stop -- monitor is not enabled\n");
++		return -EINVAL;
++	}
++
+ 	ret = ath10k_wmi_vdev_down(ar, ar->monitor_vdev_id);
+ 	if (ret)
+ 		ath10k_warn("Monitor vdev down failed: %d\n", ret);
+@@ -647,6 +672,107 @@ static int ath10k_monitor_destroy(struct ath10k *ar)
+ 	return ret;
+ }
+ 
++static int ath10k_start_cac(struct ath10k *ar)
++{
++	int ret;
++
++	lockdep_assert_held(&ar->conf_mutex);
++
++	set_bit(ATH10K_CAC_RUNNING, &ar->dev_flags);
++
++	ret = ath10k_monitor_create(ar);
++	if (ret) {
++		clear_bit(ATH10K_CAC_RUNNING, &ar->dev_flags);
++		return ret;
++	}
++
++	ret = ath10k_monitor_start(ar, ar->monitor_vdev_id);
++	if (ret) {
++		clear_bit(ATH10K_CAC_RUNNING, &ar->dev_flags);
++		ath10k_monitor_destroy(ar);
++		return ret;
++	}
++
++	ath10k_dbg(ATH10K_DBG_MAC, "mac cac start monitor vdev %d\n",
++		   ar->monitor_vdev_id);
++
++	return 0;
++}
++
++static int ath10k_stop_cac(struct ath10k *ar)
++{
++	lockdep_assert_held(&ar->conf_mutex);
++
++	/* CAC is not running - do nothing */
++	if (!test_bit(ATH10K_CAC_RUNNING, &ar->dev_flags))
++		return 0;
++
++	ath10k_monitor_stop(ar);
++	ath10k_monitor_destroy(ar);
++	clear_bit(ATH10K_CAC_RUNNING, &ar->dev_flags);
++
++	ath10k_dbg(ATH10K_DBG_MAC, "mac cac finished\n");
++
++	return 0;
++}
++
++static const char *ath10k_dfs_state(enum nl80211_dfs_state dfs_state)
++{
++	switch (dfs_state) {
++	case NL80211_DFS_USABLE:
++		return "USABLE";
++	case NL80211_DFS_UNAVAILABLE:
++		return "UNAVAILABLE";
++	case NL80211_DFS_AVAILABLE:
++		return "AVAILABLE";
++	default:
++		WARN_ON(1);
++		return "bug";
++	}
++}
++
++static void ath10k_config_radar_detection(struct ath10k *ar)
++{
++	struct ieee80211_channel *chan = ar->hw->conf.chandef.chan;
++	bool radar = ar->hw->conf.radar_enabled;
++	bool chan_radar = !!(chan->flags & IEEE80211_CHAN_RADAR);
++	enum nl80211_dfs_state dfs_state = chan->dfs_state;
++	int ret;
++
++	lockdep_assert_held(&ar->conf_mutex);
++
++	ath10k_dbg(ATH10K_DBG_MAC,
++		   "mac radar config update: chan %dMHz radar %d chan radar %d chan state %s\n",
++		   chan->center_freq, radar, chan_radar,
++		   ath10k_dfs_state(dfs_state));
++
++	/*
++	 * It's safe to call it even if CAC is not started.
++	 * This call here guarantees changing channel, etc. will stop CAC.
++	 */
++	ath10k_stop_cac(ar);
++
++	if (!radar)
++		return;
++
++	if (!chan_radar)
++		return;
++
++	if (dfs_state != NL80211_DFS_USABLE)
++		return;
++
++	ret = ath10k_start_cac(ar);
++	if (ret) {
++		/*
++		 * Not possible to start CAC on current channel so starting
++		 * radiation is not allowed, make this channel DFS_UNAVAILABLE
++		 * by indicating that radar was detected.
++		 */
++		ath10k_warn("failed to start CAC (%d)\n", ret);
++		ieee80211_radar_detected(ar->hw);
++	}
++}
++
+ static void ath10k_control_beaconing(struct ath10k_vif *arvif,
+ 				struct ieee80211_bss_conf *info)
+ {
+@@ -1356,14 +1482,17 @@ static int ath10k_update_channel_list(struct ath10k *ar)
+ 			ch->ht40plus =
+ 				!(channel->flags & IEEE80211_CHAN_NO_HT40PLUS);
+ 
++			ch->chan_radar =
++				!!(channel->flags & IEEE80211_CHAN_RADAR);
++
+ 			passive = channel->flags & IEEE80211_CHAN_NO_IR;
+ 			ch->passive = passive;
+ 
+ 			ch->freq = channel->center_freq;
+-			ch->min_power = channel->max_power * 3;
+-			ch->max_power = channel->max_power * 4;
+-			ch->max_reg_power = channel->max_reg_power * 4;
+-			ch->max_antenna_gain = channel->max_antenna_gain;
++			ch->min_power = 0;
++			ch->max_power = channel->max_power * 2;
++			ch->max_reg_power = channel->max_reg_power * 2;
++			ch->max_antenna_gain = channel->max_antenna_gain * 2;
+ 			ch->reg_class_id = 0; /* FIXME */
+ 
+ 			/* FIXME: why use only legacy modes, why not any
+@@ -1423,9 +1552,20 @@ static void ath10k_reg_notifier(struct wiphy *wiphy,
+ {
+ 	struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
+ 	struct ath10k *ar = hw->priv;
++	bool result;
+ 
+ 	ath_reg_notifier_apply(wiphy, request, &ar->ath_common.regulatory);
+ 
++	if (config_enabled(CONFIG_ATH10K_DFS_CERTIFIED) && ar->dfs_detector) {
++		ath10k_dbg(ATH10K_DBG_REGULATORY, "dfs region 0x%x\n",
++			   request->dfs_region);
++		result = ar->dfs_detector->set_dfs_domain(ar->dfs_detector,
++							  request->dfs_region);
++		if (!result)
++			ath10k_warn("dfs region 0x%X not supported, will trigger radar for every pulse\n",
++				    request->dfs_region);
++	}
++
+ 	mutex_lock(&ar->conf_mutex);
+ 	if (ar->state == ATH10K_STATE_ON)
+ 		ath10k_regd_update(ar);
+@@ -1714,8 +1854,10 @@ void ath10k_mgmt_over_wmi_tx_work(struct work_struct *work)
+ 			break;
+ 
+ 		ret = ath10k_wmi_mgmt_tx(ar, skb);
+-		if (ret)
++		if (ret) {
+ 			ath10k_warn("wmi mgmt_tx failed (%d)\n", ret);
++			ieee80211_free_txskb(ar->hw, skb);
++		}
+ 	}
+ }
+ 
+@@ -1889,6 +2031,7 @@ void ath10k_halt(struct ath10k *ar)
+ {
+ 	lockdep_assert_held(&ar->conf_mutex);
+ 
++	ath10k_stop_cac(ar);
+ 	del_timer_sync(&ar->scan.timeout);
+ 	ath10k_offchan_tx_purge(ar);
+ 	ath10k_mgmt_over_wmi_tx_purge(ar);
+@@ -1943,7 +2086,7 @@ static int ath10k_start(struct ieee80211_hw *hw)
+ 		ath10k_warn("could not enable WMI_PDEV_PARAM_PMF_QOS (%d)\n",
+ 			    ret);
+ 
+-	ret = ath10k_wmi_pdev_set_param(ar, ar->wmi.pdev_param->dynamic_bw, 0);
++	ret = ath10k_wmi_pdev_set_param(ar, ar->wmi.pdev_param->dynamic_bw, 1);
+ 	if (ret)
+ 		ath10k_warn("could not init WMI_PDEV_PARAM_DYNAMIC_BW (%d)\n",
+ 			    ret);
+@@ -1998,15 +2141,40 @@ static int ath10k_config(struct ieee80211_hw *hw, u32 changed)
+ 	struct ath10k *ar = hw->priv;
+ 	struct ieee80211_conf *conf = &hw->conf;
+ 	int ret = 0;
++	u32 param;
+ 
+ 	mutex_lock(&ar->conf_mutex);
+ 
+ 	if (changed & IEEE80211_CONF_CHANGE_CHANNEL) {
+-		ath10k_dbg(ATH10K_DBG_MAC, "mac config channel %d mhz\n",
+-			   conf->chandef.chan->center_freq);
++		ath10k_dbg(ATH10K_DBG_MAC,
++			   "mac config channel %d mhz flags 0x%x\n",
++			   conf->chandef.chan->center_freq,
++			   conf->chandef.chan->flags);
++
+ 		spin_lock_bh(&ar->data_lock);
+ 		ar->rx_channel = conf->chandef.chan;
+ 		spin_unlock_bh(&ar->data_lock);
++
++		ath10k_config_radar_detection(ar);
++	}
++
++	if (changed & IEEE80211_CONF_CHANGE_POWER) {
++		ath10k_dbg(ATH10K_DBG_MAC, "mac config power %d\n",
++			   hw->conf.power_level);
++
++		param = ar->wmi.pdev_param->txpower_limit2g;
++		ret = ath10k_wmi_pdev_set_param(ar, param,
++						hw->conf.power_level * 2);
++		if (ret)
++			ath10k_warn("mac failed to set 2g txpower %d (%d)\n",
++				    hw->conf.power_level, ret);
++
++		param = ar->wmi.pdev_param->txpower_limit5g;
++		ret = ath10k_wmi_pdev_set_param(ar, param,
++						hw->conf.power_level * 2);
++		if (ret)
++			ath10k_warn("mac failed to set 5g txpower %d (%d)\n",
++				    hw->conf.power_level, ret);
+ 	}
+ 
+ 	if (changed & IEEE80211_CONF_CHANGE_PS)
+@@ -2049,6 +2217,7 @@ static int ath10k_add_interface(struct ieee80211_hw *hw,
+ 	arvif->vif = vif;
+ 
+ 	INIT_WORK(&arvif->wep_key_work, ath10k_tx_wep_key_work);
++	INIT_LIST_HEAD(&arvif->list);
+ 
+ 	if ((vif->type == NL80211_IFTYPE_MONITOR) && ar->monitor_present) {
+ 		ath10k_warn("Only one monitor interface allowed\n");
+@@ -2265,8 +2434,14 @@ static void ath10k_configure_filter(struct ieee80211_hw *hw,
+ 	*total_flags &= SUPPORTED_FILTERS;
+ 	ar->filter_flags = *total_flags;
+ 
++	/* Monitor must not be started if it wasn't created first.
++	 * Promiscuous mode may be started on a non-monitor interface - in
++	 * such case the monitor vdev is not created so starting the
++	 * monitor makes no sense. Since ath10k uses no special RX filters
++	 * (only BSS filter in STA mode) there's no need for any special
++	 * action here. */
+ 	if ((ar->filter_flags & FIF_PROMISC_IN_BSS) &&
+-	    !ar->monitor_enabled) {
++	    !ar->monitor_enabled && ar->monitor_present) {
+ 		ath10k_dbg(ATH10K_DBG_MAC, "mac monitor %d start\n",
+ 			   ar->monitor_vdev_id);
+ 
+@@ -2274,7 +2449,7 @@ static void ath10k_configure_filter(struct ieee80211_hw *hw,
+ 		if (ret)
+ 			ath10k_warn("Unable to start monitor mode\n");
+ 	} else if (!(ar->filter_flags & FIF_PROMISC_IN_BSS) &&
+-		   ar->monitor_enabled) {
++		   ar->monitor_enabled && ar->monitor_present) {
+ 		ath10k_dbg(ATH10K_DBG_MAC, "mac monitor %d stop\n",
+ 			   ar->monitor_vdev_id);
+ 
+@@ -2360,8 +2535,8 @@ static void ath10k_bss_info_changed(struct ieee80211_hw *hw,
+ 			ret = ath10k_peer_create(ar, arvif->vdev_id,
+ 						 info->bssid);
+ 			if (ret)
+-				ath10k_warn("Failed to add peer: %pM for VDEV: %d\n",
+-					    info->bssid, arvif->vdev_id);
++				ath10k_warn("Failed to add peer %pM for vdev %d when changin bssid: %i\n",
++					    info->bssid, arvif->vdev_id, ret);
+ 
+ 			if (vif->type == NL80211_IFTYPE_STATION) {
+ 				/*
+@@ -2643,8 +2818,8 @@ static int ath10k_sta_state(struct ieee80211_hw *hw,
+ 
+ 		ret = ath10k_peer_create(ar, arvif->vdev_id, sta->addr);
+ 		if (ret)
+-			ath10k_warn("Failed to add peer: %pM for VDEV: %d\n",
+-				    sta->addr, arvif->vdev_id);
++			ath10k_warn("Failed to add peer %pM for vdev %d when adding a new sta: %i\n",
++				    sta->addr, arvif->vdev_id, ret);
+ 	} else if ((old_state == IEEE80211_STA_NONE &&
+ 		    new_state == IEEE80211_STA_NOTEXIST)) {
+ 		/*
+@@ -3249,12 +3424,36 @@ static const struct ieee80211_iface_limit ath10k_if_limits[] = {
+ 	},
+ };
+ 
+-static const struct ieee80211_iface_combination ath10k_if_comb = {
+-	.limits = ath10k_if_limits,
+-	.n_limits = ARRAY_SIZE(ath10k_if_limits),
+-	.max_interfaces = 8,
+-	.num_different_channels = 1,
+-	.beacon_int_infra_match = true,
++#ifdef CONFIG_ATH10K_DFS_CERTIFIED
++static const struct ieee80211_iface_limit ath10k_if_dfs_limits[] = {
++	{
++	.max	= 8,
++	.types	= BIT(NL80211_IFTYPE_AP)
++	},
++};
++#endif
++
++static const struct ieee80211_iface_combination ath10k_if_comb[] = {
++	{
++		.limits = ath10k_if_limits,
++		.n_limits = ARRAY_SIZE(ath10k_if_limits),
++		.max_interfaces = 8,
++		.num_different_channels = 1,
++		.beacon_int_infra_match = true,
++	},
++#ifdef CONFIG_ATH10K_DFS_CERTIFIED
++	{
++		.limits = ath10k_if_dfs_limits,
++		.n_limits = ARRAY_SIZE(ath10k_if_dfs_limits),
++		.max_interfaces = 8,
++		.num_different_channels = 1,
++		.beacon_int_infra_match = true,
++		.radar_detect_widths =	BIT(NL80211_CHAN_WIDTH_20_NOHT) |
++					BIT(NL80211_CHAN_WIDTH_20) |
++					BIT(NL80211_CHAN_WIDTH_40) |
++					BIT(NL80211_CHAN_WIDTH_80),
++	}
++#endif
+ };
+ 
+ static struct ieee80211_sta_vht_cap ath10k_create_vht_cap(struct ath10k *ar)
+@@ -3478,11 +3677,21 @@ int ath10k_mac_register(struct ath10k *ar)
+ 	 */
+ 	ar->hw->queues = 4;
+ 
+-	ar->hw->wiphy->iface_combinations = &ath10k_if_comb;
+-	ar->hw->wiphy->n_iface_combinations = 1;
++	ar->hw->wiphy->iface_combinations = ath10k_if_comb;
++	ar->hw->wiphy->n_iface_combinations = ARRAY_SIZE(ath10k_if_comb);
+ 
+ 	ar->hw->netdev_features = NETIF_F_HW_CSUM;
+ 
++	if (config_enabled(CONFIG_ATH10K_DFS_CERTIFIED)) {
++		/* Init ath dfs pattern detector */
++		ar->ath_common.debug_mask = ATH_DBG_DFS;
++		ar->dfs_detector = dfs_pattern_detector_init(&ar->ath_common,
++							     NL80211_DFS_UNSET);
++
++		if (!ar->dfs_detector)
++			ath10k_warn("dfs pattern detector init failed\n");
++	}
++
+ 	ret = ath_regd_init(&ar->ath_common.regulatory, ar->hw->wiphy,
+ 			    ath10k_reg_notifier);
+ 	if (ret) {
+@@ -3518,6 +3727,9 @@ void ath10k_mac_unregister(struct ath10k *ar)
+ {
+ 	ieee80211_unregister_hw(ar->hw);
+ 
++	if (config_enabled(CONFIG_ATH10K_DFS_CERTIFIED) && ar->dfs_detector)
++		ar->dfs_detector->exit(ar->dfs_detector);
++
+ 	kfree(ar->mac.sbands[IEEE80211_BAND_2GHZ].channels);
+ 	kfree(ar->mac.sbands[IEEE80211_BAND_5GHZ].channels);
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/pci.c b/drivers/net/wireless/ath/ath10k/pci.c
+index f8d59c7..1365b55 100644
+--- a/drivers/net/wireless/ath/ath10k/pci.c
++++ b/drivers/net/wireless/ath/ath10k/pci.c
+@@ -19,6 +19,7 @@
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+ #include <linux/spinlock.h>
++#include <linux/bitops.h>
+ 
+ #include "core.h"
+ #include "debug.h"
+@@ -32,10 +33,21 @@
+ #include "ce.h"
+ #include "pci.h"
+ 
++enum ath10k_pci_irq_mode {
++	ATH10K_PCI_IRQ_AUTO = 0,
++	ATH10K_PCI_IRQ_LEGACY = 1,
++	ATH10K_PCI_IRQ_MSI = 2,
++};
++
+ static unsigned int ath10k_target_ps;
++static unsigned int ath10k_pci_irq_mode = ATH10K_PCI_IRQ_AUTO;
++
+ module_param(ath10k_target_ps, uint, 0644);
+ MODULE_PARM_DESC(ath10k_target_ps, "Enable ath10k Target (SoC) PS option");
+ 
++module_param_named(irq_mode, ath10k_pci_irq_mode, uint, 0644);
++MODULE_PARM_DESC(irq_mode, "0: auto, 1: legacy, 2: msi (default: 0)");
++
+ #define QCA988X_2_0_DEVICE_ID	(0x003c)
+ 
+ static DEFINE_PCI_DEVICE_TABLE(ath10k_pci_id_table) = {
+@@ -52,10 +64,16 @@ static int ath10k_pci_post_rx_pipe(struct ath10k_pci_pipe *pipe_info,
+ 					     int num);
+ static void ath10k_pci_rx_pipe_cleanup(struct ath10k_pci_pipe *pipe_info);
+ static void ath10k_pci_stop_ce(struct ath10k *ar);
+-static void ath10k_pci_device_reset(struct ath10k *ar);
+-static int ath10k_pci_reset_target(struct ath10k *ar);
+-static int ath10k_pci_start_intr(struct ath10k *ar);
+-static void ath10k_pci_stop_intr(struct ath10k *ar);
++static int ath10k_pci_device_reset(struct ath10k *ar);
++static int ath10k_pci_wait_for_target_init(struct ath10k *ar);
++static int ath10k_pci_init_irq(struct ath10k *ar);
++static int ath10k_pci_deinit_irq(struct ath10k *ar);
++static int ath10k_pci_request_irq(struct ath10k *ar);
++static void ath10k_pci_free_irq(struct ath10k *ar);
++static int ath10k_pci_bmi_wait(struct ath10k_ce_pipe *tx_pipe,
++			       struct ath10k_ce_pipe *rx_pipe,
++			       struct bmi_xfer *xfer);
++static void ath10k_pci_cleanup_ce(struct ath10k *ar);
+ 
+ static const struct ce_attr host_ce_config_wlan[] = {
+ 	/* CE0: host->target HTC control and raw streams */
+@@ -200,6 +218,87 @@ static const struct ce_pipe_config target_ce_config_wlan[] = {
+ 	/* CE7 used only by Host */
+ };
+ 
++static bool ath10k_pci_irq_pending(struct ath10k *ar)
++{
++	u32 cause;
++
++	/* Check if the shared legacy irq is for us */
++	cause = ath10k_pci_read32(ar, SOC_CORE_BASE_ADDRESS +
++				  PCIE_INTR_CAUSE_ADDRESS);
++	if (cause & (PCIE_INTR_FIRMWARE_MASK | PCIE_INTR_CE_MASK_ALL))
++		return true;
++
++	return false;
++}
++
++static void ath10k_pci_disable_and_clear_legacy_irq(struct ath10k *ar)
++{
++	/* IMPORTANT: INTR_CLR register has to be set after
++	 * INTR_ENABLE is set to 0, otherwise interrupt can not be
++	 * really cleared. */
++	ath10k_pci_write32(ar, SOC_CORE_BASE_ADDRESS + PCIE_INTR_ENABLE_ADDRESS,
++			   0);
++	ath10k_pci_write32(ar, SOC_CORE_BASE_ADDRESS + PCIE_INTR_CLR_ADDRESS,
++			   PCIE_INTR_FIRMWARE_MASK | PCIE_INTR_CE_MASK_ALL);
++
++	/* IMPORTANT: this extra read transaction is required to
++	 * flush the posted write buffer. */
++	(void) ath10k_pci_read32(ar, SOC_CORE_BASE_ADDRESS +
++				 PCIE_INTR_ENABLE_ADDRESS);
++}
++
++static void ath10k_pci_enable_legacy_irq(struct ath10k *ar)
++{
++	ath10k_pci_write32(ar, SOC_CORE_BASE_ADDRESS +
++			   PCIE_INTR_ENABLE_ADDRESS,
++			   PCIE_INTR_FIRMWARE_MASK | PCIE_INTR_CE_MASK_ALL);
++
++	/* IMPORTANT: this extra read transaction is required to
++	 * flush the posted write buffer. */
++	(void) ath10k_pci_read32(ar, SOC_CORE_BASE_ADDRESS +
++				 PCIE_INTR_ENABLE_ADDRESS);
++}
++
++static irqreturn_t ath10k_pci_early_irq_handler(int irq, void *arg)
++{
++	struct ath10k *ar = arg;
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++
++	if (ar_pci->num_msi_intrs == 0) {
++		if (!ath10k_pci_irq_pending(ar))
++			return IRQ_NONE;
++
++		ath10k_pci_disable_and_clear_legacy_irq(ar);
++	}
++
++	tasklet_schedule(&ar_pci->early_irq_tasklet);
++
++	return IRQ_HANDLED;
++}
++
++static int ath10k_pci_request_early_irq(struct ath10k *ar)
++{
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++	int ret;
++
++	/* Regardless whether MSI-X/MSI/legacy irqs have been set up the first
++	 * interrupt from irq vector is triggered in all cases for FW
++	 * indication/errors */
++	ret = request_irq(ar_pci->pdev->irq, ath10k_pci_early_irq_handler,
++			  IRQF_SHARED, "ath10k_pci (early)", ar);
++	if (ret) {
++		ath10k_warn("failed to request early irq: %d\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static void ath10k_pci_free_early_irq(struct ath10k *ar)
++{
++	free_irq(ath10k_pci_priv(ar)->pdev->irq, ar);
++}
++
+ /*
+  * Diagnostic read/write access is provided for startup/config/debug usage.
+  * Caller must guarantee proper alignment, when applicable, and single user
+@@ -526,17 +625,6 @@ static bool ath10k_pci_target_is_awake(struct ath10k *ar)
+ 	return (RTC_STATE_V_GET(val) == RTC_STATE_V_ON);
+ }
+ 
+-static void ath10k_pci_wait(struct ath10k *ar)
+-{
+-	int n = 100;
+-
+-	while (n-- && !ath10k_pci_target_is_awake(ar))
+-		msleep(10);
+-
+-	if (n < 0)
+-		ath10k_warn("Unable to wakeup target\n");
+-}
+-
+ int ath10k_do_pci_wake(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+@@ -723,7 +811,7 @@ static int ath10k_pci_hif_send_head(struct ath10k *ar, u8 pipe_id,
+ 	ret = ath10k_ce_send(ce_hdl, nbuf, skb_cb->paddr, len, transfer_id,
+ 			     flags);
+ 	if (ret)
+-		ath10k_warn("CE send failed: %p\n", nbuf);
++		ath10k_warn("failed to send sk_buff to CE: %p\n", nbuf);
+ 
+ 	return ret;
+ }
+@@ -750,9 +838,10 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+ 		   ar->fw_version_build);
+ 
+ 	host_addr = host_interest_item_address(HI_ITEM(hi_failure_state));
+-	if (ath10k_pci_diag_read_mem(ar, host_addr,
+-				     &reg_dump_area, sizeof(u32)) != 0) {
+-		ath10k_warn("could not read hi_failure_state\n");
++	ret = ath10k_pci_diag_read_mem(ar, host_addr,
++				       &reg_dump_area, sizeof(u32));
++	if (ret) {
++		ath10k_err("failed to read FW dump area address: %d\n", ret);
+ 		return;
+ 	}
+ 
+@@ -762,7 +851,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+ 				       &reg_dump_values[0],
+ 				       REG_DUMP_COUNT_QCA988X * sizeof(u32));
+ 	if (ret != 0) {
+-		ath10k_err("could not dump FW Dump Area\n");
++		ath10k_err("failed to read FW dump area: %d\n", ret);
+ 		return;
+ 	}
+ 
+@@ -777,7 +866,7 @@ static void ath10k_pci_hif_dump_area(struct ath10k *ar)
+ 			   reg_dump_values[i + 2],
+ 			   reg_dump_values[i + 3]);
+ 
+-	ieee80211_queue_work(ar->hw, &ar->restart_work);
++	queue_work(ar->workqueue, &ar->restart_work);
+ }
+ 
+ static void ath10k_pci_hif_send_complete_check(struct ath10k *ar, u8 pipe,
+@@ -815,53 +904,41 @@ static void ath10k_pci_hif_set_callbacks(struct ath10k *ar,
+ 	       sizeof(ar_pci->msg_callbacks_current));
+ }
+ 
+-static int ath10k_pci_start_ce(struct ath10k *ar)
++static int ath10k_pci_alloc_compl(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+-	struct ath10k_ce_pipe *ce_diag = ar_pci->ce_diag;
+ 	const struct ce_attr *attr;
+ 	struct ath10k_pci_pipe *pipe_info;
+ 	struct ath10k_pci_compl *compl;
+-	int i, pipe_num, completions, disable_interrupts;
++	int i, pipe_num, completions;
+ 
+ 	spin_lock_init(&ar_pci->compl_lock);
+ 	INIT_LIST_HEAD(&ar_pci->compl_process);
+ 
+-	for (pipe_num = 0; pipe_num < ar_pci->ce_count; pipe_num++) {
++	for (pipe_num = 0; pipe_num < CE_COUNT; pipe_num++) {
+ 		pipe_info = &ar_pci->pipe_info[pipe_num];
+ 
+ 		spin_lock_init(&pipe_info->pipe_lock);
+ 		INIT_LIST_HEAD(&pipe_info->compl_free);
+ 
+ 		/* Handle Diagnostic CE specially */
+-		if (pipe_info->ce_hdl == ce_diag)
++		if (pipe_info->ce_hdl == ar_pci->ce_diag)
+ 			continue;
+ 
+ 		attr = &host_ce_config_wlan[pipe_num];
+ 		completions = 0;
+ 
+-		if (attr->src_nentries) {
+-			disable_interrupts = attr->flags & CE_ATTR_DIS_INTR;
+-			ath10k_ce_send_cb_register(pipe_info->ce_hdl,
+-						   ath10k_pci_ce_send_done,
+-						   disable_interrupts);
++		if (attr->src_nentries)
+ 			completions += attr->src_nentries;
+-		}
+ 
+-		if (attr->dest_nentries) {
+-			ath10k_ce_recv_cb_register(pipe_info->ce_hdl,
+-						   ath10k_pci_ce_recv_data);
++		if (attr->dest_nentries)
+ 			completions += attr->dest_nentries;
+-		}
+-
+-		if (completions == 0)
+-			continue;
+ 
+ 		for (i = 0; i < completions; i++) {
+ 			compl = kmalloc(sizeof(*compl), GFP_KERNEL);
+ 			if (!compl) {
+ 				ath10k_warn("No memory for completion state\n");
+-				ath10k_pci_stop_ce(ar);
++				ath10k_pci_cleanup_ce(ar);
+ 				return -ENOMEM;
+ 			}
+ 
+@@ -873,20 +950,55 @@ static int ath10k_pci_start_ce(struct ath10k *ar)
+ 	return 0;
+ }
+ 
+-static void ath10k_pci_stop_ce(struct ath10k *ar)
++static int ath10k_pci_setup_ce_irq(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+-	struct ath10k_pci_compl *compl;
+-	struct sk_buff *skb;
+-	int i;
++	const struct ce_attr *attr;
++	struct ath10k_pci_pipe *pipe_info;
++	int pipe_num, disable_interrupts;
+ 
+-	ath10k_ce_disable_interrupts(ar);
++	for (pipe_num = 0; pipe_num < CE_COUNT; pipe_num++) {
++		pipe_info = &ar_pci->pipe_info[pipe_num];
++
++		/* Handle Diagnostic CE specially */
++		if (pipe_info->ce_hdl == ar_pci->ce_diag)
++			continue;
++
++		attr = &host_ce_config_wlan[pipe_num];
++
++		if (attr->src_nentries) {
++			disable_interrupts = attr->flags & CE_ATTR_DIS_INTR;
++			ath10k_ce_send_cb_register(pipe_info->ce_hdl,
++						   ath10k_pci_ce_send_done,
++						   disable_interrupts);
++		}
++
++		if (attr->dest_nentries)
++			ath10k_ce_recv_cb_register(pipe_info->ce_hdl,
++						   ath10k_pci_ce_recv_data);
++	}
++
++	return 0;
++}
++
++static void ath10k_pci_kill_tasklet(struct ath10k *ar)
++{
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++	int i;
+ 
+-	/* Cancel the pending tasklet */
+ 	tasklet_kill(&ar_pci->intr_tq);
++	tasklet_kill(&ar_pci->msi_fw_err);
++	tasklet_kill(&ar_pci->early_irq_tasklet);
+ 
+ 	for (i = 0; i < CE_COUNT; i++)
+ 		tasklet_kill(&ar_pci->pipe_info[i].intr);
++}
++
++static void ath10k_pci_stop_ce(struct ath10k *ar)
++{
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++	struct ath10k_pci_compl *compl;
++	struct sk_buff *skb;
+ 
+ 	/* Mark pending completions as aborted, so that upper layers free up
+ 	 * their associated resources */
+@@ -920,7 +1032,7 @@ static void ath10k_pci_cleanup_ce(struct ath10k *ar)
+ 	spin_unlock_bh(&ar_pci->compl_lock);
+ 
+ 	/* Free unused completions for each pipe. */
+-	for (pipe_num = 0; pipe_num < ar_pci->ce_count; pipe_num++) {
++	for (pipe_num = 0; pipe_num < CE_COUNT; pipe_num++) {
+ 		pipe_info = &ar_pci->pipe_info[pipe_num];
+ 
+ 		spin_lock_bh(&pipe_info->pipe_lock);
+@@ -974,8 +1086,8 @@ static void ath10k_pci_process_ce(struct ath10k *ar)
+ 		case ATH10K_PCI_COMPL_RECV:
+ 			ret = ath10k_pci_post_rx_pipe(compl->pipe_info, 1);
+ 			if (ret) {
+-				ath10k_warn("Unable to post recv buffer for pipe: %d\n",
+-					    compl->pipe_info->pipe_num);
++				ath10k_warn("failed to post RX buffer for pipe %d: %d\n",
++					    compl->pipe_info->pipe_num, ret);
+ 				break;
+ 			}
+ 
+@@ -1114,7 +1226,7 @@ static int ath10k_pci_post_rx_pipe(struct ath10k_pci_pipe *pipe_info,
+ 	for (i = 0; i < num; i++) {
+ 		skb = dev_alloc_skb(pipe_info->buf_sz);
+ 		if (!skb) {
+-			ath10k_warn("could not allocate skbuff for pipe %d\n",
++			ath10k_warn("failed to allocate skbuff for pipe %d\n",
+ 				    num);
+ 			ret = -ENOMEM;
+ 			goto err;
+@@ -1127,7 +1239,7 @@ static int ath10k_pci_post_rx_pipe(struct ath10k_pci_pipe *pipe_info,
+ 					 DMA_FROM_DEVICE);
+ 
+ 		if (unlikely(dma_mapping_error(ar->dev, ce_data))) {
+-			ath10k_warn("could not dma map skbuff\n");
++			ath10k_warn("failed to DMA map sk_buff\n");
+ 			dev_kfree_skb_any(skb);
+ 			ret = -EIO;
+ 			goto err;
+@@ -1142,7 +1254,7 @@ static int ath10k_pci_post_rx_pipe(struct ath10k_pci_pipe *pipe_info,
+ 		ret = ath10k_ce_recv_buf_enqueue(ce_state, (void *)skb,
+ 						 ce_data);
+ 		if (ret) {
+-			ath10k_warn("could not enqueue to pipe %d (%d)\n",
++			ath10k_warn("failed to enqueue to pipe %d: %d\n",
+ 				    num, ret);
+ 			goto err;
+ 		}
+@@ -1162,7 +1274,7 @@ static int ath10k_pci_post_rx(struct ath10k *ar)
+ 	const struct ce_attr *attr;
+ 	int pipe_num, ret = 0;
+ 
+-	for (pipe_num = 0; pipe_num < ar_pci->ce_count; pipe_num++) {
++	for (pipe_num = 0; pipe_num < CE_COUNT; pipe_num++) {
+ 		pipe_info = &ar_pci->pipe_info[pipe_num];
+ 		attr = &host_ce_config_wlan[pipe_num];
+ 
+@@ -1172,8 +1284,8 @@ static int ath10k_pci_post_rx(struct ath10k *ar)
+ 		ret = ath10k_pci_post_rx_pipe(pipe_info,
+ 					      attr->dest_nentries - 1);
+ 		if (ret) {
+-			ath10k_warn("Unable to replenish recv buffers for pipe: %d\n",
+-				    pipe_num);
++			ath10k_warn("failed to post RX buffer for pipe %d: %d\n",
++				    pipe_num, ret);
+ 
+ 			for (; pipe_num >= 0; pipe_num--) {
+ 				pipe_info = &ar_pci->pipe_info[pipe_num];
+@@ -1189,23 +1301,58 @@ static int ath10k_pci_post_rx(struct ath10k *ar)
+ static int ath10k_pci_hif_start(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+-	int ret;
++	int ret, ret_early;
+ 
+-	ret = ath10k_pci_start_ce(ar);
++	ath10k_pci_free_early_irq(ar);
++	ath10k_pci_kill_tasklet(ar);
++
++	ret = ath10k_pci_alloc_compl(ar);
+ 	if (ret) {
+-		ath10k_warn("could not start CE (%d)\n", ret);
+-		return ret;
++		ath10k_warn("failed to allocate CE completions: %d\n", ret);
++		goto err_early_irq;
++	}
++
++	ret = ath10k_pci_request_irq(ar);
++	if (ret) {
++		ath10k_warn("failed to post RX buffers for all pipes: %d\n",
++			    ret);
++		goto err_free_compl;
++	}
++
++	ret = ath10k_pci_setup_ce_irq(ar);
++	if (ret) {
++		ath10k_warn("failed to setup CE interrupts: %d\n", ret);
++		goto err_stop;
+ 	}
+ 
+ 	/* Post buffers once to start things off. */
+ 	ret = ath10k_pci_post_rx(ar);
+ 	if (ret) {
+-		ath10k_warn("could not post rx pipes (%d)\n", ret);
+-		return ret;
++		ath10k_warn("failed to post RX buffers for all pipes: %d\n",
++			    ret);
++		goto err_stop;
+ 	}
+ 
+ 	ar_pci->started = 1;
+ 	return 0;
++
++err_stop:
++	ath10k_ce_disable_interrupts(ar);
++	ath10k_pci_free_irq(ar);
++	ath10k_pci_kill_tasklet(ar);
++	ath10k_pci_stop_ce(ar);
++	ath10k_pci_process_ce(ar);
++err_free_compl:
++	ath10k_pci_cleanup_ce(ar);
++err_early_irq:
++	/* Though there should be no interrupts (device was reset)
++	 * power_down() expects the early IRQ to be installed as per the
++	 * driver lifecycle. */
++	ret_early = ath10k_pci_request_early_irq(ar);
++	if (ret_early)
++		ath10k_warn("failed to re-enable early irq: %d\n", ret_early);
++
++	return ret;
+ }
+ 
+ static void ath10k_pci_rx_pipe_cleanup(struct ath10k_pci_pipe *pipe_info)
+@@ -1271,6 +1418,13 @@ static void ath10k_pci_tx_pipe_cleanup(struct ath10k_pci_pipe *pipe_info)
+ 		 * Indicate the completion to higer layer to free
+ 		 * the buffer
+ 		 */
++
++		if (!netbuf) {
++			ath10k_warn("invalid sk_buff on CE %d - NULL pointer. firmware crashed?\n",
++				    ce_hdl->id);
++			continue;
++		}
++
+ 		ATH10K_SKB_CB(netbuf)->is_aborted = true;
+ 		ar_pci->msg_callbacks_current.tx_completion(ar,
+ 							    netbuf,
+@@ -1291,7 +1445,7 @@ static void ath10k_pci_buffer_cleanup(struct ath10k *ar)
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 	int pipe_num;
+ 
+-	for (pipe_num = 0; pipe_num < ar_pci->ce_count; pipe_num++) {
++	for (pipe_num = 0; pipe_num < CE_COUNT; pipe_num++) {
+ 		struct ath10k_pci_pipe *pipe_info;
+ 
+ 		pipe_info = &ar_pci->pipe_info[pipe_num];
+@@ -1306,7 +1460,7 @@ static void ath10k_pci_ce_deinit(struct ath10k *ar)
+ 	struct ath10k_pci_pipe *pipe_info;
+ 	int pipe_num;
+ 
+-	for (pipe_num = 0; pipe_num < ar_pci->ce_count; pipe_num++) {
++	for (pipe_num = 0; pipe_num < CE_COUNT; pipe_num++) {
+ 		pipe_info = &ar_pci->pipe_info[pipe_num];
+ 		if (pipe_info->ce_hdl) {
+ 			ath10k_ce_deinit(pipe_info->ce_hdl);
+@@ -1316,27 +1470,25 @@ static void ath10k_pci_ce_deinit(struct ath10k *ar)
+ 	}
+ }
+ 
+-static void ath10k_pci_disable_irqs(struct ath10k *ar)
+-{
+-	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+-	int i;
+-
+-	for (i = 0; i < max(1, ar_pci->num_msi_intrs); i++)
+-		disable_irq(ar_pci->pdev->irq + i);
+-}
+-
+ static void ath10k_pci_hif_stop(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++	int ret;
+ 
+ 	ath10k_dbg(ATH10K_DBG_PCI, "%s\n", __func__);
+ 
+-	/* Irqs are never explicitly re-enabled. They are implicitly re-enabled
+-	 * by ath10k_pci_start_intr(). */
+-	ath10k_pci_disable_irqs(ar);
++	ret = ath10k_ce_disable_interrupts(ar);
++	if (ret)
++		ath10k_warn("failed to disable CE interrupts: %d\n", ret);
+ 
++	ath10k_pci_free_irq(ar);
++	ath10k_pci_kill_tasklet(ar);
+ 	ath10k_pci_stop_ce(ar);
+ 
++	ret = ath10k_pci_request_early_irq(ar);
++	if (ret)
++		ath10k_warn("failed to re-enable early irq: %d\n", ret);
++
+ 	/* At this point, asynchronous threads are stopped, the target should
+ 	 * not DMA nor interrupt. We process the leftovers and then free
+ 	 * everything else up. */
+@@ -1345,6 +1497,13 @@ static void ath10k_pci_hif_stop(struct ath10k *ar)
+ 	ath10k_pci_cleanup_ce(ar);
+ 	ath10k_pci_buffer_cleanup(ar);
+ 
++	/* Make the sure the device won't access any structures on the host by
++	 * resetting it. The device was fed with PCI CE ringbuffer
++	 * configuration during init. If ringbuffers are freed and the device
++	 * were to access them this could lead to memory corruption on the
++	 * host. */
++	ath10k_pci_device_reset(ar);
++
+ 	ar_pci->started = 0;
+ }
+ 
+@@ -1363,6 +1522,8 @@ static int ath10k_pci_hif_exchange_bmi_msg(struct ath10k *ar,
+ 	void *treq, *tresp = NULL;
+ 	int ret = 0;
+ 
++	might_sleep();
++
+ 	if (resp && !resp_len)
+ 		return -EINVAL;
+ 
+@@ -1403,14 +1564,12 @@ static int ath10k_pci_hif_exchange_bmi_msg(struct ath10k *ar,
+ 	if (ret)
+ 		goto err_resp;
+ 
+-	ret = wait_for_completion_timeout(&xfer.done,
+-					  BMI_COMMUNICATION_TIMEOUT_HZ);
+-	if (ret <= 0) {
++	ret = ath10k_pci_bmi_wait(ce_tx, ce_rx, &xfer);
++	if (ret) {
+ 		u32 unused_buffer;
+ 		unsigned int unused_nbytes;
+ 		unsigned int unused_id;
+ 
+-		ret = -ETIMEDOUT;
+ 		ath10k_ce_cancel_send_next(ce_tx, NULL, &unused_buffer,
+ 					   &unused_nbytes, &unused_id);
+ 	} else {
+@@ -1478,6 +1637,25 @@ static void ath10k_pci_bmi_recv_data(struct ath10k_ce_pipe *ce_state)
+ 	complete(&xfer->done);
+ }
+ 
++static int ath10k_pci_bmi_wait(struct ath10k_ce_pipe *tx_pipe,
++			       struct ath10k_ce_pipe *rx_pipe,
++			       struct bmi_xfer *xfer)
++{
++	unsigned long timeout = jiffies + BMI_COMMUNICATION_TIMEOUT_HZ;
++
++	while (time_before_eq(jiffies, timeout)) {
++		ath10k_pci_bmi_send_done(tx_pipe);
++		ath10k_pci_bmi_recv_data(rx_pipe);
++
++		if (completion_done(&xfer->done))
++			return 0;
++
++		schedule();
++	}
++
++	return -ETIMEDOUT;
++}
++
+ /*
+  * Map from service/endpoint to Copy Engine.
+  * This table is derived from the CE_PCI TABLE, above.
+@@ -1587,7 +1765,7 @@ static int ath10k_pci_wake_target_cpu(struct ath10k *ar)
+ 					      CORE_CTRL_ADDRESS,
+ 					  &core_ctrl);
+ 	if (ret) {
+-		ath10k_warn("Unable to read core ctrl\n");
++		ath10k_warn("failed to read core_ctrl: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+@@ -1597,10 +1775,13 @@ static int ath10k_pci_wake_target_cpu(struct ath10k *ar)
+ 	ret = ath10k_pci_diag_write_access(ar, SOC_CORE_BASE_ADDRESS |
+ 					       CORE_CTRL_ADDRESS,
+ 					   core_ctrl);
+-	if (ret)
+-		ath10k_warn("Unable to set interrupt mask\n");
++	if (ret) {
++		ath10k_warn("failed to set target CPU interrupt mask: %d\n",
++			    ret);
++		return ret;
++	}
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static int ath10k_pci_init_config(struct ath10k *ar)
+@@ -1751,7 +1932,7 @@ static int ath10k_pci_ce_init(struct ath10k *ar)
+ 	const struct ce_attr *attr;
+ 	int pipe_num;
+ 
+-	for (pipe_num = 0; pipe_num < ar_pci->ce_count; pipe_num++) {
++	for (pipe_num = 0; pipe_num < CE_COUNT; pipe_num++) {
+ 		pipe_info = &ar_pci->pipe_info[pipe_num];
+ 		pipe_info->pipe_num = pipe_num;
+ 		pipe_info->hif_ce_state = ar;
+@@ -1759,7 +1940,7 @@ static int ath10k_pci_ce_init(struct ath10k *ar)
+ 
+ 		pipe_info->ce_hdl = ath10k_ce_init(ar, pipe_num, attr);
+ 		if (pipe_info->ce_hdl == NULL) {
+-			ath10k_err("Unable to initialize CE for pipe: %d\n",
++			ath10k_err("failed to initialize CE for pipe: %d\n",
+ 				   pipe_num);
+ 
+ 			/* It is safe to call it here. It checks if ce_hdl is
+@@ -1768,31 +1949,18 @@ static int ath10k_pci_ce_init(struct ath10k *ar)
+ 			return -1;
+ 		}
+ 
+-		if (pipe_num == ar_pci->ce_count - 1) {
++		if (pipe_num == CE_COUNT - 1) {
+ 			/*
+ 			 * Reserve the ultimate CE for
+ 			 * diagnostic Window support
+ 			 */
+-			ar_pci->ce_diag =
+-			ar_pci->pipe_info[ar_pci->ce_count - 1].ce_hdl;
++			ar_pci->ce_diag = pipe_info->ce_hdl;
+ 			continue;
+ 		}
+ 
+ 		pipe_info->buf_sz = (size_t) (attr->src_sz_max);
+ 	}
+ 
+-	/*
+-	 * Initially, establish CE completion handlers for use with BMI.
+-	 * These are overwritten with generic handlers after we exit BMI phase.
+-	 */
+-	pipe_info = &ar_pci->pipe_info[BMI_CE_NUM_TO_TARG];
+-	ath10k_ce_send_cb_register(pipe_info->ce_hdl,
+-				   ath10k_pci_bmi_send_done, 0);
+-
+-	pipe_info = &ar_pci->pipe_info[BMI_CE_NUM_TO_HOST];
+-	ath10k_ce_recv_cb_register(pipe_info->ce_hdl,
+-				   ath10k_pci_bmi_recv_data);
+-
+ 	return 0;
+ }
+ 
+@@ -1828,14 +1996,9 @@ static void ath10k_pci_fw_interrupt_handler(struct ath10k *ar)
+ static int ath10k_pci_hif_power_up(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++	const char *irq_mode;
+ 	int ret;
+ 
+-	ret = ath10k_pci_start_intr(ar);
+-	if (ret) {
+-		ath10k_err("could not start interrupt handling (%d)\n", ret);
+-		goto err;
+-	}
+-
+ 	/*
+ 	 * Bring the target up cleanly.
+ 	 *
+@@ -1846,39 +2009,80 @@ static int ath10k_pci_hif_power_up(struct ath10k *ar)
+ 	 * is in an unexpected state. We try to catch that here in order to
+ 	 * reset the Target and retry the probe.
+ 	 */
+-	ath10k_pci_device_reset(ar);
+-
+-	ret = ath10k_pci_reset_target(ar);
+-	if (ret)
+-		goto err_irq;
++	ret = ath10k_pci_device_reset(ar);
++	if (ret) {
++		ath10k_err("failed to reset target: %d\n", ret);
++		goto err;
++	}
+ 
+ 	if (!test_bit(ATH10K_PCI_FEATURE_SOC_POWER_SAVE, ar_pci->features))
+ 		/* Force AWAKE forever */
+ 		ath10k_do_pci_wake(ar);
+ 
+ 	ret = ath10k_pci_ce_init(ar);
+-	if (ret)
++	if (ret) {
++		ath10k_err("failed to initialize CE: %d\n", ret);
+ 		goto err_ps;
++	}
+ 
+-	ret = ath10k_pci_init_config(ar);
+-	if (ret)
++	ret = ath10k_ce_disable_interrupts(ar);
++	if (ret) {
++		ath10k_err("failed to disable CE interrupts: %d\n", ret);
+ 		goto err_ce;
++	}
+ 
+-	ret = ath10k_pci_wake_target_cpu(ar);
++	ret = ath10k_pci_init_irq(ar);
+ 	if (ret) {
+-		ath10k_err("could not wake up target CPU (%d)\n", ret);
++		ath10k_err("failed to init irqs: %d\n", ret);
+ 		goto err_ce;
+ 	}
+ 
++	ret = ath10k_pci_request_early_irq(ar);
++	if (ret) {
++		ath10k_err("failed to request early irq: %d\n", ret);
++		goto err_deinit_irq;
++	}
++
++	ret = ath10k_pci_wait_for_target_init(ar);
++	if (ret) {
++		ath10k_err("failed to wait for target to init: %d\n", ret);
++		goto err_free_early_irq;
++	}
++
++	ret = ath10k_pci_init_config(ar);
++	if (ret) {
++		ath10k_err("failed to setup init config: %d\n", ret);
++		goto err_free_early_irq;
++	}
++
++	ret = ath10k_pci_wake_target_cpu(ar);
++	if (ret) {
++		ath10k_err("could not wake up target CPU: %d\n", ret);
++		goto err_free_early_irq;
++	}
++
++	if (ar_pci->num_msi_intrs > 1)
++		irq_mode = "MSI-X";
++	else if (ar_pci->num_msi_intrs == 1)
++		irq_mode = "MSI";
++	else
++		irq_mode = "legacy";
++
++	if (!test_bit(ATH10K_FLAG_FIRST_BOOT_DONE, &ar->dev_flags))
++		ath10k_info("pci irq %s\n", irq_mode);
++
+ 	return 0;
+ 
++err_free_early_irq:
++	ath10k_pci_free_early_irq(ar);
++err_deinit_irq:
++	ath10k_pci_deinit_irq(ar);
+ err_ce:
+ 	ath10k_pci_ce_deinit(ar);
++	ath10k_pci_device_reset(ar);
+ err_ps:
+ 	if (!test_bit(ATH10K_PCI_FEATURE_SOC_POWER_SAVE, ar_pci->features))
+ 		ath10k_do_pci_sleep(ar);
+-err_irq:
+-	ath10k_pci_stop_intr(ar);
+ err:
+ 	return ret;
+ }
+@@ -1887,7 +2091,10 @@ static void ath10k_pci_hif_power_down(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 
+-	ath10k_pci_stop_intr(ar);
++	ath10k_pci_free_early_irq(ar);
++	ath10k_pci_kill_tasklet(ar);
++	ath10k_pci_deinit_irq(ar);
++	ath10k_pci_device_reset(ar);
+ 
+ 	ath10k_pci_ce_deinit(ar);
+ 	if (!test_bit(ATH10K_PCI_FEATURE_SOC_POWER_SAVE, ar_pci->features))
+@@ -2023,25 +2230,10 @@ static irqreturn_t ath10k_pci_interrupt_handler(int irq, void *arg)
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 
+ 	if (ar_pci->num_msi_intrs == 0) {
+-		/*
+-		 * IMPORTANT: INTR_CLR regiser has to be set after
+-		 * INTR_ENABLE is set to 0, otherwise interrupt can not be
+-		 * really cleared.
+-		 */
+-		iowrite32(0, ar_pci->mem +
+-			  (SOC_CORE_BASE_ADDRESS |
+-			   PCIE_INTR_ENABLE_ADDRESS));
+-		iowrite32(PCIE_INTR_FIRMWARE_MASK |
+-			  PCIE_INTR_CE_MASK_ALL,
+-			  ar_pci->mem + (SOC_CORE_BASE_ADDRESS |
+-					 PCIE_INTR_CLR_ADDRESS));
+-		/*
+-		 * IMPORTANT: this extra read transaction is required to
+-		 * flush the posted write buffer.
+-		 */
+-		(void) ioread32(ar_pci->mem +
+-				(SOC_CORE_BASE_ADDRESS |
+-				 PCIE_INTR_ENABLE_ADDRESS));
++		if (!ath10k_pci_irq_pending(ar))
++			return IRQ_NONE;
++
++		ath10k_pci_disable_and_clear_legacy_irq(ar);
+ 	}
+ 
+ 	tasklet_schedule(&ar_pci->intr_tq);
+@@ -2049,6 +2241,34 @@ static irqreturn_t ath10k_pci_interrupt_handler(int irq, void *arg)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void ath10k_pci_early_irq_tasklet(unsigned long data)
++{
++	struct ath10k *ar = (struct ath10k *)data;
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++	u32 fw_ind;
++	int ret;
++
++	ret = ath10k_pci_wake(ar);
++	if (ret) {
++		ath10k_warn("failed to wake target in early irq tasklet: %d\n",
++			    ret);
++		return;
++	}
++
++	fw_ind = ath10k_pci_read32(ar, ar_pci->fw_indicator_address);
++	if (fw_ind & FW_IND_EVENT_PENDING) {
++		ath10k_pci_write32(ar, ar_pci->fw_indicator_address,
++				   fw_ind & ~FW_IND_EVENT_PENDING);
++
++		/* Some structures are unavailable during early boot or at
++		 * driver teardown so just print that the device has crashed. */
++		ath10k_warn("device crashed - no diagnostics available\n");
++	}
++
++	ath10k_pci_sleep(ar);
++	ath10k_pci_enable_legacy_irq(ar);
++}
++
+ static void ath10k_pci_tasklet(unsigned long data)
+ {
+ 	struct ath10k *ar = (struct ath10k *)data;
+@@ -2057,40 +2277,22 @@ static void ath10k_pci_tasklet(unsigned long data)
+ 	ath10k_pci_fw_interrupt_handler(ar); /* FIXME: Handle FW error */
+ 	ath10k_ce_per_engine_service_any(ar);
+ 
+-	if (ar_pci->num_msi_intrs == 0) {
+-		/* Enable Legacy PCI line interrupts */
+-		iowrite32(PCIE_INTR_FIRMWARE_MASK |
+-			  PCIE_INTR_CE_MASK_ALL,
+-			  ar_pci->mem + (SOC_CORE_BASE_ADDRESS |
+-					 PCIE_INTR_ENABLE_ADDRESS));
+-		/*
+-		 * IMPORTANT: this extra read transaction is required to
+-		 * flush the posted write buffer
+-		 */
+-		(void) ioread32(ar_pci->mem +
+-				(SOC_CORE_BASE_ADDRESS |
+-				 PCIE_INTR_ENABLE_ADDRESS));
+-	}
++	/* Re-enable legacy irq that was disabled in the irq handler */
++	if (ar_pci->num_msi_intrs == 0)
++		ath10k_pci_enable_legacy_irq(ar);
+ }
+ 
+-static int ath10k_pci_start_intr_msix(struct ath10k *ar, int num)
++static int ath10k_pci_request_irq_msix(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+-	int ret;
+-	int i;
+-
+-	ret = pci_enable_msi_block(ar_pci->pdev, num);
+-	if (ret)
+-		return ret;
++	int ret, i;
+ 
+ 	ret = request_irq(ar_pci->pdev->irq + MSI_ASSIGN_FW,
+ 			  ath10k_pci_msi_fw_handler,
+ 			  IRQF_SHARED, "ath10k_pci", ar);
+ 	if (ret) {
+-		ath10k_warn("request_irq(%d) failed %d\n",
++		ath10k_warn("failed to request MSI-X fw irq %d: %d\n",
+ 			    ar_pci->pdev->irq + MSI_ASSIGN_FW, ret);
+-
+-		pci_disable_msi(ar_pci->pdev);
+ 		return ret;
+ 	}
+ 
+@@ -2099,44 +2301,38 @@ static int ath10k_pci_start_intr_msix(struct ath10k *ar, int num)
+ 				  ath10k_pci_per_engine_handler,
+ 				  IRQF_SHARED, "ath10k_pci", ar);
+ 		if (ret) {
+-			ath10k_warn("request_irq(%d) failed %d\n",
++			ath10k_warn("failed to request MSI-X ce irq %d: %d\n",
+ 				    ar_pci->pdev->irq + i, ret);
+ 
+ 			for (i--; i >= MSI_ASSIGN_CE_INITIAL; i--)
+ 				free_irq(ar_pci->pdev->irq + i, ar);
+ 
+ 			free_irq(ar_pci->pdev->irq + MSI_ASSIGN_FW, ar);
+-			pci_disable_msi(ar_pci->pdev);
+ 			return ret;
+ 		}
+ 	}
+ 
+-	ath10k_info("MSI-X interrupt handling (%d intrs)\n", num);
+ 	return 0;
+ }
+ 
+-static int ath10k_pci_start_intr_msi(struct ath10k *ar)
++static int ath10k_pci_request_irq_msi(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 	int ret;
+ 
+-	ret = pci_enable_msi(ar_pci->pdev);
+-	if (ret < 0)
+-		return ret;
+-
+ 	ret = request_irq(ar_pci->pdev->irq,
+ 			  ath10k_pci_interrupt_handler,
+ 			  IRQF_SHARED, "ath10k_pci", ar);
+-	if (ret < 0) {
+-		pci_disable_msi(ar_pci->pdev);
++	if (ret) {
++		ath10k_warn("failed to request MSI irq %d: %d\n",
++			    ar_pci->pdev->irq, ret);
+ 		return ret;
+ 	}
+ 
+-	ath10k_info("MSI interrupt handling\n");
+ 	return 0;
+ }
+ 
+-static int ath10k_pci_start_intr_legacy(struct ath10k *ar)
++static int ath10k_pci_request_irq_legacy(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 	int ret;
+@@ -2144,112 +2340,165 @@ static int ath10k_pci_start_intr_legacy(struct ath10k *ar)
+ 	ret = request_irq(ar_pci->pdev->irq,
+ 			  ath10k_pci_interrupt_handler,
+ 			  IRQF_SHARED, "ath10k_pci", ar);
+-	if (ret < 0)
++	if (ret) {
++		ath10k_warn("failed to request legacy irq %d: %d\n",
++			    ar_pci->pdev->irq, ret);
+ 		return ret;
++	}
+ 
+-	/*
+-	 * Make sure to wake the Target before enabling Legacy
+-	 * Interrupt.
+-	 */
+-	iowrite32(PCIE_SOC_WAKE_V_MASK,
+-		  ar_pci->mem + PCIE_LOCAL_BASE_ADDRESS +
+-		  PCIE_SOC_WAKE_ADDRESS);
++	return 0;
++}
++
++static int ath10k_pci_request_irq(struct ath10k *ar)
++{
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 
+-	ath10k_pci_wait(ar);
++	switch (ar_pci->num_msi_intrs) {
++	case 0:
++		return ath10k_pci_request_irq_legacy(ar);
++	case 1:
++		return ath10k_pci_request_irq_msi(ar);
++	case MSI_NUM_REQUEST:
++		return ath10k_pci_request_irq_msix(ar);
++	}
+ 
+-	/*
+-	 * A potential race occurs here: The CORE_BASE write
+-	 * depends on target correctly decoding AXI address but
+-	 * host won't know when target writes BAR to CORE_CTRL.
+-	 * This write might get lost if target has NOT written BAR.
+-	 * For now, fix the race by repeating the write in below
+-	 * synchronization checking.
+-	 */
+-	iowrite32(PCIE_INTR_FIRMWARE_MASK |
+-		  PCIE_INTR_CE_MASK_ALL,
+-		  ar_pci->mem + (SOC_CORE_BASE_ADDRESS |
+-				 PCIE_INTR_ENABLE_ADDRESS));
+-	iowrite32(PCIE_SOC_WAKE_RESET,
+-		  ar_pci->mem + PCIE_LOCAL_BASE_ADDRESS +
+-		  PCIE_SOC_WAKE_ADDRESS);
+-
+-	ath10k_info("legacy interrupt handling\n");
+-	return 0;
++	ath10k_warn("unknown irq configuration upon request\n");
++	return -EINVAL;
+ }
+ 
+-static int ath10k_pci_start_intr(struct ath10k *ar)
++static void ath10k_pci_free_irq(struct ath10k *ar)
++{
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++	int i;
++
++	/* There's at least one interrupt irregardless whether its legacy INTR
++	 * or MSI or MSI-X */
++	for (i = 0; i < max(1, ar_pci->num_msi_intrs); i++)
++		free_irq(ar_pci->pdev->irq + i, ar);
++}
++
++static void ath10k_pci_init_irq_tasklets(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+-	int num = MSI_NUM_REQUEST;
+-	int ret;
+ 	int i;
+ 
+-	tasklet_init(&ar_pci->intr_tq, ath10k_pci_tasklet, (unsigned long) ar);
++	tasklet_init(&ar_pci->intr_tq, ath10k_pci_tasklet, (unsigned long)ar);
+ 	tasklet_init(&ar_pci->msi_fw_err, ath10k_msi_err_tasklet,
+-		     (unsigned long) ar);
++		     (unsigned long)ar);
++	tasklet_init(&ar_pci->early_irq_tasklet, ath10k_pci_early_irq_tasklet,
++		     (unsigned long)ar);
+ 
+ 	for (i = 0; i < CE_COUNT; i++) {
+ 		ar_pci->pipe_info[i].ar_pci = ar_pci;
+-		tasklet_init(&ar_pci->pipe_info[i].intr,
+-			     ath10k_pci_ce_tasklet,
++		tasklet_init(&ar_pci->pipe_info[i].intr, ath10k_pci_ce_tasklet,
+ 			     (unsigned long)&ar_pci->pipe_info[i]);
+ 	}
++}
++
++static int ath10k_pci_init_irq(struct ath10k *ar)
++{
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++	bool msix_supported = test_bit(ATH10K_PCI_FEATURE_MSI_X,
++				       ar_pci->features);
++	int ret;
+ 
+-	if (!test_bit(ATH10K_PCI_FEATURE_MSI_X, ar_pci->features))
+-		num = 1;
++	ath10k_pci_init_irq_tasklets(ar);
+ 
+-	if (num > 1) {
+-		ret = ath10k_pci_start_intr_msix(ar, num);
++	if (ath10k_pci_irq_mode != ATH10K_PCI_IRQ_AUTO &&
++	    !test_bit(ATH10K_FLAG_FIRST_BOOT_DONE, &ar->dev_flags))
++		ath10k_info("limiting irq mode to: %d\n", ath10k_pci_irq_mode);
++
++	/* Try MSI-X */
++	if (ath10k_pci_irq_mode == ATH10K_PCI_IRQ_AUTO && msix_supported) {
++		ar_pci->num_msi_intrs = MSI_NUM_REQUEST;
++		ret = pci_enable_msi_block(ar_pci->pdev, ar_pci->num_msi_intrs);
+ 		if (ret == 0)
+-			goto exit;
++			return 0;
++		if (ret > 0)
++			pci_disable_msi(ar_pci->pdev);
+ 
+-		ath10k_warn("MSI-X didn't succeed (%d), trying MSI\n", ret);
+-		num = 1;
++		/* fall-through */
+ 	}
+ 
+-	if (num == 1) {
+-		ret = ath10k_pci_start_intr_msi(ar);
++	/* Try MSI */
++	if (ath10k_pci_irq_mode != ATH10K_PCI_IRQ_LEGACY) {
++		ar_pci->num_msi_intrs = 1;
++		ret = pci_enable_msi(ar_pci->pdev);
+ 		if (ret == 0)
+-			goto exit;
++			return 0;
+ 
+-		ath10k_warn("MSI didn't succeed (%d), trying legacy INTR\n",
+-			    ret);
+-		num = 0;
++		/* fall-through */
+ 	}
+ 
+-	ret = ath10k_pci_start_intr_legacy(ar);
++	/* Try legacy irq
++	 *
++	 * A potential race occurs here: The CORE_BASE write
++	 * depends on target correctly decoding AXI address but
++	 * host won't know when target writes BAR to CORE_CTRL.
++	 * This write might get lost if target has NOT written BAR.
++	 * For now, fix the race by repeating the write in below
++	 * synchronization checking. */
++	ar_pci->num_msi_intrs = 0;
+ 
+-exit:
+-	ar_pci->num_msi_intrs = num;
+-	ar_pci->ce_count = CE_COUNT;
+-	return ret;
++	ret = ath10k_pci_wake(ar);
++	if (ret) {
++		ath10k_warn("failed to wake target: %d\n", ret);
++		return ret;
++	}
++
++	ath10k_pci_write32(ar, SOC_CORE_BASE_ADDRESS + PCIE_INTR_ENABLE_ADDRESS,
++			   PCIE_INTR_FIRMWARE_MASK | PCIE_INTR_CE_MASK_ALL);
++	ath10k_pci_sleep(ar);
++
++	return 0;
+ }
+ 
+-static void ath10k_pci_stop_intr(struct ath10k *ar)
++static int ath10k_pci_deinit_irq_legacy(struct ath10k *ar)
+ {
+-	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+-	int i;
++	int ret;
+ 
+-	/* There's at least one interrupt irregardless whether its legacy INTR
+-	 * or MSI or MSI-X */
+-	for (i = 0; i < max(1, ar_pci->num_msi_intrs); i++)
+-		free_irq(ar_pci->pdev->irq + i, ar);
++	ret = ath10k_pci_wake(ar);
++	if (ret) {
++		ath10k_warn("failed to wake target: %d\n", ret);
++		return ret;
++	}
+ 
+-	if (ar_pci->num_msi_intrs > 0)
++	ath10k_pci_write32(ar, SOC_CORE_BASE_ADDRESS + PCIE_INTR_ENABLE_ADDRESS,
++			   0);
++	ath10k_pci_sleep(ar);
++
++	return 0;
++}
++
++static int ath10k_pci_deinit_irq(struct ath10k *ar)
++{
++	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
++
++	switch (ar_pci->num_msi_intrs) {
++	case 0:
++		return ath10k_pci_deinit_irq_legacy(ar);
++	case 1:
++		/* fall-through */
++	case MSI_NUM_REQUEST:
+ 		pci_disable_msi(ar_pci->pdev);
++		return 0;
++	}
++
++	ath10k_warn("unknown irq configuration upon deinit\n");
++	return -EINVAL;
+ }
+ 
+-static int ath10k_pci_reset_target(struct ath10k *ar)
++static int ath10k_pci_wait_for_target_init(struct ath10k *ar)
+ {
+ 	struct ath10k_pci *ar_pci = ath10k_pci_priv(ar);
+ 	int wait_limit = 300; /* 3 sec */
++	int ret;
+ 
+-	/* Wait for Target to finish initialization before we proceed. */
+-	iowrite32(PCIE_SOC_WAKE_V_MASK,
+-		  ar_pci->mem + PCIE_LOCAL_BASE_ADDRESS +
+-		  PCIE_SOC_WAKE_ADDRESS);
+-
+-	ath10k_pci_wait(ar);
++	ret = ath10k_pci_wake(ar);
++	if (ret) {
++		ath10k_err("failed to wake up target: %d\n", ret);
++		return ret;
++	}
+ 
+ 	while (wait_limit-- &&
+ 	       !(ioread32(ar_pci->mem + FW_INDICATOR_ADDRESS) &
+@@ -2264,34 +2513,26 @@ static int ath10k_pci_reset_target(struct ath10k *ar)
+ 	}
+ 
+ 	if (wait_limit < 0) {
+-		ath10k_err("Target stalled\n");
+-		iowrite32(PCIE_SOC_WAKE_RESET,
+-			  ar_pci->mem + PCIE_LOCAL_BASE_ADDRESS +
+-			  PCIE_SOC_WAKE_ADDRESS);
+-		return -EIO;
++		ath10k_err("target stalled\n");
++		ret = -EIO;
++		goto out;
+ 	}
+ 
+-	iowrite32(PCIE_SOC_WAKE_RESET,
+-		  ar_pci->mem + PCIE_LOCAL_BASE_ADDRESS +
+-		  PCIE_SOC_WAKE_ADDRESS);
+-
+-	return 0;
++out:
++	ath10k_pci_sleep(ar);
++	return ret;
+ }
+ 
+-static void ath10k_pci_device_reset(struct ath10k *ar)
++static int ath10k_pci_device_reset(struct ath10k *ar)
+ {
+-	int i;
++	int i, ret;
+ 	u32 val;
+ 
+-	if (!SOC_GLOBAL_RESET_ADDRESS)
+-		return;
+-
+-	ath10k_pci_reg_write32(ar, PCIE_SOC_WAKE_ADDRESS,
+-			       PCIE_SOC_WAKE_V_MASK);
+-	for (i = 0; i < ATH_PCI_RESET_WAIT_MAX; i++) {
+-		if (ath10k_pci_target_is_awake(ar))
+-			break;
+-		msleep(1);
++	ret = ath10k_do_pci_wake(ar);
++	if (ret) {
++		ath10k_err("failed to wake up target: %d\n",
++			   ret);
++		return ret;
+ 	}
+ 
+ 	/* Put Target, including PCIe, into RESET. */
+@@ -2317,7 +2558,8 @@ static void ath10k_pci_device_reset(struct ath10k *ar)
+ 		msleep(1);
+ 	}
+ 
+-	ath10k_pci_reg_write32(ar, PCIE_SOC_WAKE_ADDRESS, PCIE_SOC_WAKE_RESET);
++	ath10k_do_pci_sleep(ar);
++	return 0;
+ }
+ 
+ static void ath10k_pci_dump_features(struct ath10k_pci *ar_pci)
+@@ -2374,7 +2616,7 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
+ 
+ 	ar = ath10k_core_create(ar_pci, ar_pci->dev, &ath10k_pci_hif_ops);
+ 	if (!ar) {
+-		ath10k_err("ath10k_core_create failed!\n");
++		ath10k_err("failed to create driver core\n");
+ 		ret = -EINVAL;
+ 		goto err_ar_pci;
+ 	}
+@@ -2393,20 +2635,20 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
+ 	 */
+ 	ret = pci_assign_resource(pdev, BAR_NUM);
+ 	if (ret) {
+-		ath10k_err("cannot assign PCI space: %d\n", ret);
++		ath10k_err("failed to assign PCI space: %d\n", ret);
+ 		goto err_ar;
+ 	}
+ 
+ 	ret = pci_enable_device(pdev);
+ 	if (ret) {
+-		ath10k_err("cannot enable PCI device: %d\n", ret);
++		ath10k_err("failed to enable PCI device: %d\n", ret);
+ 		goto err_ar;
+ 	}
+ 
+ 	/* Request MMIO resources */
+ 	ret = pci_request_region(pdev, BAR_NUM, "ath");
+ 	if (ret) {
+-		ath10k_err("PCI MMIO reservation error: %d\n", ret);
++		ath10k_err("failed to request MMIO region: %d\n", ret);
+ 		goto err_device;
+ 	}
+ 
+@@ -2416,13 +2658,13 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
+ 	 */
+ 	ret = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
+ 	if (ret) {
+-		ath10k_err("32-bit DMA not available: %d\n", ret);
++		ath10k_err("failed to set DMA mask to 32-bit: %d\n", ret);
+ 		goto err_region;
+ 	}
+ 
+ 	ret = pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32));
+ 	if (ret) {
+-		ath10k_err("cannot enable 32-bit consistent DMA\n");
++		ath10k_err("failed to set consistent DMA mask to 32-bit\n");
+ 		goto err_region;
+ 	}
+ 
+@@ -2439,7 +2681,7 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
+ 	/* Arrange for access to Target SoC registers. */
+ 	mem = pci_iomap(pdev, BAR_NUM, 0);
+ 	if (!mem) {
+-		ath10k_err("PCI iomap error\n");
++		ath10k_err("failed to perform IOMAP for BAR%d\n", BAR_NUM);
+ 		ret = -EIO;
+ 		goto err_master;
+ 	}
+@@ -2451,11 +2693,10 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
+ 	ret = ath10k_do_pci_wake(ar);
+ 	if (ret) {
+ 		ath10k_err("Failed to get chip id: %d\n", ret);
+-		return ret;
++		goto err_iomap;
+ 	}
+ 
+-	chip_id = ath10k_pci_read32(ar,
+-				    RTC_SOC_BASE_ADDRESS + SOC_CHIP_ID_ADDRESS);
++	chip_id = ath10k_pci_soc_read32(ar, SOC_CHIP_ID_ADDRESS);
+ 
+ 	ath10k_do_pci_sleep(ar);
+ 
+@@ -2463,7 +2704,7 @@ static int ath10k_pci_probe(struct pci_dev *pdev,
+ 
+ 	ret = ath10k_core_register(ar, chip_id);
+ 	if (ret) {
+-		ath10k_err("could not register driver core (%d)\n", ret);
++		ath10k_err("failed to register driver core: %d\n", ret);
+ 		goto err_iomap;
+ 	}
+ 
+@@ -2529,7 +2770,7 @@ static int __init ath10k_pci_init(void)
+ 
+ 	ret = pci_register_driver(&ath10k_pci_driver);
+ 	if (ret)
+-		ath10k_err("pci_register_driver failed [%d]\n", ret);
++		ath10k_err("failed to register PCI driver: %d\n", ret);
+ 
+ 	return ret;
+ }
+diff --git a/drivers/net/wireless/ath/ath10k/pci.h b/drivers/net/wireless/ath/ath10k/pci.h
+index 52fb7b9..a4f3203 100644
+--- a/drivers/net/wireless/ath/ath10k/pci.h
++++ b/drivers/net/wireless/ath/ath10k/pci.h
+@@ -198,9 +198,7 @@ struct ath10k_pci {
+ 
+ 	struct tasklet_struct intr_tq;
+ 	struct tasklet_struct msi_fw_err;
+-
+-	/* Number of Copy Engines supported */
+-	unsigned int ce_count;
++	struct tasklet_struct early_irq_tasklet;
+ 
+ 	int started;
+ 
+@@ -318,6 +316,16 @@ static inline u32 ath10k_pci_read32(struct ath10k *ar, u32 offset)
+ 	return ioread32(ar_pci->mem + offset);
+ }
+ 
++static inline u32 ath10k_pci_soc_read32(struct ath10k *ar, u32 addr)
++{
++	return ath10k_pci_read32(ar, RTC_SOC_BASE_ADDRESS + addr);
++}
++
++static inline void ath10k_pci_soc_write32(struct ath10k *ar, u32 addr, u32 val)
++{
++	ath10k_pci_write32(ar, RTC_SOC_BASE_ADDRESS + addr, val);
++}
++
+ int ath10k_do_pci_wake(struct ath10k *ar);
+ void ath10k_do_pci_sleep(struct ath10k *ar);
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/txrx.c b/drivers/net/wireless/ath/ath10k/txrx.c
+index 5ae373a..2282980 100644
+--- a/drivers/net/wireless/ath/ath10k/txrx.c
++++ b/drivers/net/wireless/ath/ath10k/txrx.c
+@@ -75,6 +75,7 @@ void ath10k_txrx_tx_unref(struct ath10k_htt *htt,
+ 	ath10k_report_offchan_tx(htt->ar, msdu);
+ 
+ 	info = IEEE80211_SKB_CB(msdu);
++	memset(&info->status, 0, sizeof(info->status));
+ 
+ 	if (tx_done->discard) {
+ 		ieee80211_free_txskb(htt->ar->hw, msdu);
+@@ -183,7 +184,7 @@ static void process_rx_rates(struct ath10k *ar, struct htt_rx_info *info,
+ 		/* VHT-SIG-A1 in info 1, VHT-SIG-A2 in info2
+ 		   TODO check this */
+ 		mcs = (info2 >> 4) & 0x0F;
+-		nss = (info1 >> 10) & 0x07;
++		nss = ((info1 >> 10) & 0x07) + 1;
+ 		bw = info1 & 3;
+ 		sgi = info2 & 1;
+ 
+@@ -236,6 +237,9 @@ void ath10k_process_rx(struct ath10k *ar, struct htt_rx_info *info)
+ 	if (info->fcs_err)
+ 		status->flag |= RX_FLAG_FAILED_FCS_CRC;
+ 
++	if (info->amsdu_more)
++		status->flag |= RX_FLAG_AMSDU_MORE;
++
+ 	status->signal = info->signal;
+ 
+ 	spin_lock_bh(&ar->data_lock);
+diff --git a/drivers/net/wireless/ath/ath10k/wmi.c b/drivers/net/wireless/ath/ath10k/wmi.c
+index 77238af..c654137 100644
+--- a/drivers/net/wireless/ath/ath10k/wmi.c
++++ b/drivers/net/wireless/ath/ath10k/wmi.c
+@@ -674,10 +674,8 @@ int ath10k_wmi_mgmt_tx(struct ath10k *ar, struct sk_buff *skb)
+ 
+ 	/* Send the management frame buffer to the target */
+ 	ret = ath10k_wmi_cmd_send(ar, wmi_skb, ar->wmi.cmd->mgmt_tx_cmdid);
+-	if (ret) {
+-		dev_kfree_skb_any(skb);
++	if (ret)
+ 		return ret;
+-	}
+ 
+ 	/* TODO: report tx status to mac80211 - temporary just ACK */
+ 	info->flags |= IEEE80211_TX_STAT_ACK;
+@@ -909,6 +907,11 @@ static int ath10k_wmi_event_mgmt_rx(struct ath10k *ar, struct sk_buff *skb)
+ 	ath10k_dbg(ATH10K_DBG_MGMT,
+ 		   "event mgmt rx status %08x\n", rx_status);
+ 
++	if (test_bit(ATH10K_CAC_RUNNING, &ar->dev_flags)) {
++		dev_kfree_skb(skb);
++		return 0;
++	}
++
+ 	if (rx_status & WMI_RX_STATUS_ERR_DECRYPT) {
+ 		dev_kfree_skb(skb);
+ 		return 0;
+@@ -1383,9 +1386,259 @@ static void ath10k_wmi_event_tbttoffset_update(struct ath10k *ar,
+ 	ath10k_dbg(ATH10K_DBG_WMI, "WMI_TBTTOFFSET_UPDATE_EVENTID\n");
+ }
+ 
++static void ath10k_dfs_radar_report(struct ath10k *ar,
++				    struct wmi_single_phyerr_rx_event *event,
++				    struct phyerr_radar_report *rr,
++				    u64 tsf)
++{
++	u32 reg0, reg1, tsf32l;
++	struct pulse_event pe;
++	u64 tsf64;
++	u8 rssi, width;
++
++	reg0 = __le32_to_cpu(rr->reg0);
++	reg1 = __le32_to_cpu(rr->reg1);
++
++	ath10k_dbg(ATH10K_DBG_REGULATORY,
++		   "wmi phyerr radar report chirp %d max_width %d agc_total_gain %d pulse_delta_diff %d\n",
++		   MS(reg0, RADAR_REPORT_REG0_PULSE_IS_CHIRP),
++		   MS(reg0, RADAR_REPORT_REG0_PULSE_IS_MAX_WIDTH),
++		   MS(reg0, RADAR_REPORT_REG0_AGC_TOTAL_GAIN),
++		   MS(reg0, RADAR_REPORT_REG0_PULSE_DELTA_DIFF));
++	ath10k_dbg(ATH10K_DBG_REGULATORY,
++		   "wmi phyerr radar report pulse_delta_pean %d pulse_sidx %d fft_valid %d agc_mb_gain %d subchan_mask %d\n",
++		   MS(reg0, RADAR_REPORT_REG0_PULSE_DELTA_PEAK),
++		   MS(reg0, RADAR_REPORT_REG0_PULSE_SIDX),
++		   MS(reg1, RADAR_REPORT_REG1_PULSE_SRCH_FFT_VALID),
++		   MS(reg1, RADAR_REPORT_REG1_PULSE_AGC_MB_GAIN),
++		   MS(reg1, RADAR_REPORT_REG1_PULSE_SUBCHAN_MASK));
++	ath10k_dbg(ATH10K_DBG_REGULATORY,
++		   "wmi phyerr radar report pulse_tsf_offset 0x%X pulse_dur: %d\n",
++		   MS(reg1, RADAR_REPORT_REG1_PULSE_TSF_OFFSET),
++		   MS(reg1, RADAR_REPORT_REG1_PULSE_DUR));
++
++	if (!ar->dfs_detector)
++		return;
++
++	/* report event to DFS pattern detector */
++	tsf32l = __le32_to_cpu(event->hdr.tsf_timestamp);
++	tsf64 = tsf & (~0xFFFFFFFFULL);
++	tsf64 |= tsf32l;
++
++	width = MS(reg1, RADAR_REPORT_REG1_PULSE_DUR);
++	rssi = event->hdr.rssi_combined;
++
++	/* hardware store this as 8 bit signed value,
++	 * set to zero if negative number
++	 */
++	if (rssi & 0x80)
++		rssi = 0;
++
++	pe.ts = tsf64;
++	pe.freq = ar->hw->conf.chandef.chan->center_freq;
++	pe.width = width;
++	pe.rssi = rssi;
++
++	ath10k_dbg(ATH10K_DBG_REGULATORY,
++		   "dfs add pulse freq: %d, width: %d, rssi %d, tsf: %llX\n",
++		   pe.freq, pe.width, pe.rssi, pe.ts);
++
++	ATH10K_DFS_STAT_INC(ar, pulses_detected);
++
++	if (!ar->dfs_detector->add_pulse(ar->dfs_detector, &pe)) {
++		ath10k_dbg(ATH10K_DBG_REGULATORY,
++			   "dfs no pulse pattern detected, yet\n");
++		return;
++	}
++
++	ath10k_dbg(ATH10K_DBG_REGULATORY, "dfs radar detected\n");
++	ATH10K_DFS_STAT_INC(ar, radar_detected);
++
++	/* Control radar events reporting in debugfs file
++	   dfs_block_radar_events */
++	if (ar->dfs_block_radar_events) {
++		ath10k_info("DFS Radar detected, but ignored as requested\n");
++		return;
++	}
++
++	ieee80211_radar_detected(ar->hw);
++}
++
++static int ath10k_dfs_fft_report(struct ath10k *ar,
++				 struct wmi_single_phyerr_rx_event *event,
++				 struct phyerr_fft_report *fftr,
++				 u64 tsf)
++{
++	u32 reg0, reg1;
++	u8 rssi, peak_mag;
++
++	reg0 = __le32_to_cpu(fftr->reg0);
++	reg1 = __le32_to_cpu(fftr->reg1);
++	rssi = event->hdr.rssi_combined;
++
++	ath10k_dbg(ATH10K_DBG_REGULATORY,
++		   "wmi phyerr fft report total_gain_db %d base_pwr_db %d fft_chn_idx %d peak_sidx %d\n",
++		   MS(reg0, SEARCH_FFT_REPORT_REG0_TOTAL_GAIN_DB),
++		   MS(reg0, SEARCH_FFT_REPORT_REG0_BASE_PWR_DB),
++		   MS(reg0, SEARCH_FFT_REPORT_REG0_FFT_CHN_IDX),
++		   MS(reg0, SEARCH_FFT_REPORT_REG0_PEAK_SIDX));
++	ath10k_dbg(ATH10K_DBG_REGULATORY,
++		   "wmi phyerr fft report rel_pwr_db %d avgpwr_db %d peak_mag %d num_store_bin %d\n",
++		   MS(reg1, SEARCH_FFT_REPORT_REG1_RELPWR_DB),
++		   MS(reg1, SEARCH_FFT_REPORT_REG1_AVGPWR_DB),
++		   MS(reg1, SEARCH_FFT_REPORT_REG1_PEAK_MAG),
++		   MS(reg1, SEARCH_FFT_REPORT_REG1_NUM_STR_BINS_IB));
++
++	peak_mag = MS(reg1, SEARCH_FFT_REPORT_REG1_PEAK_MAG);
++
++	/* false event detection */
++	if (rssi == DFS_RSSI_POSSIBLY_FALSE &&
++	    peak_mag < 2 * DFS_PEAK_MAG_THOLD_POSSIBLY_FALSE) {
++		ath10k_dbg(ATH10K_DBG_REGULATORY, "dfs false pulse detected\n");
++		ATH10K_DFS_STAT_INC(ar, pulses_discarded);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static void ath10k_wmi_event_dfs(struct ath10k *ar,
++				 struct wmi_single_phyerr_rx_event *event,
++				 u64 tsf)
++{
++	int buf_len, tlv_len, res, i = 0;
++	struct phyerr_tlv *tlv;
++	struct phyerr_radar_report *rr;
++	struct phyerr_fft_report *fftr;
++	u8 *tlv_buf;
++
++	buf_len = __le32_to_cpu(event->hdr.buf_len);
++	ath10k_dbg(ATH10K_DBG_REGULATORY,
++		   "wmi event dfs err_code %d rssi %d tsfl 0x%X tsf64 0x%llX len %d\n",
++		   event->hdr.phy_err_code, event->hdr.rssi_combined,
++		   __le32_to_cpu(event->hdr.tsf_timestamp), tsf, buf_len);
++
++	/* Skip event if DFS disabled */
++	if (!config_enabled(CONFIG_ATH10K_DFS_CERTIFIED))
++		return;
++
++	ATH10K_DFS_STAT_INC(ar, pulses_total);
++
++	while (i < buf_len) {
++		if (i + sizeof(*tlv) > buf_len) {
++			ath10k_warn("too short buf for tlv header (%d)\n", i);
++			return;
++		}
++
++		tlv = (struct phyerr_tlv *)&event->bufp[i];
++		tlv_len = __le16_to_cpu(tlv->len);
++		tlv_buf = &event->bufp[i + sizeof(*tlv)];
++		ath10k_dbg(ATH10K_DBG_REGULATORY,
++			   "wmi event dfs tlv_len %d tlv_tag 0x%02X tlv_sig 0x%02X\n",
++			   tlv_len, tlv->tag, tlv->sig);
++
++		switch (tlv->tag) {
++		case PHYERR_TLV_TAG_RADAR_PULSE_SUMMARY:
++			if (i + sizeof(*tlv) + sizeof(*rr) > buf_len) {
++				ath10k_warn("too short radar pulse summary (%d)\n",
++					    i);
++				return;
++			}
++
++			rr = (struct phyerr_radar_report *)tlv_buf;
++			ath10k_dfs_radar_report(ar, event, rr, tsf);
++			break;
++		case PHYERR_TLV_TAG_SEARCH_FFT_REPORT:
++			if (i + sizeof(*tlv) + sizeof(*fftr) > buf_len) {
++				ath10k_warn("too short fft report (%d)\n", i);
++				return;
++			}
++
++			fftr = (struct phyerr_fft_report *)tlv_buf;
++			res = ath10k_dfs_fft_report(ar, event, fftr, tsf);
++			if (res)
++				return;
++			break;
++		}
++
++		i += sizeof(*tlv) + tlv_len;
++	}
++}
++
++static void ath10k_wmi_event_spectral_scan(struct ath10k *ar,
++				struct wmi_single_phyerr_rx_event *event,
++				u64 tsf)
++{
++	ath10k_dbg(ATH10K_DBG_WMI, "wmi event spectral scan\n");
++}
++
+ static void ath10k_wmi_event_phyerr(struct ath10k *ar, struct sk_buff *skb)
+ {
+-	ath10k_dbg(ATH10K_DBG_WMI, "WMI_PHYERR_EVENTID\n");
++	struct wmi_comb_phyerr_rx_event *comb_event;
++	struct wmi_single_phyerr_rx_event *event;
++	u32 count, i, buf_len, phy_err_code;
++	u64 tsf;
++	int left_len = skb->len;
++
++	ATH10K_DFS_STAT_INC(ar, phy_errors);
++
++	/* Check if combined event available */
++	if (left_len < sizeof(*comb_event)) {
++		ath10k_warn("wmi phyerr combined event wrong len\n");
++		return;
++	}
++
++	left_len -= sizeof(*comb_event);
++
++	/* Check number of included events */
++	comb_event = (struct wmi_comb_phyerr_rx_event *)skb->data;
++	count = __le32_to_cpu(comb_event->hdr.num_phyerr_events);
++
++	tsf = __le32_to_cpu(comb_event->hdr.tsf_u32);
++	tsf <<= 32;
++	tsf |= __le32_to_cpu(comb_event->hdr.tsf_l32);
++
++	ath10k_dbg(ATH10K_DBG_WMI,
++		   "wmi event phyerr count %d tsf64 0x%llX\n",
++		   count, tsf);
++
++	event = (struct wmi_single_phyerr_rx_event *)comb_event->bufp;
++	for (i = 0; i < count; i++) {
++		/* Check if we can read event header */
++		if (left_len < sizeof(*event)) {
++			ath10k_warn("single event (%d) wrong head len\n", i);
++			return;
++		}
++
++		left_len -= sizeof(*event);
++
++		buf_len = __le32_to_cpu(event->hdr.buf_len);
++		phy_err_code = event->hdr.phy_err_code;
++
++		if (left_len < buf_len) {
++			ath10k_warn("single event (%d) wrong buf len\n", i);
++			return;
++		}
++
++		left_len -= buf_len;
++
++		switch (phy_err_code) {
++		case PHY_ERROR_RADAR:
++			ath10k_wmi_event_dfs(ar, event, tsf);
++			break;
++		case PHY_ERROR_SPECTRAL_SCAN:
++			ath10k_wmi_event_spectral_scan(ar, event, tsf);
++			break;
++		case PHY_ERROR_FALSE_RADAR_EXT:
++			ath10k_wmi_event_dfs(ar, event, tsf);
++			ath10k_wmi_event_spectral_scan(ar, event, tsf);
++			break;
++		default:
++			break;
++		}
++
++		event += sizeof(*event) + buf_len;
++	}
+ }
+ 
+ static void ath10k_wmi_event_roam(struct ath10k *ar, struct sk_buff *skb)
+@@ -2062,6 +2315,7 @@ int ath10k_wmi_pdev_set_channel(struct ath10k *ar,
+ {
+ 	struct wmi_set_channel_cmd *cmd;
+ 	struct sk_buff *skb;
++	u32 ch_flags = 0;
+ 
+ 	if (arg->passive)
+ 		return -EINVAL;
+@@ -2070,10 +2324,14 @@ int ath10k_wmi_pdev_set_channel(struct ath10k *ar,
+ 	if (!skb)
+ 		return -ENOMEM;
+ 
++	if (arg->chan_radar)
++		ch_flags |= WMI_CHAN_FLAG_DFS;
++
+ 	cmd = (struct wmi_set_channel_cmd *)skb->data;
+ 	cmd->chan.mhz               = __cpu_to_le32(arg->freq);
+ 	cmd->chan.band_center_freq1 = __cpu_to_le32(arg->freq);
+ 	cmd->chan.mode              = arg->mode;
++	cmd->chan.flags		   |= __cpu_to_le32(ch_flags);
+ 	cmd->chan.min_power         = arg->min_power;
+ 	cmd->chan.max_power         = arg->max_power;
+ 	cmd->chan.reg_power         = arg->max_reg_power;
+@@ -2211,7 +2469,7 @@ static int ath10k_wmi_main_cmd_init(struct ath10k *ar)
+ 	}
+ 
+ 	ath10k_dbg(ATH10K_DBG_WMI, "wmi sending %d memory chunks info.\n",
+-		   __cpu_to_le32(ar->wmi.num_mem_chunks));
++		   ar->wmi.num_mem_chunks);
+ 
+ 	cmd->num_host_mem_chunks = __cpu_to_le32(ar->wmi.num_mem_chunks);
+ 
+@@ -2224,10 +2482,10 @@ static int ath10k_wmi_main_cmd_init(struct ath10k *ar)
+ 			__cpu_to_le32(ar->wmi.mem_chunks[i].req_id);
+ 
+ 		ath10k_dbg(ATH10K_DBG_WMI,
+-			   "wmi chunk %d len %d requested, addr 0x%x\n",
++			   "wmi chunk %d len %d requested, addr 0x%llx\n",
+ 			   i,
+-			   cmd->host_mem_chunks[i].size,
+-			   cmd->host_mem_chunks[i].ptr);
++			   ar->wmi.mem_chunks[i].len,
++			   (unsigned long long)ar->wmi.mem_chunks[i].paddr);
+ 	}
+ out:
+ 	memcpy(&cmd->resource_config, &config, sizeof(config));
+@@ -2302,7 +2560,7 @@ static int ath10k_wmi_10x_cmd_init(struct ath10k *ar)
+ 	}
+ 
+ 	ath10k_dbg(ATH10K_DBG_WMI, "wmi sending %d memory chunks info.\n",
+-		   __cpu_to_le32(ar->wmi.num_mem_chunks));
++		   ar->wmi.num_mem_chunks);
+ 
+ 	cmd->num_host_mem_chunks = __cpu_to_le32(ar->wmi.num_mem_chunks);
+ 
+@@ -2315,10 +2573,10 @@ static int ath10k_wmi_10x_cmd_init(struct ath10k *ar)
+ 			__cpu_to_le32(ar->wmi.mem_chunks[i].req_id);
+ 
+ 		ath10k_dbg(ATH10K_DBG_WMI,
+-			   "wmi chunk %d len %d requested, addr 0x%x\n",
++			   "wmi chunk %d len %d requested, addr 0x%llx\n",
+ 			   i,
+-			   cmd->host_mem_chunks[i].size,
+-			   cmd->host_mem_chunks[i].ptr);
++			   ar->wmi.mem_chunks[i].len,
++			   (unsigned long long)ar->wmi.mem_chunks[i].paddr);
+ 	}
+ out:
+ 	memcpy(&cmd->resource_config, &config, sizeof(config));
+@@ -2622,6 +2880,7 @@ static int ath10k_wmi_vdev_start_restart(struct ath10k *ar,
+ 	struct sk_buff *skb;
+ 	const char *cmdname;
+ 	u32 flags = 0;
++	u32 ch_flags = 0;
+ 
+ 	if (cmd_id != ar->wmi.cmd->vdev_start_request_cmdid &&
+ 	    cmd_id != ar->wmi.cmd->vdev_restart_request_cmdid)
+@@ -2648,6 +2907,8 @@ static int ath10k_wmi_vdev_start_restart(struct ath10k *ar,
+ 		flags |= WMI_VDEV_START_HIDDEN_SSID;
+ 	if (arg->pmf_enabled)
+ 		flags |= WMI_VDEV_START_PMF_ENABLED;
++	if (arg->channel.chan_radar)
++		ch_flags |= WMI_CHAN_FLAG_DFS;
+ 
+ 	cmd = (struct wmi_vdev_start_request_cmd *)skb->data;
+ 	cmd->vdev_id         = __cpu_to_le32(arg->vdev_id);
+@@ -2669,6 +2930,7 @@ static int ath10k_wmi_vdev_start_restart(struct ath10k *ar,
+ 		__cpu_to_le32(arg->channel.band_center_freq1);
+ 
+ 	cmd->chan.mode = arg->channel.mode;
++	cmd->chan.flags |= __cpu_to_le32(ch_flags);
+ 	cmd->chan.min_power = arg->channel.min_power;
+ 	cmd->chan.max_power = arg->channel.max_power;
+ 	cmd->chan.reg_power = arg->channel.max_reg_power;
+@@ -2676,9 +2938,10 @@ static int ath10k_wmi_vdev_start_restart(struct ath10k *ar,
+ 	cmd->chan.antenna_max = arg->channel.max_antenna_gain;
+ 
+ 	ath10k_dbg(ATH10K_DBG_WMI,
+-		   "wmi vdev %s id 0x%x freq %d, mode %d, ch_flags: 0x%0X,"
+-		   "max_power: %d\n", cmdname, arg->vdev_id, arg->channel.freq,
+-		   arg->channel.mode, flags, arg->channel.max_power);
++		   "wmi vdev %s id 0x%x flags: 0x%0X, freq %d, mode %d, "
++		   "ch_flags: 0x%0X, max_power: %d\n", cmdname, arg->vdev_id,
++		   flags, arg->channel.freq, arg->channel.mode,
++		   cmd->chan.flags, arg->channel.max_power);
+ 
+ 	return ath10k_wmi_cmd_send(ar, skb, cmd_id);
+ }
+@@ -3012,6 +3275,8 @@ int ath10k_wmi_scan_chan_list(struct ath10k *ar,
+ 			flags |= WMI_CHAN_FLAG_ALLOW_VHT;
+ 		if (ch->ht40plus)
+ 			flags |= WMI_CHAN_FLAG_HT40_PLUS;
++		if (ch->chan_radar)
++			flags |= WMI_CHAN_FLAG_DFS;
+ 
+ 		ci->mhz               = __cpu_to_le32(ch->freq);
+ 		ci->band_center_freq1 = __cpu_to_le32(ch->freq);
+@@ -3094,6 +3359,7 @@ int ath10k_wmi_beacon_send_nowait(struct ath10k *ar,
+ {
+ 	struct wmi_bcn_tx_cmd *cmd;
+ 	struct sk_buff *skb;
++	int ret;
+ 
+ 	skb = ath10k_wmi_alloc_skb(sizeof(*cmd) + arg->bcn_len);
+ 	if (!skb)
+@@ -3106,7 +3372,11 @@ int ath10k_wmi_beacon_send_nowait(struct ath10k *ar,
+ 	cmd->hdr.bcn_len  = __cpu_to_le32(arg->bcn_len);
+ 	memcpy(cmd->bcn, arg->bcn, arg->bcn_len);
+ 
+-	return ath10k_wmi_cmd_send_nowait(ar, skb, ar->wmi.cmd->bcn_tx_cmdid);
++	ret = ath10k_wmi_cmd_send_nowait(ar, skb, ar->wmi.cmd->bcn_tx_cmdid);
++	if (ret)
++		dev_kfree_skb(skb);
++
++	return ret;
+ }
+ 
+ static void ath10k_wmi_pdev_set_wmm_param(struct wmi_wmm_params *params,
+diff --git a/drivers/net/wireless/ath/ath10k/wmi.h b/drivers/net/wireless/ath/ath10k/wmi.h
+index 78c991a..0087d69 100644
+--- a/drivers/net/wireless/ath/ath10k/wmi.h
++++ b/drivers/net/wireless/ath/ath10k/wmi.h
+@@ -893,6 +893,7 @@ struct wmi_channel {
+ 	union {
+ 		__le32 reginfo0;
+ 		struct {
++			/* note: power unit is 0.5 dBm */
+ 			u8 min_power;
+ 			u8 max_power;
+ 			u8 reg_power;
+@@ -915,7 +916,8 @@ struct wmi_channel_arg {
+ 	bool allow_ht;
+ 	bool allow_vht;
+ 	bool ht40plus;
+-	/* note: power unit is 1/4th of dBm */
++	bool chan_radar;
++	/* note: power unit is 0.5 dBm */
+ 	u32 min_power;
+ 	u32 max_power;
+ 	u32 max_reg_power;
+@@ -1977,6 +1979,10 @@ struct wmi_mgmt_rx_event_v2 {
+ #define WMI_RX_STATUS_ERR_MIC			0x10
+ #define WMI_RX_STATUS_ERR_KEY_CACHE_MISS	0x20
+ 
++#define PHY_ERROR_SPECTRAL_SCAN		0x26
++#define PHY_ERROR_FALSE_RADAR_EXT		0x24
++#define PHY_ERROR_RADAR				0x05
++
+ struct wmi_single_phyerr_rx_hdr {
+ 	/* TSF timestamp */
+ 	__le32 tsf_timestamp;
+@@ -2068,6 +2074,87 @@ struct wmi_comb_phyerr_rx_event {
+ 	u8 bufp[0];
+ } __packed;
+ 
++#define PHYERR_TLV_SIG				0xBB
++#define PHYERR_TLV_TAG_SEARCH_FFT_REPORT	0xFB
++#define PHYERR_TLV_TAG_RADAR_PULSE_SUMMARY	0xF8
++
++struct phyerr_radar_report {
++	__le32 reg0; /* RADAR_REPORT_REG0_* */
++	__le32 reg1; /* REDAR_REPORT_REG1_* */
++} __packed;
++
++#define RADAR_REPORT_REG0_PULSE_IS_CHIRP_MASK		0x80000000
++#define RADAR_REPORT_REG0_PULSE_IS_CHIRP_LSB		31
++
++#define RADAR_REPORT_REG0_PULSE_IS_MAX_WIDTH_MASK	0x40000000
++#define RADAR_REPORT_REG0_PULSE_IS_MAX_WIDTH_LSB	30
++
++#define RADAR_REPORT_REG0_AGC_TOTAL_GAIN_MASK		0x3FF00000
++#define RADAR_REPORT_REG0_AGC_TOTAL_GAIN_LSB		20
++
++#define RADAR_REPORT_REG0_PULSE_DELTA_DIFF_MASK		0x000F0000
++#define RADAR_REPORT_REG0_PULSE_DELTA_DIFF_LSB		16
++
++#define RADAR_REPORT_REG0_PULSE_DELTA_PEAK_MASK		0x0000FC00
++#define RADAR_REPORT_REG0_PULSE_DELTA_PEAK_LSB		10
++
++#define RADAR_REPORT_REG0_PULSE_SIDX_MASK		0x000003FF
++#define RADAR_REPORT_REG0_PULSE_SIDX_LSB		0
++
++#define RADAR_REPORT_REG1_PULSE_SRCH_FFT_VALID_MASK	0x80000000
++#define RADAR_REPORT_REG1_PULSE_SRCH_FFT_VALID_LSB	31
++
++#define RADAR_REPORT_REG1_PULSE_AGC_MB_GAIN_MASK	0x7F000000
++#define RADAR_REPORT_REG1_PULSE_AGC_MB_GAIN_LSB		24
++
++#define RADAR_REPORT_REG1_PULSE_SUBCHAN_MASK_MASK	0x00FF0000
++#define RADAR_REPORT_REG1_PULSE_SUBCHAN_MASK_LSB	16
++
++#define RADAR_REPORT_REG1_PULSE_TSF_OFFSET_MASK		0x0000FF00
++#define RADAR_REPORT_REG1_PULSE_TSF_OFFSET_LSB		8
++
++#define RADAR_REPORT_REG1_PULSE_DUR_MASK		0x000000FF
++#define RADAR_REPORT_REG1_PULSE_DUR_LSB			0
++
++struct phyerr_fft_report {
++	__le32 reg0; /* SEARCH_FFT_REPORT_REG0_ * */
++	__le32 reg1; /* SEARCH_FFT_REPORT_REG1_ * */
++} __packed;
++
++#define SEARCH_FFT_REPORT_REG0_TOTAL_GAIN_DB_MASK	0xFF800000
++#define SEARCH_FFT_REPORT_REG0_TOTAL_GAIN_DB_LSB	23
++
++#define SEARCH_FFT_REPORT_REG0_BASE_PWR_DB_MASK		0x007FC000
++#define SEARCH_FFT_REPORT_REG0_BASE_PWR_DB_LSB		14
++
++#define SEARCH_FFT_REPORT_REG0_FFT_CHN_IDX_MASK		0x00003000
++#define SEARCH_FFT_REPORT_REG0_FFT_CHN_IDX_LSB		12
++
++#define SEARCH_FFT_REPORT_REG0_PEAK_SIDX_MASK		0x00000FFF
++#define SEARCH_FFT_REPORT_REG0_PEAK_SIDX_LSB		0
++
++#define SEARCH_FFT_REPORT_REG1_RELPWR_DB_MASK		0xFC000000
++#define SEARCH_FFT_REPORT_REG1_RELPWR_DB_LSB		26
++
++#define SEARCH_FFT_REPORT_REG1_AVGPWR_DB_MASK		0x03FC0000
++#define SEARCH_FFT_REPORT_REG1_AVGPWR_DB_LSB		18
++
++#define SEARCH_FFT_REPORT_REG1_PEAK_MAG_MASK		0x0003FF00
++#define SEARCH_FFT_REPORT_REG1_PEAK_MAG_LSB		8
++
++#define SEARCH_FFT_REPORT_REG1_NUM_STR_BINS_IB_MASK	0x000000FF
++#define SEARCH_FFT_REPORT_REG1_NUM_STR_BINS_IB_LSB	0
++
++
++struct phyerr_tlv {
++	__le16 len;
++	u8 tag;
++	u8 sig;
++} __packed;
++
++#define DFS_RSSI_POSSIBLY_FALSE			50
++#define DFS_PEAK_MAG_THOLD_POSSIBLY_FALSE	40
++
+ struct wmi_mgmt_tx_hdr {
+ 	__le32 vdev_id;
+ 	struct wmi_mac_addr peer_macaddr;
+@@ -2233,7 +2320,12 @@ enum wmi_pdev_param {
+ 	 * 0: no protection 1:use CTS-to-self 2: use RTS/CTS
+ 	 */
+ 	WMI_PDEV_PARAM_PROTECTION_MODE,
+-	/* Dynamic bandwidth 0: disable 1: enable */
++	/*
++	 * Dynamic bandwidth - 0: disable, 1: enable
++	 *
++	 * When enabled HW rate control tries different bandwidths when
++	 * retransmitting frames.
++	 */
+ 	WMI_PDEV_PARAM_DYNAMIC_BW,
+ 	/* Non aggregrate/ 11g sw retry threshold.0-disable */
+ 	WMI_PDEV_PARAM_NON_AGG_SW_RETRY_TH,

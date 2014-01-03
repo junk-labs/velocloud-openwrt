@@ -41,12 +41,64 @@ mac80211_hostapd_setup_base() {
 			done
 			[ -n "$ht_capab" ] && append base_cfg "ht_capab=$ht_capab" "$N"
 		}
+		config_get hwmode_11ac "$device" hwmode_11ac
+		[ -n "$hwmode_11ac" ] && {
+			hwmode="$hwmode_11ac"
+			append base_cfg "ieee80211ac=1" "$N"
+			config_get htmode "$device" htmode
+			config_get vhtmode "$device" vhtmode
+			config_get vht_capab_list "$device" vht_capab
+			idx="$channel"
+			case "$vhtmode" in
+				VHT80)
+					case "$channel" in
+						36|40|44|48) idx=42;;
+						52|56|60|64) idx=58;;
+						100|104|108|112) idx=106;;
+						116|120|124|128) idx=122;;
+						132|136|140|144) idx=138;;
+						149|153|157|161) idx=155;;
+					esac
+					append base_cfg "vht_oper_chwidth=1" "$N"
+					append base_cfg "vht_oper_centr_freq_seg0_idx=$idx" "$N"
+				;;
+				VHT160)
+					case "$channel" in
+						36|40|44|48|52|56|60|64) idx=50;;
+						100|104|108|112|116|120|124|128) idx=114;;
+					esac
+					append base_cfg "vht_oper_chwidth=2" "$N"
+					append base_cfg "vht_oper_centr_freq_seg0_idx=$idx" "$N"
+				;;
+				*)
+					case "$htmode" in
+						HT20) ;;
+						HT40+) idx=$((idx+2));;
+						HT40-) idx=$((idx-2));;
+					esac
+					append base_cfg "vht_oper_chwidth=0" "$N"
+					append base_cfg "vht_oper_centr_freq_seg0_idx=$idx" "$N"
+				;;
+			esac
+			for cap in $vht_capab_list; do
+				vht_capab="$vht_capab[$cap]"
+			done
+			[ -n "$vht_capab" ] && append base_cfg "vht_capab=$vht_capab" "$N"
+		}
 	}
 
 	local country_ie=0
-	[ -n "$country" ] && country_ie=1
-	config_get_bool country_ie "$device" country_ie "$country_ie"
-	[ "$country_ie" -gt 0 ] && append base_cfg "ieee80211d=1" "$N"
+	local dfs=0
+	[ -n "$country" ] && {
+		country_ie=1
+		config_get_bool country_ie "$device" country_ie "$country_ie"
+		[ "$country_ie" -gt 0 ] && {
+			append base_cfg "ieee80211d=1" "$N"
+			dfs=1
+			config_get_bool dfs "$device" dfs "$dfs"
+			[ "$dfs" -gt 0 ] && append base_cfg "ieee80211h=1" "$N"
+		}
+	}
 
 	local br brval brstr
 	[ -n "$basic_rate_list" ] && {
@@ -602,6 +654,7 @@ detect_mac80211() {
 		[ "$found" -gt 0 ] && continue
 
 		mode_11n=""
+		mode_11ac=""
 		mode_band="g"
 		channel="11"
 		ht_cap=0
@@ -624,6 +677,40 @@ detect_mac80211() {
 			[ "$(($ht_cap & 768))" -eq 768 ] && append ht_capab "$list	RX-STBC123" "$N"
 			[ "$(($ht_cap & 4096))" -eq 4096 ] && append ht_capab "$list	DSSS_CCK-40" "$N"
 		}
+		vht_cap=0
+		for cap in $(iw phy "$dev" info | awk -F "[()]" '/VHT Capabilities/ { print $2 }'); do
+			vht_cap="$(($vht_cap | $cap))"
+		done
+		vht_capab="";
+		[ "$vht_cap" -gt 0 ] && {
+			mode_11ac="ac"
+			append vht_capab "	option vhtmode	VHT80" "$N"
+			
+			list="	list vht_capab"
+			[ "$(($vht_cap & 3))" -eq 1 ] && append vht_capab "$list	MAX-MPDU-7991" "$N"
+			[ "$(($vht_cap & 3))" -eq 2 ] && append vht_capab "$list	MAX-MPDU-11454" "$N"
+			[ "$(($vht_cap & 12))" -eq 4 ] && append vht_capab "$list	VHT160" "$N"
+			[ "$(($vht_cap & 12))" -eq 8 ] && append vht_capab "$list	VHT160-80PLUS80" "$N"
+			[ "$(($vht_cap & 16))" -eq 16 ] && append vht_capab "$list	RXLDPC" "$N"
+			[ "$(($vht_cap & 32))" -eq 32 ] && append vht_capab "$list	SHORT-GI-80" "$N"
+			[ "$(($vht_cap & 64))" -eq 64 ] && append vht_capab "$list	SHORT-GI-160" "$N"
+			[ "$(($vht_cap & 128))" -eq 128 ] && append vht_capab "$list	TX-STBC-2BY1" "$N"
+			[ "$(($vht_cap & 1792))" -eq 256 ] && append vht_capab "$list	RX-STBC-1" "$N"
+			[ "$(($vht_cap & 1792))" -eq 512 ] && append vht_capab "$list	RX-STBC-12" "$N"
+			[ "$(($vht_cap & 1792))" -eq 768 ] && append vht_capab "$list	RX-STBC-123" "$N"
+			[ "$(($vht_cap & 1792))" -eq 1024 ] && append vht_capab "$list	RX-STBC-1234" "$N"
+			[ "$(($vht_cap & 2048))" -eq 2048 ] && append vht_capab "$list	SU-BEAMFORMER" "$N"
+			[ "$(($vht_cap & 4096))" -eq 4096 ] && append vht_capab "$list	SU-BEAMFORMEE" "$N"
+			[ "$(($vht_cap & 524288))" -eq 524288 ] && append vht_capab "$list	MU-BEAMFORMER" "$N"
+			[ "$(($vht_cap & 1048576))" -eq 1048576 ] && append vht_capab "$list	MU-BEAMFORMEE" "$N"
+			[ "$(($vht_cap & 2097152))" -eq 2097152 ] && append vht_capab "$list	VHT-TXOP-PS" "$N"
+			[ "$(($vht_cap & 4194304))" -eq 4194304 ] && append vht_capab "$list	HTC-VHT" "$N"
+			[ "$(($vht_cap & 201326592))" -eq 134217728 ] && append vht_capab "$list	VHT-LINK-ADAPT2" "$N"
+			[ "$(($vht_cap & 201326592))" -eq 201326592 ] && append vht_capab "$list	VHT-LINK-ADAPT3" "$N"
+			[ "$(($vht_cap & 268435456))" -eq 268435456 ] && append vht_capab "$list	RX-ANTENNA-PATTERN" "$N"
+			[ "$(($vht_cap & 536870912))" -eq 536870912 ] && append vht_capab "$list	TX-ANTENNA-PATTERN" "$N"
+		}
+		
 		iw phy "$dev" info | grep -q '2412 MHz' || { mode_band="a"; channel="36"; }
 
 		if [ -x /usr/bin/readlink ]; then
@@ -638,9 +725,10 @@ detect_mac80211() {
 config wifi-device  radio$devidx
 	option type     mac80211
 	option channel  ${channel}
-	option hwmode	11${mode_11n}${mode_band}
+	option hwmode	11${mode_11ac}${mode_11n}${mode_band}
 $dev_id
 $ht_capab
+$vht_capab
 	# REMOVE THIS LINE TO ENABLE WIFI:
 	option disabled 1
 

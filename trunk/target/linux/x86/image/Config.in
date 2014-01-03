@@ -24,6 +24,7 @@ config X86_GRUB_CONSOLE
 	bool "Use Console Terminal (in addition to Serial)"
 	depends on X86_GRUB_IMAGES
 	default n if (TARGET_x86_generic_Soekris45xx || TARGET_x86_generic_Soekris48xx || TARGET_x86_net5501 || TARGET_x86_geos || TARGET_x86_alix2)
+	default y if TARGET_x86_vc_vmdk
 	default y
 
 config X86_GRUB_SERIAL
@@ -81,7 +82,9 @@ config X86_VMDK_IMAGES
 	depends on X86_GRUB_IMAGES
 	depends on TARGET_x86
 	depends on TARGET_ROOTFS_EXT4FS
+	default y if TARGET_x86_vc_vmdk
 	select PACKAGE_kmod-e1000
+	select PACKAGE_kmod-pcnet32
 
 
 config OLPC_BOOTSCRIPT_IMAGES

@@ -77,6 +77,14 @@ config X86_VDI_IMAGES
 	depends on TARGET_ROOTFS_EXT4FS
 	select PACKAGE_kmod-pcnet32
 
+config X86_VELOCLOUD_INSTALLER
+	bool "Build Velocloud installer image"
+	depends on X86_GRUB_IMAGES
+	depends on TARGET_x86
+	depends on TARGET_ROOTFS_EXT4FS
+	default y if TARGET_x86_sb_itc
+	default y if TARGET_x86_pw_dev
+
 config X86_VMDK_IMAGES
 	bool "Build VMware image files (VMDK)"
 	depends on X86_GRUB_IMAGES

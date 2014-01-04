@@ -253,7 +253,8 @@ define Image/Build/Profile/sitecom
 	rm $(KDIR)/tmp.img $(KDIR)/bzImage.tmp
 endef
 
-define Image/Build/Profile/Velocloud
+ifneq ($(CONFIG_X86_VELOCLOUD_INSTALLER),)
+  define Image/Build/velocloud-installer
 	echo "Building Velocloud Installer Image."
 	$(INSTALL_DIR) $(KDIR)/inst.grub/boot/grub
 	sed \
@@ -286,7 +287,8 @@ define Image/Build/Profile/Velocloud
 		-r "hd0,msdos1" \
 		"$(BIN_DIR)/$(IMG_PREFIX)-installer-$(1).img"
 	$(call Image/Build/grub/$(1))
-endef
+  endef
+endif
 
 define Image/Build/Profile/bifferboard
 	$(TOPDIR)/target/linux/rdc/image/mkimg_bifferboard.py $(KDIR)/bzImage $(KDIR)/root.$(1) \
@@ -309,6 +311,7 @@ define Image/Build
   ifneq ($(1),iso)
 	$(call Image/Build/grub2,$(1))
 	$(call Image/Build/vdi,$(1))
+	$(call Image/Build/velocloud-installer,$(1))
 	$(call Image/Build/vmdk,$(1))
 	$(CP) $(KDIR)/root.$(1) $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img
   else

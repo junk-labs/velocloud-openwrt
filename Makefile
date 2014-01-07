@@ -115,9 +115,9 @@ define OpenwrtConfig
 		-e '/CONFIG_X86_GRUB_BOOTOPTS/d' \
 		-e '/CONFIG_X86_GRUB_CONSOLE/d' \
 		-e '/CONFIG_X86_VMDK_IMAGES/d' \
+		-e '/CONFIG_X86_VELOCLOUD_INSTALLER/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_x86_$(call target_conf,$(1))=y' \
-		-e '$$ aCONFIG_TARGET_x86_$(call target_conf,$(1))_Velocloud=y' \
 		-e '$$ aCONFIG_VERSION_NICK="OpenWRT $(1)"' \
 		-e '$$ aCONFIG_VERSION_NUMBER="$(OPENWRT_VC_VERSION)"' \
 		-e '$$ a# CONFIG_X86_GRUB_SERIAL is not set' \

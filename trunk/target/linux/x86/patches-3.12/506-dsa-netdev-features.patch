@@ -16,3 +16,16 @@
  
  	p = netdev_priv(slave_dev);
  	p->dev = slave_dev;
+@@ -387,6 +388,12 @@
+ 		return NULL;
+ 	}
+ 
++	// disable features turned on by default;
++
++	slave_dev->features &= ~NETIF_F_SOFT_FEATURES;
++	slave_dev->hw_features &= ~NETIF_F_SOFT_FEATURES;
++	slave_dev->wanted_features &= ~NETIF_F_SOFT_FEATURES;
++
+ 	netif_carrier_off(slave_dev);
+ 
+ 	if (p->phy != NULL) {

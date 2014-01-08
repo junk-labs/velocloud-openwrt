@@ -4,26 +4,26 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
  obj-$(CONFIG_PVPANIC)           += pvpanic.o
-+obj-$(CONFIG_VELOCLOUD_VE1000)	+= velocloud-ve1000.o
++obj-$(CONFIG_VELOCLOUD_VC)	+= velocloud-vc.o
 --- a/drivers/platform/x86/Kconfig
 +++ b/drivers/platform/x86/Kconfig
 @@ -819,4 +819,12 @@
  	  a paravirtualized device provided by QEMU; it lets a virtual machine
  	  (guest) communicate panic events to the host.
  
-+config VELOCLOUD_VE1000
-+	tristate "Support for the Velocloud Ve1000"
++config VELOCLOUD_VC
++	tristate "Support for the Velocloud boards"
 +	depends on I2C && GPIO_PCH
 +	help
-+	  This option enables support for the Velocloud Ve1000 GPIO,
++	  This option enables support for the Velocloud GPIO,
 +	  RGB LEDs and PWM fan on I2C.
-+	  Say Y to enable support for the Velocloud VE1000.
++	  Say Y to enable support for the Velocloud boards.
 +
  endif # X86_PLATFORM_DEVICES
---- a/drivers/platform/x86/velocloud-ve1000.c
-+++ b/drivers/platform/x86/velocloud-ve1000.c
-@@ -0,0 +1,920 @@
-+/* velocloud-ve1000.c
+--- /dev/null
++++ b/drivers/platform/x86/velocloud-vc.c
+@@ -0,0 +1,1170 @@
++/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
 + *  This program is free software; you can redistribute it and/or modify
@@ -55,27 +55,39 @@
 +#include <linux/leds.h>
 +#include <linux/delay.h>
 +#include <linux/gpio.h>
++#include <linux/dmi.h>
 +
 +#define VC_NAME "vc"
 +#define VC_LEDS "leds"
 +#define VC_FAN "fan"
 +
++// ve1000 gpio;
 +// max7314 wiring, 2 chips;
 +// both have their RST_L line wired to cm-itc gpio10, EG20T gpio8;
 +// both have their BLINK_L line wire to cm-itc gpio11, EG20T gpio9;
 +
-+#define VC_GPIO_BASE 244
-+#define VC_FAN_GPIO_IN (VC_GPIO_BASE + 0)
-+#define VC_FAN_GPIO_OUT (VC_GPIO_BASE + 1)
-+#define VC_GPIO_RESET_BTN (VC_GPIO_BASE + 2)
-+#define VC_I2C_GPIO_RST (VC_GPIO_BASE + 8)
-+#define VC_I2C_GPIO_BLINK (VC_GPIO_BASE + 9)
++#define VE1000_GPIO_BASE 244
++#define VE1000_GPIO_FAN_TACH (VE1000_GPIO_BASE + 0)
++#define VE1000_GPIO_FAN_CTRL (VE1000_GPIO_BASE + 1)
++#define VE1000_GPIO_RESET_BTN (VE1000_GPIO_BASE + 2)
++#define VE1000_GPIO_I2C_RST (VE1000_GPIO_BASE + 8)
++#define VE1000_GPIO_I2C_BLINK (VE1000_GPIO_BASE + 9)
 +
-+// i2c addresses to scan;
++// ve500 gpio;
++// max7314 wiring, 3 chips;
++// SMB2_CLK is on rangeley GPIOS14;
++// SMB2_DATA is on rangeley GPIOS13;
++// all have their RST_L line wired to superio LPC_GP37;
++// all have their BLINK_L line wire to superio LPC_GP36;
++// reset button status on superio LPC_GP35;
 +
-+#define VC_I2C_DEV1 0x20
-+#define VC_I2C_DEV2 0x24
-+static const unsigned short vc_i2c_addrs[] = { VC_I2C_DEV1, VC_I2C_DEV2, I2C_CLIENT_END };
++#define EDGE500_GPIO_RANGELEY 0 //XXX
++#define EDGE500_GPIO_SMB_CLK (EDGE500_GPIO_RANGELEY + 14)
++#define EDGE500_GPIO_SMB_DATA (EDGE500_GPIO_RANGELEY + 13)
++#define EDGE500_GPIO_SIO 0 //XXX
++#define EDGE500_GPIO_RESET_BTN (EDGE500_GPIO_SIO + 35)
++#define EDGE500_GPIO_I2C_RST (EDGE500_GPIO_SIO + 37)
++#define EDGE500_GPIO_I2C_BLINK (EDGE500_GPIO_SIO + 36)
 +
 +// max7314 registers;
 +
@@ -106,7 +118,10 @@
 +// port assignments;
 +
 +enum vc_led_idx {
-+	VC_LED_WIFI = 0,
++	VC_LED_WIFI_AP = 0,
++	VC_LED_WIFI_STA_1,
++	VC_LED_WIFI_STA_2,
++	VC_LED_WIFI_STA_3,
 +	VC_LED_LOGO,
 +	VC_LED_BAR_1,
 +	VC_LED_BAR_2,
@@ -122,23 +137,44 @@
 +
 +struct vc_leds {
 +	struct {
-+		unsigned char dev;		// device index the LED is on;
++		signed char dev;		// device index the LED is on;
 +		unsigned char reg;		// port the LED is on;
 +		unsigned char upper;	// 0=lower 1=upper nibble;
 +		unsigned char inv;		// invert the value;
 +	} rgb[3];
 +};
 +
++// ve1000 has 2 I2C LED controllers;
++// edge500 has 3 I2C LED controllers;
++// no i2C controllers on edge-portwell and edge-nexcom;
++
 +enum vc_i2c_idx {
++	VC_I2C_NONE = -1,
 +	VC_I2C_0 = 0,
 +	VC_I2C_1,
++	VC_I2C_2,
++	N_VC_I2C_DEVS,
 +};
 +
-+static vc_leds_t vc_leds[N_VC_LEDS] = {
-+	[ VC_LED_WIFI ] = { {
++// ve1000 led mapping;
++
++static vc_leds_t ve1000_leds[N_VC_LEDS] = {
++	[ VC_LED_WIFI_AP ] = { {
 +		{ VC_I2C_0, MAX7314_INTENS_3_2, 0, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_1_0, 1, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_1_0, 0, 1 } } },
++	[ VC_LED_WIFI_STA_1 ] = { {
++		{ VC_I2C_NONE, },
++		{ VC_I2C_NONE, },
++		{ VC_I2C_NONE, } } },
++	[ VC_LED_WIFI_STA_2 ] = { {
++		{ VC_I2C_NONE, },
++		{ VC_I2C_NONE, },
++		{ VC_I2C_NONE, } } },
++	[ VC_LED_WIFI_STA_3 ] = { {
++		{ VC_I2C_NONE, },
++		{ VC_I2C_NONE, },
++		{ VC_I2C_NONE, } } },
 +	[ VC_LED_LOGO ] = { {
 +		{ VC_I2C_0, MAX7314_INTENS_5_4, 1, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_5_4, 0, 1 },
@@ -181,11 +217,127 @@
 +		{ VC_I2C_1, MAX7314_INTENS_13_12, 1, 1 } } },
 +};
 +
++// edge500 led mapping;
++
++static vc_leds_t edge500_leds[N_VC_LEDS] = {
++	[ VC_LED_WIFI_AP ] = { {
++		{ VC_I2C_2, MAX7314_INTENS_3_2, 0, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_1_0, 1, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_1_0, 0, 1 } } },
++	[ VC_LED_WIFI_STA_3 ] = { {
++		{ VC_I2C_2, MAX7314_INTENS_5_4, 1, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_5_4, 0, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_3_2, 1, 1 } } },
++	[ VC_LED_WIFI_STA_2 ] = { {
++		{ VC_I2C_2, MAX7314_INTENS_9_8, 0, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_7_6, 1, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_7_6, 0, 1 } } },
++	[ VC_LED_WIFI_STA_1 ] = { {
++		{ VC_I2C_2, MAX7314_INTENS_11_10, 1, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_11_10, 0, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_9_8, 1, 1 } } },
++	[ VC_LED_LOGO ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_15_14, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_13_12, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_13_12, 0, 1 } } },
++	[ VC_LED_USB_RIGHT ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_3_2, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_1_0, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_1_0, 0, 1 } } },
++	[ VC_LED_USB_TOP ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_9_8, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_7_6, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_7_6, 0, 1 } } },
++	[ VC_LED_USB_LEFT ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_5_4, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_5_4, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_3_2, 1, 1 } } },
++	[ VC_LED_USB_BOTTOM ] = { {
++		{ VC_I2C_0, MAX7314_INTENS_11_10, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_11_10, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_9_8, 1, 1 } } },
++	[ VC_LED_BAR_1 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_3_2, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_1_0, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_1_0, 0, 1 } } },
++	[ VC_LED_BAR_2 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_5_4, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_5_4, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_3_2, 1, 1 } } },
++	[ VC_LED_BAR_3 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_9_8, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_7_6, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_7_6, 0, 1 } } },
++	[ VC_LED_BAR_4 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_11_10, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_11_10, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_9_8, 1, 1 } } },
++	[ VC_LED_BAR_5 ] = { {
++		{ VC_I2C_1, MAX7314_INTENS_15_14, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_13_12, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_13_12, 0, 1 } } },
++};
++
++// board hardware config;
++
++enum vc_caps {
++	VC_CAP_RESET_BUTTON = (1 << 0),
++	VC_CAP_FAN = (1 << 1),
++	VC_CAP_I2C = (1 << 2),
++	VC_CAP_I2C_RESET = (1 << 3),
++	VC_CAP_I2C_BLINK = (1 << 4),
++};
++
++typedef struct vc_hw vc_hw_t;
++struct vc_hw {
++	unsigned int caps;
++	unsigned gpio_reset_btn;
++	unsigned gpio_fan_tach;
++	unsigned gpio_fan_ctrl;
++	unsigned gpio_i2c_reset;
++	unsigned gpio_i2c_blink;
++	unsigned int i2c_exp;
++	const unsigned short i2c_addrs[4];
++	vc_leds_t *leds;
++};
++
++static vc_hw_t vc_hw_none = {
++	.caps = 0,
++};
++
++static vc_hw_t vc_hw_ve1000 = {
++	.caps = VC_CAP_RESET_BUTTON
++		| VC_CAP_FAN
++		| VC_CAP_I2C | VC_CAP_I2C_RESET | VC_CAP_I2C_BLINK,
++	.gpio_reset_btn = VE1000_GPIO_RESET_BTN,
++	.gpio_fan_tach = VE1000_GPIO_FAN_TACH,
++	.gpio_fan_ctrl = VE1000_GPIO_FAN_CTRL,
++	.gpio_i2c_reset = VE1000_GPIO_I2C_RST,
++	.gpio_i2c_blink = VE1000_GPIO_I2C_BLINK,
++	.i2c_exp = 0x3,
++	.i2c_addrs = { 0x20, 0x24, I2C_CLIENT_END },
++	.leds = ve1000_leds,
++};
++
++static vc_hw_t vc_hw_edge500 = {
++	.caps = VC_CAP_RESET_BUTTON
++		| VC_CAP_I2C | VC_CAP_I2C_RESET | VC_CAP_I2C_BLINK,
++	.gpio_reset_btn = EDGE500_GPIO_RESET_BTN,
++	.gpio_i2c_reset = EDGE500_GPIO_I2C_RST,
++	.gpio_i2c_blink = EDGE500_GPIO_I2C_BLINK,
++	.i2c_exp = 0x7,
++	.i2c_addrs = { 0x20, 0x24, 0x64, I2C_CLIENT_END },
++	.leds = edge500_leds,
++};
++
 +// driver state;
 +
 +struct vc_data {
++	const struct dmi_system_id *dmi;
++	const vc_hw_t *hw;
 +	struct {
-+		struct i2c_client *client[2];
++		unsigned int probed;
++		struct i2c_client *client[N_VC_I2C_DEVS];
 +		struct mutex lock;
 +		u32 led_cur[N_VC_LEDS];
 +	} i2c;
@@ -273,6 +425,7 @@
 +{
 +	int ret, n;
 +	vc_data_t *vcd = &vc_data;
++	const vc_hw_t *hw = vcd->hw;
 +	vc_leds_t *led;
 +	struct i2c_client *client;
 +	u8 brightness, mask, reg, new;
@@ -285,9 +438,11 @@
 +	// must do read-modify-write since two LEDs share one register;
 +
 +	vcd->i2c.led_cur[index] = value;
-+	led = vc_leds + index;
++	led = hw->leds + index;
 +	ret = 0;
 +	for(n = 0; n < 3; n++) {
++		if(led->rgb[n].dev == VC_I2C_NONE)
++			continue;
 +		brightness = value >> (8 * n);
 +		if(led->rgb[n].upper)
 +			mask = 0xf0;
@@ -381,7 +536,10 @@
 +	return(show_rgba(dev, buf, index)); \
 +}
 +
-+SHOW_RGBA(wifi,VC_LED_WIFI)
++SHOW_RGBA(wifi,VC_LED_WIFI_AP)
++SHOW_RGBA(sta1,VC_LED_WIFI_STA_1)
++SHOW_RGBA(sta2,VC_LED_WIFI_STA_2)
++SHOW_RGBA(sta3,VC_LED_WIFI_STA_3)
 +SHOW_RGBA(logo,VC_LED_LOGO)
 +SHOW_RGBA(bar1,VC_LED_BAR_1)
 +SHOW_RGBA(bar2,VC_LED_BAR_2)
@@ -401,7 +559,10 @@
 +	return(store_rgba(dev, buf, len, index)); \
 +}
 +
-+STORE_RGBA(wifi,VC_LED_WIFI)
++STORE_RGBA(wifi,VC_LED_WIFI_AP)
++STORE_RGBA(sta1,VC_LED_WIFI_STA_1)
++STORE_RGBA(sta2,VC_LED_WIFI_STA_2)
++STORE_RGBA(sta3,VC_LED_WIFI_STA_3)
 +STORE_RGBA(logo,VC_LED_LOGO)
 +STORE_RGBA(bar1,VC_LED_BAR_1)
 +STORE_RGBA(bar2,VC_LED_BAR_2)
@@ -418,6 +579,9 @@
 +
 +static DEVICE_ATTR(off, S_IRUGO | S_IWUSR, NULL, store_off);
 +ATTR_RGBA(wifi);
++ATTR_RGBA(sta1);
++ATTR_RGBA(sta2);
++ATTR_RGBA(sta3);
 +ATTR_RGBA(logo);
 +ATTR_RGBA(bar1);
 +ATTR_RGBA(bar2);
@@ -434,6 +598,9 @@
 +static struct attribute *vc_leds_attrs[] = {
 +	&dev_attr_off.attr,
 +	&dev_attr_wifi.attr,
++	&dev_attr_sta1.attr,
++	&dev_attr_sta2.attr,
++	&dev_attr_sta3.attr,
 +	&dev_attr_logo.attr,
 +	&dev_attr_bar1.attr,
 +	&dev_attr_bar2.attr,
@@ -502,11 +669,12 @@
 +static ssize_t
 +show_fan_gpio(struct device *dev, struct device_attribute *attr, char *buf)
 +{
++	const vc_hw_t *hw = vc_data.hw;
 +	int ret;
 +	u8 gpio;
 +	bool on;
 +
-+	gpio = gpio_get_value(VC_FAN_GPIO_IN);
++	gpio = gpio_get_value(hw->gpio_fan_tach);
 +	on = (gpio != 0);
 +	ret = scnprintf(buf, PAGE_SIZE, "%d\n", on);
 +	return(ret);
@@ -531,6 +699,7 @@
 +static int
 +store_fan_gpio(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
 +{
++	const vc_hw_t *hw = vc_data.hw;
 +	int ret;
 +	u32 value;
 +	bool on;
@@ -543,7 +712,7 @@
 +		return(ret);
 +	}
 +	on = (value != 0);
-+	gpio_set_value(VC_FAN_GPIO_OUT, on);
++	gpio_set_value(hw->gpio_fan_ctrl, on);
 +	return(len);
 +}
 +
@@ -612,22 +781,22 @@
 +	.attrs = vc_fan_attrs,
 +};
 +
-+// create low-pulse on VC_I2C_GPIO_RST to reset controllers;
++// create low-pulse on i2c ctrl reset pin;
 +// keept BLINK input low;
 +
 +static void
-+vc_i2c_gpio_reset(void)
++vc_i2c_gpio_reset(unsigned gpio_reset)
 +{
-+	gpio_set_value(VC_I2C_GPIO_RST, 0);
++	gpio_set_value(gpio_reset, 0);
 +	usleep_range(1000, 2000);
-+	gpio_set_value(VC_I2C_GPIO_RST, 1);
++	gpio_set_value(gpio_reset, 1);
 +}
 +
 +// request i2c GPIOs;
 +// set them to the reset state;
 +
 +static int
-+vc_request_i2c_gpio(void)
++vc_request_i2c_gpio(unsigned gpio_reset, unsigned gpio_blink)
 +{
 +	int err;
 +	static bool vc_gpio_requested = 0;
@@ -635,13 +804,13 @@
 +	if(vc_gpio_requested)
 +		return(0);
 +	vc_gpio_requested = 1;
-+	err = gpio_request_one(VC_I2C_GPIO_RST, GPIOF_OUT_INIT_LOW, "vc-i2c-reset");
++	err = gpio_request_one(gpio_reset, GPIOF_OUT_INIT_LOW, "vc-i2c-reset");
 +	if(err)
 +		return(err);
-+	err = gpio_request_one(VC_I2C_GPIO_BLINK, GPIOF_OUT_INIT_LOW, "vc-i2c-blink");
++	err = gpio_request_one(gpio_blink, GPIOF_OUT_INIT_LOW, "vc-i2c-blink");
 +	if(err)
 +		return(err);
-+	vc_i2c_gpio_reset();
++	vc_i2c_gpio_reset(gpio_reset);
 +	return(0);
 +}
 +
@@ -653,27 +822,27 @@
 +// GPIO pin can be made output and write 0, to cause reset;
 +
 +static int
-+vc_request_reset_gpio(void)
++vc_request_reset_gpio(unsigned gpio)
 +{
 +	int err;
 +
-+	err = gpio_request_one(VC_GPIO_RESET_BTN, GPIOF_IN, "vc-reset-button");
++	err = gpio_request_one(gpio, GPIOF_IN, "vc-reset-button");
 +	if(err)
 +		return(err);
-+	return(gpio_get_value(VC_GPIO_RESET_BTN));
++	return(gpio_get_value(gpio));
 +}
 +
 +// request fan gpio;
 +
 +static int
-+vc_request_fan_gpio(void)
++vc_request_fan_gpio(unsigned gpio_tach, unsigned gpio_ctrl)
 +{
 +	int err;
 +
-+	err = gpio_request_one(VC_FAN_GPIO_IN, GPIOF_IN, "vc-fan-tach");
++	err = gpio_request_one(gpio_tach, GPIOF_IN, "vc-fan-tach");
 +	if(err)
 +		return(err);
-+	err = gpio_request_one(VC_FAN_GPIO_OUT, GPIOF_OUT_INIT_HIGH, "vc-fan-gpio");
++	err = gpio_request_one(gpio_ctrl, GPIOF_OUT_INIT_HIGH, "vc-fan-gpio");
 +	return(err);
 +}
 +
@@ -722,18 +891,19 @@
 +// detect i2c devices;
 +// called for each i2c device before probing, by the i2c core;
 +// device addresses are in struct i2c_driver.address_list;
-+// caveat: this is not being called if GPIOs come up driving VC_I2C_GPIO_RST low,
++// caveat: this is not being called if GPIOs come up driving the max7314 reset low,
 +// thus no device responding on i2c bus, and so failing the default probe;
 +
 +static int
 +vc_i2c_detect(struct i2c_client *client, struct i2c_board_info *info)
 +{
++	const vc_hw_t *hw = vc_data.hw;
 +	struct i2c_adapter *adapter = client->adapter;
 +	int err, n;
 +
 +	// request GPIOs that control i2c controllers;
 +
-+	err = vc_request_i2c_gpio();
++	err = vc_request_i2c_gpio(hw->gpio_i2c_reset, hw->gpio_i2c_blink);
 +	if(err)
 +		goto fail;
 +
@@ -769,24 +939,26 @@
 +vc_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 +{
 +	vc_data_t *vcd = &vc_data;
++	const vc_hw_t *hw = vcd->hw;
 +	int i, err;
 +
-+	// ignore more than two devices;
++	// only probe for devices we'd expect;
 +
-+	if(client->addr == VC_I2C_DEV1)
-+		i = VC_I2C_0;
-+	else if(client->addr == VC_I2C_DEV2)
-+		i = VC_I2C_1;
-+	else
-+		return(-ENODEV);
++	for(i = VC_I2C_0; i < N_VC_I2C_DEVS; i++) {
++		if(hw->i2c_addrs[i] == I2C_CLIENT_END)
++			return(-ENODEV);
++		if(client->addr == hw->i2c_addrs[i])
++			break;
++	}
 +	if(vcd->i2c.client[i])
 +		return(-EEXIST);
 +	vcd->i2c.client[i] = client;
++	vcd->i2c.probed |= (1 << i);
 +	dev_info(&client->dev, "i2c index %d\n", i);
 +
-+	// wait for both devices to have been probed;
++	// wait for all devices to have been probed;
 +
-+	if( !vcd->i2c.client[0] || !vcd->i2c.client[1])
++	if(vcd->i2c.probed != hw->i2c_exp)
 +		return(0);
 +
 +	mutex_init(&vcd->i2c.lock);
@@ -810,7 +982,6 @@
 +		goto fail;
 +	}
 +
-+
 +	return(0);
 +
 +	// failed;
@@ -823,11 +994,15 @@
 +static int
 +vc_i2c_remove(struct i2c_client *client)
 +{
++	const vc_hw_t *hw = vc_data.hw;
++
 +	vc_leds_off(&vc_data);
 +	sysfs_remove_group(&vc_pdev->dev.kobj, &vc_fan_group);
 +	sysfs_remove_group(&vc_pdev->dev.kobj, &vc_leds_group);
-+	gpio_free(VC_I2C_GPIO_RST);
-+	gpio_free(VC_I2C_GPIO_BLINK);
++	if(hw) {
++		gpio_free(hw->gpio_i2c_reset);
++		gpio_free(hw->gpio_i2c_blink);
++	}
 +	return(0);
 +}
 +
@@ -851,37 +1026,99 @@
 +	.probe = vc_i2c_probe,
 +	.remove = vc_i2c_remove,
 +	.id_table = vc_i2c_id,
-+	.detect = vc_i2c_detect,
-+	.address_list = vc_i2c_addrs,
++	.detect = vc_i2c_detect
 +};
 +
 +// platform driver;
 +
 +static DEVICE_ATTR(reset, S_IRUGO | S_IWUSR, NULL, NULL);
 +
++// show board name;
++
++static ssize_t
++show_board(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	const struct dmi_system_id *dmi = vc_data.dmi;
++	int ret;
++
++	ret = scnprintf(buf, PAGE_SIZE, "%s\n", dmi->ident);
++	return(ret);
++}
++
++static DEVICE_ATTR(board, S_IRUGO | S_IWUSR, show_board, NULL);
++
++// per-board dmi matching info;
++// unfortunatedly, the edge-portwell has identical dmi info to edge-nexcom;
++
++static struct dmi_system_id vc_dmi_table[] = {
++	{ .ident = "ve1000",
++	  { DMI_MATCH(DMI_BOARD_NAME, "CM-iTC"),
++	  },
++	  .driver_data = &vc_hw_ve1000,
++	},
++	{ .ident = "edge-portwell",
++	  { DMI_MATCH(DMI_PRODUCT_UUID, "XXX"),
++	  },
++	  .driver_data = &vc_hw_none,
++	},
++	{ .ident = "edge-nexcom",
++	  { DMI_MATCH(DMI_PRODUCT_UUID, "00020003-0004-0005-0006-000700080009"),
++	  },
++	  .driver_data = &vc_hw_none,
++	},
++	{ .ident = "edge500",
++	  { DMI_MATCH(DMI_PRODUCT_UUID, "XXX"),
++		DMI_MATCH(DMI_BOARD_NAME, "XXX"),
++	  },
++	  .driver_data = &vc_hw_edge500,
++	},
++	{ 0 },
++};
++
 +// platform driver init;
 +
 +static int __init
 +vc_init(void)
 +{
++	const struct dmi_system_id *dmi;
++	const vc_hw_t *hw;
 +	int err;
 +	int reset = 0;
++
++	// determine velocloud board;
++
++	dmi = dmi_first_match(vc_dmi_table);
++	vc_data.dmi = dmi;
++	if( !dmi) {
++		pr_info("vc: no board found\n");
++		return(-ENODEV);
++	}
++	pr_info("vc: found %s\n", dmi->ident);
++	hw = dmi->driver_data;
++	vc_data.hw = hw;
 +
 +	// read the reset pin first;
 +	// reset gpio is active low;
 +
-+	err = vc_request_reset_gpio();
-+	if(err < 0)
-+		pr_err("ve1000: couldn't request reset gpio\n");
++	if(hw->caps & VC_CAP_RESET_BUTTON) {
++		err = vc_request_reset_gpio(hw->gpio_reset_btn);
++		if(err < 0)
++			pr_err("vc: couldn't request reset gpio\n");
++	} else {
++		pr_warn("vc: no reset button\n");
++		err = -ENODEV;
++	}
 +	if(err >= 0)
 +		reset = (err == 0);
 +
 +	// request the fan gpio;
 +
-+	err = vc_request_fan_gpio();
-+	if(err < 0) {
-+		pr_err("ve1000: couldn't request fan gpio\n");
-+		goto fail_pdev;
++	if(hw->caps & VC_CAP_FAN) {
++		err = vc_request_fan_gpio(hw->gpio_fan_tach, hw->gpio_fan_ctrl);
++		if(err < 0) {
++			pr_err("vc: couldn't request fan gpio\n");
++			goto fail_pdev;
++		}
 +	}
 +	vc_data.fan.rpm = -1;
 +
@@ -890,17 +1127,26 @@
 +	vc_pdev = platform_device_register_simple(VC_NAME, -1, NULL, 0);
 +	if(IS_ERR(vc_pdev)) {
 +		err = PTR_ERR(vc_pdev);
-+		pr_err("ve1000: couldn't register platform device\n");
++		pr_err("vc: couldn't register platform device\n");
 +		goto fail_pdev;
 +	}
 +
 +	// add i2c leds driver;
 +
-+	err = i2c_add_driver(&vc_i2c_driver);
-+	if(err < 0) {
-+		dev_err(&vc_pdev->dev, "couldn't add i2c driver\n");
-+		goto fail_i2c;
++	if(hw->caps & VC_CAP_I2C) {
++		vc_i2c_driver.address_list = &hw->i2c_addrs[0];
++		err = i2c_add_driver(&vc_i2c_driver);
++		if(err < 0) {
++			dev_err(&vc_pdev->dev, "couldn't add i2c driver\n");
++			goto fail_i2c;
++		}
 +	}
++
++	// create velocloud board id;
++
++	err = sysfs_create_file(&vc_pdev->dev.kobj, &dev_attr_board.attr);
++	if(err < 0)
++		dev_err(&vc_pdev->dev, "couldn't register sysfs board\n");
 +
 +	// create reset button file only when it was pushed long;
 +
@@ -924,22 +1170,26 @@
 +static void __exit
 +vc_exit(void)
 +{
++	const vc_hw_t *hw = vc_data.hw;
++
 +	sysfs_remove_file(&vc_pdev->dev.kobj, &dev_attr_reset.attr);
 +	i2c_del_driver(&vc_i2c_driver);
 +	platform_device_unregister(vc_pdev);
 +
 +	// turn fan fully on, as a safety measure;
 + 
-+	gpio_set_value(VC_FAN_GPIO_OUT, 1);
-+	gpio_free(VC_FAN_GPIO_OUT);
-+	gpio_free(VC_FAN_GPIO_IN);
-+	gpio_free(VC_GPIO_RESET_BTN);
++	if( !hw)
++		return;
++	gpio_set_value(hw->gpio_fan_ctrl, 1);
++	gpio_free(hw->gpio_fan_ctrl);
++	gpio_free(hw->gpio_fan_tach);
++	gpio_free(hw->gpio_reset_btn);
 +}
 +
 +module_init(vc_init);
 +module_exit(vc_exit);
 +
 +MODULE_AUTHOR("Sandra Berndt <sberndt@velocloud.net>");
-+MODULE_DESCRIPTION("Velocloud Ve1000 Platform Driver");
++MODULE_DESCRIPTION("Velocloud Vc Platform Driver");
 +MODULE_LICENSE("GPL");
 +

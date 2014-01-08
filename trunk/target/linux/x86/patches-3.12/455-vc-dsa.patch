@@ -2,7 +2,7 @@
 +++ b/drivers/platform/x86/Kconfig
 @@ -778,4 +778,13 @@
  	  RGB LEDs and PWM fan on I2C.
- 	  Say Y to enable support for the Velocloud VE1000.
+ 	  Say Y to enable support for the Velocloud boards.
  
 +config VELOCLOUD_DSA
 +	tristate "Support for the DSA on Velocloud"
@@ -19,7 +19,7 @@
 @@ -51,3 +51,4 @@
  obj-$(CONFIG_SAMSUNG_Q10)	+= samsung-q10.o
  obj-$(CONFIG_APPLE_GMUX)	+= apple-gmux.o
- obj-$(CONFIG_VELOCLOUD_VE1000)	+= velocloud-ve1000.o
+ obj-$(CONFIG_VELOCLOUD_VC)	+= velocloud-vc.o
 +obj-$(CONFIG_VELOCLOUD_DSA)	+= velocloud-dsa.o
 --- a/drivers/platform/x86/velocloud-dsa.c
 +++ b/drivers/platform/x86/velocloud-dsa.c
@@ -296,6 +296,6 @@
 +module_exit(vc_exit);
 +
 +MODULE_AUTHOR("Sandra Berndt <sberndt@velocloud.net>");
-+MODULE_DESCRIPTION("Velocloud Ve1000 DSA Driver");
++MODULE_DESCRIPTION("Velocloud DSA Driver");
 +MODULE_LICENSE("GPL");
 +

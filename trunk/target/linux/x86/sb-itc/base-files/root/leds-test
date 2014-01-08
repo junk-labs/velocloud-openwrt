@@ -1,7 +1,27 @@
 #!/bin/bash
 #
+order_ve1000="logo bar5 bar4 bar3 bar2 bar1 wifi usb_left usb_top usb_bottom usb_right"
+order_edge500="logo bar5 bar4 bar3 bar2 bar1 wifi sta1 sta2 sta3 usb_left usb_top usb_bottom usb_right"
+# determine board type
+board="`cat /sys/devices/platform/vc/board`"
+echo $0: board: $board
+case "$board" in
+ve1000)
+  order=$order_ve1000
+  ;;
+edge500)
+  order=$order_edge500
+  ;;
+edge-portwell|edge-nexcom)
+  echo $0: no leds
+  exit 2
+  ;;
+*)
+  echo $0: unknown board
+  exit 1
+  ;;
+esac
 cd /sys/devices/platform/vc/leds
-order="logo bar5 bar4 bar3 bar2 bar1 wifi usb_left usb_top usb_bottom usb_right"
 # all off
 echo $0: all off
 echo 0 > off

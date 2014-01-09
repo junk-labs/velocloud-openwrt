@@ -30,7 +30,7 @@ config X86_GRUB_CONSOLE
 config X86_GRUB_SERIAL
 	string "Serial port device"
 	depends on X86_GRUB_IMAGES
-	default "hvc0" if TARGET_x86_xen_domu
+	default "hvc0" if TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws
 	default "ttyPCH0" if TARGET_x86_sb_itc
 	default "ttyS1" if TARGET_x86_pw_dev
 	default "ttyS0" if ! TARGET_x86_xen_domu
@@ -57,7 +57,7 @@ config X86_GRUB_BAUDRATE
 config X86_GRUB_BOOTOPTS
 	string "Extra kernel boot options"
 	depends on X86_GRUB_IMAGES
-	default "xencons=hvc" if TARGET_x86_xen_domu
+	default "xencons=hvc" if TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws
 	default "earlyprintk=pch,0x3058,115200" if TARGET_x86_sb_itc
 	default "earlyprintk=serial,ttyS1,115200" if TARGET_x86_pw_dev
 	help
@@ -94,6 +94,17 @@ config X86_VMDK_IMAGES
 	select PACKAGE_kmod-e1000
 	select PACKAGE_kmod-pcnet32
 
+config X86_EC2_IMAGES
+	bool "Build Amazon EC2 image files"
+	default y if TARGET_x86_vc_xen_aws
+	depends on X86_GRUB_IMAGES
+	depends on TARGET_ROOTFS_EXT4FS
+
+config TARGET_ROOTFS_EC2_PARTNAME
+	string "Root partition on EC2 target image"
+	depends on TARGET_x86_vc_xen_aws
+	depends on X86_GRUB_IMAGES
+	default "/dev/xvda1"
 
 config OLPC_BOOTSCRIPT_IMAGES
 	bool "Build images with bootscript"
@@ -120,7 +131,7 @@ config TARGET_ROOTFS_PARTNAME
 	string "Root partition on target device"
 	depends on OLPC_BOOTSCRIPT_IMAGES || X86_GRUB_IMAGES
 	default "/dev/vda2" if TARGET_x86_kvm_guest
-	default "/dev/xvda2" if TARGET_x86_xen_domu
+	default "/dev/xvda2" if TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws
 	default "/dev/sda2" if ! (TARGET_x86_kvm_guest || TARGET_x86_xen_domu)
 	help
 	  The root partition on the final device.  If you don't know,

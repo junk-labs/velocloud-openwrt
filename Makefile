@@ -9,7 +9,9 @@ OPENWRT_VC_VERSION = 1
 OPENWRT_TSYS = \
 	sb-itc \
 	pw-dev \
-	vc-vmdk
+	vc-vmdk \
+	vc-xen-aws \
+
 
 # name can be changed to pull a specific branch;
 OPENWRT_NAME ?= trunk

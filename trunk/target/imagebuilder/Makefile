@@ -48,6 +48,13 @@ $(BIN_DIR)/$(IB_NAME).tar.bz2: clean
 	  | $(XARGS) rm -rf
 	find $(STAGING_DIR_HOST)/bin -maxdepth 1 -type f -perm -u=x \
 	  | $(XARGS) $(SCRIPT_DIR)/bundle-libraries.sh $(PKG_BUILD_DIR)/staging_dir/host/bin
+	if [ -d $(TOPDIR)/files ]; then \
+		rm -rf $(PKG_BUILD_DIR)/files ; \
+		mkdir -p $(PKG_BUILD_DIR)/files ; \
+		rsync -qax $(TOPDIR)/files/ $(PKG_BUILD_DIR)/files/ ; \
+	fi
+	mkdir -p $(PKG_BUILD_DIR)/staging_dir/host/lib
+	$(CP) $(STAGING_DIR_HOST)/lib/grub $(PKG_BUILD_DIR)/staging_dir/host/lib
 	$(TAR) c -C $(BUILD_DIR) $(IB_NAME) | bzip2 -c > $@
 
 download:

@@ -106,6 +106,15 @@ kernel_menuconfig:
 
 target_conf=$(subst .,_,$(subst -,_,$(subst /,_,$(1))))
 
+define CopyFiles
+	@echo "Copying config files for $(1)"
+	@rm -rf $(OPENWRT_ROOT)/files
+	@if [ -d $(OPENWRT_ROOT)/target/linux/x86/$(1)/files ]; then \
+		mkdir -p $(OPENWRT_ROOT)/files ; \
+		rsync -qax $(OPENWRT_ROOT)/target/linux/x86/$(1)/files/ $(OPENWRT_ROOT)/files/ ; \
+	fi
+endef
+
 define OpenwrtConfig
 	@echo "Making subtarget:" $(call target_conf,$(1))
 	@sed \
@@ -138,7 +147,9 @@ endef
 $(OPENWRT_TSYS): $(OPENWRT_CONFIG)
 	$(call DownloadDir)
 	$(call OpenwrtConfig,$@)
+	$(call CopyFiles,$@)
 	make -C $(OPENWRT_ROOT) -j $(NCPU)
+	@rm -rf $(OPENWRT_ROOT)/files
 
 # clean the build;
 # cleans

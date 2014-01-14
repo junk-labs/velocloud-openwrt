@@ -161,6 +161,7 @@ define Build/Configure
 		--without-cxx-main \
 		--with-threads \
 		--with-system-ffi="$(STAGING_DIR)/usr" \
+		--enable-unicode=ucs4 \
 		$(ENABLE_IPV6) \
 		ac_cv_have_chflags=no \
 		ac_cv_have_lchflags=no \

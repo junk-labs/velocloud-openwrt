@@ -7,12 +7,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libcunit
-PKG_VERSION:=2.1-0
-PKG_RELEASE:=1
+PKG_VERSION:=2.1-2
+PKG_RELEASE:=2
 
-PKG_SOURCE:=CUnit-$(PKG_VERSION)-src.tar.gz
+PKG_SOURCE:=CUnit-$(PKG_VERSION)-src.tar.bz2
 PKG_SOURCE_URL:=http://downloads.sourceforge.net/project/cunit/CUnit/$(PKG_VERSION)
-PKG_MD5SUM:=f4f53d2c41e9315a91b4f14a1706fe4f
+PKG_MD5SUM:=31c62bd7a65007737ba28b7aafc44d3a
 PKG_BUILD_DIR:=$(BUILD_DIR)/CUnit-$(PKG_VERSION)
 
 PKG_FIXUP:=autoreconf

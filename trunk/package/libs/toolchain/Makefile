@@ -473,6 +473,11 @@ ifeq ($(CONFIG_EXTERNAL_TOOLCHAIN),)
 		$(TOOLCHAIN_DIR)/lib/libthread_db-$(LIBC_SO_VERSION).so \
 		$(1)/lib/
   endif
+  ifeq ($(CONFIG_USE_EGLIBC),y)
+	$(CP) \
+		$(TOOLCHAIN_DIR)/lib/libthread_db-1.0.so \
+		$(1)/lib/
+  endif
   endef
 
   define Package/libpthread/install_lib

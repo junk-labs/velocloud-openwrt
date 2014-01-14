@@ -137,7 +137,7 @@ copy_files: FORCE
 	fi
 ifneq ($(USER_FILES),)
 	@if [ -d $(USER_FILES) ]; then \
-		@$(call file_copy,$(USER_FILES)/.,$(TARGET_DIR)/); \
+		$(call file_copy,$(USER_FILES)/.,$(TARGET_DIR)/); \
 	fi
 endif
 

@@ -121,6 +121,7 @@ define OpenwrtConfig
 		-e '/CONFIG_VERSION_NICK=/d' \
 		-e '/CONFIG_VERSION_NUMBER=/d' \
 		-e '/CONFIG_TARGET_x86_/d' \
+		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL_UNIT/d' \
 		-e '/CONFIG_X86_GRUB_BOOTOPTS/d' \

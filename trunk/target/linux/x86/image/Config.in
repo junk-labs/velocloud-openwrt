@@ -91,6 +91,7 @@ config X86_VMDK_IMAGES
 	depends on TARGET_x86
 	depends on TARGET_ROOTFS_EXT4FS
 	default y if TARGET_x86_vc_vmdk
+	default y if TARGET_x86_vc_xen_aws
 	select PACKAGE_kmod-e1000
 	select PACKAGE_kmod-pcnet32
 

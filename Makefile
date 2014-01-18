@@ -54,6 +54,18 @@ openwrt-checkout-head:
 openwrt-update:
 	svn update $(OPENWRT_ROOT)
 
+.PHONY: openwrt-fix-svn
+# Git does not check in empty directories. Make sure that these are
+# present before doing any svn updates in the tree.
+openwrt-fix-svn:
+	find trunk \
+		-name build_dir -prune -o \
+		-name staging_dir -prune -o \
+		-type d -name .svn -print \
+		-exec mkdir -p \
+			{}/prop-base {}/props {}/text-base \
+			{}/tmp/prop-base {}/tmp/props {}/tmp/text-base \;
+
 # configure all feeds;
 # there must be a trunk/feeds.conf file;
 

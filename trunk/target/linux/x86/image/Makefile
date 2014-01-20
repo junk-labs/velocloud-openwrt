@@ -296,6 +296,7 @@ define Image/Build/Profile/bifferboard
 endef
 
 define Image/Prepare
+	rm -rf $(KDIR)/bzImage
 	$(CP) $(LINUX_DIR)/arch/x86/boot/bzImage $(KDIR)/bzImage
 	$(call Image/Prepare/bootscript)
 	$(call Image/Prepare/grub2)

@@ -128,5 +128,5 @@ config TARGET_ROOTFS_PARTNAME
 
 config TARGET_ROOTFS_INSTSIZE
 	int "Installed root partition size (in MB)"
-	depends on X86_GRUB_IMAGES && (TARGET_x86_sb_itc_Velocloud || TARGET_x86_pw_dev_Velocloud)
+	depends on X86_GRUB_IMAGES && (TARGET_x86_sb_itc || TARGET_x86_pw_dev)
 	default 1024

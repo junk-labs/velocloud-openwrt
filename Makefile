@@ -109,6 +109,8 @@ define OpenwrtConfig
 	@sed \
 		-e '/CONFIG_VERSION_NICK=/d' \
 		-e '/CONFIG_VERSION_NUMBER=/d' \
+		-e '/CONFIG_ARCH=/d' \
+		-e '/CONFIG_CPU_TYPE=/d' \
 		-e '/CONFIG_TARGET_x86_/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL_UNIT/d' \

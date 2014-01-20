@@ -168,3 +168,34 @@ define KernelPackage/xen-pcidev/description
 endef
 
 $(eval $(call KernelPackage,xen-pcidev))
+
+
+define KernelPackage/kvm
+  SUBMENU:=$(VIRTUAL_MENU)
+  TITLE:=Kernel KVM support for Intel/AMD
+  DEPENDS:=@TARGET_x86
+  KCONFIG:=CONFIG_VIRTUALIZATION=y \
+	CONFIG_IOMMU_SUPPORT=y \
+	CONFIG_AMD_IOMMU=y \
+	CONFIG_INTEL_IOMMU=y \
+	CONFIG_HYPERVISOR_GUEST=y \
+	CONFIG_HIGH_RES_TIMERS=y \
+	CONFIG_KVM_DEVICE_ASSIGNMENT=y \
+	CONFIG_KVM \
+	CONFIG_KVM_INTEL \
+	CONFIG_KVM_AMD \
+	CONFIG_VHOST_NET
+  FILES:=$(LINUX_DIR)/arch/x86/kvm/kvm.ko \
+	$(LINUX_DIR)/arch/x86/kvm/kvm-intel.ko \
+	$(LINUX_DIR)/arch/x86/kvm/kvm-amd.ko \
+	$(LINUX_DIR)/drivers/net/tun.ko \
+	$(LINUX_DIR)/drivers/vhost/vhost.ko \
+	$(LINUX_DIR)/drivers/vhost/vhost_net.ko
+endef
+
+define KernelPackage/kvm/description
+ Kernel modules for KVM support
+endef
+
+$(eval $(call KernelPackage,kvm))
+

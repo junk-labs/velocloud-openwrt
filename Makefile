@@ -7,10 +7,10 @@
 OPENWRT_CONFIG = openwrt.config
 OPENWRT_VC_VERSION = 1
 OPENWRT_TSYS = \
-	sb-itc \
-	pw-dev \
 	vc-vmdk \
 	vc-xen-aws \
+	sb-itc \
+	pw-dev \
 
 
 # name can be changed to pull a specific branch;
@@ -163,6 +163,7 @@ $(OPENWRT_TSYS): $(OPENWRT_CONFIG)
 	$(call DownloadDir)
 	$(call OpenwrtConfig,$@)
 	$(call CopyFiles,$@)
+	@rm -rf trunk/bin/x86-eglibc/root-x86 trunk/bin/x86-eglibc/packages
 	make -C $(OPENWRT_ROOT) -j $(NCPU)
 	@rm -rf $(OPENWRT_ROOT)/files
 

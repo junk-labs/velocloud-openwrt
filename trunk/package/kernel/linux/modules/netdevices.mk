@@ -501,7 +501,12 @@ define KernelPackage/dsa-velocloud
   DEPENDS:=@PCIE_SUPPORT +kmod-dsa-mv88e6xxx
   KCONFIG:= CONFIG_VELOCLOUD_DSA
   FILES:= $(LINUX_DIR)/drivers/platform/x86/velocloud-dsa.ko
-  AUTOLOAD:=$(call AutoProbe,velocloud-dsa)
+  # Do not do this here. Instead, make sure to include a base-files
+  # entry for /etc/modules.d/dsa-velocloud, that has the right options
+  # for the hardware model in question.  The reason we do it like this
+  # is that otherwise, the default /etc/modules.d/dsa-velocloud from
+  # the kmod package seems to overwrite the base-files entry
+  #AUTOLOAD:=$(call AutoProbe,velocloud-dsa)
 endef
 
 define KernelPackage/dsa-velocloud/description

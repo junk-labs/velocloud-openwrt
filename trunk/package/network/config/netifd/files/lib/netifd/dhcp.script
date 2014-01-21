@@ -8,7 +8,7 @@ set_classless_routes() {
 	local max=128
 	local type
 	while [ -n "$1" -a -n "$2" -a $max -gt 0 ]; do
-		proto_add_ipv4_route "${1%%/*}" "${1##*/}" "$2"
+		proto_add_ipv4_route "${1%%/*}" "${1##*/}" "$2" "$3"
 		max=$(($max-1))
 		shift 2
 	done
@@ -17,15 +17,20 @@ set_classless_routes() {
 setup_interface () {
 	proto_init_update "*" 1
 	proto_add_ipv4_address "$ip" "${subnet:-255.255.255.0}"
+	local metric=${interface//eth}
 	# TODO: apply $broadcast
 
+	# add 100 to USB-modem routes
+	if [ "${interface//eth[0-2]}" != "" ]; then
+		metric=$(expr $metric + 100)
+	fi
 	for i in $router; do
-		proto_add_ipv4_route 0.0.0.0 0 "$i"
+		proto_add_ipv4_route 0.0.0.0 0 "$i" "$metric"
 	done
 
 	# CIDR STATIC ROUTES (rfc3442)
-	[ -n "$staticroutes" ] && set_classless_routes $staticroutes
-	[ -n "$msstaticroutes" ] && set_classless_routes $msstaticroutes
+	[ -n "$staticroutes" ] && set_classless_routes $staticroutes $metric
+	[ -n "$msstaticroutes" ] && set_classless_routes $msstaticroutes $metric
 
 	for dns in $dns; do
 		proto_add_dns_server "$dns"
@@ -81,6 +86,6 @@ case "$1" in
 esac
 
 # user rules
-[ -f /etc/udhcpc.user ] && . /etc/udhcpc.user
+[ -f /etc/udhcpc.user ] && . /etc/udhcpc.user $1
 
 exit 0

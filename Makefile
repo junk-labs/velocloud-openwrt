@@ -9,7 +9,9 @@ OPENWRT_VC_VERSION = 1
 OPENWRT_TSYS = \
 	sb-itc \
 	pw-dev \
-	vc-vmdk
+	vc-vmdk \
+	vc-xen-aws \
+
 
 # name can be changed to pull a specific branch;
 OPENWRT_NAME ?= trunk
@@ -51,6 +53,18 @@ openwrt-checkout-head:
 .PHONY: update
 openwrt-update:
 	svn update $(OPENWRT_ROOT)
+
+.PHONY: openwrt-fix-svn
+# Git does not check in empty directories. Make sure that these are
+# present before doing any svn updates in the tree.
+openwrt-fix-svn:
+	find trunk \
+		-name build_dir -prune -o \
+		-name staging_dir -prune -o \
+		-type d -name .svn -print \
+		-exec mkdir -p \
+			{}/prop-base {}/props {}/text-base \
+			{}/tmp/prop-base {}/tmp/props {}/tmp/text-base \;
 
 # configure all feeds;
 # there must be a trunk/feeds.conf file;
@@ -104,6 +118,15 @@ kernel_menuconfig:
 
 target_conf=$(subst .,_,$(subst -,_,$(subst /,_,$(1))))
 
+define CopyFiles
+	@echo "Copying config files for $(1)"
+	@rm -rf $(OPENWRT_ROOT)/files
+	@if [ -d $(OPENWRT_ROOT)/target/linux/x86/$(1)/files ]; then \
+		mkdir -p $(OPENWRT_ROOT)/files ; \
+		rsync -qax $(OPENWRT_ROOT)/target/linux/x86/$(1)/files/ $(OPENWRT_ROOT)/files/ ; \
+	fi
+endef
+
 define OpenwrtConfig
 	@echo "Making subtarget:" $(call target_conf,$(1))
 	@sed \
@@ -112,6 +135,7 @@ define OpenwrtConfig
 		-e '/CONFIG_ARCH=/d' \
 		-e '/CONFIG_CPU_TYPE=/d' \
 		-e '/CONFIG_TARGET_x86_/d' \
+		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL_UNIT/d' \
 		-e '/CONFIG_X86_GRUB_BOOTOPTS/d' \
@@ -138,7 +162,9 @@ endef
 $(OPENWRT_TSYS): $(OPENWRT_CONFIG)
 	$(call DownloadDir)
 	$(call OpenwrtConfig,$@)
+	$(call CopyFiles,$@)
 	make -C $(OPENWRT_ROOT) -j $(NCPU)
+	@rm -rf $(OPENWRT_ROOT)/files
 
 # clean the build;
 # cleans

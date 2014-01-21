@@ -55,7 +55,7 @@ define Build/Compile
 endef
 
 define Package/qemu/install-bins
-	$(INSTALL_DIR) $(1)/usr/bin/
+	$(INSTALL_DIR) $(1)
 	$(INSTALL_BIN) \
 		$(PKG_BUILD_DIR)/qemu-bridge-helper \
 		$(PKG_BUILD_DIR)/qemu-ga \
@@ -66,24 +66,24 @@ define Package/qemu/install-bins
 endef
 
 define Package/qemu/install-target
-	$(INSTALL_DIR) $(1)/usr/bin/
+	$(INSTALL_DIR) $(1)
 	$(INSTALL_BIN) \
 		$(PKG_BUILD_DIR)/$(2)/$(3) \
 		$(1)
 endef
 
 define Package/qemu/install-bios
-	$(INSTALL_DIR) $(1)/usr/share/qemu/
+	$(INSTALL_DIR) $(1)
 	$(INSTALL_BIN) \
 		$(PKG_BUILD_DIR)/pc-bios/*.bin \
 		$(1)
 endef
 
 define Package/qemu/install
-	$(call Package/qemu/install-bins, $(1))
-	$(call Package/qemu/install-target, $(1),i386-softmmu,qemu-system-i386)
-	$(call Package/qemu/install-target, $(1),x86_64-softmmu,qemu-system-x86_64)
-	$(call Package/qemu/install-bios, $(1))
+	$(call Package/qemu/install-bins, $(1)/usr/bin)
+	$(call Package/qemu/install-target, $(1)/usr/bin,i386-softmmu,qemu-system-i386)
+	$(call Package/qemu/install-target, $(1)/usr/bin,x86_64-softmmu,qemu-system-x86_64)
+	$(call Package/qemu/install-bios, $(1)/usr/share/qemu)
 endef
 
 $(eval $(call BuildPackage,qemu))

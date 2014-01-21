@@ -1,0 +1,13 @@
+--- a/scripts/netifd-proto.sh	2014-01-12 12:21:25.508766392 -0800
++++ b/scripts/netifd-proto.sh	2014-01-12 12:21:56.108771254 -0800
+@@ -114,8 +114,9 @@
+ 	local target="$1"
+ 	local mask="$2"
+ 	local gw="$3"
++	local metric="$4"
+ 
+-	append PROTO_ROUTE "$target/$mask/$gw//"
++	append PROTO_ROUTE "$target/$mask/$gw/$metric/"
+ }
+ 
+ proto_add_ipv6_route() {

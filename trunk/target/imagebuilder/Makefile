@@ -42,12 +42,23 @@ $(BIN_DIR)/$(IB_NAME).tar.bz2: clean
 		$(PKG_BUILD_DIR)/target/linux/*/files{,-*} \
 		$(PKG_BUILD_DIR)/target/linux/*/patches{,-*}
 	-cp $(KERNEL_BUILD_DIR)/* $(IB_KDIR)/ # don't copy subdirectories here
+	[ -d $(KERNEL_BUILD_DIR)/inst.grub ] && $(CP) $(KERNEL_BUILD_DIR)/inst.grub $(IB_KDIR)/ || true # except inst.grub
+	mkdir -p $(IB_LDIR)/scripts/dtc $(IB_LDIR)/arch/$(ARCH)/boot/dts
+	-cp $(LINUX_DIR)/scripts/dtc/dtc $(IB_LDIR)/scripts/dtc/
+	-cp  $(LINUX_DIR)/arch/$(ARCH)/boot/dts/* $(IB_LDIR)/arch/$(ARCH)/boot/dts
 	-cp $(LINUX_DIR)/.config $(IB_LDIR)/
 	$(SED) 's,^# REVISION:=.*,REVISION:=$(REVISION),g' $(PKG_BUILD_DIR)/include/version.mk
 	find $(PKG_BUILD_DIR) -name CVS -o -name .git -o -name .svn \
 	  | $(XARGS) rm -rf
 	find $(STAGING_DIR_HOST)/bin -maxdepth 1 -type f -perm -u=x \
 	  | $(XARGS) $(SCRIPT_DIR)/bundle-libraries.sh $(PKG_BUILD_DIR)/staging_dir/host/bin
+	if [ -d $(TOPDIR)/files ]; then \
+		rm -rf $(PKG_BUILD_DIR)/files ; \
+		mkdir -p $(PKG_BUILD_DIR)/files ; \
+		rsync -qax $(TOPDIR)/files/ $(PKG_BUILD_DIR)/files/ ; \
+	fi
+	mkdir -p $(PKG_BUILD_DIR)/staging_dir/host/lib
+	$(CP) $(STAGING_DIR_HOST)/lib/grub $(PKG_BUILD_DIR)/staging_dir/host/lib
 	$(TAR) c -C $(BUILD_DIR) $(IB_NAME) | bzip2 -c > $@
 
 download:

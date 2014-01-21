@@ -64,6 +64,12 @@ ifneq ($(CONFIG_X86_GRUB_IMAGES),)
     root=$(ROOTPART) rootfstype=ext4 rootwait
   endef
 
+ifneq ($(CONFIG_X86_EC2_IMAGES),)
+  define Image/cmdline/ext4-ec2
+    root=$(call qstrip,$(CONFIG_TARGET_ROOTFS_EC2_PARTNAME)) rootfstype=ext4 rootwait
+  endef
+endif
+
   define Image/cmdline/jffs2-64k
     block2mtd.block2mtd=$(ROOTPART),65536,rootfs root=/dev/mtdblock0 rootfstype=jffs2 rootwait
   endef
@@ -290,6 +296,26 @@ ifneq ($(CONFIG_X86_VELOCLOUD_INSTALLER),)
   endef
 endif
 
+ifneq ($(CONFIG_X86_EC2_IMAGES),)
+  define Image/Build/vc-ec2
+	# Build AWS (EC2) Image, too
+	E2SIZE=$(shell echo $$(($(CONFIG_TARGET_ROOTFS_PARTSIZE)*1024)))
+	mkdir -p $(TARGET_DIR)/boot/grub
+	$(CP) $(KDIR)/bzImage $(TARGET_DIR)/boot/vmlinuz
+	sed \
+		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
+		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
+		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/$(1)-ec2) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
+		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
+		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/menu.lst \
+		  > $(TARGET_DIR)/boot/grub/menu.lst
+
+	$(STAGING_DIR_HOST)/bin/genext2fs -U -b $(E2SIZE) -N $(CONFIG_TARGET_ROOTFS_MAXINODE) -d $(TARGET_DIR)/ $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img -m $(CONFIG_TARGET_ROOTFS_RESERVED_PCT)
+	$(STAGING_DIR_HOST)/bin/tune2fs -O extents,uninit_bg,dir_index $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
+	$(STAGING_DIR_HOST)/bin/e2fsck -fy $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
+  endef
+endif
+
 define Image/Build/Profile/bifferboard
 	$(TOPDIR)/target/linux/rdc/image/mkimg_bifferboard.py $(KDIR)/bzImage $(KDIR)/root.$(1) \
 		$(BIN_DIR)/$(IMG_PREFIX)-$(1)-bifferboard.img
@@ -314,6 +340,7 @@ define Image/Build
 	$(call Image/Build/vdi,$(1))
 	$(call Image/Build/velocloud-installer,$(1))
 	$(call Image/Build/vmdk,$(1))
+	$(call Image/Build/vc-ec2,$(1))
 	$(CP) $(KDIR)/root.$(1) $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img
   else
 	$(CP) $(KDIR)/root.iso $(BIN_DIR)/$(IMG_PREFIX).iso

@@ -10,7 +10,7 @@ ARCH:=x86_64
 BOARD:=x86
 BOARDNAME:=x86
 FEATURES:=squashfs ext4 vdi vmdk pcmcia targz
-SUBTARGETS=generic sb-itc pw-dev vc-vmdk
+SUBTARGETS=generic sb-itc pw-dev vc-vmdk vc-xen-aws
 
 LINUX_VERSION:=3.12.3
 

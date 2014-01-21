@@ -108,9 +108,7 @@ _call_image:
 		$(OPKG) update; \
 	fi
 	$(MAKE) package_install
-ifneq ($(USER_FILES),)
 	$(MAKE) copy_files
-endif
 	$(MAKE) package_postinst
 	$(MAKE) build_image
 
@@ -134,7 +132,14 @@ package_install: FORCE
 copy_files: FORCE
 	@echo
 	@echo Copying extra files
-	@$(call file_copy,$(USER_FILES)/*,$(TARGET_DIR)/)
+	@if [ -d $(TOPDIR)/files ]; then \
+		$(call file_copy,$(TOPDIR)/files/.,$(TARGET_DIR)/); \
+	fi
+ifneq ($(USER_FILES),)
+	@if [ -d $(USER_FILES) ]; then \
+		$(call file_copy,$(USER_FILES)/.,$(TARGET_DIR)/); \
+	fi
+endif
 
 package_postinst: FORCE
 	@echo

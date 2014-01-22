@@ -245,6 +245,21 @@ endef
 $(eval $(call KernelPackage,hwmon-w83627hf))
 
 
+define KernelPackage/hwmon-w83627ehf
+  TITLE:=Winbond W83627EHF/DHG/UHG/HG monitoring support
+  KCONFIG:=CONFIG_SENSORS_W83627EHF
+  FILES:=$(LINUX_DIR)/drivers/hwmon/w83627ehf.ko
+  AUTOLOAD:=$(call AutoLoad,50,w83627ehf)
+  $(call AddDepends/hwmon,@TARGET_rdc||TARGET_x86 +kmod-hwmon-vid)
+endef
+
+define KernelPacakge/hwmon-w83627ehf/description
+  Kernel module for the Winbond W83627EHF/DHG/UHG/HG chips.
+endef
+
+$(eval $(call KernelPackage,hwmon-w83627ehf))
+
+
 define KernelPackage/hwmon-gsc
   TITLE:=Gateworks GSC monitoring support
   KCONFIG:=CONFIG_SENSORS_GSC

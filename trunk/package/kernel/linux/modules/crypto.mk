@@ -229,25 +229,23 @@ $(eval $(call KernelPackage,crypto-hw-omap))
 
 define KernelPackage/crypto-aes
   TITLE:=AES cipher CryptoAPI module
-  KCONFIG:=CONFIG_CRYPTO_AES $(CONFIG_CRYPTO_AES_ASSEMBLY)
+  KCONFIG:=CONFIG_CRYPTO_AES
   FILES:=$(LINUX_DIR)/crypto/aes_generic.ko
   AUTOLOAD:=$(call AutoLoad,09,aes_generic)
   $(call AddDepends/crypto)
 endef
 
-ifeq ($(CONFIG_x86_64),y)
-CONFIG_CRYPTO_AES_ASSEMBLY=CONFIG_CRYPTO_AES_X86_64
-define KernelPackage/crypto-aes/x86
+define KernelPackage/crypto-aes/x64
+  KCONFIG+=CONFIG_CRYPTO_AES_X86_64
   FILES+=$(LINUX_DIR)/arch/x86/crypto/aes-x86_64.ko
-  AUTOLOAD:=$(call AutoLoad,09,aes_generic aes-x86_64)
+  AUTOLOAD:=$(call AutoLoad,09,aes-x86_64)
 endef
-else
-CONFIG_CRYPTO_AES_ASSEMBLY=CONFIG_CRYPTO_AES_586
+
 define KernelPackage/crypto-aes/x86
+  KCONFIG+=CONFIG_CRYPTO_AES_586
   FILES+=$(LINUX_DIR)/arch/x86/crypto/aes-i586.ko
   AUTOLOAD:=$(call AutoLoad,09,aes-i586)
 endef
-endif
 
 $(eval $(call KernelPackage,crypto-aes))
 
@@ -451,17 +449,15 @@ define KernelPackage/crypto-misc
   $(call AddDepends/crypto)
 endef
 
-ifeq ($(CONFIG_x86_64),y)
-CONFIG_CRYPTO_TWOFISH_ASSEMBLY=CONFIG_CRYPTO_TWOFISH_X86_64
-define KernelPackage/crypto-misc/x86
+define KernelPackage/crypto-misc/x64
+  KCONFIG+=CONFIG_CRYPTO_TWOFISH_X86_64
   FILES+=$(LINUX_DIR)/arch/x86/crypto/twofish-x86_64.ko
 endef
-else
-CONFIG_CRYPTO_TWOFISH_ASSEMBLY=CONFIG_CRYPTO_TWOFISH_586
+
 define KernelPackage/crypto-misc/x86
+  KCONFIG+=CONFIG_CRYPTO_TWOFISH_586
   FILES+=$(LINUX_DIR)/arch/x86/crypto/twofish-i586.ko
 endef
-endif
 
 $(eval $(call KernelPackage,crypto-misc))
 

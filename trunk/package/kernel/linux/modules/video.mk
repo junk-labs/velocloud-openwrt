@@ -35,6 +35,11 @@ define KernelPackage/fb/x86
   AUTOLOAD:=$(call AutoLoad,06,fbdev fb)
 endef
 
+define KernelPackage/fb/x64
+  FILES+=$(LINUX_DIR)/arch/x86/video/fbdev.ko
+  AUTOLOAD:=$(call AutoLoad,06,fbdev fb)
+endef
+
 $(eval $(call KernelPackage,fb))
 
 define KernelPackage/fb-cfb-fillrect

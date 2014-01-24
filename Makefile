@@ -3,14 +3,26 @@
 # *Optional* local settings, instead of command line:
 -include local.mk
 
+# x86 or x64
+OPENWRT_ARCH = x64
+
 # name of all supported target systems;
 OPENWRT_CONFIG = openwrt.config
 OPENWRT_VC_VERSION = 1
+ifeq ($(OPENWRT_ARCH),x86)
+OPENWRT_CPUARCH=i386
+OPENWRT_TSYS = \
+	vc-vmdk \
+	sb-itc \
+
+else
+OPENWRT_CPUARCH=x86_64
 OPENWRT_TSYS = \
 	vc-vmdk \
 	vc-xen-aws \
-	sb-itc \
 	pw-dev \
+
+endif
 
 
 # name can be changed to pull a specific branch;
@@ -121,9 +133,9 @@ target_conf=$(subst .,_,$(subst -,_,$(subst /,_,$(1))))
 define CopyFiles
 	@echo "Copying config files for $(1)"
 	@rm -rf $(OPENWRT_ROOT)/files
-	@if [ -d $(OPENWRT_ROOT)/target/linux/x86/$(1)/files ]; then \
+	@if [ -d $(OPENWRT_ROOT)/target/linux/$(OPENWRT_ARCH)/$(1)/files ]; then \
 		mkdir -p $(OPENWRT_ROOT)/files ; \
-		rsync -qax $(OPENWRT_ROOT)/target/linux/x86/$(1)/files/ $(OPENWRT_ROOT)/files/ ; \
+		rsync -qax $(OPENWRT_ROOT)/target/linux/$(OPENWRT_ARCH)/$(1)/files/ $(OPENWRT_ROOT)/files/ ; \
 	fi
 endef
 
@@ -133,8 +145,12 @@ define OpenwrtConfig
 		-e '/CONFIG_VERSION_NICK=/d' \
 		-e '/CONFIG_VERSION_NUMBER=/d' \
 		-e '/CONFIG_ARCH=/d' \
+		-e '/CONFIG_ARCH_64BIT=/d' \
+		-e '/CONFIG_i386=/d' \
+		-e '/CONFIG_x86_64=/d' \
 		-e '/CONFIG_CPU_TYPE=/d' \
-		-e '/CONFIG_TARGET_x86_/d' \
+		-e '/CONFIG_TARGET_x86/d' \
+		-e '/CONFIG_TARGET_BOARD/d' \
 		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL/d' \
 		-e '/CONFIG_X86_GRUB_SERIAL_UNIT/d' \
@@ -143,7 +159,11 @@ define OpenwrtConfig
 		-e '/CONFIG_X86_VMDK_IMAGES/d' \
 		-e '/CONFIG_X86_VELOCLOUD_INSTALLER/d' \
 		-e '$$ a\\n# target overwrites\n' \
-		-e '$$ aCONFIG_TARGET_x86_$(call target_conf,$(1))=y' \
+		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \
+		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)_$(call target_conf,$(1))=y' \
+		-e '$$ aCONFIG_TARGET_BOARD="$(OPENWRT_ARCH)"' \
+		-e '$$ aCONFIG_$(OPENWRT_CPUARCH)=y' \
+		-e '$$ aCONFIG_ARCH="$(OPENWRT_CPUARCH)"' \
 		-e '$$ aCONFIG_VERSION_NICK="OpenWRT $(1)"' \
 		-e '$$ aCONFIG_VERSION_NUMBER="$(OPENWRT_VC_VERSION)"' \
 		-e '$$ a# CONFIG_X86_GRUB_SERIAL is not set' \
@@ -163,7 +183,7 @@ $(OPENWRT_TSYS): $(OPENWRT_CONFIG)
 	$(call DownloadDir)
 	$(call OpenwrtConfig,$@)
 	$(call CopyFiles,$@)
-	@rm -rf trunk/bin/x86-eglibc/root-x86 trunk/bin/x86-eglibc/packages
+	@rm -rf trunk/bin/$(OPENWRT_ARCH)-eglibc/root-$(OPENWRT_ARCH) trunk/bin/$(OPENWRT_ARCH)-eglibc/packages
 	make -C $(OPENWRT_ROOT) -j $(NCPU)
 	@rm -rf $(OPENWRT_ROOT)/files
 

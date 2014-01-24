@@ -6,9 +6,9 @@
 #
 include $(TOPDIR)/rules.mk
 
-ARCH:=i386
-BOARD:=x86
-BOARDNAME:=x86
+ARCH:=x86_64
+BOARD:=x64
+BOARDNAME:=x64
 FEATURES:=squashfs ext4 vdi vmdk pcmcia targz
 SUBTARGETS=generic sb-itc pw-dev vc-vmdk vc-xen-aws
 

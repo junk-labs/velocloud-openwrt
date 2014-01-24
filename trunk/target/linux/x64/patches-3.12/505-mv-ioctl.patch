@@ -1,0 +1,343 @@
+--- a/net/dsa/Makefile
++++ b/net/dsa/Makefile
+@@ -1,6 +1,6 @@
+ # the core
+ obj-$(CONFIG_NET_DSA) += dsa_core.o
+-dsa_core-y += dsa.o slave.o
++dsa_core-y += dsa.o slave.o dsa_mv_ioctl.o
+ 
+ # tagging formats
+ dsa_core-$(CONFIG_NET_DSA_TAG_DSA) += tag_dsa.o
+--- /dev/null
++++ b/net/dsa/dsa_mv_ioctl.c
+@@ -0,0 +1,243 @@
++/*
++ * Jegadish D (jegadish@velocloud.net)
++ * Copyright (C) 2013, Velocloud Inc.
++ * 
++ * IOCTL interface to access Marvell DSA 88E6123-61-65 switch 
++ *	- Read/Write port/global registers of the switch
++ *	- Read/Load/Purge MAC addresses from the switch memory 
++ */
++
++#include "dsa_mv_ioctl.h"
++#include "dsa_priv.h"
++
++static int dsa_slave_mv_reg_read(struct mii_bus* bus, struct dsa_mv_reg* msg,
++	       	uint16_t port_num);
++static int dsa_slave_mv_reg_write(struct mii_bus* bus, struct dsa_mv_reg* msgi,
++	       	uint16_t port_num);
++static int dsa_slave_mv_mac_ops(struct mii_bus* bus, 
++		struct dsa_mv_atu_reg* msgi, int ops, uint16_t port_num);
++static uint16_t dsa_slave_mv_reg_addr(uint16_t reg_type);
++static int dsa_slave_mv_mac_load(struct mii_bus* bus, uint8_t* in_mac_addr);
++static int dsa_slave_mv_mac_lcopy(struct mii_bus* bus, uint8_t* mac_addr);
++
++
++int dsa_slave_mv_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
++{
++	int rc = 0;
++        struct dsa_slave_priv *p = netdev_priv(dev);
++        struct dsa_switch* ds = p->parent;
++	uint8_t port_num = ifr->ifr_name[strlen(ifr->ifr_name) - 1] - '0';
++
++	switch (cmd) {
++		case SIOCGMVREG:
++			rc = dsa_slave_mv_reg_read(ds->master_mii_bus,
++				       (struct dsa_mv_reg*) &(ifr->ifr_ifru), port_num);
++			break;
++		case SIOCSMVREG: 
++			rc = dsa_slave_mv_reg_write(ds->master_mii_bus,
++				       (struct dsa_mv_reg*) &(ifr->ifr_ifru), port_num);
++			break;
++		case SIOCGMVMAC:
++		case SIOCSMVMAC:
++		case SIOCDMVMAC:
++			rc = dsa_slave_mv_mac_ops(ds->master_mii_bus,
++					(struct dsa_mv_atu_reg*) &(ifr->ifr_ifru),
++				       	cmd, port_num);
++			break;
++	}
++	return rc;
++}
++
++static int dsa_slave_mv_reg_read(struct mii_bus* bus, struct dsa_mv_reg* msg,
++	       	uint16_t port_num)
++{
++	int ret = 0;
++	uint16_t addr = dsa_slave_mv_reg_addr(msg->reg_type);
++	if (msg->reg_type == MV_REG_PORT_ADDR)
++		addr += port_num;
++	ret = mdiobus_read(bus, addr, msg->reg_num);
++	if (ret >= 0)
++		msg->out_reg_value = ret;
++	return 0;
++}
++
++static int dsa_slave_mv_reg_write(struct mii_bus* bus, struct dsa_mv_reg* msg, uint16_t port_num)
++{
++	int ret = 0;
++	uint16_t addr = dsa_slave_mv_reg_addr(msg->reg_type);
++	if (msg->reg_type == MV_REG_PORT_ADDR)
++		addr += port_num;
++	ret = mdiobus_write(bus, addr, msg->reg_num, msg->out_reg_value);
++	return 0;
++}
++
++static int dsa_slave_mv_mac_ops(struct mii_bus* bus, 
++		struct dsa_mv_atu_reg* msg, int ops, uint16_t port_num)
++{
++	int rc = 0;
++	//printk(KERN_ERR "Port number: %d", port_num);
++	if ((ops == SIOCGMVMAC) || (ops == SIOCDMVMAC)) {
++		// Setting Entry state (0 - Purge/Read :: 1 - Write)
++		if (port_num)
++			msg->out_data_reg = (1 << (port_num + 4));
++		rc = mdiobus_write(bus, MV_REG_GLOBAL_ADDR,
++				MV_ATU_DATA_REG, msg->out_data_reg & 0xFFF0);
++	} else {
++		if (port_num)
++			msg->out_data_reg = (1 << (port_num + 8));
++		rc = mdiobus_write(bus, MV_REG_GLOBAL_ADDR,
++				MV_ATU_DATA_REG, msg->out_data_reg | 0x000F);
++	}
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_write failed: %s:%d\n", __func__, __LINE__);
++		goto error_return;
++	}
++	rc = dsa_slave_mv_mac_load(bus, msg->mac_addr);
++	if (rc < 0)
++		goto error_return;
++	printk(KERN_ERR "In MAC: %0X %0X %0X %0X %0X %0X\n",
++			msg->mac_addr[0], msg->mac_addr[1],
++			msg->mac_addr[2], msg->mac_addr[3],
++			msg->mac_addr[4], msg->mac_addr[5]);
++
++	//ATU Op = set ops and start operation
++	if (ops == SIOCGMVMAC)
++		rc = mdiobus_write(bus, MV_REG_GLOBAL_ADDR, 
++				MV_ATU_OPS_REG, (0xC << 12));
++	else
++		rc = mdiobus_write(bus, MV_REG_GLOBAL_ADDR, 
++				MV_ATU_OPS_REG, (0xB << 12));
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_write failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}
++	do {
++		msleep(1);
++		rc = mdiobus_read(bus, MV_REG_GLOBAL_ADDR,
++				MV_ATU_OPS_REG);
++		if (rc < 0) {
++			printk(KERN_ERR "mdiobus_read failed: %s:%d\n", 
++					__FUNCTION__, __LINE__);
++			goto error_return;
++		}
++	} while (rc & 0x80);
++
++	rc = mdiobus_read(bus, MV_REG_GLOBAL_ADDR,
++			MV_ATU_DATA_REG);
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_read failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}
++	if ((ops == SIOCGMVMAC) && (rc == 0)) {
++
++		printk(KERN_ERR "DSA Marvell ioctl Entry state = 0 DATA: %u\n", rc);
++		if (mdiobus_read(bus, MV_REG_GLOBAL_ADDR,
++				MV_ATU_OPS_REG) < 0)
++			rc = -1;
++		else {
++			printk(KERN_ERR "DSA Marvell ioctl Entry state = 0 OPS: %u\n", rc);
++			rc = -ENODATA;
++		}
++		goto error_return;
++	}
++
++	msg->out_data_reg = rc;
++	rc = dsa_slave_mv_mac_lcopy(bus, msg->out_mac_addr);
++	if (rc < 0)
++		goto error_return;
++	printk(KERN_ERR "Out MAC: %0X %0X %0X %0X %0X %0X\n",
++			msg->out_mac_addr[0], msg->out_mac_addr[1],
++			msg->out_mac_addr[2], msg->out_mac_addr[3],
++			msg->out_mac_addr[4], msg->out_mac_addr[5]);
++	rc = mdiobus_read(bus, MV_REG_GLOBAL_ADDR,
++			MV_ATU_OPS_REG);
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_read failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}
++	msg->out_ops_reg = rc;
++	rc = 0;
++
++error_return:
++	return rc;
++}
++
++static uint16_t dsa_slave_mv_reg_addr(uint16_t reg_type)
++{
++	if (reg_type == MV_REG_PORT)
++		return MV_REG_PORT_ADDR;
++	else if (reg_type == MV_REG_GLOBAL)	
++		return MV_REG_GLOBAL_ADDR;
++	else
++		return MV_REG_GLOBAL2_ADDR;
++}
++
++static int dsa_slave_mv_mac_load(struct mii_bus* bus, uint8_t* in_mac_addr)
++{
++	uint16_t* mac_addr = (uint16_t*)in_mac_addr;
++	int rc = 0;
++
++	rc = mdiobus_write(bus, MV_REG_GLOBAL_ADDR,
++			MV_ATU_MAC_REG1, *mac_addr);
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_write failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}	
++	mac_addr++;
++	rc = mdiobus_write(bus, MV_REG_GLOBAL_ADDR, 
++			MV_ATU_MAC_REG2, *mac_addr);
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_write failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}
++	mac_addr++;
++	rc = mdiobus_write(bus, MV_REG_GLOBAL_ADDR, 
++			MV_ATU_MAC_REG3, *mac_addr);
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_write failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}
++error_return:
++	return rc;
++}
++
++
++static int dsa_slave_mv_mac_lcopy(struct mii_bus* bus, uint8_t* mac_addr)
++{
++	uint16_t* out_mac_addr = (uint16_t*)mac_addr;
++	int rc = mdiobus_read(bus, MV_REG_GLOBAL_ADDR,
++			MV_ATU_MAC_REG1);
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_read failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}
++	*out_mac_addr = rc;
++	rc = mdiobus_read(bus, MV_REG_GLOBAL_ADDR, 
++			MV_ATU_MAC_REG2);
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_read failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}
++	out_mac_addr++;
++	*out_mac_addr = rc;
++	rc = mdiobus_read(bus, MV_REG_GLOBAL_ADDR, 
++			MV_ATU_MAC_REG3);
++	if (rc < 0) {
++		printk(KERN_ERR "mdiobus_read failed: %s:%d\n", 
++				__FUNCTION__, __LINE__);
++		goto error_return;
++	}
++	out_mac_addr++;
++	*out_mac_addr = rc;
++error_return:
++	return rc;
++}
++
+--- /dev/null
++++ b/net/dsa/dsa_mv_ioctl.h
+@@ -0,0 +1,57 @@
++/*
++ * Jegadish D (jegadish@velocloud.net)
++ * Copyright (C) 2013, Velocloud Inc.
++ * 
++ * IOCTL interface to access Marvell DSA 88E6123-61-65 switch 
++ *	- Read/Write port/global registers of the switch
++ *	- Read/Load/Purge MAC addresses from the switch memory 
++ */
++
++#ifndef DSA_MV_IOCTL_H
++#define DSA_MV_IOCTL_H
++
++#include <linux/netdevice.h>
++
++/* Marvell DSA Device private ioctl commands */
++#define SIOCGMVREG 0x89F1
++#define SIOCSMVREG 0x89F2
++#define SIOCGMVMAC 0x89F3
++#define SIOCSMVMAC 0x89F4
++#define SIOCDMVMAC 0x89F5
++
++/* Marvell DSA register types */
++#define MV_REG_PORT	0
++#define MV_REG_GLOBAL	1
++#define MV_REG_GLOBAL2	2
++
++/* Marvell DSA register addr */
++#define MV_REG_PORT_ADDR	0x10
++#define MV_REG_GLOBAL_ADDR	0x1b
++#define MV_REG_GLOBAL2_ADDR     0x1c
++
++/* Marvel DSA ATU reg */
++#define MV_ATU_OPS_REG	0xB
++#define MV_ATU_DATA_REG 0xC
++#define MV_ATU_MAC_REG1 0xD
++#define MV_ATU_MAC_REG2 0xE
++#define MV_ATU_MAC_REG3 0xF
++
++/* Marvell DSA Device private ioctl data */
++struct dsa_mv_reg {
++	uint16_t reg_type;
++	uint16_t reserved;
++	uint16_t reg_num;
++	uint16_t out_reg_value;
++};
++
++struct dsa_mv_atu_reg {
++	uint8_t mac_addr[ETH_ALEN];
++	uint16_t out_ops_reg;
++	uint16_t out_data_reg;
++	uint8_t out_mac_addr[ETH_ALEN];
++};
++
++int dsa_slave_mv_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
++
++#endif
++
+--- a/net/dsa/slave.c
++++ b/net/dsa/slave.c
+@@ -13,6 +13,7 @@
+ #include <linux/etherdevice.h>
+ #include <linux/phy.h>
+ #include "dsa_priv.h"
++#include "dsa_mv_ioctl.h"
+ 
+ /* slave mii_bus handling ***************************************************/
+ static int dsa_slave_phy_read(struct mii_bus *bus, int addr, int reg)
+@@ -164,6 +165,8 @@ out:
+ static int dsa_slave_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+ {
+ 	struct dsa_slave_priv *p = netdev_priv(dev);
++	if (cmd >= SIOCGMVREG && cmd <= SIOCSMVMAC)
++		return dsa_slave_mv_ioctl(dev, ifr, cmd);
+ 
+ 	if (p->phy != NULL)
+ 		return phy_mii_ioctl(p->phy, ifr, cmd);
+@@ -171,7 +174,6 @@ static int dsa_slave_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+ 	return -EOPNOTSUPP;
+ }
+ 
+-
+ /* ethtool operations *******************************************************/
+ static int
+ dsa_slave_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)

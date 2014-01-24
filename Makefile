@@ -21,6 +21,7 @@ OPENWRT_TSYS = \
 	vc-vmdk \
 	vc-xen-aws \
 	pw-dev \
+	edge500 \
 
 endif
 

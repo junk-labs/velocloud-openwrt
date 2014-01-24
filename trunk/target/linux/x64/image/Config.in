@@ -1,6 +1,6 @@
 config X86_GRUB_IMAGES
 	bool "Build GRUB images (Linux x86 or x86_64 host only)"
-	depends on TARGET_x64 && !(TARGET_x86_olpc || TARGET_x86_rdc)
+	depends on TARGET_x64
 	depends on TARGET_ROOTFS_EXT4FS || TARGET_ROOTFS_ISO || TARGET_ROOTFS_JFFS2 || TARGET_ROOTFS_SQUASHFS
 	select PACKAGE_grub2
 	default y
@@ -16,6 +16,7 @@ config X86_GRUB_SERIAL
 	default "hvc0" if TARGET_x64_vc_xen_aws
 	default "ttyPCH0" if TARGET_x64_sb_itc
 	default "ttyS1" if TARGET_x64_pw_dev
+	default "ttyS0" if TARGET_x64_edge500
 	default "ttyS0" if ! TARGET_x64_sb_itc
 	help
 	  Name of serial port device.
@@ -24,6 +25,7 @@ config X86_GRUB_SERIAL_UNIT
 	string "Serial port grub unit"
 	depends on X86_GRUB_IMAGES
 	default "1" if TARGET_x64_pw_dev
+	default "0" if TARGET_x64_edge500
 	default "0"
 	help
 	  Unit name of serial port device for grub itself.
@@ -40,6 +42,7 @@ config X86_GRUB_BOOTOPTS
 	default "xencons=hvc" if TARGET_x64_vc_xen_aws
 	default "earlyprintk=pch,0x3058,115200" if TARGET_x64_sb_itc
 	default "earlyprintk=serial,ttyS1,115200" if TARGET_x64_pw_dev
+	default "earlyprintk=serial,ttyS0,115200" if TARGET_x64_edge500
 	help
 	  If you don't know, just leave it blank.
 
@@ -63,6 +66,7 @@ config X86_VELOCLOUD_INSTALLER
 	depends on TARGET_x64
 	depends on TARGET_ROOTFS_EXT4FS
 	default y if TARGET_x64_sb_itc
+	default y if TARGET_x64_edge500
 	default y if TARGET_x64_pw_dev
 
 config X86_VMDK_IMAGES
@@ -101,6 +105,7 @@ config TARGET_ROOTFS_PARTNAME
 	string "Root partition on target device"
 	depends on OLPC_BOOTSCRIPT_IMAGES || X86_GRUB_IMAGES
 	default "/dev/sdb2" if TARGET_x64_pw_dev
+	default "/dev/sdb2" if TARGET_x64_edge500
 	default "/dev/xvda2" if TARGET_x64_vc_xen_aws
 	default "/dev/sda2"
 	help
@@ -109,5 +114,5 @@ config TARGET_ROOTFS_PARTNAME
 
 config TARGET_ROOTFS_INSTSIZE
 	int "Installed root partition size (in MB)"
-	depends on X86_GRUB_IMAGES && (TARGET_x64_sb_itc || TARGET_x64_pw_dev)
+	depends on X86_GRUB_IMAGES && (TARGET_x64_sb_itc||TARGET_x64_pw_dev||TARGET_x64_edge500)
 	default 1024

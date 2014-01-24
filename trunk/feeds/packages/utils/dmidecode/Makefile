@@ -22,7 +22,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/dmidecode
   SECTION:=utils
   CATEGORY:=Utilities
-  DEPENDS:=@TARGET_x86
+  DEPENDS:=@TARGET_x86||@TARGET_x64
   TITLE:=Displays BIOS informations.
   URL:=http://www.nongnu.org/dmidecode/
 endef

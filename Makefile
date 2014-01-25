@@ -13,6 +13,7 @@ ifeq ($(OPENWRT_ARCH),x86)
 OPENWRT_CPUARCH=i386
 OPENWRT_TSYS = \
 	vc-vmdk \
+	vc-xen-aws \
 	sb-itc \
 
 else

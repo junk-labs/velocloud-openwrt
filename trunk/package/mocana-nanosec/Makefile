@@ -59,6 +59,10 @@ endef
 define Build/Configure
 endef
 
+ifeq ($(CONFIG_ARCH_64BIT),y)
+MOCANA_64_BIT="-D__ENABLE_MOCANA_64_BIT__"
+endif
+
 define Build/Compile
 	$(MAKE) -C $(PKG_SOURCE_DIR) \
 		CC="$(TARGET_CROSS)gcc" \
@@ -66,6 +70,7 @@ define Build/Compile
 		KLD="$(TARGET_CROSS)ld" \
 		LD="$(TARGET_CROSS)gcc" \
 		KDIR="$(LINUX_DIR)" \
+		MOCANA_64_BIT=$(MOCANA_64_BIT) \
 		all
 endef
 

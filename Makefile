@@ -11,16 +11,31 @@ OPENWRT_CONFIG = openwrt.config
 OPENWRT_VC_VERSION = 1
 ifeq ($(OPENWRT_ARCH),x86)
 OPENWRT_CPUARCH=i386
+# Supported subtargets
 OPENWRT_TSYS = \
+	vc-vmdk \
+	vc-xen-aws \
+	sb-itc \
+	pw-dev \
+
+# Default subtargets
+DEFAULT_OPENWRT_TSYS = \
 	vc-vmdk \
 	vc-xen-aws \
 	sb-itc \
 
 else
 OPENWRT_CPUARCH=x86_64
+# Supported subtargets
 OPENWRT_TSYS = \
 	vc-vmdk \
 	vc-xen-aws \
+	pw-dev \
+	edge500 \
+
+# Default subtargets
+DEFAULT_OPENWRT_TSYS = \
+	vc-vmdk \
 	pw-dev \
 	edge500 \
 
@@ -44,7 +59,7 @@ OPENWRT_ROOT = $(OPENWRT_NAME)
 NCPU ?= $(shell grep -c ^processor /proc/cpuinfo)
 
 # default is to build all targets;
-default: $(OPENWRT_TSYS)
+default: $(DEFAULT_OPENWRT_TSYS)
 
 # --------------------------------------------------
 # for whoever pulls specific or latest openwrt tree;

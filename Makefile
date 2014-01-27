@@ -174,6 +174,7 @@ define OpenwrtConfig
 		-e '/CONFIG_X86_GRUB_BOOTOPTS/d' \
 		-e '/CONFIG_X86_GRUB_CONSOLE/d' \
 		-e '/CONFIG_X86_VMDK_IMAGES/d' \
+		-e '/CONFIG_X86_EC2_IMAGES/d' \
 		-e '/CONFIG_X86_VELOCLOUD_INSTALLER/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \

@@ -1,44 +1,44 @@
-config X86_GRUB_IMAGES
+config X64_GRUB_IMAGES
 	bool "Build GRUB images (Linux x86 or x86_64 host only)"
 	depends on TARGET_x64
 	depends on TARGET_ROOTFS_EXT4FS || TARGET_ROOTFS_ISO || TARGET_ROOTFS_JFFS2 || TARGET_ROOTFS_SQUASHFS
 	select PACKAGE_grub2
 	default y
 
-config X86_GRUB_CONSOLE
+config X64_GRUB_CONSOLE
 	bool "Use Console Terminal (in addition to Serial)"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	default y
 
-config X86_GRUB_SERIAL
+config X64_GRUB_SERIAL
 	string "Serial port device"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	default "hvc0" if TARGET_x64_vc_xen_aws
 	default "ttyPCH0" if TARGET_x64_sb_itc
 	default "ttyS1" if TARGET_x64_pw_dev
 	default "ttyS0" if TARGET_x64_edge500
-	default "ttyS0" if ! TARGET_x64_sb_itc
+        default "ttyS0"
 	help
 	  Name of serial port device.
 
-config X86_GRUB_SERIAL_UNIT
+config X64_GRUB_SERIAL_UNIT
 	string "Serial port grub unit"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	default "1" if TARGET_x64_pw_dev
 	default "0" if TARGET_x64_edge500
-	default "0"
+        default "0"
 	help
 	  Unit name of serial port device for grub itself.
-	  This could be different from X86_GRUB_SERIAL, depending on grub serial device order.
+	  This could be different from X64_GRUB_SERIAL, depending on grub serial device order.
 
-config X86_GRUB_BAUDRATE
+config X64_GRUB_BAUDRATE
 	int "Serial port baud rate"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	default 115200
 
-config X86_GRUB_BOOTOPTS
+config X64_GRUB_BOOTOPTS
 	string "Extra kernel boot options"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	default "xencons=hvc" if TARGET_x64_vc_xen_aws
 	default "earlyprintk=pch,0x3058,115200" if TARGET_x64_sb_itc
 	default "earlyprintk=serial,ttyS1,115200" if TARGET_x64_pw_dev
@@ -46,32 +46,32 @@ config X86_GRUB_BOOTOPTS
 	help
 	  If you don't know, just leave it blank.
 
-config X86_GRUB_TIMEOUT
+config X64_GRUB_TIMEOUT
 	string "Seconds to wait before booting the default entry"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	default "5"
 	help
 	  If you don't know, 5 seconds is a reasonable default.
 
-config X86_VDI_IMAGES
+config X64_VDI_IMAGES
 	bool "Build VirtualBox image files (VDI)"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	depends on TARGET_x64
 	depends on TARGET_ROOTFS_EXT4FS
 	select PACKAGE_kmod-pcnet32
 
-config X86_VELOCLOUD_INSTALLER
+config X64_VELOCLOUD_INSTALLER
 	bool "Build Velocloud installer image"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	depends on TARGET_x64
 	depends on TARGET_ROOTFS_EXT4FS
 	default y if TARGET_x64_sb_itc
 	default y if TARGET_x64_edge500
 	default y if TARGET_x64_pw_dev
 
-config X86_VMDK_IMAGES
+config X64_VMDK_IMAGES
 	bool "Build VMware image files (VMDK)"
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	depends on TARGET_x64
 	depends on TARGET_ROOTFS_EXT4FS
 	default y if TARGET_x64_vc_vmdk
@@ -79,16 +79,16 @@ config X86_VMDK_IMAGES
 	select PACKAGE_kmod-e1000
 	select PACKAGE_kmod-pcnet32
 
-config X86_EC2_IMAGES
+config X64_EC2_IMAGES
 	bool "Build Amazon EC2 image files"
 	default y if TARGET_x64_vc_xen_aws
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	depends on TARGET_ROOTFS_EXT4FS
 
 config TARGET_ROOTFS_EC2_PARTNAME
 	string "Root partition on EC2 target image"
 	depends on TARGET_x64_vc_xen_aws
-	depends on X86_GRUB_IMAGES
+	depends on X64_GRUB_IMAGES
 	default "/dev/xvda1"
 
 config TARGET_IMAGES_GZIP
@@ -98,12 +98,12 @@ config TARGET_IMAGES_GZIP
 
 config TARGET_KERNEL_PARTSIZE
 	int "Boot partition size (in MB)"
-	depends on OLPC_BOOTSCRIPT_IMAGES || X86_GRUB_IMAGES
+	depends on OLPC_BOOTSCRIPT_IMAGES || X64_GRUB_IMAGES
 	default 4
 
 config TARGET_ROOTFS_PARTNAME
 	string "Root partition on target device"
-	depends on OLPC_BOOTSCRIPT_IMAGES || X86_GRUB_IMAGES
+	depends on OLPC_BOOTSCRIPT_IMAGES || X64_GRUB_IMAGES
 	default "/dev/sdb2" if TARGET_x64_pw_dev
 	default "/dev/sdb2" if TARGET_x64_edge500
 	default "/dev/xvda2" if TARGET_x64_vc_xen_aws
@@ -114,5 +114,5 @@ config TARGET_ROOTFS_PARTNAME
 
 config TARGET_ROOTFS_INSTSIZE
 	int "Installed root partition size (in MB)"
-	depends on X86_GRUB_IMAGES && (TARGET_x64_sb_itc||TARGET_x64_pw_dev||TARGET_x64_edge500)
+	depends on X64_GRUB_IMAGES && (TARGET_x64_sb_itc||TARGET_x64_pw_dev||TARGET_x64_edge500)
 	default 1024

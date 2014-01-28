@@ -166,16 +166,10 @@ define OpenwrtConfig
 		-e '/CONFIG_i386=/d' \
 		-e '/CONFIG_x86_64=/d' \
 		-e '/CONFIG_CPU_TYPE=/d' \
-		-e '/CONFIG_TARGET_x86/d' \
+		-e '/CONFIG_TARGET_x\(86\|64\)/d' \
 		-e '/CONFIG_TARGET_BOARD/d' \
 		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
-		-e '/CONFIG_X86_GRUB_SERIAL/d' \
-		-e '/CONFIG_X86_GRUB_SERIAL_UNIT/d' \
-		-e '/CONFIG_X86_GRUB_BOOTOPTS/d' \
-		-e '/CONFIG_X86_GRUB_CONSOLE/d' \
-		-e '/CONFIG_X86_VMDK_IMAGES/d' \
-		-e '/CONFIG_X86_EC2_IMAGES/d' \
-		-e '/CONFIG_X86_VELOCLOUD_INSTALLER/d' \
+		-e '/CONFIG_X\(64\|86\)_/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)_$(call target_conf,$(1))=y' \
@@ -184,9 +178,6 @@ define OpenwrtConfig
 		-e '$$ aCONFIG_ARCH="$(OPENWRT_CPUARCH)"' \
 		-e '$$ aCONFIG_VERSION_NICK="OpenWRT $(1)"' \
 		-e '$$ aCONFIG_VERSION_NUMBER="$(OPENWRT_VC_VERSION)"' \
-		-e '$$ a# CONFIG_X86_GRUB_SERIAL is not set' \
-		-e '$$ a# CONFIG_X86_GRUB_SERIAL_UNIT is not set' \
-		-e '$$ a# CONFIG_X86_GRUB_BOOTOPTS is not set' \
 	$(OPENWRT_CONFIG) > $(OPENWRT_ROOT)/.config
 	make -C $(OPENWRT_ROOT) defconfig
 	make -C $(OPENWRT_ROOT) prereq

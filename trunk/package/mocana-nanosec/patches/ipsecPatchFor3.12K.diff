@@ -25,7 +25,22 @@ Index: mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions.h
 ===================================================================
 --- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions.h	(revision 34320)
 +++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions.h	(working copy)
-@@ -191,6 +191,7 @@
+@@ -20,6 +20,14 @@
+ 
+ /* @CODEGEN-START */
+ /* @CODEGEN-END   */
++#if __GNUC__
++#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
++#define MOC_LITTLE_ENDIAN
++#endif
++#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
++#define MOC_BIG_ENDIAN
++#endif
++#endif
+ 
+ #if defined( __RTOS_DUMMY__ )
+ #define __DUMMY_RTOS__
+@@ -192,6 +200,7 @@
  #define __ENABLE_ALL_DEBUGGING__
  #define __ENABLE_MOCANA_DEBUG_CONSOLE__
  #define __MOCANA_DUMP_CONSOLE_TO_STDOUT__

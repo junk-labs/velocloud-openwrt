@@ -58,6 +58,7 @@ IKE_DEFINES = $(COMMON_DEFINES) \
 LOADCONFIG_DEFINES = $(COMMON_DEFINES) \
  -D__ENABLE_MOCANA_IPSEC_SERVICE__= \
  -D__DISABLE_MOCANA_RAND_ENTROPY_THREADS__= \
+  -D__ENABLE_MOCANA_MISSIU__= \
  -D__DISABLE_MOCANA_RNG__= \
  -D__DISABLE_MOCANA_INIT__= \
  -D__DISABLE_MOCANA_ADD_ENTROPY__= \
@@ -65,6 +66,11 @@ LOADCONFIG_DEFINES = $(COMMON_DEFINES) \
 
 IKEADM_DEFINES = $(IKE_DEFINES) \
   -DMOCANA_IKEADM_CLIENT=
+
+LIBIKEIPSEC_DEFINES = $(COMMON_DEFINES) \
+  -D__DISABLE_MOCANA_RAND_ENTROPY_THREADS__= \
+  -D__ENABLE_MOCANA_IPSEC_SERVICE__= \
+  -D__ENABLE_MOCANA_MISSIU__=
 
 INCLUDE_FILES= -include $(shell pwd)/src/common/moptions.h \
 			   -include $(shell pwd)/src/common/mtypes.h \
@@ -75,7 +81,7 @@ INCLUDE_FILES= -include $(shell pwd)/src/common/moptions.h \
 			  -include $(shell pwd)/src/crypto/blowfish.h \
 			  -include $(shell pwd)/src/crypto/md5.h
 
-all: modules ike loadConfig
+all: libikeipsec modules ike loadConfig
 
 modules:
 	$(MAKE) -f make/Makefile.linux.mb \
@@ -99,6 +105,11 @@ loadConfig:
 	$(MAKE) -f make/Makefile.linux \
 		CFLAGS='-I$(shell pwd)/src/examples $(LOADCONFIG_DEFINES)' \
 		ipsec_loadconfig
+
+libikeipsec:
+	$(MAKE) -f make/Makefile.linux \
+		CFLAGS='-I$(shell pwd)/src/examples $(LIBIKEIPSEC_DEFINES)' \
+		libikeipsec
 
 clean:
 	$(MAKE) -f ./make/Makefile.linux.mb clean

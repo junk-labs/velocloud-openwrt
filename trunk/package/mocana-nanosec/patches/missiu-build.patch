@@ -1,0 +1,240 @@
+diff -ru mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/make/Makefile.common mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/make/Makefile.common
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/make/Makefile.common	2014-02-01 13:03:14.121873904 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/make/Makefile.common	2014-02-01 13:03:23.369642972 -0800
+@@ -1776,6 +1776,7 @@
+  $(OBJ_DIR)$(SEP)ipseckey.o \
+  $(OBJ_DIR)$(SEP)sadb.o \
+  $(OBJ_DIR)$(SEP)spd.o \
++ $(OBJ_DIR)$(SEP)ipsec6.o \
+ 
+ IPSEC_LOBJ = \
+  $(OBJ_DIR)$(SEP)ipsec.o \
+@@ -2636,7 +2637,7 @@
+ 	$(LD) $(LIBS) -o $(BIN_DIR)$(SEP)$@$(OUT_EXT) $(CRYPTO_ZIGBEE_TARGET)
+ 
+ ike: $(IKE_TARGET)
+-	$(LD) $(LIBS) -o $(BIN_DIR)$(SEP)$@$(OUT_EXT) $(IKE_TARGET)
++	$(LD) $(LIBS) -o $(BIN_DIR)$(SEP)$@$(OUT_EXT) $(IKE_TARGET) -lrt
+ ifneq ($(PLATFORM_TARGET_DIR),)
+ 	cp $(BIN_DIR)$(SEP)$@$(OUT_EXT) "$(PLATFORM_TARGET_DIR)"
+ endif
+@@ -2652,7 +2653,7 @@
+ 	$(LD) $(LIBS) -o $(BIN_DIR)$(SEP)$@$(OUT_EXT) $(IKEADM_TARGET)
+ 
+ ikeipsec: $(IKEIPSEC_TARGET)
+-	$(LD) $(LIBS) -o $(BIN_DIR)$(SEP)$@$(OUT_EXT) $(IKEIPSEC_TARGET)
++	$(LD) $(LIBS) -o $(BIN_DIR)$(SEP)$@$(OUT_EXT) $(IKEIPSEC_TARGET) -lrt
+ 
+ ikepfkey: $(IKEPFKEY_TARGET)
+ 	$(LD) $(LIBS) -o $(BIN_DIR)$(SEP)$@$(OUT_EXT) $(IKEPFKEY_TARGET)
+diff -u mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_custom.h mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_custom.h
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_custom.h	2013-11-08 11:39:18.000000000 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_custom.h	2014-02-01 15:28:54.959921265 -0800
+@@ -15,6 +15,22 @@
+ /*------------------------------------------------------------------*/
+
+
++#ifndef KERNEL_CREATE_DEVICE
++#define __ENABLE_MOCANA_IKE_SERVER__
++#define __ENABLE_MOCANA_IPSEC_SERVICE__
++#define __ENABLE_MOCANA_MISSIU__
++#define __ENABLE_MOCANA_IPV6__
++//#define __DISABLE_MOCANA_FILE_SYSTEM_HELPER__
++//#define __DISABLE_MOCANA_MAIN_FUNC_ENTRY__
++#define __DISABLE_MOCANA_RAND_ENTROPY_THREADS__
++#define __ENABLE_MOCANA_CERTIFICATE_SEARCH_SUPPORT__
++//#define __ENABLE_MOCANA_EXAMPLES__
++#define __ENABLE_MOCANA_MEM_PART__
++#define MOC_LITTLE_ENDIAN
++#define __ENABLE_ALL_DEBUGGING__
++#define __ENABLE_MOCANA_DEBUG_CONSOLE__
++#define __MOCANA_DUMP_CONSOLE_TO_STDOUT__
++#endif /* KERNEL_CREATE_DEVICE */
+
+
+ /*------------------------------------------------------------------*/
+diff -ru mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/gpl/nf_ipsecadm.c mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/gpl/nf_ipsecadm.c
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/gpl/nf_ipsecadm.c	2013-11-08 11:39:19.000000000 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/gpl/nf_ipsecadm.c	2014-02-01 13:27:11.018223607 -0800
+@@ -46,7 +46,7 @@
+ 
+ #include <errno.h>
+ #include <mqueue.h>
+-#include "missiu.h"
++#include "../missiu/missiu.h"
+ #endif
+ 
+ #include "../common/moptions.h"
+@@ -668,7 +668,10 @@
+ #endif
+ 
+ /*------------------------------------------------------------------*/
+-
++#ifdef __ENABLE_MOCANA_MISSIU__
++extern int
++ipsec_ioctl(unsigned int cmd, unsigned long arg)
++#else
+ #if ( (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36)) )
+ extern long
+ ipsec_ioctl(struct file *file,
+@@ -677,6 +680,7 @@
+ ipsec_ioctl(struct inode * inode, struct file * file,
+ #endif
+             unsigned int cmd, unsigned long arg)
++#endif
+ {
+     int value, status = 0;
+ 
+diff -ru mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/gpl/nf_ipsec.h mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/gpl/nf_ipsec.h
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/gpl/nf_ipsec.h	2013-11-08 11:39:18.000000000 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/gpl/nf_ipsec.h	2014-02-01 13:25:33.648654575 -0800
+@@ -144,7 +144,9 @@
+ 
+ /*------------------------------------------------------------------*/
+ 
+-#if defined(__KERNEL__) || defined(__ENABLE_MOCANA_MISSIU__)
++#if defined(__ENABLE_MOCANA_MISSIU__)
++extern int ipsec_ioctl(unsigned int cmd, unsigned long arg);
++#elif defined(__KERNEL__)
+ struct file;
+ #if ( (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36)) )
+ extern long ipsec_ioctl(struct file *file,
+diff -ru mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/Makefile mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/Makefile
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/Makefile	2013-11-08 11:39:19.000000000 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/Makefile	2014-02-01 13:30:12.273717136 -0800
+@@ -15,13 +15,15 @@
+ 
+ # compiler flags
+ # TODO these may need to be updated. This has not been built in a long time.
+-CFLAGS = -O0
++CFLAGS = -g -O0
+ CFLAGS += -D__RTOS_LINUX__
+ CFLAGS += -D__ENABLE_IPSEC_NAT_T__
+ CFLAGS += -D__ENABLE_MOCANA_IKE_SERVER__
+ CFLAGS += -D__ENABLE_MOCANA_IPSEC_SERVICE__
+ CFLAGS += -D__PLATFORM_HAS_GETOPT__
+ CFLAGS += -D__ENABLE_MOCANA_SUPPORT_FOR_NATIVE_STDLIB__
++CFLAGS += -D__ENABLE_MOCANA_MISSIU__
++CFLAGS += -I$(SRC_DIR)/examples
+ CFLAGS += -I$(SRC_DIR)/examples/ipsec
+ CFLAGS += -I$(SRC_DIR)/examples/ipsec/linux/gpl
+ CFLAGS += $(EXTRA_CFLAGS)
+@@ -32,7 +34,8 @@
+ IKE_PATH = $(SRC_DIR)/ike/
+ IPSEC_PATH = $(SRC_DIR)/ipsec/
+ PLATFORM_PATH = $(SRC_DIR)/platform/
+-MISSIU_PATH = $(SRC_DIR)/examples/ipsec_linux/
++GPL_PATH = $(SRC_DIR)/examples/ipsec/linux/gpl/
++MISSIU_PATH = $(SRC_DIR)/examples/ipsec/linux/missiu/
+ 
+ include $(PWD)/../Makefile.ipsec-obj.inc
+ 
+@@ -45,6 +48,7 @@
+         linux_udp.o \
+         linux_tcp.o \
+         utils.o \
++	nf_ipsecadm.o \
+         $(IPSEC_OBJS)
+ 
+ 
+@@ -54,7 +58,7 @@
+ all: missiu
+ 
+ missiu: $(OBJS)
+-	$(LD) $(LIBS) -o $@ $(OBJS) -lrt
++	$(LD) -o $@ $(OBJS) -lrt $(LIBS)
+ 
+ %.o : $(ASN1_PATH)%.c
+ 	$(CC) $(CFLAGS) -c -o $@ $<
+@@ -77,6 +81,9 @@
+ %.o: $(MISSIU_PATH)%.c
+ 	$(CC) $(CFLAGS) -c -o $@ $<
+ 
++%.o: $(GPL_PATH)%.c
++	$(CC) $(CFLAGS) -c -o $@ $<
++
+ clean:
+ 	rm -f *.o
+ 
+diff -ru mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/missiu_com.c mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/missiu_com.c
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/missiu_com.c	2013-11-08 11:39:18.000000000 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/missiu_com.c	2014-01-23 17:09:34.000000000 -0800
+@@ -9,7 +9,6 @@
+  * running missiu daemon.
+  */
+ 
+-#ifdef __ENABLE_MOCANA_MISSIU__
+ 
+ #include <sys/ioctl.h>
+ #include <sys/types.h>
+@@ -27,6 +26,7 @@
+ #include <sys/stat.h>
+ 
+ #include "missiu.h"
++#ifdef __ENABLE_MOCANA_MISSIU__
+ 
+ /* return a socket connected to missiu.  If iface is not null, connect to the
+  * instance of missiu running on that iface.
+diff -ru mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/missiu_tap.c mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/missiu_tap.c
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/missiu_tap.c	2013-11-08 11:39:19.000000000 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec/linux/missiu/missiu_tap.c	2014-02-01 13:31:00.400521922 -0800
+@@ -349,7 +349,7 @@
+         if (0 != ret)
+             break;
+ 
+-        ret = ipsec_ioctl(NULL, NULL, cmdbuf->type, (unsigned long)arg);
++        ret = ipsec_ioctl(cmdbuf->type, (unsigned long)arg);
+         if (ret != 0)
+             LOG("IOCTL Failed: %d\n", ret);
+ 
+@@ -670,7 +670,7 @@
+     }
+ 
+     status = IPSEC_ready(REF_MOC_IPADDR(daddr), REF_MOC_IPADDR(saddr),
+-                         buf->ulp, offset, mf, dport, sport, 0, &pxSp, 0);
++                         buf->ulp, offset, mf, dport, sport, 0, &pxSp, 0, 0);
+     if (OK > status)
+     {
+         /* TODO: Not sure if this case applies to the missiu architecture
+@@ -682,7 +682,7 @@
+             status = IPSEC_ready(REF_MOC_IPADDR(daddr),
+                                  REF_MOC_IPADDR(saddr),
+                                  buf->ulp, offset, mf,
+-                                 dport, sport, 1, NULL, 0);
++                                 dport, sport, 1, NULL, 0, 0);
+             if (OK == status)
+             {
+                 status = ERR_IPSEC_DROP;
+diff -ru mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipseckey_example_missiu.c mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipseckey_example_missiu.c
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipseckey_example_missiu.c	2013-11-08 11:39:18.000000000 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipseckey_example_missiu.c	2014-02-01 13:31:33.203705486 -0800
+@@ -46,7 +46,7 @@
+ #include <string.h>
+ #include <unistd.h>
+ #include <signal.h>
+-#include "../examples/ipsec_linux/missiu.h"
++#include "../examples/ipsec/linux/missiu/missiu.h"
+ 
+ /* Many of these interface functions differ when built for IPv4 only.  For
+  * example, many ioctls take ExtIpSecKeyEx_t instead of IPSECKEY_EX.  At this
+@@ -382,7 +382,7 @@
+ }
+ 
+ MSTATUS
+-ipsec_hookup(void)
++IPSECKEY_EXAMPLE_main(void)
+ {
+     MSTATUS status = OK;
+     ExtIkeEventQ_t *queue;
+diff -u mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec_loadconfig/loadConfig_missiu.c{.orig,}
+--- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec_loadconfig/loadConfig_missiu.c.orig	2013-11-08 11:39:19.000000000 -0800
++++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/examples/ipsec_loadconfig/loadConfig_missiu.c	2014-02-01 15:50:43.148452603 -0800
+@@ -10,7 +10,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+
+-#include "../ipsec_linux/missiu.h"
++#include "../ipsec/linux/missiu/missiu.h"
+
+ #ifdef LOADCONFIG_DUMP_TO_STDOUT
+ #include <string.h>

@@ -20,6 +20,7 @@ PKG_SOURCE_URL:=none
 PKG_SOURCE:=$(MOCANA_PKG_BASE).zip
 PKG_SOURCE_DIR:=$(PKG_BUILD_DIR)/$(MOCANA_PKG_BASE)
 PKG_UNPACK:=unzip -q -P mocana -d $(PKG_BUILD_DIR) $(PKG_SOURCE) && \
+	unzip -q -P mocana -d $(PKG_BUILD_DIR) missiu_33895.zip && \
 	cp Makefile.mocana $(PKG_SOURCE_DIR)/Makefile
 PKG_MAINTAINER:=Shankar Unni <shankar@velocloud.net>
 
@@ -55,6 +56,25 @@ define Package/mocana-nanosec/install
 	#$(INSTALL_DATA) $(PKG_SOURCE_DIR)/bin/{sample_config} $(1)/etc/config/ipsec
 endef
 
+define Build/InstallDev
+	$(INSTALL_DIR) \
+		$(1)/usr/lib 	\
+		$(1)/usr/include \
+		$(1)/usr/include/mocana \
+		$(1)/usr/include/mocana/common \
+		$(1)/usr/include/mocana/crypto \
+		$(1)/usr/include/mocana/ike \
+		$(1)/usr/include/mocana/ike2 \
+		$(1)/usr/include/mocana/ipsec \
+		$(1)/usr/include/mocana/platform
+	$(CP) $(PKG_SOURCE_DIR)/bin/libikeipsec.a $(1)/usr/lib
+	$(CP) $(PKG_SOURCE_DIR)/src/common/*.h $(1)/usr/include/mocana/common
+	$(CP) $(PKG_SOURCE_DIR)/src/crypto/*.h $(1)/usr/include/mocana/crypto
+	$(CP) $(PKG_SOURCE_DIR)/src/ike/*.h $(1)/usr/include/mocana/ike
+	$(CP) $(PKG_SOURCE_DIR)/src/ike2/*.h $(1)/usr/include/mocana/ike2
+	$(CP) $(PKG_SOURCE_DIR)/src/ipsec/*.h $(1)/usr/include/mocana/ipsec
+	$(CP) $(PKG_SOURCE_DIR)/src/platform/*.h $(1)/usr/include/mocana/platform
+endef
 
 define Build/Configure
 endef

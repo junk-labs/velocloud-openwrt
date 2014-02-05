@@ -22,7 +22,7 @@
  endif # X86_PLATFORM_DEVICES
 --- /dev/null
 +++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,1170 @@
+@@ -0,0 +1,1779 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -46,6 +46,7 @@
 +#include <linux/platform_device.h>
 +#include <linux/slab.h>
 +#include <linux/jiffies.h>
++#include <linux/i2c-gpio.h>
 +#include <linux/i2c.h>
 +#include <linux/err.h>
 +#include <linux/mutex.h>
@@ -60,6 +61,8 @@
 +#define VC_NAME "vc"
 +#define VC_LEDS "leds"
 +#define VC_FAN "fan"
++
++#define VC_FIX_DMI
 +
 +// ve1000 gpio;
 +// max7314 wiring, 2 chips;
@@ -81,13 +84,21 @@
 +// all have their BLINK_L line wire to superio LPC_GP36;
 +// reset button status on superio LPC_GP35;
 +
-+#define EDGE500_GPIO_RANGELEY 0 //XXX
++#define EDGE500_GPIO_RANGELEY 0
 +#define EDGE500_GPIO_SMB_CLK (EDGE500_GPIO_RANGELEY + 14)
 +#define EDGE500_GPIO_SMB_DATA (EDGE500_GPIO_RANGELEY + 13)
-+#define EDGE500_GPIO_SIO 0 //XXX
++
++// SIO GPIO bits all map to GPIO3, logical device 7;
++
++#define EDGE500_GPIO_SIO 100
++#define EDGE500_GPIO_SPARE (EDGE500_GPIO_SIO + 30)
++#define EDGE500_GPIO_SFP_TXDIS (EDGE500_GPIO_SIO + 31)
++#define EDGE500_GPIO_MSATA_PRESENT (EDGE500_GPIO_SIO + 32)
++#define EDGE500_GPIO_WDISABLE_B (EDGE500_GPIO_SIO + 33)
++#define EDGE500_GPIO_WDISABLE_A (EDGE500_GPIO_SIO + 34)
 +#define EDGE500_GPIO_RESET_BTN (EDGE500_GPIO_SIO + 35)
-+#define EDGE500_GPIO_I2C_RST (EDGE500_GPIO_SIO + 37)
 +#define EDGE500_GPIO_I2C_BLINK (EDGE500_GPIO_SIO + 36)
++#define EDGE500_GPIO_I2C_RST (EDGE500_GPIO_SIO + 37)
 +
 +// max7314 registers;
 +
@@ -119,6 +130,7 @@
 +
 +enum vc_led_idx {
 +	VC_LED_WIFI_AP = 0,
++	VC_LED_WIFI_AP_2,
 +	VC_LED_WIFI_STA_1,
 +	VC_LED_WIFI_STA_2,
 +	VC_LED_WIFI_STA_3,
@@ -163,6 +175,10 @@
 +		{ VC_I2C_0, MAX7314_INTENS_3_2, 0, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_1_0, 1, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_1_0, 0, 1 } } },
++	[ VC_LED_WIFI_AP_2 ] = { {
++		{ VC_I2C_NONE, },
++		{ VC_I2C_NONE, },
++		{ VC_I2C_NONE, } } },
 +	[ VC_LED_WIFI_STA_1 ] = { {
 +		{ VC_I2C_NONE, },
 +		{ VC_I2C_NONE, },
@@ -221,62 +237,82 @@
 +
 +static vc_leds_t edge500_leds[N_VC_LEDS] = {
 +	[ VC_LED_WIFI_AP ] = { {
-+		{ VC_I2C_2, MAX7314_INTENS_3_2, 0, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_1_0, 0, 1 },
 +		{ VC_I2C_2, MAX7314_INTENS_1_0, 1, 1 },
-+		{ VC_I2C_2, MAX7314_INTENS_1_0, 0, 1 } } },
++		{ VC_I2C_2, MAX7314_INTENS_3_2, 0, 1 } } },
++	[ VC_LED_WIFI_AP_2 ] = { {
++		{ VC_I2C_2, MAX7314_INTENS_13_12, 0, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_13_12, 1, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_15_14, 0, 1 } } },
 +	[ VC_LED_WIFI_STA_3 ] = { {
-+		{ VC_I2C_2, MAX7314_INTENS_5_4, 1, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_3_2, 1, 1 },
 +		{ VC_I2C_2, MAX7314_INTENS_5_4, 0, 1 },
-+		{ VC_I2C_2, MAX7314_INTENS_3_2, 1, 1 } } },
++		{ VC_I2C_2, MAX7314_INTENS_5_4, 1, 1 } } },
 +	[ VC_LED_WIFI_STA_2 ] = { {
-+		{ VC_I2C_2, MAX7314_INTENS_9_8, 0, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_7_6, 0, 1 },
 +		{ VC_I2C_2, MAX7314_INTENS_7_6, 1, 1 },
-+		{ VC_I2C_2, MAX7314_INTENS_7_6, 0, 1 } } },
++		{ VC_I2C_2, MAX7314_INTENS_9_8, 0, 1 } } },
 +	[ VC_LED_WIFI_STA_1 ] = { {
-+		{ VC_I2C_2, MAX7314_INTENS_11_10, 1, 1 },
++		{ VC_I2C_2, MAX7314_INTENS_9_8, 1, 1 },
 +		{ VC_I2C_2, MAX7314_INTENS_11_10, 0, 1 },
-+		{ VC_I2C_2, MAX7314_INTENS_9_8, 1, 1 } } },
++		{ VC_I2C_2, MAX7314_INTENS_11_10, 1, 1 } } },
 +	[ VC_LED_LOGO ] = { {
-+		{ VC_I2C_0, MAX7314_INTENS_15_14, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_13_12, 0, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_13_12, 1, 1 },
-+		{ VC_I2C_0, MAX7314_INTENS_13_12, 0, 1 } } },
++		{ VC_I2C_0, MAX7314_INTENS_15_14, 0, 1 } } },
 +	[ VC_LED_USB_RIGHT ] = { {
-+		{ VC_I2C_0, MAX7314_INTENS_3_2, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_1_0, 0, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_1_0, 1, 1 },
-+		{ VC_I2C_0, MAX7314_INTENS_1_0, 0, 1 } } },
++		{ VC_I2C_0, MAX7314_INTENS_3_2, 0, 1 } } },
 +	[ VC_LED_USB_TOP ] = { {
-+		{ VC_I2C_0, MAX7314_INTENS_9_8, 0, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_7_6, 0, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_7_6, 1, 1 },
-+		{ VC_I2C_0, MAX7314_INTENS_7_6, 0, 1 } } },
++		{ VC_I2C_0, MAX7314_INTENS_9_8, 0, 1 } } },
 +	[ VC_LED_USB_LEFT ] = { {
-+		{ VC_I2C_0, MAX7314_INTENS_5_4, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_3_2, 1, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_5_4, 0, 1 },
-+		{ VC_I2C_0, MAX7314_INTENS_3_2, 1, 1 } } },
++		{ VC_I2C_0, MAX7314_INTENS_5_4, 1, 1 } } },
 +	[ VC_LED_USB_BOTTOM ] = { {
-+		{ VC_I2C_0, MAX7314_INTENS_11_10, 1, 1 },
++		{ VC_I2C_0, MAX7314_INTENS_9_8, 1, 1 },
 +		{ VC_I2C_0, MAX7314_INTENS_11_10, 0, 1 },
-+		{ VC_I2C_0, MAX7314_INTENS_9_8, 1, 1 } } },
++		{ VC_I2C_0, MAX7314_INTENS_11_10, 1, 1 } } },
 +	[ VC_LED_BAR_1 ] = { {
-+		{ VC_I2C_1, MAX7314_INTENS_3_2, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_1_0, 0, 1 },
 +		{ VC_I2C_1, MAX7314_INTENS_1_0, 1, 1 },
-+		{ VC_I2C_1, MAX7314_INTENS_1_0, 0, 1 } } },
++		{ VC_I2C_1, MAX7314_INTENS_3_2, 0, 1 } } },
 +	[ VC_LED_BAR_2 ] = { {
-+		{ VC_I2C_1, MAX7314_INTENS_5_4, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_3_2, 1, 1 },
 +		{ VC_I2C_1, MAX7314_INTENS_5_4, 0, 1 },
-+		{ VC_I2C_1, MAX7314_INTENS_3_2, 1, 1 } } },
++		{ VC_I2C_1, MAX7314_INTENS_5_4, 1, 1 } } },
 +	[ VC_LED_BAR_3 ] = { {
-+		{ VC_I2C_1, MAX7314_INTENS_9_8, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_7_6, 0, 1 },
 +		{ VC_I2C_1, MAX7314_INTENS_7_6, 1, 1 },
-+		{ VC_I2C_1, MAX7314_INTENS_7_6, 0, 1 } } },
++		{ VC_I2C_1, MAX7314_INTENS_9_8, 0, 1 } } },
 +	[ VC_LED_BAR_4 ] = { {
-+		{ VC_I2C_1, MAX7314_INTENS_11_10, 1, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_9_8, 1, 1 },
 +		{ VC_I2C_1, MAX7314_INTENS_11_10, 0, 1 },
-+		{ VC_I2C_1, MAX7314_INTENS_9_8, 1, 1 } } },
++		{ VC_I2C_1, MAX7314_INTENS_11_10, 1, 1 } } },
 +	[ VC_LED_BAR_5 ] = { {
-+		{ VC_I2C_1, MAX7314_INTENS_15_14, 0, 1 },
++		{ VC_I2C_1, MAX7314_INTENS_13_12, 0, 1 },
 +		{ VC_I2C_1, MAX7314_INTENS_13_12, 1, 1 },
-+		{ VC_I2C_1, MAX7314_INTENS_13_12, 0, 1 } } },
++		{ VC_I2C_1, MAX7314_INTENS_15_14, 0, 1 } } },
 +};
++
++// i2c bitbang;
++
++static struct i2c_gpio_platform_data edge500_i2c_gpio = { 
++	.sda_pin = EDGE500_GPIO_SMB_DATA, 
++	.sda_is_open_drain = 0,
++	.scl_pin = EDGE500_GPIO_SMB_CLK,
++	.scl_is_open_drain = 0,
++	.udelay = 1,
++}; 
++
++static struct platform_device edge500_i2c_device = { 
++	.name = "i2c-gpio", 
++	.id = 0, 
++	.dev.platform_data = &edge500_i2c_gpio,
++}; 
 +
 +// board hardware config;
 +
@@ -286,6 +322,12 @@
 +	VC_CAP_I2C = (1 << 2),
 +	VC_CAP_I2C_RESET = (1 << 3),
 +	VC_CAP_I2C_BLINK = (1 << 4),
++	VC_CAP_I2C_FAN_PWM = (1 << 5),
++	VC_CAP_I2C_BB = (1 << 6),
++	VC_CAP_SFP_TXDIS = (1 << 7),
++	VC_CAP_MSATA_PRESENT = (1 << 8),
++	VC_CAP_RFKILL_A = (1 << 9),
++	VC_CAP_RFKILL_B = (1 << 10),
 +};
 +
 +typedef struct vc_hw vc_hw_t;
@@ -296,9 +338,16 @@
 +	unsigned gpio_fan_ctrl;
 +	unsigned gpio_i2c_reset;
 +	unsigned gpio_i2c_blink;
++	unsigned gpio_sfp_txdis;
++	unsigned gpio_msata_present;
++	unsigned gpio_rfkill_a;
++	unsigned gpio_rfkill_b;
 +	unsigned int i2c_exp;
 +	const unsigned short i2c_addrs[4];
 +	vc_leds_t *leds;
++	struct platform_device *i2c_bb;
++	int (*init)(vc_hw_t *, struct device *);
++	void *priv;
 +};
 +
 +static vc_hw_t vc_hw_none = {
@@ -307,7 +356,7 @@
 +
 +static vc_hw_t vc_hw_ve1000 = {
 +	.caps = VC_CAP_RESET_BUTTON
-+		| VC_CAP_FAN
++		| VC_CAP_FAN | VC_CAP_I2C_FAN_PWM
 +		| VC_CAP_I2C | VC_CAP_I2C_RESET | VC_CAP_I2C_BLINK,
 +	.gpio_reset_btn = VE1000_GPIO_RESET_BTN,
 +	.gpio_fan_tach = VE1000_GPIO_FAN_TACH,
@@ -319,22 +368,33 @@
 +	.leds = ve1000_leds,
 +};
 +
++static int edge500_sio_init(vc_hw_t *hw, struct device *dev);
++
 +static vc_hw_t vc_hw_edge500 = {
 +	.caps = VC_CAP_RESET_BUTTON
-+		| VC_CAP_I2C | VC_CAP_I2C_RESET | VC_CAP_I2C_BLINK,
++		| VC_CAP_I2C_BB | VC_CAP_I2C | VC_CAP_I2C_RESET | VC_CAP_I2C_BLINK
++		| VC_CAP_SFP_TXDIS
++		| VC_CAP_MSATA_PRESENT
++		| VC_CAP_RFKILL_A | VC_CAP_RFKILL_B,
 +	.gpio_reset_btn = EDGE500_GPIO_RESET_BTN,
 +	.gpio_i2c_reset = EDGE500_GPIO_I2C_RST,
 +	.gpio_i2c_blink = EDGE500_GPIO_I2C_BLINK,
++	.gpio_sfp_txdis = EDGE500_GPIO_SFP_TXDIS,
++	.gpio_msata_present = EDGE500_GPIO_MSATA_PRESENT,
++	.gpio_rfkill_a = EDGE500_GPIO_WDISABLE_A,
++	.gpio_rfkill_b = EDGE500_GPIO_WDISABLE_B,
 +	.i2c_exp = 0x7,
 +	.i2c_addrs = { 0x20, 0x24, 0x64, I2C_CLIENT_END },
 +	.leds = edge500_leds,
++	.i2c_bb = &edge500_i2c_device,
++	.init = edge500_sio_init,
 +};
 +
 +// driver state;
 +
 +struct vc_data {
 +	const struct dmi_system_id *dmi;
-+	const vc_hw_t *hw;
++	vc_hw_t *hw;
 +	struct {
 +		unsigned int probed;
 +		struct i2c_client *client[N_VC_I2C_DEVS];
@@ -349,6 +409,290 @@
 +
 +static vc_data_t vc_data;
 +static struct platform_device *vc_pdev;
++
++// super-io defs;
++
++#define SIO_REG_DEVID 0x20	// device id, 2-bytes;
++#define SIO_REG_VSBPWR 0x2c	// vsb/power config reg;
++
++#define SIO_REG_LDSEL 0x07	// select logical device reg;
++#define SIO_LD_GPIO2345 0x09	// logical device gpio 2,3,4,5;
++#define SIO_LD_ACPI 0x0a	// logical device acpi;
++#define SIO_REG_ENABLE 0x30	// logical device enable reg;
++
++#define SIO_GPIO3_STS 0xe7	// gpio3 status reg;
++#define SIO_GPIO3_IO 0xf0	// gpio3 io reg, 0=out 1=in;
++#define SIO_GPIO3_DATA 0xf1	// gpio3 data reg;
++#define SIO_GPIO3_INV 0xf2	// gpio3 data inversion reg;
++#define SIO_GPIO3_DEB 0xfe	// gpio3 debouncer reg;
++
++#define SIO_ACPI_E4 0xe4	// acpi function reg;
++
++// super-io access functions;
++
++static inline void
++sio_outb(int ioreg, int reg, int val)
++{
++	outb(reg, ioreg);
++	outb(val, ioreg + 1);
++}
++
++static inline int
++sio_inb(int ioreg, int reg)
++{
++	outb(reg, ioreg);
++	return inb(ioreg + 1);
++}
++
++static inline void
++sio_select(int ioreg, int ld)
++{
++	outb(SIO_REG_LDSEL, ioreg);
++	outb(ld, ioreg + 1);
++}
++
++static inline void
++sio_enter(int ioreg)
++{
++	outb(0x87, ioreg);
++	outb(0x87, ioreg);
++}
++
++static inline void
++sio_exit(int ioreg)
++{
++	outb(0xaa, ioreg);
++	outb(0x02, ioreg);
++	outb(0x02, ioreg + 1);
++}
++
++// find super-io;
++
++#define SIO_ID_MASK 0xFFF0
++
++typedef struct sio_chip sio_chip_t;
++struct sio_chip {
++	u16 id;
++	u16 addr;
++	u16 rid;
++	char *name;
++	spinlock_t spinlock;
++};
++
++static sio_chip_t sio_chips[] = {
++	{ .id = 0x8850, .name = "w83627ehf" },
++	{ .id = 0x8860, .name = "w83627ehg" },
++	{ .id = 0xa020, .name = "w83627dhg" },
++	{ .id = 0xb070, .name = "w83627dhg-p" },
++	{ .id = 0xa230, .name = "w83627uhg" },
++	{ .id = 0xa510, .name = "w83667hg" },
++	{ .id = 0xb350, .name = "w83667hg-b" },
++	{ 0 },
++};
++
++// find sio;
++
++static sio_chip_t *
++sio_find(int addr)
++{
++	u16 id;
++	sio_chip_t *sio;
++	char *name;
++
++	// find supported devices;
++
++	sio_enter(addr);
++	id = (sio_inb(addr, SIO_REG_DEVID) << 8)
++		| sio_inb(addr, SIO_REG_DEVID + 1);
++	for(sio = sio_chips; (name = sio->name); sio++) {
++		if((id & SIO_ID_MASK) == sio->id) {
++			sio->addr = addr;
++			sio->rid = id;
++			sio_exit(addr);
++			return(sio);
++		}
++	}
++	sio_exit(addr);
++	pr_err("vc: unsupported super-io id=0x%x\n", id);
++	return(NULL);
++}
++
++// set gpio output;
++
++static void
++sio_gpio_set(struct gpio_chip *gpio, unsigned nr, int val)
++{
++	vc_hw_t *hw = vc_data.hw;
++	sio_chip_t *sio = hw->priv;
++	unsigned long flags;
++	u8 reg_val;
++
++	if( !sio)
++		return;
++
++	spin_lock_irqsave(&sio->spinlock, flags);
++	sio_enter(sio->addr);
++	sio_select(sio->addr, SIO_LD_GPIO2345);
++	reg_val = sio_inb(sio->addr, SIO_GPIO3_DATA);
++	if(val)
++		reg_val |= (1 << nr);
++	else
++		reg_val &= ~(1 << nr);
++	sio_outb(sio->addr, SIO_GPIO3_DATA, reg_val);
++	sio_exit(sio->addr);
++	spin_unlock_irqrestore(&sio->spinlock, flags);
++}
++
++// get current value;
++
++static int
++sio_gpio_get(struct gpio_chip *gpio, unsigned nr)
++{
++	vc_hw_t *hw = vc_data.hw;
++	sio_chip_t *sio = hw->priv;
++	unsigned long flags;
++	u8 reg_val;
++
++	if( !sio)
++		return(-ENODEV);
++
++	spin_lock_irqsave(&sio->spinlock, flags);
++	sio_enter(sio->addr);
++	sio_select(sio->addr, SIO_LD_GPIO2345);
++	reg_val = sio_inb(sio->addr, SIO_GPIO3_DATA);
++	sio_exit(sio->addr);
++	spin_unlock_irqrestore(&sio->spinlock, flags);
++	return(reg_val & (1 << nr));
++}
++
++// warn about illegal direction changes;
++// sio has been initialized properly, changing it could be fatal;
++
++static int
++sio_dir(unsigned nr, int dir)
++{
++	vc_hw_t *hw = vc_data.hw;
++	sio_chip_t *sio = hw->priv;
++	unsigned long flags;
++	u8 reg_val, chg;
++
++	spin_lock_irqsave(&sio->spinlock, flags);
++	sio_enter(sio->addr);
++	sio_select(sio->addr, SIO_LD_GPIO2345);
++	reg_val = sio_inb(sio->addr, SIO_GPIO3_IO);
++	sio_exit(sio->addr);
++	spin_unlock_irqrestore(&sio->spinlock, flags);
++
++	chg = (reg_val ^ (dir << nr)) & (1 << nr);
++	return(chg? -EINVAL : 0);
++}
++
++// set direction to output;
++
++static int
++sio_gpio_direction_output(struct gpio_chip *gpio, unsigned nr, int val)
++{
++	int ret;
++
++	ret = sio_dir(nr, 0);
++	if( !ret)
++		sio_gpio_set(gpio, nr, val);
++	if(ret)
++		pr_err("vc: ignoring attempt to set gpio3:%d=%d to output\n", nr, val);
++	return(ret);
++}
++
++// set direction to input;
++
++static int
++sio_gpio_direction_input(struct gpio_chip *gpio, unsigned nr)
++{
++	int ret;
++
++	ret = sio_dir(nr, 1);
++	if(ret)
++		pr_err("vc: ignoring attempt to set gpio3:%d to input\n", nr);
++	return(ret);
++}
++
++// initialize edge500 SIO;
++
++static struct gpio_chip edge500_gpio;
++
++static int
++edge500_sio_init(vc_hw_t *hw, struct device *dev)
++{
++	sio_chip_t *sio;
++	u16 val;
++	struct gpio_chip *gpio = &edge500_gpio;
++	int ret;
++
++	sio = sio_find(0x2e);
++	if( !sio)
++		sio = sio_find(0x4e);
++	if( !sio) {
++		pr_err("vc: sio required but not found\n");
++		return(-ENODEV);
++	}
++	pr_info("vc: found %s sio (id=0x%x)\n", sio->name, sio->rid);
++	hw->priv = sio;
++	spin_lock_init(&sio->spinlock);
++
++	// check that bios activated gpio3 logical device;
++	// activate logical device only if we are sure;
++	// warn about it anyways;
++
++	sio_enter(sio->addr);
++
++	sio_select(sio->addr, SIO_LD_ACPI);
++	val = sio_inb(sio->addr, SIO_ACPI_E4);
++	if(val & 0x10) {
++		pr_warn("vc: VSBGATE was enabled, forcing off, FIX BIOS!\n");
++		sio_outb(sio->addr, SIO_ACPI_E4, val & ~0x10);
++	}
++
++	sio_select(sio->addr, SIO_LD_GPIO2345);
++	val = sio_inb(sio->addr, SIO_REG_ENABLE) & 0x0f;
++	if( !(val & 0x02)) {
++		pr_warn("vc: forcing GPIO3 enable, FIX BIOS!\n");
++		sio_outb(sio->addr, SIO_REG_ENABLE, val | 0x02);
++	}
++
++	// set defaults;
++
++	sio_outb(sio->addr, SIO_GPIO3_IO, 0x25);
++	sio_outb(sio->addr, SIO_GPIO3_DATA, 0xd8);
++	sio_outb(sio->addr, SIO_GPIO3_INV, 0x00);
++	sio_outb(sio->addr, SIO_GPIO3_DEB, 0x04);
++
++	val = sio_inb(sio->addr, SIO_GPIO3_DATA);
++	printk("vc: gpio3x 0x%x\n", val);
++
++	sio_exit(sio->addr);
++
++	// setup new GPIOs;
++
++	gpio->label = dev_name(dev);
++	gpio->dev = dev;
++	gpio->owner = THIS_MODULE;
++	gpio->direction_input = sio_gpio_direction_input;
++	gpio->get = sio_gpio_get;
++	gpio->direction_output = sio_gpio_direction_output;
++	gpio->set = sio_gpio_set;
++	gpio->dbg_show = NULL;
++	gpio->base = EDGE500_GPIO_SPARE;
++	gpio->ngpio = 8;
++	gpio->can_sleep = 0;
++	gpio->to_irq = NULL;
++
++	ret = gpiochip_add(gpio);
++	if(ret) {
++		dev_err(dev, "vc: failed to register SIO GPIO3: %d\n", ret);
++		return(ret);
++	}
++
++	return(0);
++}
 +
 +// write a byte to i2c chip;
 +
@@ -369,7 +713,7 @@
 +	int ret;
 +
 +	ret = i2c_smbus_write_word_data(client, reg, val);
-+    return(ret);
++	return(ret);
 +}
 +
 +// read a byte from i2c chip;
@@ -381,7 +725,7 @@
 +	int ret;
 +
 +	ret = i2c_smbus_read_byte_data(client, reg);
-+    return(ret);
++	return(ret);
 +}
 +
 +// set all RGB LEDs to one value;
@@ -406,14 +750,15 @@
 +static int
 +vc_leds_off(vc_data_t *vcd)
 +{
-+	int err;
++	int i, err;
 +
-+	err = vc_leds_all(vcd->i2c.client[VC_I2C_0], 0xff);
-+	if(err < 0)
-+		return(0);
-+	err = vc_leds_all(vcd->i2c.client[VC_I2C_1], 0xff);
-+	if(err < 0)
-+		return(0);
++	for(i = VC_I2C_0; i < N_VC_I2C_DEVS; i++) {
++		if( !(vcd->i2c.probed & (1 << i)))
++			continue;
++		err = vc_leds_all(vcd->i2c.client[i], 0xff);
++		if(err < 0)
++			return(err);
++	}
 +	err = vc_write_byte(vcd->i2c.client[VC_I2C_0], MAX7314_MASTER_O16, 0xff);
 +	return(err);
 +}
@@ -425,7 +770,7 @@
 +{
 +	int ret, n;
 +	vc_data_t *vcd = &vc_data;
-+	const vc_hw_t *hw = vcd->hw;
++	vc_hw_t *hw = vcd->hw;
 +	vc_leds_t *led;
 +	struct i2c_client *client;
 +	u8 brightness, mask, reg, new;
@@ -499,6 +844,7 @@
 +		dev_err(dev, "vc: bad value: %s\n", buf);
 +		return(ret);
 +	}
++
 +	// reprogram the brightness of all 3 colors;
 +
 +	ret = vc_set_color(index, value);
@@ -509,7 +855,7 @@
 +
 +// all leds off;
 +
-+static int
++static ssize_t
 +store_off(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
 +{
 +	int err;
@@ -537,6 +883,7 @@
 +}
 +
 +SHOW_RGBA(wifi,VC_LED_WIFI_AP)
++SHOW_RGBA(ap2,VC_LED_WIFI_AP_2)
 +SHOW_RGBA(sta1,VC_LED_WIFI_STA_1)
 +SHOW_RGBA(sta2,VC_LED_WIFI_STA_2)
 +SHOW_RGBA(sta3,VC_LED_WIFI_STA_3)
@@ -560,6 +907,7 @@
 +}
 +
 +STORE_RGBA(wifi,VC_LED_WIFI_AP)
++STORE_RGBA(ap2,VC_LED_WIFI_AP_2)
 +STORE_RGBA(sta1,VC_LED_WIFI_STA_1)
 +STORE_RGBA(sta2,VC_LED_WIFI_STA_2)
 +STORE_RGBA(sta3,VC_LED_WIFI_STA_3)
@@ -579,6 +927,7 @@
 +
 +static DEVICE_ATTR(off, S_IRUGO | S_IWUSR, NULL, store_off);
 +ATTR_RGBA(wifi);
++ATTR_RGBA(ap2);
 +ATTR_RGBA(sta1);
 +ATTR_RGBA(sta2);
 +ATTR_RGBA(sta3);
@@ -598,6 +947,7 @@
 +static struct attribute *vc_leds_attrs[] = {
 +	&dev_attr_off.attr,
 +	&dev_attr_wifi.attr,
++	&dev_attr_ap2.attr,
 +	&dev_attr_sta1.attr,
 +	&dev_attr_sta2.attr,
 +	&dev_attr_sta3.attr,
@@ -669,7 +1019,7 @@
 +static ssize_t
 +show_fan_gpio(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	const vc_hw_t *hw = vc_data.hw;
++	vc_hw_t *hw = vc_data.hw;
 +	int ret;
 +	u8 gpio;
 +	bool on;
@@ -696,10 +1046,10 @@
 +
 +// store fan gpio;
 +
-+static int
++static ssize_t
 +store_fan_gpio(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
 +{
-+	const vc_hw_t *hw = vc_data.hw;
++	vc_hw_t *hw = vc_data.hw;
 +	int ret;
 +	u32 value;
 +	bool on;
@@ -718,7 +1068,7 @@
 +
 +// store fan pwm;
 +
-+static int
++static ssize_t
 +store_fan_pwm(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
 +{
 +	int ret;
@@ -742,7 +1092,7 @@
 +// store fan rpm;
 +// write 0 to disable rpm counting interrupts, else enable;
 +
-+static int
++static ssize_t
 +store_fan_rpm(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
 +{
 +	int ret;
@@ -782,36 +1132,37 @@
 +};
 +
 +// create low-pulse on i2c ctrl reset pin;
-+// keept BLINK input low;
++// keep BLINK input low;
 +
 +static void
-+vc_i2c_gpio_reset(unsigned gpio_reset)
++vc_i2c_gpio_reset(unsigned gpio)
 +{
-+	gpio_set_value(gpio_reset, 0);
++	gpio_set_value(gpio, 0);
 +	usleep_range(1000, 2000);
-+	gpio_set_value(gpio_reset, 1);
++	gpio_set_value(gpio, 1);
 +}
 +
-+// request i2c GPIOs;
-+// set them to the reset state;
++// request gpio for i2c device reset;
++// set it to the reset state;
 +
 +static int
-+vc_request_i2c_gpio(unsigned gpio_reset, unsigned gpio_blink)
++vc_request_gpio_i2c_reset(unsigned gpio)
 +{
-+	int err;
-+	static bool vc_gpio_requested = 0;
++	int ret;
 +
-+	if(vc_gpio_requested)
-+		return(0);
-+	vc_gpio_requested = 1;
-+	err = gpio_request_one(gpio_reset, GPIOF_OUT_INIT_LOW, "vc-i2c-reset");
-+	if(err)
-+		return(err);
-+	err = gpio_request_one(gpio_blink, GPIOF_OUT_INIT_LOW, "vc-i2c-blink");
-+	if(err)
-+		return(err);
-+	vc_i2c_gpio_reset(gpio_reset);
-+	return(0);
++	ret = gpio_request_one(gpio, GPIOF_OUT_INIT_LOW, "vc-i2c-reset");
++	if( !ret)
++		vc_i2c_gpio_reset(gpio);
++	return(ret);
++}
++
++// request gpio for i2c device blink;
++// set it to 0;
++
++static int
++vc_request_gpio_i2c_blink(unsigned gpio)
++{
++	return(gpio_request_one(gpio, GPIOF_OUT_INIT_LOW, "vc-i2c-blink"));
 +}
 +
 +// request reset GPIO and read status;
@@ -822,7 +1173,7 @@
 +// GPIO pin can be made output and write 0, to cause reset;
 +
 +static int
-+vc_request_reset_gpio(unsigned gpio)
++vc_request_gpio_reset_button(unsigned gpio)
 +{
 +	int err;
 +
@@ -835,7 +1186,7 @@
 +// request fan gpio;
 +
 +static int
-+vc_request_fan_gpio(unsigned gpio_tach, unsigned gpio_ctrl)
++vc_request_gpio_fan(unsigned gpio_tach, unsigned gpio_ctrl)
 +{
 +	int err;
 +
@@ -844,6 +1195,43 @@
 +		return(err);
 +	err = gpio_request_one(gpio_ctrl, GPIOF_OUT_INIT_HIGH, "vc-fan-gpio");
 +	return(err);
++}
++
++// request gpio for SFP TX_DIS;
++
++static int
++vc_request_gpio_sfp_txdis(unsigned gpio)
++{
++	return(gpio_request_one(gpio, GPIOF_OUT_INIT_LOW, "vc-sfp-txdis"));
++}
++
++// request gpio for MSATA presence;
++
++static int
++vc_request_gpio_msata_present(unsigned gpio)
++{
++	int err;
++
++	err = gpio_request_one(gpio, GPIOF_IN, "vc-msata-present");
++	if(err)
++		return(err);
++	return(gpio_get_value(gpio));
++}
++
++// request gpio for PCI-e A disable;
++
++static int
++vc_request_gpio_rfkill_a(unsigned gpio)
++{
++	return(gpio_request_one(gpio, GPIOF_OUT_INIT_HIGH, "vc-rfkill-a"));
++}
++
++// request gpio for PCI-e B disable;
++
++static int
++vc_request_gpio_rfkill_b(unsigned gpio)
++{
++	return(gpio_request_one(gpio, GPIOF_OUT_INIT_HIGH, "vc-rfkill-b"));
 +}
 +
 +// init i2c LED drivers;
@@ -897,18 +1285,12 @@
 +static int
 +vc_i2c_detect(struct i2c_client *client, struct i2c_board_info *info)
 +{
-+	const vc_hw_t *hw = vc_data.hw;
 +	struct i2c_adapter *adapter = client->adapter;
 +	int err, n;
 +
-+	// request GPIOs that control i2c controllers;
-+
-+	err = vc_request_i2c_gpio(hw->gpio_i2c_reset, hw->gpio_i2c_blink);
-+	if(err)
-+		goto fail;
-+
 +	if( !i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA
 +		| I2C_FUNC_SMBUS_WORD_DATA | I2C_FUNC_SMBUS_WRITE_BYTE)) {
++		pr_err("vc: adaptor does not smbus\n");
 +		return(-ENODEV);
 +	}
 +
@@ -916,7 +1298,7 @@
 +	// use this as the detect mechanism;
 +
 +	err = vc_init_ports(client);
-+    if(err < 0)
++	if(err < 0)
 +		goto fail;
 +	for(n = 0; n < N_VC_LEDS; n++)
 +		vc_data.i2c.led_cur[n] = 0x00f0f0f0;
@@ -939,7 +1321,7 @@
 +vc_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 +{
 +	vc_data_t *vcd = &vc_data;
-+	const vc_hw_t *hw = vcd->hw;
++	vc_hw_t *hw = vcd->hw;
 +	int i, err;
 +
 +	// only probe for devices we'd expect;
@@ -976,10 +1358,15 @@
 +		dev_err(&vc_pdev->dev, "couldn't register sysfs leds\n");
 +		goto fail;
 +	}
-+	err = sysfs_create_group(&vc_pdev->dev.kobj, &vc_fan_group);
-+	if(err < 0) {
-+		dev_err(&vc_pdev->dev, "couldn't register sysfs fan\n");
-+		goto fail;
++
++	// request fan control via I2C PWM;
++
++	if(hw->caps & VC_CAP_I2C_FAN_PWM) {
++		err = sysfs_create_group(&vc_pdev->dev.kobj, &vc_fan_group);
++		if(err < 0) {
++			dev_err(&vc_pdev->dev, "couldn't register sysfs fan pwm\n");
++			goto fail;
++		}
 +	}
 +
 +	return(0);
@@ -994,7 +1381,7 @@
 +static int
 +vc_i2c_remove(struct i2c_client *client)
 +{
-+	const vc_hw_t *hw = vc_data.hw;
++	vc_hw_t *hw = vc_data.hw;
 +
 +	vc_leds_off(&vc_data);
 +	sysfs_remove_group(&vc_pdev->dev.kobj, &vc_fan_group);
@@ -1032,6 +1419,7 @@
 +// platform driver;
 +
 +static DEVICE_ATTR(reset, S_IRUGO | S_IWUSR, NULL, NULL);
++static DEVICE_ATTR(msata_present, S_IRUGO | S_IWUSR, NULL, NULL);
 +
 +// show board name;
 +
@@ -1047,6 +1435,100 @@
 +
 +static DEVICE_ATTR(board, S_IRUGO | S_IWUSR, show_board, NULL);
 +
++// show sfp tx-disable status;
++
++static ssize_t
++show_sfp_txdis(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int gpio, ret;
++
++	gpio = gpio_get_value(hw->gpio_sfp_txdis);
++	ret = scnprintf(buf, PAGE_SIZE, "%d\n", gpio? 1 : 0);
++	return(ret);
++}
++
++// set sfp tx-disable;
++
++static ssize_t
++store_sfp_txdis(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int ret;
++	unsigned gpio;
++
++	ret = kstrtou32(buf, 0, &gpio);
++	if(ret < 0)
++		return(ret);
++	if(gpio > 1)
++		return(-EINVAL);
++	gpio_set_value(hw->gpio_sfp_txdis, gpio);
++	return(len);
++}
++
++static DEVICE_ATTR(sfp_txdis, S_IRUGO | S_IWUSR, show_sfp_txdis, store_sfp_txdis);
++
++// show rfkill signals;
++
++static ssize_t
++show_rfkill_a(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int gpio, ret;
++
++	gpio = gpio_get_value(hw->gpio_rfkill_a);
++	ret = scnprintf(buf, PAGE_SIZE, "%d\n", gpio? 1 : 0);
++	return(ret);
++}
++
++static ssize_t
++show_rfkill_b(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int gpio, ret;
++
++	gpio = gpio_get_value(hw->gpio_rfkill_b);
++	ret = scnprintf(buf, PAGE_SIZE, "%d\n", gpio? 1 : 0);
++	return(ret);
++}
++
++// set rfkill signals;
++
++static ssize_t
++store_rfkill_a(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int ret;
++	unsigned gpio;
++
++	ret = kstrtou32(buf, 0, &gpio);
++	if(ret < 0)
++		return(ret);
++	if(gpio > 1)
++		return(-EINVAL);
++	gpio_set_value(hw->gpio_rfkill_a, gpio);
++	return(len);
++}
++
++static ssize_t
++store_rfkill_b(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int ret;
++	unsigned gpio;
++
++	ret = kstrtou32(buf, 0, &gpio);
++	if(ret < 0)
++		return(ret);
++	if(gpio > 1)
++		return(-EINVAL);
++	gpio_set_value(hw->gpio_rfkill_b, gpio);
++	return(len);
++}
++
++static DEVICE_ATTR(rfkill_a, S_IRUGO | S_IWUSR, show_rfkill_a, store_rfkill_a);
++static DEVICE_ATTR(rfkill_b, S_IRUGO | S_IWUSR, show_rfkill_b, store_rfkill_b);
++
 +// per-board dmi matching info;
 +// unfortunatedly, the edge-portwell has identical dmi info to edge-nexcom;
 +
@@ -1055,6 +1537,11 @@
 +	  { DMI_MATCH(DMI_BOARD_NAME, "CM-iTC"),
 +	  },
 +	  .driver_data = &vc_hw_ve1000,
++	},
++	{ .ident = "edge500",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE500"),
++	  },
++	  .driver_data = &vc_hw_edge500,
 +	},
 +	{ .ident = "edge-portwell",
 +	  { DMI_MATCH(DMI_PRODUCT_UUID, "XXX"),
@@ -1066,14 +1553,28 @@
 +	  },
 +	  .driver_data = &vc_hw_none,
 +	},
-+	{ .ident = "edge500",
-+	  { DMI_MATCH(DMI_PRODUCT_UUID, "XXX"),
-+		DMI_MATCH(DMI_BOARD_NAME, "XXX"),
-+	  },
-+	  .driver_data = &vc_hw_edge500,
-+	},
 +	{ 0 },
 +};
++
++#ifdef VC_FIX_DMI
++
++static char *bname = "";
++
++static const struct dmi_system_id *
++vc_fix_board(const struct dmi_system_id *dmi, char *name)
++{
++	const char *id;
++
++	for(; (id = dmi->ident); dmi++) {
++		if( !strcmp(id, name))
++			return(dmi);
++	}
++	return(NULL);
++}
++
++module_param(bname,charp,S_IRUGO);
++
++#endif // VC_FIX_DMI
 +
 +// platform driver init;
 +
@@ -1081,13 +1582,19 @@
 +vc_init(void)
 +{
 +	const struct dmi_system_id *dmi;
-+	const vc_hw_t *hw;
++	vc_hw_t *hw;
 +	int err;
 +	int reset = 0;
 +
 +	// determine velocloud board;
++	// allow kernel param overwrite until DMI is fixed;
 +
 +	dmi = dmi_first_match(vc_dmi_table);
++#ifdef VC_FIX_DMI
++	pr_info("vc: board overwrite '%s'\n", bname);
++	if(bname[0])
++		dmi = vc_fix_board(vc_dmi_table, bname);
++#endif // VC_FIX_DMI
 +	vc_data.dmi = dmi;
 +	if( !dmi) {
 +		pr_info("vc: no board found\n");
@@ -1097,11 +1604,29 @@
 +	hw = dmi->driver_data;
 +	vc_data.hw = hw;
 +
++	// create platform device;
++
++	vc_pdev = platform_device_register_simple(VC_NAME, -1, NULL, 0);
++	if(IS_ERR(vc_pdev)) {
++		err = PTR_ERR(vc_pdev);
++		pr_err("vc: couldn't register platform device\n");
++		goto fail_pdev;
++	}
++
++	// initialize any other board-specific hardware,
++	// as this may bring up more GPIOs;
++
++	if(hw->init) {
++		err = hw->init(hw, &vc_pdev->dev);
++		if(err < 0)
++			pr_err("vc: couldn't init board hardware: %d\n", err);
++	}
++
 +	// read the reset pin first;
 +	// reset gpio is active low;
 +
 +	if(hw->caps & VC_CAP_RESET_BUTTON) {
-+		err = vc_request_reset_gpio(hw->gpio_reset_btn);
++		err = vc_request_gpio_reset_button(hw->gpio_reset_btn);
 +		if(err < 0)
 +			pr_err("vc: couldn't request reset gpio\n");
 +	} else {
@@ -1114,21 +1639,42 @@
 +	// request the fan gpio;
 +
 +	if(hw->caps & VC_CAP_FAN) {
-+		err = vc_request_fan_gpio(hw->gpio_fan_tach, hw->gpio_fan_ctrl);
++		err = vc_request_gpio_fan(hw->gpio_fan_tach, hw->gpio_fan_ctrl);
 +		if(err < 0) {
 +			pr_err("vc: couldn't request fan gpio\n");
-+			goto fail_pdev;
++			goto fail_unreg;
 +		}
 +	}
 +	vc_data.fan.rpm = -1;
 +
-+	// create platform device;
++	// request gpio that resets all LED devices;
 +
-+	vc_pdev = platform_device_register_simple(VC_NAME, -1, NULL, 0);
-+	if(IS_ERR(vc_pdev)) {
-+		err = PTR_ERR(vc_pdev);
-+		pr_err("vc: couldn't register platform device\n");
-+		goto fail_pdev;
++	if(hw->caps & VC_CAP_I2C_RESET) {
++		err = vc_request_gpio_i2c_reset(hw->gpio_i2c_reset);
++		if(err < 0) {
++			pr_err("vc: couldn't request i2c device reset gpio\n");
++			goto fail_unreg;
++		}
++	}
++
++	// request gpio that controls LED expander blink;
++
++	if(hw->caps & VC_CAP_I2C_BLINK) {
++		err = vc_request_gpio_i2c_blink(hw->gpio_i2c_blink);
++		if(err < 0) {
++			pr_err("vc: couldn't request blink gpio\n");
++			goto fail_unreg;
++		}
++	}
++
++	// add bitbang i2c driver;
++
++	if(hw->caps & VC_CAP_I2C_BB) {
++		err = platform_device_register(hw->i2c_bb);
++		if(err < 0) {
++			dev_err(&vc_pdev->dev, "couldn't register i2c-gpio\n");
++			goto fail_unreg;
++		}
 +	}
 +
 +	// add i2c leds driver;
@@ -1138,7 +1684,7 @@
 +		err = i2c_add_driver(&vc_i2c_driver);
 +		if(err < 0) {
 +			dev_err(&vc_pdev->dev, "couldn't add i2c driver\n");
-+			goto fail_i2c;
++			goto fail_unreg;
 +		}
 +	}
 +
@@ -1156,9 +1702,61 @@
 +			dev_err(&vc_pdev->dev, "couldn't register sysfs reset\n");
 +	}
 +
++	// handle sfp tx-disable;
++
++	if(hw->caps & VC_CAP_SFP_TXDIS) {
++		err = vc_request_gpio_sfp_txdis(hw->gpio_sfp_txdis);
++		if(err < 0)
++			pr_err("vc: couldn't request sfp tx-disable gpio\n");
++		else {
++			err = sysfs_create_file(&vc_pdev->dev.kobj, &dev_attr_sfp_txdis.attr);
++			if(err < 0)
++				dev_err(&vc_pdev->dev, "couldn't register sysfs sfp-txdis\n");
++		}
++	}
++
++	// handle msata presence;
++
++	if(hw->caps & VC_CAP_MSATA_PRESENT) {
++		err = vc_request_gpio_msata_present(hw->gpio_msata_present);
++		if(err < 0)
++			pr_err("vc: couldn't request sfp tx-disable gpio\n");
++		else if(err == 0) {
++			err = sysfs_create_file(&vc_pdev->dev.kobj, &dev_attr_msata_present.attr);
++			if(err < 0)
++				dev_err(&vc_pdev->dev, "couldn't register sysfs msata\n");
++		}
++	}
++
++	// handle wifi rfkill, pci-e slot A;
++
++	if(hw->caps & VC_CAP_RFKILL_A) {
++		err = vc_request_gpio_rfkill_a(hw->gpio_rfkill_a);
++		if(err < 0)
++			pr_err("vc: couldn't request rfkill-a gpio\n");
++		else {
++			err = sysfs_create_file(&vc_pdev->dev.kobj, &dev_attr_rfkill_a.attr);
++			if(err < 0)
++				dev_err(&vc_pdev->dev, "couldn't register sysfs rfkill-a\n");
++		}
++	}
++
++	// handle wifi rfkill, pci-e slot B;
++
++	if(hw->caps & VC_CAP_RFKILL_B) {
++		err = vc_request_gpio_rfkill_b(hw->gpio_rfkill_b);
++		if(err < 0)
++			pr_err("vc: couldn't request rfkill-b gpio\n");
++		else {
++			err = sysfs_create_file(&vc_pdev->dev.kobj, &dev_attr_rfkill_b.attr);
++			if(err < 0)
++				dev_err(&vc_pdev->dev, "couldn't register sysfs rfkill-b\n");
++		}
++	}
++
 +	return(0);
 +
-+fail_i2c:
++fail_unreg:
 +	platform_device_unregister(vc_pdev);
 +fail_pdev:
 +	vc_pdev = NULL;
@@ -1170,9 +1768,20 @@
 +static void __exit
 +vc_exit(void)
 +{
-+	const vc_hw_t *hw = vc_data.hw;
++	vc_hw_t *hw = vc_data.hw;
++
++	if(hw->caps & VC_CAP_RFKILL_B)
++		sysfs_remove_file(&vc_pdev->dev.kobj, &dev_attr_rfkill_b.attr);
++	if(hw->caps & VC_CAP_RFKILL_A)
++		sysfs_remove_file(&vc_pdev->dev.kobj, &dev_attr_rfkill_a.attr);
++	if(hw->caps & VC_CAP_MSATA_PRESENT)
++		sysfs_remove_file(&vc_pdev->dev.kobj, &dev_attr_msata_present.attr);
++	if(hw->caps & VC_CAP_SFP_TXDIS)
++		sysfs_remove_file(&vc_pdev->dev.kobj, &dev_attr_sfp_txdis.attr);
 +
 +	sysfs_remove_file(&vc_pdev->dev.kobj, &dev_attr_reset.attr);
++	sysfs_remove_file(&vc_pdev->dev.kobj, &dev_attr_board.attr);
++
 +	i2c_del_driver(&vc_i2c_driver);
 +	platform_device_unregister(vc_pdev);
 +

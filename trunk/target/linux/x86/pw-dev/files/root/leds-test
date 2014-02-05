@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 order_ve1000="logo bar5 bar4 bar3 bar2 bar1 wifi usb_left usb_top usb_bottom usb_right"
-order_edge500="logo bar5 bar4 bar3 bar2 bar1 wifi sta1 sta2 sta3 usb_left usb_top usb_bottom usb_right"
+order_edge500="logo bar5 bar4 bar3 bar2 bar1 wifi ap2 sta1 sta2 sta3 usb_left usb_top usb_bottom usb_right"
 # determine board type
 board="`cat /sys/devices/platform/vc/board`"
 echo $0: board: $board

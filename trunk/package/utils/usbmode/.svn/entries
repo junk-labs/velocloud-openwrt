@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+39499
 svn://svn.openwrt.org/openwrt/trunk/package/utils/usbmode
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-08-20T18:25:20.721623Z
-37816
-nbd
+2014-01-17T21:45:55.499882Z
+39317
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:28:13.970164Z
-94028868342bd43466b6b3fcd72eba9c
-2013-08-20T18:25:20.721623Z
-37816
-nbd
+2014-02-06T01:25:23.380312Z
+8aef8646a61c282c126f3a3a10d7e2fd
+2014-01-17T21:45:55.499882Z
+39317
+blogic
 
 
 
@@ -58,7 +58,7 @@ nbd
 
 
 
-1614
+1701
 
 files
 dir

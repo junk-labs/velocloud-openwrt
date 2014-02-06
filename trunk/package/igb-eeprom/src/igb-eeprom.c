@@ -23,13 +23,18 @@ struct g {
 	char opt_mac;
 	char opt_bid;
 	char opt_pciid;
+	char nmacs;
 	char *bid;
+	char *board;
 	unsigned short pciid[2];
 	unsigned char mac[6];
 	unsigned char mac0[6];
 	unsigned char mac1[6];
+	unsigned char mac2[6];
+	unsigned char mac3[6];
 	char *ifname;
 	char *tmp;
+	void (*extra)(g_t *g, unsigned char *eeprom, int size);
 };
 
 g_t G;
@@ -62,6 +67,86 @@ Msg(char *fmt, ...)
 	va_end(ap);
 	if(abort)
 		exit(1);
+}
+
+// edge500 board specifics;
+// MDIO[0] shared among eth0 (88e1112) and eth2,eth3 (88e6320 single-chip addressing);
+// MDIO[1] directly to 88e6176, single-chip addressing;
+
+#define PHY0_ADDR_6320 0	// shared MDIO[0];
+#define PHY1_ADDR_6176 0	// full bus decode, MDIO[1];
+#define PHY2_ADDR_6320 0	// shared MDIO[0];
+#define PHY3_ADDR_1112 0x7	// shared MDIO[0];
+
+// initialization control 4;
+// set phy address;
+
+void
+igb_ic4(unsigned char *p, int addr)
+{
+	unsigned short *w = ((unsigned short *)p) + 0x13;
+	unsigned short old, new;
+
+	old = *w;
+	new = 
+	new = (old & ~0x2e) | (addr << 1);
+	*w = new;
+	Msg("initialization control 4: 0x%x -> 0x%x\n", old, new);
+}
+
+// initialization control 3;
+// set mdio, sgmmi link mode, com_mdio, ext_mdio;
+
+void
+igb_ic3(unsigned char *p, int com)
+{
+	unsigned short *w = ((unsigned short *)p) + 0x24;
+	unsigned short old, new;
+
+	old = *w;
+	new = (old & ~0x8) | 0x4004;
+	if(com)
+		new |= 0x8;
+	*w = new;
+	Msg("initialization control 3: 0x%x -> 0x%x\n", old, new);
+}
+
+// set a specific word;
+
+void
+igb_word(unsigned char *p, unsigned int word, unsigned short data)
+{
+	unsigned short *w = ((unsigned short *)p) + word;
+	unsigned short old;
+
+	old = *w;
+	*w = data;
+	Msg("word %d: 0x%x -> 0x%x\n", word, old, data);
+}
+
+// edge500 igb board specifics;
+
+void
+edge500_extra(g_t *g, unsigned char *eeprom, int size)
+{
+	// program OEM specific words;
+
+	igb_word(eeprom, 0x06, 0x5663);	// "Vc";
+	igb_word(eeprom, 0x07, 0x6535);	// "e5";
+
+	// set phy mdio addresses;
+
+	igb_ic4(eeprom + 0x000, PHY0_ADDR_6320);
+	igb_ic4(eeprom + 0x100, PHY1_ADDR_6176);
+	igb_ic4(eeprom + 0x180, PHY2_ADDR_6320);
+	igb_ic4(eeprom + 0x200, PHY3_ADDR_1112);
+
+	// set MDICNFG.COM_MDIO based on ports;
+
+	igb_ic3(eeprom + 0x000, 1);
+	igb_ic3(eeprom + 0x100, 0);
+	igb_ic3(eeprom + 0x180, 1);
+	igb_ic3(eeprom + 0x200, 1);
 }
 
 // get a number of given size;
@@ -161,6 +246,28 @@ mac_str(char *d, unsigned char *mac)
 		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
+// get baord name;
+
+char *
+get_board(char *name, int size)
+{
+	int fd, n;
+	char *p;
+
+	fd = open("/sys/devices/platform/vc/board", O_RDONLY);
+	if(fd < 0)
+		return("ve1000");
+	n = read(fd, name, size);
+	close(fd);
+	if(n <= 0)
+		return(NULL);
+	name[size-1] = 0;
+	p = strchr(name, '\n');
+	if(p)
+		*p = 0;
+	return(name);
+}
+
 // main entry;
 
 int
@@ -168,8 +275,11 @@ main(int argc, char **argv)
 {
 	g_t *g = &G;
 	int c, fd, n, nb;
+	unsigned short pciid;
 	char mac0str[20];
 	char mac1str[20];
+	char mac2str[20];
+	char mac3str[20];
 	char magic[16];
 	char bid[20];
 	char file[50];
@@ -181,11 +291,17 @@ main(int argc, char **argv)
 	g->mac[1] = 'C';
 	g->mac[2] = '1';
 	g->pciid[0] = 0x8086;
-	g->pciid[1] = 0x1509;
+
+	// get board name;
+
+	g->board = get_board(file, sizeof(file));
+	if( !g->board)
+		Msg("@cannot determine board\n");
+	Msg("found board '%s'\n", g->board);
 
 	// get options;
 
-	while((c = getopt(argc, argv, "o:n:m:b:p:i:t:h")) != EOF) {
+	while((c = getopt(argc, argv, "o:n:m:B:b:p:i:t:h")) != EOF) {
 		switch(c) {
 		case 'o' :
 			if( !get_num(optarg, &g->mac[0], 3))
@@ -201,6 +317,10 @@ main(int argc, char **argv)
 			if( !get_num(optarg, &g->mac[0], 6))
 				Msg("@bad MAC address: %s\n", optarg);
 			g->opt_mac = 1;
+			break;
+		case 'B' :
+			g->board = optarg;
+			Msg("overwriting board to '%s'\n", g->board);
 			break;
 		case 'b' :
 			if( !get_bid(optarg, &g->mac[3]))
@@ -225,7 +345,8 @@ main(int argc, char **argv)
 				"  [-o OUI]       (DEC, 0xHEX, ab:cd:ef)\n"
 				"  [-n NIC]       (DEC, 0xHEX, ab:cd:ef)\n"
 				"  [-m MAC]       (00:11:22:33:44:55)\n"
-				"  [-b board-id]  (DEC, 0xHEX, ab:cd:ef)\n"
+				"  [-B board]     (force board: ve1000, edge500)\n"
+				"  [-b board-id]  (DEC, 0xHEX)\n"
 				"  [-p pci-id]    (8086:1509)\n"
 				"  [-i if]        (eth0)\n"
 				"  [-t intel-tmp] (intel template file)\n"
@@ -245,17 +366,45 @@ main(int argc, char **argv)
 	if( !g->tmp)
 		Msg("@need intel eeprom template file (-t)\n");
 
+	// check board;
+
+	if( !strcmp(g->board, "ve1000")) {
+		pciid = 0x1509;
+		g->nmacs = 2;
+	} else if( !strcmp(g->board, "edge500")) {
+		pciid = 0x1f41;
+		g->nmacs = 4;
+		g->extra = edge500_extra;
+	} else
+		Msg("@board '%s' not supported\n", g->board);
+	if( !g->opt_pciid)
+		g->pciid[1] = pciid;
+
+	// make default macs;
+
 	bcopy(g->mac, g->mac0, sizeof(g->mac));
 	bcopy(g->mac, g->mac1, sizeof(g->mac));
-	g->mac1[5] ^= 1;
+	bcopy(g->mac, g->mac2, sizeof(g->mac));
+	bcopy(g->mac, g->mac3, sizeof(g->mac));
+	g->mac0[5] ^= 0x00;
+	g->mac1[5] ^= 0x01;
+	g->mac2[5] ^= 0x02;
+	g->mac3[5] ^= 0x03;
 
 	// report config;
 
 	mac_str(mac0str, g->mac0);
 	mac_str(mac1str, g->mac1);
+	mac_str(mac2str, g->mac2);
+	mac_str(mac3str, g->mac3);
+
 	Msg("using interface %s\n", g->ifname);
 	Msg("mac address 0: %s\n", mac0str);
 	Msg("mac address 1: %s\n", mac1str);
+	if(g->nmacs == 4) {
+		Msg("mac address 2: %s\n", mac2str);
+		Msg("mac address 3: %s\n", mac3str);
+	}
 
 	sprintf(magic, "0x%04x%04x", g->pciid[1], g->pciid[0]);
 	Msg("using magic %s\n", magic);
@@ -279,8 +428,18 @@ main(int argc, char **argv)
 
 	bcopy(g->mac0, eeprom + 0x0, sizeof(g->mac0));
 	bcopy(g->mac1, eeprom + 0x100, sizeof(g->mac1));
-	bcopy(null_mac, eeprom + 0x180, sizeof(null_mac));
-	bcopy(null_mac, eeprom + 0x200, sizeof(null_mac));
+	if(g->nmacs == 4) {
+		bcopy(g->mac2, eeprom + 0x180, sizeof(g->mac2));
+		bcopy(g->mac3, eeprom + 0x200, sizeof(g->mac3));
+	} else {
+		bcopy(null_mac, eeprom + 0x180, sizeof(null_mac));
+		bcopy(null_mac, eeprom + 0x200, sizeof(null_mac));
+	}
+
+	// call board specific checks and changes;
+
+	if(g->extra)
+		g->extra(g, eeprom, n);
 
 	// write it out to bitmap;
 

@@ -8,7 +8,7 @@ DEFAULT_PACKAGES += \
 	openssl-util \
 
 
-# pw-dev-specific packages:
+# edge500-specific packages:
 DEFAULT_PACKAGES += \
 	kmod-intel-igb \
 	igb-eeprom \

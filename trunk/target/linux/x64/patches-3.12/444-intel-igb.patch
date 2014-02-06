@@ -1,5 +1,51 @@
+--- a/drivers/net/ethernet/intel/igb/Makefile
++++ b/drivers/net/ethernet/intel/igb/Makefile
+@@ -34,4 +34,4 @@
+ 
+ igb-objs := igb_main.o igb_ethtool.o e1000_82575.o \
+ 	    e1000_mac.o e1000_nvm.o e1000_phy.o e1000_mbx.o \
+-	    e1000_i210.o igb_ptp.o igb_hwmon.o
++	    e1000_i210.o igb_ptp.o igb_hwmon.o igb_vc.o
 --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+@@ -49,23 +49,23 @@
+ static s32  igb_init_hw_82575(struct e1000_hw *);
+ static s32  igb_phy_hw_reset_sgmii_82575(struct e1000_hw *);
+ static s32  igb_read_phy_reg_sgmii_82575(struct e1000_hw *, u32, u16 *);
+-static s32  igb_read_phy_reg_82580(struct e1000_hw *, u32, u16 *);
+-static s32  igb_write_phy_reg_82580(struct e1000_hw *, u32, u16);
++s32  igb_read_phy_reg_82580(struct e1000_hw *, u32, u16 *);
++s32  igb_write_phy_reg_82580(struct e1000_hw *, u32, u16);
+ static s32  igb_reset_hw_82575(struct e1000_hw *);
+ static s32  igb_reset_hw_82580(struct e1000_hw *);
+ static s32  igb_set_d0_lplu_state_82575(struct e1000_hw *, bool);
+ static s32  igb_set_d0_lplu_state_82580(struct e1000_hw *, bool);
+ static s32  igb_set_d3_lplu_state_82580(struct e1000_hw *, bool);
+ static s32  igb_setup_copper_link_82575(struct e1000_hw *);
+-static s32  igb_setup_serdes_link_82575(struct e1000_hw *);
++s32  igb_setup_serdes_link_82575(struct e1000_hw *);
+ static s32  igb_write_phy_reg_sgmii_82575(struct e1000_hw *, u32, u16);
+ static void igb_clear_hw_cntrs_82575(struct e1000_hw *);
+ static s32  igb_acquire_swfw_sync_82575(struct e1000_hw *, u16);
+-static s32  igb_get_pcs_speed_and_duplex_82575(struct e1000_hw *, u16 *,
++s32  igb_get_pcs_speed_and_duplex_82575(struct e1000_hw *, u16 *,
+ 						 u16 *);
+ static s32  igb_get_phy_id_82575(struct e1000_hw *);
+ static void igb_release_swfw_sync_82575(struct e1000_hw *, u16);
+-static bool igb_sgmii_active_82575(struct e1000_hw *);
++bool igb_sgmii_active_82575(struct e1000_hw *);
+ static s32  igb_reset_init_script_82575(struct e1000_hw *);
+ static s32  igb_read_mac_addr_82575(struct e1000_hw *);
+ static s32  igb_set_pcie_completion_timeout(struct e1000_hw *hw);
+@@ -87,7 +87,7 @@
+  *  Called to determine if the I2C pins are being used for I2C or as an
+  *  external MDIO interface since the two options are mutually exclusive.
+  **/
+-static bool igb_sgmii_uses_mdio_82575(struct e1000_hw *hw)
++bool igb_sgmii_uses_mdio_82575(struct e1000_hw *hw)
+ {
+ 	u32 reg = 0;
+ 	bool ext_mdio = false;
 @@ -255,6 +255,11 @@
  	nvm->delay_usec = 1;
  
@@ -31,6 +77,66 @@
  	case E1000_DEV_ID_82580_COPPER:
  	case E1000_DEV_ID_82580_FIBER:
  	case E1000_DEV_ID_82580_QUAD_FIBER:
+@@ -592,6 +602,14 @@
+ 		break;
+ 	}
+ 
++	// init velocloud phy params;
++
++	{ extern s32 igb_vc_probe(struct e1000_hw *);
++	ret_val = igb_vc_probe(hw);
++	if( !ret_val)
++		goto out;
++	}
++
+ 	/* setup PHY parameters */
+ 	ret_val = igb_init_phy_params_82575(hw);
+ 
+@@ -1242,7 +1260,7 @@
+  *  Using the physical coding sub-layer (PCS), retrieve the current speed and
+  *  duplex, then store the values in the pointers provided.
+  **/
+-static s32 igb_get_pcs_speed_and_duplex_82575(struct e1000_hw *hw, u16 *speed,
++s32 igb_get_pcs_speed_and_duplex_82575(struct e1000_hw *hw, u16 *speed,
+ 						u16 *duplex)
+ {
+ 	struct e1000_mac_info *mac = &hw->mac;
+@@ -1532,7 +1550,7 @@
+  *  interface (sgmii), or serdes fiber is being used.  Configures the link
+  *  for auto-negotiation or forces speed/duplex.
+  **/
+-static s32 igb_setup_serdes_link_82575(struct e1000_hw *hw)
++s32 igb_setup_serdes_link_82575(struct e1000_hw *hw)
+ {
+ 	u32 ctrl_ext, ctrl_reg, reg, anadv_reg;
+ 	bool pcs_autoneg;
+@@ -1672,7 +1690,7 @@
+  *  which can be enabled for use in the embedded applications.  Simply
+  *  return the current state of the sgmii interface.
+  **/
+-static bool igb_sgmii_active_82575(struct e1000_hw *hw)
++bool igb_sgmii_active_82575(struct e1000_hw *hw)
+ {
+ 	struct e1000_dev_spec_82575 *dev_spec = &hw->dev_spec._82575;
+ 	return dev_spec->sgmii_active;
+@@ -2038,7 +2056,7 @@
+  *  Reads the MDI control register in the PHY at offset and stores the
+  *  information read to data.
+  **/
+-static s32 igb_read_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 *data)
++s32 igb_read_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 *data)
+ {
+ 	s32 ret_val;
+ 
+@@ -2062,7 +2080,7 @@
+  *
+  *  Writes data to MDI control register in the PHY at offset.
+  **/
+-static s32 igb_write_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 data)
++s32 igb_write_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 data)
+ {
+ 	s32 ret_val;
+ 
 --- a/drivers/net/ethernet/intel/igb/e1000_defines.h
 +++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
 @@ -742,9 +742,12 @@
@@ -46,6 +152,14 @@
  
  /* Word definitions for ID LED Settings */
  #define ID_LED_RESERVED_0000 0x0000
+@@ -794,6 +797,7 @@
+ #define M88E1000_PHY_SPEC_STATUS   0x11  /* PHY Specific Status Register */
+ #define M88E1000_EXT_PHY_SPEC_CTRL 0x14  /* Extended PHY Specific Control */
+ 
++#define M88E1000_PHY_PAGE22        0x16	/* Reg 22 for page setting of regs 0..21,23..28 */
+ #define M88E1000_PHY_PAGE_SELECT   0x1D  /* Reg 29 for page number setting */
+ #define M88E1000_PHY_GEN_CONTROL   0x1E  /* Its meaning depends on reg 29 */
+ 
 --- a/drivers/net/ethernet/intel/igb/e1000_hw.h
 +++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
 @@ -49,6 +49,7 @@
@@ -56,7 +170,15 @@
  #define E1000_DEV_ID_82580_COPPER		0x150E
  #define E1000_DEV_ID_82580_FIBER		0x150F
  #define E1000_DEV_ID_82580_SERDES		0x1510
-@@ -120,6 +121,7 @@
+@@ -104,6 +105,7 @@
+ 	e1000_media_type_copper = 1,
+ 	e1000_media_type_fiber = 2,
+ 	e1000_media_type_internal_serdes = 3,
++	e1000_media_type_switch = 4,
+ 	e1000_num_media_types
+ };
+ 
+@@ -120,6 +122,7 @@
  	e1000_nvm_override_none = 0,
  	e1000_nvm_override_spi_small,
  	e1000_nvm_override_spi_large,
@@ -64,6 +186,36 @@
  };
  
  enum e1000_phy_type {
+@@ -133,6 +136,7 @@
+ 	e1000_phy_ife,
+ 	e1000_phy_82580,
+ 	e1000_phy_i210,
++	e1000_phy_m88sw,
+ };
+ 
+ enum e1000_bus_type {
+@@ -427,6 +431,13 @@
+ 	struct e1000_thermal_sensor_data thermal_sensor_data;
+ };
+ 
++enum e1000_phy_port {
++	e1000_port_cpu = 0,
++	e1000_port_sgmii,
++	e1000_port_phy,
++	e1000_n_phy_ports,
++};
++
+ struct e1000_phy_info {
+ 	struct e1000_phy_operations ops;
+ 
+@@ -453,6 +464,7 @@
+ 	u16 min_cable_length;
+ 
+ 	u8 mdix;
++	u8 ports[e1000_n_phy_ports];
+ 
+ 	bool disable_polarity_correction;
+ 	bool is_mdix;
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
 @@ -91,6 +91,7 @@
@@ -74,46 +226,1365 @@
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_FIBER), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_QUAD_FIBER), board_82575 },
-@@ -2198,8 +2199,12 @@
+@@ -252,6 +253,10 @@
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(DRV_VERSION);
+ 
++static int bad_eeprom = 0;
++module_param(bad_eeprom, int, 0);
++MODULE_PARM_DESC(bad_eeprom, "Ignore all EEPROM errors to reflash it.");
++
+ #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
+ static int debug = -1;
+ module_param(debug, int, 0);
+@@ -1996,6 +2001,18 @@
+ 	return status;
+ }
+ 
++// error out or ignore NVM checksum errors;
++
++static int
++igb_nvm_checksum_error(struct pci_dev *pdev)
++{
++	dev_err(&pdev->dev, "The NVM Checksum Is Not Valid\n");
++	if( !bad_eeprom)
++		return(-EIO);
++	dev_err(&pdev->dev, "Invalid NVM Checksum Ignored\n");
++	return(0);
++}
++
+ /**
+  *  igb_probe - Device Initialization Routine
+  *  @pdev: PCI device information struct
+@@ -2109,6 +2126,8 @@
+ 	memcpy(&hw->nvm.ops, ei->nvm_ops, sizeof(hw->nvm.ops));
+ 	/* Initialize skew-specific constants */
+ 	err = ei->get_invariants(hw);
++	if(bad_eeprom)
++		err = 0;
+ 	if (err)
+ 		goto err_sw_init;
+ 
+@@ -2188,18 +2207,17 @@
+ 	case e1000_i211:
+ 		if (igb_get_flash_presence_i210(hw)) {
+ 			if (hw->nvm.ops.validate(hw) < 0) {
+-				dev_err(&pdev->dev,
+-					"The NVM Checksum Is Not Valid\n");
+-				err = -EIO;
+-				goto err_eeprom;
++				err = igb_nvm_checksum_error(pdev);
++				if(err)
++					goto err_eeprom;
+ 			}
+ 		}
+ 		break;
  	default:
  		if (hw->nvm.ops.validate(hw) < 0) {
- 			dev_err(&pdev->dev, "The NVM Checksum Is Not Valid\n");
-+#ifndef CONFIG_IGB_IGN_NVM_CSUM
- 			err = -EIO;
- 			goto err_eeprom;
-+#else
-+			dev_err(&pdev->dev, "Invalid NVM Checksum Ignored\n");
-+#endif // !CONFIG_IGB_IGN_NVM_CSUM
+-			dev_err(&pdev->dev, "The NVM Checksum Is Not Valid\n");
+-			err = -EIO;
+-			goto err_eeprom;
++			err = igb_nvm_checksum_error(pdev);
++			if(err)
++				goto err_eeprom;
  		}
  		break;
  	}
-@@ -2212,8 +2217,12 @@
+@@ -2212,8 +2230,11 @@
  
  	if (!is_valid_ether_addr(netdev->dev_addr)) {
  		dev_err(&pdev->dev, "Invalid MAC Address\n");
-+#ifndef CONFIG_IGB_IGN_NVM_CSUM
- 		err = -EIO;
- 		goto err_eeprom;
-+#else
-+		dev_err(&pdev->dev, "Invalid MAC Address Ignored\n");
-+#endif // !CONFIG_IGB_IGN_NVM_CSUM
+-		err = -EIO;
+-		goto err_eeprom;
++		if( !bad_eeprom) {
++			err = -EIO;
++			goto err_eeprom;
++		} else
++			dev_err(&pdev->dev, "Invalid MAC Address Ignored\n");
  	}
  
  	/* get firmware version for ethtool -i */
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -150,6 +150,14 @@
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called igbvf.
- 
-+config IGB_IGN_NVM_CSUM
-+	bool "Ignore Invalid NVM Checksum"
-+	default n
-+	depends on NET_VENDOR_INTEL
-+	---help---
-+	  Ignore a bad or unprogrammed NVM so we can the interface up
-+	  for ethtool to fix it.
+@@ -3879,6 +3900,7 @@
+ 	case e1000_media_type_copper:
+ 		if (!hw->mac.get_link_status)
+ 			return true;
++	case e1000_media_type_switch:
+ 	case e1000_media_type_internal_serdes:
+ 		hw->mac.ops.check_for_link(hw);
+ 		link_active = !hw->mac.get_link_status;
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igb/igb_vc.c
+@@ -0,0 +1,1273 @@
++/* Velocloud Intel IGB Ethernet driver
++ * Copyright(c) 2014 Velocloud Inc.
 +
- config IXGB
- 	tristate "Intel(R) PRO/10GbE support"
- 	depends on PCI
++  This program is free software; you can redistribute it and/or modify it
++  under the terms and conditions of the GNU General Public License,
++  version 2, as published by the Free Software Foundation.
++
++  This program is distributed in the hope it will be useful, but WITHOUT
++  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++  more details.
++
++  You should have received a copy of the GNU General Public License along with
++  this program; if not, write to the Free Software Foundation, Inc.,
++  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++
++  The full GNU General Public License is included in this distribution in
++  the file called "COPYING".
++*/
++
++#include <linux/types.h>
++#include <linux/if_ether.h>
++#include <linux/i2c.h>
++
++#include "e1000_mac.h"
++#include "e1000_82575.h"
++#include "e1000_hw.h"
++
++#undef IGB_VC_DEBUG
++#ifdef IGB_VC_DEBUG
++#define vcdbg(fmt, ...) printk("%s/%d " fmt, __func__, hw->bus.func, ##__VA_ARGS__);
++#else
++#define vcdbg(fmt, ...)
++#endif
++
++// dump switch/phy regs;
++
++#undef IGB_VC_DUMP_6320
++#undef IGB_VC_DUMP_6176
++#undef IGB_VC_DUMP_1112
++
++// number of i354 rangeley bus functions;
++
++#define IGB_VC_N_BUS_FUNC 4
++
++// functions;
++
++extern bool igb_sgmii_active_82575(struct e1000_hw *hw);
++extern bool igb_sgmii_uses_mdio_82575(struct e1000_hw *hw);
++extern s32  igb_read_phy_reg_82580(struct e1000_hw *, u32, u16 *);
++extern s32  igb_write_phy_reg_82580(struct e1000_hw *, u32, u16);
++extern s32 igb_setup_serdes_link_82575(struct e1000_hw *hw);
++extern s32 igb_get_pcs_speed_and_duplex_82575(struct e1000_hw *, u16 *, u16 *);
++extern s32 igb_check_polarity_m88(struct e1000_hw *hw);
++extern s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw);
++
++// MDIO timeout;
++
++#define IGB_VC_MDIO_TIMEOUT 100		// in 10us steps;
++#define IGB_VC_SMI_MDIO_RETRIES 50	// # of smi mdio retries;
++
++// marvell switch defs;
++
++#define M88E6320_ID ((M88_VENDOR << 16) | 0x1150)
++#define M88E6176_ID ((M88_VENDOR << 16) | 0x1760)
++#define M88E1112_ID ((M88_VENDOR << 16) | 0x0c90)
++
++#define M88_SW_PORT_BASE 0x10		// base of port registers;
++#define M88_SW_PORT_STATUS 0x00		// port status reg;
++#define M88_SW_PORT_PHYSCTRL 0x01	// port physical control reg;
++#define M88_SW_PORT_PROD_ID 0x03	// product ID reg;
++#define M88_SW_PORT_CONTROL 0x04	// port control reg;
++#define M88_SW_PORT_VLAN_MAP 0x06	// port based vlan map;
++
++#define M88_SW_PORT_STATUS_PHYDET	(1 << 12)
++#define M88_SW_PORT_STATUS_LINK_UP	(1 << 11)
++#define M88_SW_PORT_STATUS_DUPLEX	(1 << 10)
++#define M88_SW_PORT_STATUS_SPEED	(3 << 8)
++#define M88_SW_PORT_STATUS_SPEED_10	(0 << 8)
++#define M88_SW_PORT_STATUS_SPEED_100	(1 << 8)
++#define M88_SW_PORT_STATUS_SPEED_1000	(2 << 8)
++
++#define M88_SW_PORT_CONTROL_DIS		(0 << 0)
++#define M88_SW_PORT_CONTROL_BLKLIST	(1 << 0)
++#define M88_SW_PORT_CONTROL_LEARN	(2 << 0)
++#define M88_SW_PORT_CONTROL_FWD		(3 << 0)
++
++#define M88_SW_GLOBAL1 0x1b		// global1 regs;
++#define M88_SW_GLOBAL2 0x1c		// global2 regs;
++#define M88_SW_GLOBAL3 0x1d		// global3 regs;
++
++#define M88_SW_GL1_CTRL 4
++#define M88_SW_GL1_CTRL_SWRESET 0x8000
++
++#define M88_GL2_SMI_CMD 0x18		// SMI command;
++#define M88_GL2_SMI_CMD_BUSY 0x8000	// SMI busy;
++#define M88_GL2_SMI_CMD_MODE 0x1000	// SMI mode, 0=clause45, 1=clause22;
++#define M88_GL2_SMI_CMD_OP 0x0c00	// SMI op;
++#define M88_GL2_SMI_CMD_OP_WRITE 0x0400	// SMI write;
++#define M88_GL2_SMI_CMD_OP_READ 0x0800	// SMI read;
++#define M88_GL2_SMI_CMD_ADDR 0x003e	// SMI device address;
++#define M88_GL2_SMI_CMD_REG 0x001f	// SMI register address;
++#define M88_GL2_SMI_DATA 0x19		// SMI data;
++
++// per-port registers;
++
++#define M88_SW_REG(bank,reg) ((bank<<5) | reg)
++#define M88_SW_PORT_REG(port,reg) (((M88_SW_PORT_BASE+port)<<5) | reg)
++
++// busy-wait for MDIO completion;
++// returns <0 if error, else mdic bits;
++
++static s32
++igb_vc_m88sw_mdio_wait(struct e1000_hw *hw)
++{
++	int i;
++	u32 mdic;
++
++	// poll the ready bit, busy-waiting;
++
++	for(i = 0; i < IGB_VC_MDIO_TIMEOUT; i++) {
++		udelay(10);
++		mdic = rd32(E1000_MDIC);
++		if(mdic & E1000_MDIC_READY)
++			break;
++	}
++	if( !(mdic & E1000_MDIC_READY)) {
++		hw_dbg("MDIO read did not complete\n");
++		return(-E1000_ERR_PHY);
++	}
++	if(mdic & E1000_MDIC_ERROR) {
++		hw_dbg("MDIO error\n");
++		return(-E1000_ERR_PHY);
++	}
++	return(mdic & 0xffff);
++}
++
++// read MDIO registers;
++// works with single/multi-chip addressing;
++
++static s32
++igb_vc_m88sw_mdio_read(struct e1000_hw *hw, u32 reg, u16 *data)
++{
++	u32 addr, max, mdic;
++	s32 ret = 0;
++
++	// phy->addr=0 indicates single-chip addressing;
++
++	addr = hw->phy.addr;
++	max = MAX_PHY_REG_ADDRESS;
++	if(addr == 0) {
++		max = (MAX_PHY_REG_ADDRESS << 5) | MAX_PHY_REG_ADDRESS;
++		addr = (reg >> 5) & 0x1f;
++		reg &= 0x1f;
++	}
++	//printk("%s %d/%d\n", __func__, addr, reg);
++	if(reg > max) {
++		ret = -E1000_ERR_PARAM;
++		goto out;
++	}
++
++	// acquire MDIO interface;
++
++	ret = hw->phy.ops.acquire(hw);
++	if(ret)
++		goto out;
++
++	// the phy address is now in MDICNFG;
++	// always overwrite PHY addr, since other device can share the bus;
++
++	mdic = rd32(E1000_MDICNFG);
++	mdic &= (E1000_MDICNFG_EXT_MDIO | E1000_MDICNFG_COM_MDIO);
++	mdic |= (addr << E1000_MDIC_PHY_SHIFT);
++	wr32(E1000_MDICNFG, mdic);
++
++	// setup MDIC op code;
++	// this starts the MDIO access by the MAC;
++	// XXX why we not use completion intr?
++
++	mdic = E1000_MDIC_OP_READ | (reg << E1000_MDIC_REG_SHIFT);
++	wr32(E1000_MDIC, mdic);
++
++	// wait for MDIC to complete or error;
++	// release MDIO interface;
++
++	ret = igb_vc_m88sw_mdio_wait(hw);
++        hw->phy.ops.release(hw);
++	if(ret < 0)
++		goto out;
++	*data = ret;
++	ret = 0;
++out:
++	return(ret);
++}
++
++// write MDIO registers;
++// works with single/multi-chip addressing;
++
++static s32
++igb_vc_m88sw_mdio_write(struct e1000_hw *hw, u32 reg, u16 data)
++{
++	u32 addr, max, mdic;
++	s32 ret = 0;
++
++	// phy->addr=0 indicates single-chip addressing;
++
++	addr = hw->phy.addr;
++	max = MAX_PHY_REG_ADDRESS;
++	if(addr == 0) {
++		max = (MAX_PHY_REG_ADDRESS << 5) | MAX_PHY_REG_ADDRESS;
++		addr = (reg >> 5) & 0x1f;
++		reg &= 0x1f;
++	}
++	//printk("%s %d/%d=0x%x\n", __func__, addr, reg, data);
++	if(reg > max) {
++		ret = -E1000_ERR_PARAM;
++		goto out;
++	}
++
++	// acquire MDIO interface;
++
++	ret = hw->phy.ops.acquire(hw);
++	if(ret)
++		goto out;
++
++	// the phy address is now in MDICNFG;
++	// always overwrite PHY addr, since other device can share the bus;
++
++	mdic = rd32(E1000_MDICNFG);
++	mdic &= (E1000_MDICNFG_EXT_MDIO | E1000_MDICNFG_COM_MDIO);
++	mdic |= (addr << E1000_MDIC_PHY_SHIFT);
++	wr32(E1000_MDICNFG, mdic);
++
++	// setup MDIC op code;
++	// this starts the MDIO access by the MAC;
++	// XXX why we not use completion intr?
++
++	mdic = E1000_MDIC_OP_WRITE | (reg << E1000_MDIC_REG_SHIFT) | data;
++	wr32(E1000_MDIC, mdic);
++
++	// wait for MDIC to complete or error;
++	// release MDIO interface;
++
++	ret = igb_vc_m88sw_mdio_wait(hw);
++        hw->phy.ops.release(hw);
++	if(ret < 0)
++		goto out;
++	ret = 0;
++out:
++	return(ret);
++}
++
++// issue smi command;
++// wait for completion;
++// reg[4:0] register;
++// reg[9:5] device (copper 0..N, 0xf serdes);
++
++static s32
++igb_vc_smi_cmd(struct e1000_hw *hw, u32 reg, u16 write, u16 *data)
++{
++	u32 mdic, i;
++	u16 cmd;
++	s32 ret;
++
++	// write SMI_DATA for write command;
++
++	cmd = M88_GL2_SMI_CMD_BUSY | M88_GL2_SMI_CMD_MODE | (reg & 0x3ff);
++	if(write) {
++		mdic = E1000_MDIC_OP_WRITE | (M88_GL2_SMI_DATA << E1000_MDIC_REG_SHIFT) | *data;
++		wr32(E1000_MDIC, mdic);
++		ret = igb_vc_m88sw_mdio_wait(hw);
++		if(ret < 0)
++			goto out;
++		cmd |= M88_GL2_SMI_CMD_OP_WRITE;
++	} else
++		cmd |= M88_GL2_SMI_CMD_OP_READ;
++
++	// issue smi command;
++
++	mdic = E1000_MDIC_OP_WRITE | (M88_GL2_SMI_CMD << E1000_MDIC_REG_SHIFT) | cmd;
++	wr32(E1000_MDIC, mdic);
++	ret = igb_vc_m88sw_mdio_wait(hw);
++	if(ret < 0)
++		goto out;
++
++	// poll SMI_CMD for completion;
++
++	for(i = 0; i < IGB_VC_SMI_MDIO_RETRIES; i++) {
++		mdic = E1000_MDIC_OP_READ | (M88_GL2_SMI_CMD << E1000_MDIC_REG_SHIFT);
++		wr32(E1000_MDIC, mdic);
++		ret = igb_vc_m88sw_mdio_wait(hw);
++		if(ret < 0)
++			goto out;
++		if( !(ret & M88_GL2_SMI_CMD_BUSY))
++			break;
++		udelay(10);
++	}
++	if(i >= IGB_VC_SMI_MDIO_RETRIES) {
++		ret = -E1000_ERR_PHY;
++		goto out;
++	}
++
++	// read data for read command;
++
++	if( !write) {
++		mdic = E1000_MDIC_OP_READ | (M88_GL2_SMI_DATA << E1000_MDIC_REG_SHIFT);
++		wr32(E1000_MDIC, mdic);
++		ret = igb_vc_m88sw_mdio_wait(hw);
++		if(ret < 0)
++			goto out;
++		*data = ret;
++	}
++	ret = 0;
++out:
++	return(ret);
++}
++
++// read MDIO PHY registers;
++// of Marvell switch acting as SGMII/copper PHY;
++// the PHY registers cannot be accessed directly through bank;
++// instead, we must go through the SMI_CMD/SMI_DATA registers;
++// reg[4:0] register;
++// reg[9:5] device (copper 0..N, 0xf fiver);
++// reg[31:16] page;
++
++static s32
++igb_vc_smi_mdio_read(struct e1000_hw *hw, u32 reg, u16 *data)
++{
++	u32 mdic;
++	u16 page;
++	s32 ret;
++
++	// acquire MDIO interface;
++
++	ret = hw->phy.ops.acquire(hw);
++	if(ret)
++		return(ret);
++
++	// the phy address is now in MDICNFG;
++	// always overwrite PHY addr, since other device can share the bus;
++	// SMI_CMD/SMI_DATA are in GLOBAL2;
++
++	mdic = rd32(E1000_MDICNFG);
++	mdic &= (E1000_MDICNFG_EXT_MDIO | E1000_MDICNFG_COM_MDIO);
++	mdic |= (M88_SW_GLOBAL2 << E1000_MDIC_PHY_SHIFT);
++	wr32(E1000_MDICNFG, mdic);
++
++	// the smi interface should be available, no other contenders;
++
++	mdic = E1000_MDIC_OP_READ | (M88_GL2_SMI_CMD << E1000_MDIC_REG_SHIFT);
++	wr32(E1000_MDIC, mdic);
++	ret = igb_vc_m88sw_mdio_wait(hw);
++	if(ret < 0)
++		goto out;
++	if(mdic & M88_GL2_SMI_CMD_BUSY) {
++		ret = -E1000_ERR_PHY;
++		goto out;
++	}
++
++	// issue smi command to set page;
++
++	page = reg >> 16;
++	ret = igb_vc_smi_cmd(hw, (reg & 0x3e0) | M88E1000_PHY_PAGE22, 1, &page);
++	if(ret)
++		goto out;
++
++	// issue smi read command;
++
++	ret = igb_vc_smi_cmd(hw, reg, 0, data);
++out:
++	hw->phy.ops.release(hw);
++	return(ret);
++}
++
++// write MDIO PHY registers;
++// of Marvell switch acting as SGMII/copper PHY;
++// the PHY registers cannot be accessed directly through bank;
++// instead, we must go through the SMI_CMD/SMI_DATA registers;
++// reg[4:0] register;
++// reg[9:5] device (copper 0..N, 0xf fiver);
++// reg[31:16] page;
++
++static s32
++igb_vc_smi_mdio_write(struct e1000_hw *hw, u32 reg, u16 data)
++{
++	u32 mdic;
++	u16 page;
++	s32 ret;
++
++	// acquire MDIO interface;
++
++	ret = hw->phy.ops.acquire(hw);
++	if(ret)
++		return(ret);
++
++	// the phy address is now in MDICNFG;
++	// always overwrite PHY addr, since other device can share the bus;
++	// SMI_CMD/SMI_DATA are in GLOBAL2;
++
++	mdic = rd32(E1000_MDICNFG);
++	mdic &= (E1000_MDICNFG_EXT_MDIO | E1000_MDICNFG_COM_MDIO);
++	mdic |= (M88_SW_GLOBAL2 << E1000_MDIC_PHY_SHIFT);
++	wr32(E1000_MDICNFG, mdic);
++
++	// the smi interface should be available, no other contenders;
++
++	mdic = E1000_MDIC_OP_READ | (M88_GL2_SMI_CMD << E1000_MDIC_REG_SHIFT);
++	wr32(E1000_MDIC, mdic);
++	ret = igb_vc_m88sw_mdio_wait(hw);
++	if(ret < 0)
++		goto out;
++
++	// issue smi command to set page;
++
++	page = reg >> 16;
++	ret = igb_vc_smi_cmd(hw, (reg & 0x3e0) | M88E1000_PHY_PAGE22, 1, &page);
++	if(ret)
++		goto out;
++
++	// issue smi read command;
++
++	ret = igb_vc_smi_cmd(hw, reg, 1, &data);
++out:
++	hw->phy.ops.release(hw);
++	return(ret);
++}
++
++// read MDIO SGMII register;
++// on 88e6320 point to the serdes of the port;
++
++static s32
++igb_vc_m88sw_sgmii_mdio_read(struct e1000_hw *hw, u32 reg, u16 *data)
++{
++	s32 ret;
++
++	ret = igb_vc_smi_mdio_read(hw, (1 << 16) | (hw->phy.ports[e1000_port_sgmii] << 5) | reg, data);
++	vcdbg("%d/%d/%d = %d 0x%x\n", 1, hw->phy.ports[e1000_port_sgmii], reg & 0x1f, ret, *data);
++	return(ret);
++}
++
++// write MDIO SGMII register;
++// on 88e6320 point to the serdes of the port;
++
++static s32
++igb_vc_m88sw_sgmii_mdio_write(struct e1000_hw *hw, u32 reg, u16 data)
++{
++	s32 ret;
++
++	ret = igb_vc_smi_mdio_write(hw, (1 << 16) | (hw->phy.ports[e1000_port_sgmii] << 5) | reg, data);
++	vcdbg("%d/%d/%d = %d 0x%x\n", 1, hw->phy.ports[e1000_port_sgmii], reg & 0x1f, ret, data);
++	return(ret);
++}
++
++
++// read MDIO PHY register;
++// on 88e6320 point to the copper PHYs of the port;
++
++static s32
++igb_vc_m88sw_phy_mdio_read(struct e1000_hw *hw, u32 reg, u16 *data)
++{
++	s32 ret;
++
++	ret = igb_vc_smi_mdio_read(hw, (hw->phy.ports[e1000_port_phy] << 5) | reg, data);
++	vcdbg("%d/%d/%d = %d 0x%x\n", 0, hw->phy.ports[e1000_port_phy], reg, ret, *data);
++	return(ret);
++}
++
++// write MDIO PHY register;
++// on 88e6320 point to the copper PHYs of the port;
++
++static s32
++igb_vc_m88sw_phy_mdio_write(struct e1000_hw *hw, u32 reg, u16 data)
++{
++	s32 ret;
++
++	ret = igb_vc_smi_mdio_write(hw, (hw->phy.ports[e1000_port_phy] << 5) | reg, data);
++	vcdbg("%d/%d/%d = %d 0x%x\n", 0, hw->phy.ports[e1000_port_phy], reg, ret, data);
++	return(ret);
++}
++
++#if defined(IGB_VC_DUMP_6320) || defined(IGB_VC_DUMP_6176)
++
++// dump page of m88 switch regs;
++
++static void
++igb_dump_sw(struct e1000_hw *hw, int page)
++{
++	int reg, ret;
++	u16 data;
++
++	printk("%s %d\n", __func__, hw->bus.func);
++
++	for(reg = 0; reg < 32; reg++) {
++		ret = igb_vc_m88sw_mdio_read(hw, M88_SW_REG(page, reg), &data);
++		if(ret)
++			continue;
++		printk(" reg%d/%d 0x%x\n", page, reg, data);
++	}
++}
++
++// dump page of m88 switch phy regs;
++
++static void
++igb_dump_phy(struct e1000_hw *hw, u32 addr)
++{
++	int reg, ret;
++	u16 data;
++
++	printk("%s %d\n", __func__, hw->bus.func);
++
++	for(reg = 0; reg < 32; reg++) {
++		ret = igb_vc_smi_mdio_read(hw, addr | reg, &data);
++		if(ret)
++			continue;
++		printk(" phy%x/%d/%d 0x%x\n", addr >> 16, (addr >> 5) & 0x1f, reg, data);
++	}
++}
++
++#endif
++
++#if 0
++
++// software reset entire marvell switch;
++
++static s32
++igb_vc_m88sw_reset(struct e1000_hw *hw)
++{
++	s32 ret;
++	u16 sw_ctrl;
++
++	vcdbg("%d\n", hw->bus.func);
++	ret = igb_vc_m88sw_mdio_read(hw,
++		M88_SW_REG(M88_SW_GLOBAL1, M88_SW_GL1_CTRL),
++		&sw_ctrl);
++	if(ret)
++		goto out;
++	sw_ctrl |= M88_SW_GL1_CTRL_SWRESET;
++	ret = igb_vc_m88sw_mdio_write(hw,
++		M88_SW_REG(M88_SW_GLOBAL1, M88_SW_GL1_CTRL),
++		sw_ctrl);
++	udelay(1);
++out:    
++	return(ret);
++}
++
++#endif
++        
++// extra info for edge500;
++
++struct igb_vc_info {
++	u8 ports[e1000_n_phy_ports];
++	int (*func)(struct e1000_hw *, struct igb_vc_info *);
++};
++
++// probe Marvell switches as PHYs;
++// probe the product ID of the port registers;
++
++// 88e6320 uses single-chip addressing, ie. all device addresses used as bank select;
++// the 88e1112 is on the same MDIO bus, bus responds to address 0x7, which is
++// not used by the 88e6320, so both should coexist without conflicts;
++
++// 88e6176 uses single-chip addressing, ie. all device addresses used as bank select;
++
++static int
++igb_vc_m88sw_id(struct e1000_hw *hw, struct igb_vc_info *info)
++{
++	int ret;
++	u16 prod_id;
++
++	// read product ID from port;
++	// make up marvell PHY ID;
++
++	ret = igb_vc_m88sw_mdio_read(hw,
++		M88_SW_PORT_REG(hw->phy.ports[e1000_port_cpu], M88_SW_PORT_PROD_ID),
++		&prod_id);
++	vcdbg("prod id  %d 0x%x\n", ret, prod_id);
++	if(ret == 0) {
++		hw->phy.id = (M88_VENDOR << 16) | (prod_id & PHY_REVISION_MASK);
++		hw->phy.revision = prod_id & ~PHY_REVISION_MASK;
++	}
++	return(ret);
++}
++
++// read standard PHY vendor and device IDs;
++
++static s32
++igb_vc_phy_id(struct e1000_hw *hw, struct igb_vc_info *info)
++{
++	struct e1000_phy_info *phy = &hw->phy;
++	s32 ret;
++        u16 phy_id;
++
++	// use standard phy access functions;
++
++	phy->ops.read_reg = igb_read_phy_reg_82580;
++	phy->ops.write_reg = igb_write_phy_reg_82580;
++
++	// read phy ID;
++
++	ret = phy->ops.read_reg(hw, PHY_ID1, &phy_id);
++	if(ret)
++		goto out;
++	phy->id = phy_id << 16;
++	udelay(20);
++	ret = phy->ops.read_reg(hw, PHY_ID2, &phy_id);
++	if(ret)
++		goto out;
++	phy->id |= (phy_id & PHY_REVISION_MASK);
++	phy->revision = phy_id & ~PHY_REVISION_MASK;
++
++out:
++	return(ret);
++}
++
++// extra info to handle special PHYs;
++// unfortunatedly, we need to make this link dependent;
++// 0: 88e6320 port 0 (WAN0);
++// 1: 88e6176 port 4 (LAN switch);
++// 2: 88e6320 port 1 (WAN1);
++// 3: 88e1112 PHY (SFP);
++
++static struct igb_vc_info igb_vc_infos[] = {
++	{ { 0, 0xc, 3 }, igb_vc_m88sw_id, },
++	{ { 4, 0xf, 0 }, igb_vc_m88sw_id, },
++	{ { 1, 0xd, 4 }, igb_vc_m88sw_id, },
++	{ { 0, 0, 0 }, igb_vc_phy_id },
++};
++
++// get PHY id/rev;
++
++static s32
++igb_vc_get_swphy_id(struct e1000_hw *hw)
++{
++	struct e1000_phy_info *phy = &hw->phy;
++	struct igb_vc_info *info;
++	int (*func)(struct e1000_hw *, struct igb_vc_info *);
++	s32 ret;
++
++	// marvell switches may require special access functions,
++	// some of their MDIO bus decodes also vary, for example
++	// single- and multi-chip addressing modes;
++
++	if(hw->bus.func >= IGB_VC_N_BUS_FUNC)
++		return(-E1000_ERR_CONFIG);
++
++	info = igb_vc_infos + hw->bus.func;
++
++	phy->ports[e1000_port_cpu] = info->ports[e1000_port_cpu];
++	phy->ports[e1000_port_sgmii] = info->ports[e1000_port_sgmii];
++	phy->ports[e1000_port_phy] = info->ports[e1000_port_phy];
++
++	func = info->func;
++	ret = E1000_SUCCESS;
++	if(func)
++		ret = func(hw, info);
++	return(ret);
++}
++
++// reset cpu port serdes phy;
++
++static s32
++igb_vc_m88sw_sgmii_reset(struct e1000_hw *hw)
++{
++	s32 ret;
++	u16 ctrl;
++
++	// force auto-negotiation off;
++	// take out of power-down mode;
++
++	ret = igb_vc_m88sw_sgmii_mdio_read(hw, PHY_CONTROL, &ctrl);
++	if(ret)
++		goto out;
++	ctrl |= (MII_CR_RESET | MII_CR_FULL_DUPLEX);
++	ctrl &= ~(MII_CR_AUTO_NEG_EN | MII_CR_POWER_DOWN);
++	ret = igb_vc_m88sw_sgmii_mdio_write(hw, PHY_CONTROL, ctrl);
++        udelay(1);
++out:
++	return(ret);
++}
++
++// reset copper phy port;
++
++static s32
++igb_vc_m88sw_phy_reset(struct e1000_hw *hw)
++{
++	s32 ret;
++	u16 ctrl;
++
++	// take out of power-down mode;
++
++	ret = igb_vc_m88sw_phy_mdio_read(hw, PHY_CONTROL, &ctrl);
++	if(ret)
++		goto out;
++	ctrl |= MII_CR_RESET;
++	ctrl &= ~MII_CR_POWER_DOWN;
++	ret = igb_vc_m88sw_phy_mdio_write(hw, PHY_CONTROL, ctrl);
++        udelay(1);
++out:
++	return(ret);
++}
++
++// reset marvell switch ports;
++
++static s32
++igb_vc_m88sw_port_reset(struct e1000_hw *hw)
++{
++	s32 ret;
++
++	// reset the copper PHY;
++
++	ret = igb_vc_m88sw_phy_reset(hw);
++	if(ret)
++		goto out;
++
++	// reset the cpu port serdes;
++
++	ret = igb_vc_m88sw_sgmii_reset(hw);
++out:
++	return(ret);
++}
++
++// setup sgmii link;
++// link needs to be forced due to MAC-MAC link;
++
++static s32
++igb_vc_setup_sgmii_link(struct e1000_hw *hw)
++{
++	u32 cfg, ctrl, lctl;
++
++	// enable PCS;
++
++	cfg = rd32(E1000_PCS_CFG0);
++	cfg |= E1000_PCS_CFG_PCS_EN;
++	wr32(E1000_PCS_CFG0, cfg);
++
++	// SLU must be set to enable serdes;
++	// force speed and duplex;
++
++	ctrl = rd32(E1000_CTRL);
++	ctrl |= (E1000_CTRL_SLU
++		| E1000_CTRL_SPD_1000
++		| E1000_CTRL_FD
++		| E1000_CTRL_FRCSPD
++		| E1000_CTRL_FRCDPX);
++	wr32(E1000_CTRL, ctrl);
++	vcdbg("ctrl 0x%x\n", ctrl);
++
++	// force sgmii link;
++	// no auto-negotitation;
++
++	lctl = rd32(E1000_PCS_LCTL);
++	lctl &= ~(E1000_PCS_LCTL_AN_ENABLE
++		| E1000_PCS_LCTL_AN_RESTART
++		| E1000_PCS_LCTL_AN_TIMEOUT);
++	lctl |= (E1000_PCS_LCTL_FLV_LINK_UP
++		| E1000_PCS_LCTL_FSV_1000
++		| E1000_PCS_LCTL_FDV_FULL
++		| E1000_PCS_LCTL_FSD
++		| E1000_PCS_LCTL_FORCE_FCTRL
++		| E1000_PCS_LCTL_FORCE_LINK);
++	wr32(E1000_PCS_LCTL, lctl);
++	vcdbg("lctl 0x%x\n", lctl);
++
++	ctrl = rd32(E1000_PCS_LSTAT);
++	vcdbg("lsts 0x%x\n", ctrl);
++
++	return(E1000_SUCCESS);
++}
++
++// enable forwarding on port;
++
++static s32
++igb_vc_m88sw_port_fwd(struct e1000_hw *hw, u8 port)
++{
++	s32 ret;
++	u16 ctrl;
++
++	ret = igb_vc_m88sw_mdio_read(hw,
++		M88_SW_PORT_REG(port, M88_SW_PORT_CONTROL), &ctrl);
++	if(ret)
++		goto out;
++	ctrl |= M88_SW_PORT_CONTROL_FWD;
++	ret = igb_vc_m88sw_mdio_write(hw,
++		M88_SW_PORT_REG(port, M88_SW_PORT_CONTROL), ctrl);
++out:
++	return(ret);
++}
++
++// setup link to a Marvell switch 88e6320;
++// switch is used as dual copper PHY;
++
++static s32
++igb_vc_setup_link_m88e6320(struct e1000_hw *hw)
++{
++	struct e1000_phy_info *phy = &hw->phy;
++	s32 ret;
++	u16 fid;
++
++	// setup the sgmii link;
++
++	ret = igb_vc_setup_sgmii_link(hw);
++	if(ret)
++		goto out;
++
++	// the NO_CPU pin is pulled low to disable switch after reset,
++	// to make sure no packets flow between WAN ports;
++	// reset the copper and serdes PHYs;
++	// this takes them out of power-down mode;
++
++	ret = phy->ops.reset(hw); 
++	if(ret)
++		goto out;
++
++	// setup port-based routing;
++	// the two WAN ports are different networks;
++	// cpu can send to phy port;
++	// phy can send to cpu port;
++	// set different filter ID per vlan for MAC addr handling;
++
++	fid = hw->bus.func << 12;
++
++	ret = igb_vc_m88sw_mdio_write(hw,
++		M88_SW_PORT_REG(phy->ports[e1000_port_cpu], M88_SW_PORT_VLAN_MAP),
++		fid | (1 << phy->ports[e1000_port_phy]));
++	if(ret)
++		goto out;
++	ret = igb_vc_m88sw_mdio_write(hw,
++		M88_SW_PORT_REG(phy->ports[e1000_port_phy], M88_SW_PORT_VLAN_MAP),
++		fid | (1 << phy->ports[e1000_port_cpu]));
++	if(ret)
++		goto out;
++
++	// above reset took the PHYs out of power-down;
++	// the ports are still disabled, so enable forwarding;
++
++	ret = igb_vc_m88sw_port_fwd(hw, phy->ports[e1000_port_cpu]);
++	if(ret)
++		goto out;
++	ret = igb_vc_m88sw_port_fwd(hw, phy->ports[e1000_port_phy]);
++	if(ret)
++		goto out;
++
++#ifdef IGB_VC_DUMP_6320
++{
++	u32 ctrl;
++
++	//igb_dump_sw(hw, M88_SW_GLOBAL1);
++	igb_dump_sw(hw, M88_SW_PORT_BASE + phy->ports[e1000_port_cpu]);
++	igb_dump_phy(hw, (1 << 16) | (phy->ports[e1000_port_sgmii] << 5));
++	igb_dump_sw(hw, M88_SW_PORT_BASE + phy->ports[e1000_port_phy]);
++	igb_dump_phy(hw, (0 << 16) | (phy->ports[e1000_port_phy] << 5));
++
++	ctrl = rd32(E1000_STATUS);
++	printk("%s status 0x%x\n", __func__, ctrl);
++}
++#endif
++
++out:
++	vcdbg("ret %d\n", ret);
++	return(ret);
++}
++
++// setup link to a Marvell switch 88e6176;
++// switch is a SGMII attached switch to 4 copper PHYs;
++
++static s32
++igb_vc_setup_link_m88e6176(struct e1000_hw *hw)
++{
++	struct e1000_phy_info *phy = &hw->phy;
++	s32 ret;
++	u16 data;
++
++	// setup the sgmii link;
++
++	ret = igb_vc_setup_sgmii_link(hw);
++	if(ret)
++		goto out;
++
++	// reset the serdes PHYs;
++
++	ret = phy->ops.reset(hw); 
++	if(ret)
++		goto out;
++
++	// clear the sw port PHYDetect bit;
++
++	ret = igb_vc_m88sw_mdio_read(hw,
++		M88_SW_PORT_REG(phy->ports[e1000_port_cpu], M88_SW_PORT_STATUS),
++		&data);
++	if(ret)
++		goto out;
++	data &= ~M88_SW_PORT_STATUS_PHYDET;
++	ret = igb_vc_m88sw_mdio_write(hw,
++		M88_SW_PORT_REG(phy->ports[e1000_port_cpu], M88_SW_PORT_STATUS),
++		data);
++	if(ret)
++		goto out;
++
++#ifdef IGB_VC_DUMP_6176
++{
++	u32 ctrl;
++
++	//igb_dump_sw(hw, M88_SW_GLOBAL1);
++	igb_dump_sw(hw, M88_SW_PORT_BASE + 4);
++	igb_dump_phy(hw, (1 << 16) | (0xf << 5));
++	igb_dump_phy(hw, (0 << 16) | (0 << 5));
++	igb_dump_phy(hw, (0 << 16) | (1 << 5));
++	igb_dump_phy(hw, (0 << 16) | (2 << 5));
++	igb_dump_phy(hw, (0 << 16) | (3 << 5));
++
++	ctrl = rd32(E1000_STATUS);
++	printk("%s status 0x%x\n", __func__, ctrl);
++}
++#endif
++
++out:
++	vcdbg("ret %d\n", ret);
++	return(ret);
++}
++
++// setup link to a Marvell switch 88e1112;
++
++static s32
++igb_vc_setup_link_m88e1112(struct e1000_hw *hw)
++{
++	u32 ctrl, phy_pm;
++	s32 ret;
++
++	// set link up, clear forcing of speed and duplex;
++
++	ctrl = rd32(E1000_CTRL);
++	ctrl |= E1000_CTRL_SLU;
++	ctrl &= ~(E1000_CTRL_FRCSPD | E1000_CTRL_FRCDPX);
++	wr32(E1000_CTRL, ctrl);
++printk("%s ctrl 0x%x\n", __func__, ctrl);
++
++	// clear Go Link Disconnect bit on supported devices;
++
++	switch(hw->mac.type) {
++	case e1000_i350:
++	//XXX case e1000_i354:
++		phy_pm = rd32(E1000_82580_PHY_POWER_MGMT);
++		phy_pm &= ~E1000_82580_PM_GO_LINKD;
++		wr32(E1000_82580_PHY_POWER_MGMT, phy_pm);
++		break;
++	default:
++		break;
++	}
++
++	// setup the sgmii link;
++
++	//ret = igb_setup_serdes_link_82575(hw);
++	ret = igb_vc_setup_sgmii_link(hw);
++printk("1112 setup_serdes %d\n", ret);
++ret = 0;
++	if(ret)
++		goto out;
++
++	// reset the phy of the copper interface;
++
++	if(igb_sgmii_active_82575(hw) && !hw->phy.reset_disable) {
++		ret = hw->phy.ops.reset(hw); 
++		if(ret) {
++			hw_dbg("error resetting the PHY\n");
++			goto out;
++		}
++	}
++//XXX
++mdelay(800);
++
++{
++ctrl = rd32(E1000_PCS_LCTL);
++printk("igb lctl 0x%x\n", ctrl);
++ctrl = rd32(E1000_PCS_LSTAT);
++printk("igb lsts 0x%x\n", ctrl);
++}
++
++
++	ctrl = rd32(E1000_STATUS);
++printk("%s status 0x%x\n", __func__, ctrl);
++
++	ret = 0;
++//return(-2);
++
++out:
++printk("%s ret %d\n", __func__, ret);
++	return(ret);
++return(-2);
++}
++
++
++// get phy info of Marvell switch 88e6176;
++// the switch is SGMII attached, so there isn't really a PHY;
++// return the info from the port registers;
++
++static s32
++igb_vc_m88sw_get_phy_info(struct e1000_hw *hw)
++{
++	struct e1000_phy_info *phy = &hw->phy;
++	s32 ret;
++	u16 status;
++
++	// read switch's port status;
++
++	ret = igb_vc_m88sw_mdio_read(hw,
++		M88_SW_PORT_REG(phy->ports[e1000_port_cpu], M88_SW_PORT_STATUS),
++		&status);
++	vcdbg("ret %d\n", ret);
++	if(ret)
++		goto out;
++
++	phy->is_mdix = false;
++	if(status & M88_SW_PORT_STATUS_LINK_UP) {
++		phy->local_rx = e1000_1000t_rx_status_ok;
++		phy->remote_rx = e1000_1000t_rx_status_ok;
++	} else {
++		phy->local_rx = e1000_1000t_rx_status_not_ok;
++		phy->remote_rx = e1000_1000t_rx_status_not_ok;
++	}
++
++out:
++	return(ret);
++}
++
++// check that sgmii link is up;
++// returns <0 for error, 0 no link, 1 has link;
++
++static s32
++igb_vc_sgmii_check_for_link(struct e1000_hw *hw)
++{
++	s32 ret;
++	u16 speed, duplex;
++
++	// need to check the PCS, not a PHY;
++
++	ret = igb_get_pcs_speed_and_duplex_82575(hw, &speed, &duplex);
++	if(ret)
++		goto out;
++
++#ifdef XXX
++                /* Configure Flow Control now that Auto-Neg has completed.
++                 * First, we need to restore the desired flow control
++                 * settings because we may have had to re-autoneg with a
++                 * different link partner.
++                 */
++                ret_val = igb_config_fc_after_link_up(hw);
++                if (ret_val)
++                        hw_dbg("Error configuring flow control\n");
++#endif
++
++	ret = hw->mac.serdes_has_link;
++	vcdbg("serdes %d\n", ret);
++
++out:
++	return(ret);
++}
++
++// check for link to a marvell switch;
++// only checks for the sgmii link to the switch,
++// not any media connections on other switch ports;
++// for m88e6176, MAC interrupt turns on link checking when sgmii is down;
++
++static s32
++igb_vc_m88sw_check_for_link(struct e1000_hw *hw)
++{
++	s32 ret = 0;
++	u16 portsts;
++
++	// only check link when we want;
++
++	if( !hw->mac.get_link_status)
++		goto out;
++
++	// check if sgmii link is up;
++
++	ret = igb_vc_sgmii_check_for_link(hw);
++	if(ret <= 0)
++		goto out;
++
++	// read switch port status register;
++
++	ret = igb_vc_m88sw_mdio_read(hw,
++		M88_SW_PORT_REG(hw->phy.ports[e1000_port_cpu], M88_SW_PORT_STATUS),
++		&portsts);
++	vcdbg("port status %d 0x%x\n", ret, portsts);
++	if(ret)
++		goto out;
++
++	if( !(portsts & M88_SW_PORT_STATUS_LINK_UP))
++		goto out;
++	hw->mac.get_link_status = false;
++
++out:
++	return(ret);
++}
++
++// check for link on m88e6320;
++// need to always check the copper PHYs, because we have no intr from the chip;
++// then check the sgmii link, only if link is down;
++
++static s32
++igb_vc_m88sw_check_for_link_m88e6320(struct e1000_hw *hw)
++{
++	s32 ret;
++	u16 portsts;
++
++	// always check port status;
++
++	ret = igb_vc_m88sw_mdio_read(hw,
++		M88_SW_PORT_REG(hw->phy.ports[e1000_port_phy], M88_SW_PORT_STATUS),
++		&portsts);
++	vcdbg("port status %d 0x%x\n", ret, portsts);
++	if(ret)
++		goto out;
++
++	// re-poll when copper link is down;
++
++	if( !(portsts & M88_SW_PORT_STATUS_LINK_UP)) {
++		hw->mac.get_link_status = true;
++		goto out;
++	}
++
++	// now, check sgmii;
++
++	ret = igb_vc_m88sw_check_for_link(hw);
++out:
++	return(ret);
++}
++
++// dummy check polarity;
++
++static s32
++igb_vc_dummy_check_polarity(struct e1000_hw *hw)
++{
++	return(E1000_SUCCESS);
++}
++
++// dummy get cable length;
++
++static s32
++igb_vc_dummy_get_cable_length(struct e1000_hw *hw)
++{
++	hw->phy.cable_length = 1;
++	return(E1000_SUCCESS);
++}
++
++// bug on force speed/duplex;
++
++static s32
++igb_vc_bugon_phy_force_speed_duplex(struct e1000_hw *hw)
++{
++	BUG_ON(1);
++	return(-E1000_ERR_PHY);
++}
++
++// probe for velocloud board;
++// using eeprom customer words 0x6/0x7;
++
++#define VC_ID 0x5663	// "Vc"
++#define VC_ID_EDGE500 0x6535 // "e5" - edge500;
++
++s32
++igb_vc_probe(struct e1000_hw *hw)
++{
++	struct e1000_mac_info *mac = &hw->mac;
++	struct e1000_phy_info *phy = &hw->phy;
++	u32 mdic;
++	s32 ret = -E1000_ERR_PHY;
++	u16 eeprom[2];
++
++	// only bother about Rangeley MACs;
++	// only support is for SGMII attached with MDIO;
++
++	if(hw->mac.type != e1000_i354)
++		goto out;
++        if( !igb_sgmii_active_82575(hw))
++		goto out;
++	if( !igb_sgmii_uses_mdio_82575(hw))
++		goto out;
++
++	// check eeprom customer words;
++
++	eeprom[0] = eeprom[1] = 0;
++	hw->nvm.ops.read(hw, 0x06, 2, eeprom);
++	if(eeprom[0] != VC_ID)
++		goto out;
++
++	switch(eeprom[1]) {
++	case VC_ID_EDGE500:
++		break;
++	default:
++		goto out;
++	}
++	printk("igb: found custom link: 0x%x\n", eeprom[1]);
++
++	// do all the work of init_phy_param() here;
++
++        hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >> E1000_STATUS_FUNC_SHIFT;
++
++	// get PHY address from MDICNFG;
++	// this assumes the EEPROM has valid config data;
++
++	mdic = rd32(E1000_MDICNFG);
++	mdic &= E1000_MDICNFG_PHY_MASK;
++	phy->addr = mdic >> E1000_MDICNFG_PHY_SHIFT;
++
++	// get the switch/PHY IDs;
++
++	ret = igb_vc_get_swphy_id(hw);
++	vcdbg("id 0x%x rev 0x%x\n", phy->id, phy->revision);
++	if(ret)
++		goto out;
++
++	// set phy handlers;
++
++	phy->reset_delay_us = 100;
++
++	switch(phy->id) {
++	case M88E6320_ID:
++		mac->autoneg = false;
++		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e6320;
++		mac->ops.check_for_link = igb_vc_m88sw_check_for_link_m88e6320;
++		//mac->ops.get_speed_and_duplex = igb_vc_m88sw_get_speed_and_duplex;
++
++		phy->media_type = e1000_media_type_switch;
++		phy->autoneg_mask = AUTONEG_ADVERTISE_SPEED_DEFAULT;
++		phy->type = e1000_phy_m88sw;
++
++		phy->ops.read_reg = igb_vc_m88sw_phy_mdio_read;
++		phy->ops.write_reg = igb_vc_m88sw_phy_mdio_write;
++		phy->ops.reset = igb_vc_m88sw_port_reset;
++		phy->ops.check_polarity = igb_check_polarity_m88;
++		phy->ops.get_cable_length = igb_get_cable_length_m88_gen2;
++		phy->ops.force_speed_duplex = igb_vc_bugon_phy_force_speed_duplex; //XXX
++		phy->ops.get_phy_info = igb_vc_m88sw_get_phy_info;
++		break;
++
++	case M88E6176_ID:
++		mac->autoneg = false;
++		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e6176;
++		mac->ops.check_for_link = igb_vc_m88sw_check_for_link;
++		mac->ops.get_speed_and_duplex = igb_get_pcs_speed_and_duplex_82575;
++
++		phy->media_type = e1000_media_type_switch;
++		phy->autoneg_mask = 0;
++		phy->type = e1000_phy_m88sw;
++
++		phy->ops.read_reg = igb_vc_m88sw_sgmii_mdio_read;
++		phy->ops.write_reg = igb_vc_m88sw_sgmii_mdio_write;
++		phy->ops.reset = igb_vc_m88sw_sgmii_reset;
++		phy->ops.check_polarity = igb_vc_dummy_check_polarity;
++		phy->ops.get_cable_length = igb_vc_dummy_get_cable_length;
++		phy->ops.force_speed_duplex = igb_vc_bugon_phy_force_speed_duplex;
++		phy->ops.get_phy_info = NULL;
++		break;
++
++	case M88E1112_ID:
++return(-2); //XXX
++		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e1112;
++		mac->ops.check_for_link = igb_vc_sgmii_check_for_link;
++		phy->type = e1000_phy_m88;
++		break;
++		//XXX
++	default:
++		ret = -E1000_ERR_PHY;
++	}
++
++	ret = E1000_SUCCESS;
++
++out:
++	return(ret);
++}
++

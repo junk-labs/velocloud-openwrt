@@ -1,0 +1,496 @@
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -57,6 +57,7 @@
+ obj-$(CONFIG_GPIO_PCA953X)	+= gpio-pca953x.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= gpio-pcf857x.o
+ obj-$(CONFIG_GPIO_PCH)		+= gpio-pch.o
++obj-$(CONFIG_GPIO_PCU)		+= gpio-pcu.o
+ obj-$(CONFIG_GPIO_PL061)	+= gpio-pl061.o
+ obj-$(CONFIG_GPIO_PXA)		+= gpio-pxa.o
+ obj-$(CONFIG_GPIO_RC5T583)	+= gpio-rc5t583.o
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -635,6 +635,13 @@
+ 	  ML7223/ML7831 is companion chip for Intel Atom E6xx series.
+ 	  ML7223/ML7831 is completely compatible for Intel EG20T PCH.
+ 
++config GPIO_PCU
++	tristate "Intel Atom C2000 GPIO"
++	depends on PCI && X86
++	select GENERIC_IRQ_CHIP
++	help
++	  This driver is for PCU(Platform Controller Unit) GPIO of Intel Atom C2000.
++
+ config GPIO_ML_IOH
+ 	tristate "OKI SEMICONDUCTOR ML7213 IOH GPIO support"
+ 	depends on PCI
+--- /dev/null
++++ b/drivers/gpio/gpio-pcu.c
+@@ -0,0 +1,467 @@
++/*
++ * Copyright (C) 2014 Velocloud Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/gpio.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++
++#define DEBUG_GPIO_PCU		// define for debug;
++
++// interrupt handling not supported;
++
++#define	REG_LPC_GBASE 0x48		// GBASE in 00:1f.0 config space;
++#define	REG_LPC_GBASE_EN 0x02		// BAR GBASE is enabled;
++#define	REG_LPC_GBASE_IO 0x01		// BAR is i/o mapped;
++#define	REG_LPC_GBASE_MASK 0xff00	// GBASE in 00:1f.0 config space;
++
++// core well and suspend well registers have the same structure;
++// core well: GBASE + 0x00;
++// suspend well: GBASE + 0x80;
++
++typedef struct pcu_gpio_regs pcu_gpio_regs_t;
++struct pcu_gpio_regs {
++	u32 use_sel;		// use select;
++	u32 io_sel;		// input/output direction;
++	u32 gp_lvl;		// GPIO level;
++	u32 tpe;		// trigger positive edge enable;
++	u32 tne;		// trigger negative edge enable;
++	u32 ts;			// trigger status;
++};
++
++#define PCU_USE_SEL_NATIVE 0	// use native function;
++#define PCU_USE_SEL_CUSTOM 1	// use custom GPIO function;
++
++#define PCU_IO_SEL_OUT 0	// output;
++#define PCU_IO_SEL_IN 1		// input;
++
++#define PCU_GP_LVL_0 0		// 0;
++#define PCU_GP_LVL_1 1		// 1;
++
++// GPIOs that we can touch;
++// the rest is likely under firmware control or the native function;
++
++#define PCU_GPIO_MASK_SC ((1 << 13) | (1 << 14))
++#define PCU_GPIO_MASK_SUS 0
++#define PCU_GPIO_CLEAR_SC 0
++#define PCU_GPIO_CLEAR_SUS ((1 << 26) | (1 << 27))
++
++// private data;
++// core well: ids 0..31;
++// suspend well: ids 32..63;
++
++enum pcu_gpio_id {
++	PCU_GPIO_SC = 0,
++	PCU_GPIO_SUS = 1,
++	N_PCU_GPIO,
++};
++
++typedef struct pcu_gpio pcu_gpio_t;
++struct pcu_gpio {
++	void __iomem *base;
++	pcu_gpio_regs_t __iomem *regs[N_PCU_GPIO];
++	struct device *dev;
++	spinlock_t spinlock;
++	u32 mask[N_PCU_GPIO];
++	u32 clear[N_PCU_GPIO];
++	u32 use_sel_bios[N_PCU_GPIO];
++	u32 use_sel_fixed[N_PCU_GPIO];
++	struct gpio_chip gpio[N_PCU_GPIO];
++};
++
++// dump registers;
++
++static void
++pcu_dump_regs(pcu_gpio_regs_t __iomem *regs, char *name)
++{
++	printk("%s: %s use_sel 0x%x, io_sel 0x%x, gp_lvl 0x%x, tpe 0x%x, tne 0x%x, ts 0x%x\n",
++		__func__, name,
++		ioread32(&regs->use_sel),
++		ioread32(&regs->io_sel),
++		ioread32(&regs->gp_lvl),
++		ioread32(&regs->tpe),
++		ioread32(&regs->tne),
++		ioread32(&regs->ts));
++}
++
++// set gpio output;
++
++static void
++pcu_gpio_set(struct gpio_chip *gpio, unsigned nr, int val)
++{
++	struct pcu_gpio *chip;
++	pcu_gpio_regs_t __iomem *regs;
++	unsigned long flags;
++	u32 idx, reg_val;
++
++	idx = (gpio->base >= 32);
++	chip = container_of(gpio, struct pcu_gpio, gpio[idx]);
++	if( !(chip->mask[idx] & (1 << nr)))
++		return;
++	regs = chip->regs[idx];
++
++	spin_lock_irqsave(&chip->spinlock, flags);
++	reg_val = ioread32(&regs->gp_lvl);
++	if(val)
++		reg_val |= (1 << nr);
++	else
++		reg_val &= ~(1 << nr);
++	iowrite32(reg_val, &regs->gp_lvl);
++	spin_unlock_irqrestore(&chip->spinlock, flags);
++}
++
++// get current value;
++
++static int
++pcu_gpio_get(struct gpio_chip *gpio, unsigned nr)
++{
++	struct pcu_gpio *chip;
++	pcu_gpio_regs_t __iomem *regs;
++	u32 idx;
++
++	idx = (gpio->base >= 32);
++	chip = container_of(gpio, struct pcu_gpio, gpio[idx]);
++	regs = chip->regs[idx];
++	return(ioread32(&regs->gp_lvl) & (1 << nr));
++}
++
++// set direction to output;
++
++static int
++pcu_gpio_direction_output(struct gpio_chip *gpio, unsigned nr, int val)
++{
++	struct pcu_gpio *chip;
++	pcu_gpio_regs_t __iomem *regs;
++	unsigned long flags;
++	u32 idx, reg_val;
++
++	idx = (gpio->base >= 32);
++	chip = container_of(gpio, struct pcu_gpio, gpio[idx]);
++	if( !(chip->mask[idx] & (1 << nr)))
++		return(-EPERM);
++	regs = chip->regs[idx];
++
++	spin_lock_irqsave(&chip->spinlock, flags);
++	reg_val = ioread32(&regs->io_sel);
++	reg_val &= ~(PCU_IO_SEL_IN << nr);
++	iowrite32(reg_val, &regs->io_sel);
++
++	reg_val = ioread32(&regs->gp_lvl);
++	if(val)
++		reg_val |= (1 << nr);
++	else
++		reg_val &= ~(1 << nr);
++	iowrite32(reg_val, &regs->gp_lvl);
++	spin_unlock_irqrestore(&chip->spinlock, flags);
++
++	return(0);
++}
++
++// set direction to input;
++
++static int
++pcu_gpio_direction_input(struct gpio_chip *gpio, unsigned nr)
++{
++	struct pcu_gpio *chip;
++	pcu_gpio_regs_t __iomem *regs;
++	unsigned long flags;
++	u32 idx, reg_val;
++
++	idx = (gpio->base >= 32);
++	chip = container_of(gpio, struct pcu_gpio, gpio[idx]);
++	if( !(chip->mask[idx] & (1 << nr)))
++		return(-EPERM);
++	regs = chip->regs[idx];
++
++	spin_lock_irqsave(&chip->spinlock, flags);
++	reg_val = ioread32(&regs->io_sel);
++	reg_val |= (PCU_IO_SEL_IN << nr);
++	iowrite32(reg_val, &regs->io_sel);
++	spin_unlock_irqrestore(&chip->spinlock, flags);
++
++	return(0);
++}
++
++// check bios sanity with re to gpio setup;
++// returns mask of bad bits;
++
++static u32
++pcu_check_fw_setup(struct pcu_gpio *chip, int idx)
++{
++	u32 val, bad, mask;
++
++	val = ioread32(&chip->regs[idx]->use_sel);
++	chip->use_sel_bios[idx] = val;
++
++	// bits that must be 1;
++
++	mask = chip->mask[idx];
++	bad = ((val & mask) ^ mask);
++	val |= mask;
++
++	// bits that must be 0;
++
++	mask = chip->clear[idx];
++	bad |= (val & mask);
++	val &= ~mask;
++
++	chip->use_sel_fixed[idx] = val;
++	if(bad)
++		iowrite32(val, &chip->regs[idx]->use_sel);
++	return(bad);
++}
++
++// warn about bad firmware setup;
++
++static inline void
++pcu_warn_fw_setup(struct device *dev, char *name, struct pcu_gpio *chip, int idx, u32 bad)
++{
++	dev_err(dev, "%s: %s use_sel bios=0x%x, should be 0x%x, FIX bits 0x%x\n",
++		__func__, name,
++		chip->use_sel_bios[idx], chip->use_sel_fixed[idx], bad);
++}
++
++// setup gpio pins;
++
++static void
++pcu_gpio_setup(struct pcu_gpio *chip, unsigned idx, unsigned base, unsigned ngpio)
++{
++	struct gpio_chip *gpio = chip->gpio + idx;
++
++	gpio->label = dev_name(chip->dev);
++	gpio->dev = chip->dev;
++	gpio->owner = THIS_MODULE;
++	gpio->direction_input = pcu_gpio_direction_input;
++	gpio->get = pcu_gpio_get;
++	gpio->direction_output = pcu_gpio_direction_output;
++	gpio->set = pcu_gpio_set;
++	gpio->dbg_show = NULL;
++	gpio->base = base;
++	gpio->ngpio = ngpio;
++	gpio->can_sleep = 0;
++	gpio->to_irq = NULL;
++}
++
++// probe pcu gpio;
++
++static int
++pcu_gpio_probe(struct pci_dev *pdev, const struct pci_device_id *id)
++{
++	s32 ret;
++	struct pcu_gpio *chip;
++	u32 gbase;
++	u32 bad;
++
++	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
++	ret = -ENOMEM;
++	if(chip == NULL) {
++		dev_err(&pdev->dev, "%s: kzalloc failed\n", __func__);
++		goto err_kalloc;
++	}
++
++	chip->dev = &pdev->dev;
++	ret = pci_enable_device(pdev);
++	if(ret) {
++		dev_err(&pdev->dev, "%s: pci_enable_device failed: %d\n", __func__, ret);
++		goto err_pci_enable;
++	}
++
++	ret = pci_request_regions(pdev, KBUILD_MODNAME);
++	if(ret) {
++		dev_err(&pdev->dev, "%s: pci_request_regions failed: %d\n", __func__, ret);
++		goto err_request_regions;
++	}
++
++	// read pci config space GBASE;
++
++	pci_bus_read_config_dword(pdev->bus, 
++		PCI_DEVFN(PCI_SLOT(pdev->devfn), 0),
++		REG_LPC_GBASE, &gbase);
++	if((gbase & 3) != (REG_LPC_GBASE_EN | REG_LPC_GBASE_IO))
++		goto err_request_regions;
++	gbase &= REG_LPC_GBASE_MASK;
++	if( !gbase)
++		goto err_request_regions;
++
++	// the GBASE region is only i/o mapped;
++
++	chip->base = ioport_map(gbase, 0x100);
++	if( !chip->base) {
++		dev_err(&pdev->dev, "%s: ioremap failed\n", __func__);
++		ret = -ENOMEM;
++		goto err_iomap;
++	}
++
++	chip->regs[PCU_GPIO_SC] = chip->base + 0x00;
++	chip->regs[PCU_GPIO_SUS] = chip->base + 0x80;
++	chip->mask[PCU_GPIO_SC] = PCU_GPIO_MASK_SC;
++	chip->mask[PCU_GPIO_SUS] = PCU_GPIO_MASK_SUS;
++	chip->clear[PCU_GPIO_SC] = PCU_GPIO_CLEAR_SC;
++	chip->clear[PCU_GPIO_SUS] = PCU_GPIO_CLEAR_SUS;
++
++	pci_set_drvdata(pdev, chip);
++	spin_lock_init(&chip->spinlock);
++
++	// check sanity of firmware;
++
++	ret = -EINVAL;
++	bad = pcu_check_fw_setup(chip, PCU_GPIO_SC);
++	if(bad)
++		pcu_warn_fw_setup(&pdev->dev, "sc", chip, PCU_GPIO_SC, bad);
++	bad = pcu_check_fw_setup(chip, PCU_GPIO_SUS);
++	if(bad)
++		pcu_warn_fw_setup(&pdev->dev, "sus", chip, PCU_GPIO_SUS, bad);
++
++#ifdef DEBUG_GPIO_PCU
++	pcu_dump_regs(chip->regs[PCU_GPIO_SC], "sc");
++	pcu_dump_regs(chip->regs[PCU_GPIO_SUS], "sus");
++#endif // DEBUG_GPIO_PCU
++
++	// register gpio ressources;
++
++	pcu_gpio_setup(chip,PCU_GPIO_SC, 0, 31);
++	ret = gpiochip_add(chip->gpio + PCU_GPIO_SC);
++	if(ret) {
++		dev_err(&pdev->dev, "%s: failed to register SC GPIO: %d\n", __func__, ret);
++		goto err_gpiochip_sc;
++	}
++
++	pcu_gpio_setup(chip, PCU_GPIO_SUS, 32, 28);
++	ret = gpiochip_add(chip->gpio + PCU_GPIO_SUS);
++	if(ret) {
++		dev_err(&pdev->dev, "%s: failed to register SUS GPIO: %d\n", __func__, ret);
++		goto err_gpiochip_sus;
++	}
++
++	return 0;
++
++err_gpiochip_sus:
++	gpiochip_remove(chip->gpio + PCU_GPIO_SC);
++err_gpiochip_sc:
++	pci_iounmap(pdev, chip->base);
++err_iomap:
++	pci_release_regions(pdev);
++err_request_regions:
++	pci_disable_device(pdev);
++err_pci_enable:
++	kfree(chip);
++err_kalloc:
++	dev_err(&pdev->dev, "%s: failed, returns %d\n", __func__, ret);
++	return ret;
++}
++
++// remove pcu gpio;
++
++static void
++pcu_gpio_remove(struct pci_dev *pdev)
++{
++	int ret;
++	struct pcu_gpio *chip = pci_get_drvdata(pdev);
++
++	ret = gpiochip_remove(chip->gpio + PCU_GPIO_SUS);
++	if(ret)
++		dev_err(&pdev->dev, "%s: failed SUS GPIO, %d", __func__, ret);
++	ret = gpiochip_remove(chip->gpio + PCU_GPIO_SC);
++	if(ret)
++		dev_err(&pdev->dev, "%s: failed SC GPIO, %d", __func__, ret);
++
++	pci_iounmap(pdev, chip->base);
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++	kfree(chip);
++}
++
++#ifdef XXXX
++#ifdef CONFIG_PM
++static int pch_gpio_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	s32 ret;
++	struct pch_gpio *chip = pci_get_drvdata(pdev);
++	unsigned long flags;
++
++	spin_lock_irqsave(&chip->spinlock, flags);
++	pch_gpio_save_reg_conf(chip);
++	spin_unlock_irqrestore(&chip->spinlock, flags);
++
++	ret = pci_save_state(pdev);
++	if (ret) {
++		dev_err(&pdev->dev, "pci_save_state Failed-%d\n", ret);
++		return ret;
++	}
++	pci_disable_device(pdev);
++	pci_set_power_state(pdev, PCI_D0);
++	ret = pci_enable_wake(pdev, PCI_D0, 1);
++	if (ret)
++		dev_err(&pdev->dev, "pci_enable_wake Failed -%d\n", ret);
++
++	return 0;
++}
++
++static int pch_gpio_resume(struct pci_dev *pdev)
++{
++	s32 ret;
++	struct pch_gpio *chip = pci_get_drvdata(pdev);
++	unsigned long flags;
++
++	ret = pci_enable_wake(pdev, PCI_D0, 0);
++
++	pci_set_power_state(pdev, PCI_D0);
++	ret = pci_enable_device(pdev);
++	if (ret) {
++		dev_err(&pdev->dev, "pci_enable_device Failed-%d ", ret);
++		return ret;
++	}
++	pci_restore_state(pdev);
++
++	spin_lock_irqsave(&chip->spinlock, flags);
++	iowrite32(0x01, &chip->reg->reset);
++	iowrite32(0x00, &chip->reg->reset);
++	pch_gpio_restore_reg_conf(chip);
++	spin_unlock_irqrestore(&chip->spinlock, flags);
++
++	return 0;
++}
++#else
++#define pch_gpio_suspend NULL
++#define pch_gpio_resume NULL
++#endif
++#endif
++#define pcu_gpio_suspend NULL
++#define pcu_gpio_resume NULL
++
++static DEFINE_PCI_DEVICE_TABLE(pcu_gpio_pcidev_id) = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x1f38) },
++	{ 0, }
++};
++MODULE_DEVICE_TABLE(pci, pcu_gpio_pcidev_id);
++
++static struct pci_driver pcu_gpio_driver = {
++	.name = "pcu_gpio",
++	.id_table = pcu_gpio_pcidev_id,
++	.probe = pcu_gpio_probe,
++	.remove = pcu_gpio_remove,
++	.suspend = pcu_gpio_suspend,
++	.resume = pcu_gpio_resume,
++};
++
++module_pci_driver(pcu_gpio_driver);
++
++MODULE_DESCRIPTION("Atom PCU GPIO PCI Driver");
++MODULE_LICENSE("GPL");
++

@@ -9,7 +9,7 @@ PKG_NAME:=qemu
 PKG_VERSION:=1.7.0
 PKG_RELEASE:=1
 
-PKG_SOURCE_URL:=http://wiki.qemu-project.org/download/qemu-1.7.0.tar.bz2
+PKG_SOURCE_URL:=http://wiki.qemu-project.org/download/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_MD5SUM:=32893941d40d052a5e649efcf06aca06
 

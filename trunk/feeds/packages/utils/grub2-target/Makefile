@@ -30,7 +30,7 @@ define Package/grub2-target
   SUBMENU:=disc
   TITLE:=grub2 tools for target
   URL:=http://www.gnu.org/software/grub/
-  DEPENDS:=@TARGET_x86
+  DEPENDS:=@TARGET_x86||@TARGET_x64
 endef
 
 define Package/grub2-target/description

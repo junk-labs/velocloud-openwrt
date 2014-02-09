@@ -210,7 +210,7 @@ $(eval $(call KernelPackage,xen-pcidev))
 define KernelPackage/kvm
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Kernel KVM support for Intel/AMD
-  DEPENDS:=@TARGET_x86
+  DEPENDS:=@TARGET_x86||TARGET_x64
   KCONFIG:=CONFIG_VIRTUALIZATION=y \
 	CONFIG_IOMMU_SUPPORT=y \
 	CONFIG_AMD_IOMMU=y \

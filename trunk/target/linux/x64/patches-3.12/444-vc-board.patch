@@ -22,7 +22,7 @@
  endif # X86_PLATFORM_DEVICES
 --- /dev/null
 +++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,1779 @@
+@@ -0,0 +1,1780 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -89,12 +89,13 @@
 +#define EDGE500_GPIO_SMB_DATA (EDGE500_GPIO_RANGELEY + 13)
 +
 +// SIO GPIO bits all map to GPIO3, logical device 7;
++// due to a schematic bug, GP32 and GP33 are swizzled;
 +
 +#define EDGE500_GPIO_SIO 100
 +#define EDGE500_GPIO_SPARE (EDGE500_GPIO_SIO + 30)
 +#define EDGE500_GPIO_SFP_TXDIS (EDGE500_GPIO_SIO + 31)
-+#define EDGE500_GPIO_MSATA_PRESENT (EDGE500_GPIO_SIO + 32)
-+#define EDGE500_GPIO_WDISABLE_B (EDGE500_GPIO_SIO + 33)
++#define EDGE500_GPIO_MSATA_PRESENT (EDGE500_GPIO_SIO + 33)
++#define EDGE500_GPIO_WDISABLE_B (EDGE500_GPIO_SIO + 32)
 +#define EDGE500_GPIO_WDISABLE_A (EDGE500_GPIO_SIO + 34)
 +#define EDGE500_GPIO_RESET_BTN (EDGE500_GPIO_SIO + 35)
 +#define EDGE500_GPIO_I2C_BLINK (EDGE500_GPIO_SIO + 36)
@@ -660,10 +661,10 @@
 +
 +	// set defaults;
 +
-+	sio_outb(sio->addr, SIO_GPIO3_IO, 0x25);
-+	sio_outb(sio->addr, SIO_GPIO3_DATA, 0xd8);
++	sio_outb(sio->addr, SIO_GPIO3_IO, 0x29);
++	sio_outb(sio->addr, SIO_GPIO3_DATA, 0xd4);
 +	sio_outb(sio->addr, SIO_GPIO3_INV, 0x00);
-+	sio_outb(sio->addr, SIO_GPIO3_DEB, 0x04);
++	sio_outb(sio->addr, SIO_GPIO3_DEB, 0x08);
 +
 +	val = sio_inb(sio->addr, SIO_GPIO3_DATA);
 +	printk("vc: gpio3x 0x%x\n", val);

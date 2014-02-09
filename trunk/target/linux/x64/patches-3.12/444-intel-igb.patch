@@ -170,15 +170,16 @@
  #define E1000_DEV_ID_82580_COPPER		0x150E
  #define E1000_DEV_ID_82580_FIBER		0x150F
  #define E1000_DEV_ID_82580_SERDES		0x1510
-@@ -104,6 +105,7 @@
+@@ -104,6 +105,8 @@
  	e1000_media_type_copper = 1,
  	e1000_media_type_fiber = 2,
  	e1000_media_type_internal_serdes = 3,
 +	e1000_media_type_switch = 4,
++	e1000_media_type_sfp = 5,
  	e1000_num_media_types
  };
  
-@@ -120,6 +122,7 @@
+@@ -120,6 +123,7 @@
  	e1000_nvm_override_none = 0,
  	e1000_nvm_override_spi_small,
  	e1000_nvm_override_spi_large,
@@ -186,7 +187,7 @@
  };
  
  enum e1000_phy_type {
-@@ -133,6 +136,7 @@
+@@ -133,6 +137,7 @@
  	e1000_phy_ife,
  	e1000_phy_82580,
  	e1000_phy_i210,
@@ -194,7 +195,7 @@
  };
  
  enum e1000_bus_type {
-@@ -427,6 +431,13 @@
+@@ -427,6 +432,13 @@
  	struct e1000_thermal_sensor_data thermal_sensor_data;
  };
  
@@ -208,7 +209,7 @@
  struct e1000_phy_info {
  	struct e1000_phy_operations ops;
  
-@@ -453,6 +464,7 @@
+@@ -453,6 +465,7 @@
  	u16 min_cable_length;
  
  	u8 mdix;
@@ -304,17 +305,18 @@
  	}
  
  	/* get firmware version for ethtool -i */
-@@ -3879,6 +3900,7 @@
+@@ -3879,6 +3900,8 @@
  	case e1000_media_type_copper:
  		if (!hw->mac.get_link_status)
  			return true;
 +	case e1000_media_type_switch:
++	case e1000_media_type_sfp:
  	case e1000_media_type_internal_serdes:
  		hw->mac.ops.check_for_link(hw);
  		link_active = !hw->mac.get_link_status;
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,1273 @@
+@@ -0,0 +1,1510 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -424,11 +426,39 @@
 +#define M88_SW_REG(bank,reg) ((bank<<5) | reg)
 +#define M88_SW_PORT_REG(port,reg) (((M88_SW_PORT_BASE+port)<<5) | reg)
 +
++// phy fiber special control;
++
++#define M88E1000_SPEC_CTRL_SIGDET (1 << 9)
++
++// mac special control;
++
++#define M88E1000_SPEC_CTRL_PREFER			(3 << 10)
++#define M88E1000_SPEC_CTRL_PREFER_NONE			(0 << 10)
++#define M88E1000_SPEC_CTRL_PREFER_FIBER			(1 << 10)
++#define M88E1000_SPEC_CTRL_PREFER_COPPER		(2 << 10)
++
++#define M88E1000_SPEC_CTRL_MODE				(7 << 7)
++#define M88E1000_SPEC_CTRL_MODE_100BASEFX		(0 << 7)
++#define M88E1000_SPEC_CTRL_MODE_COPPER_GBIC		(1 << 7)
++#define M88E1000_SPEC_CTRL_MODE_A_COPPER_SGMII		(2 << 7)
++#define M88E1000_SPEC_CTRL_MODE_A_COPPER_1000BASEX	(3 << 7)
++#define M88E1000_SPEC_CTRL_MODE_COPPER_ONLY		(5 << 7)
++#define M88E1000_SPEC_CTRL_MODE_SGMII_ONLY		(6 << 7)
++#define M88E1000_SPEC_CTRL_MODE_1000BASEX_ONLY		(7 << 7)
++
++#define M88E1000_SPEC_CTRL_PWR_UP			(1 << 3)
++#define M88E1000_SPEC_CTRL_ENH_SGMII			(1 << 2)
++
++// others;
++
++#define IGB_VC_PAGE 0x8000	// set phy page;
++
 +// busy-wait for MDIO completion;
 +// returns <0 if error, else mdic bits;
++// XXX why we not use completion intr?
 +
 +static s32
-+igb_vc_m88sw_mdio_wait(struct e1000_hw *hw)
++igb_vc_mdio_wait(struct e1000_hw *hw)
 +{
 +	int i;
 +	u32 mdic;
@@ -452,29 +482,33 @@
 +	return(mdic & 0xffff);
 +}
 +
++// set page for phy access;
++
++static s32
++igb_vc_mdio_page(struct e1000_hw *hw, u16 page)
++{
++	u32 mdic;
++
++	mdic = E1000_MDIC_OP_WRITE | (M88E1000_PHY_PAGE22 << E1000_MDIC_REG_SHIFT) | page;
++	wr32(E1000_MDIC, mdic);
++	return(igb_vc_mdio_wait(hw));
++}
++
 +// read MDIO registers;
 +// works with single/multi-chip addressing;
 +
 +static s32
-+igb_vc_m88sw_mdio_read(struct e1000_hw *hw, u32 reg, u16 *data)
++igb_vc_mdio_read(struct e1000_hw *hw, u32 reg, u16 *data)
 +{
-+	u32 addr, max, mdic;
++	u32 addr, mdic;
 +	s32 ret = 0;
 +
 +	// phy->addr=0 indicates single-chip addressing;
 +
 +	addr = hw->phy.addr;
-+	max = MAX_PHY_REG_ADDRESS;
-+	if(addr == 0) {
-+		max = (MAX_PHY_REG_ADDRESS << 5) | MAX_PHY_REG_ADDRESS;
++	if(addr == 0)
 +		addr = (reg >> 5) & 0x1f;
-+		reg &= 0x1f;
-+	}
 +	//printk("%s %d/%d\n", __func__, addr, reg);
-+	if(reg > max) {
-+		ret = -E1000_ERR_PARAM;
-+		goto out;
-+	}
 +
 +	// acquire MDIO interface;
 +
@@ -490,17 +524,27 @@
 +	mdic |= (addr << E1000_MDIC_PHY_SHIFT);
 +	wr32(E1000_MDICNFG, mdic);
 +
++	// set phy page;
++	// needs to be atomic with respect to mdio access;
++
++	if(reg & IGB_VC_PAGE) {
++		ret = igb_vc_mdio_page(hw, reg >> 16);
++		if(ret < 0)
++			goto fail;
++	}
++
 +	// setup MDIC op code;
 +	// this starts the MDIO access by the MAC;
-+	// XXX why we not use completion intr?
 +
++	reg &= 0x1f;
 +	mdic = E1000_MDIC_OP_READ | (reg << E1000_MDIC_REG_SHIFT);
 +	wr32(E1000_MDIC, mdic);
 +
 +	// wait for MDIC to complete or error;
 +	// release MDIO interface;
 +
-+	ret = igb_vc_m88sw_mdio_wait(hw);
++	ret = igb_vc_mdio_wait(hw);
++fail:
 +        hw->phy.ops.release(hw);
 +	if(ret < 0)
 +		goto out;
@@ -514,25 +558,17 @@
 +// works with single/multi-chip addressing;
 +
 +static s32
-+igb_vc_m88sw_mdio_write(struct e1000_hw *hw, u32 reg, u16 data)
++igb_vc_mdio_write(struct e1000_hw *hw, u32 reg, u16 data)
 +{
-+	u32 addr, max, mdic;
++	u32 addr, mdic;
 +	s32 ret = 0;
 +
 +	// phy->addr=0 indicates single-chip addressing;
 +
 +	addr = hw->phy.addr;
-+	max = MAX_PHY_REG_ADDRESS;
-+	if(addr == 0) {
-+		max = (MAX_PHY_REG_ADDRESS << 5) | MAX_PHY_REG_ADDRESS;
++	if(addr == 0)
 +		addr = (reg >> 5) & 0x1f;
-+		reg &= 0x1f;
-+	}
 +	//printk("%s %d/%d=0x%x\n", __func__, addr, reg, data);
-+	if(reg > max) {
-+		ret = -E1000_ERR_PARAM;
-+		goto out;
-+	}
 +
 +	// acquire MDIO interface;
 +
@@ -548,22 +584,84 @@
 +	mdic |= (addr << E1000_MDIC_PHY_SHIFT);
 +	wr32(E1000_MDICNFG, mdic);
 +
++	// set phy page;
++	// needs to be atomic with respect to mdio access;
++
++	if(reg & IGB_VC_PAGE) {
++		ret = igb_vc_mdio_page(hw, reg >> 16);
++		if(ret < 0)
++			goto fail;
++	}
++
 +	// setup MDIC op code;
 +	// this starts the MDIO access by the MAC;
-+	// XXX why we not use completion intr?
 +
++	reg &= 0x1f;
 +	mdic = E1000_MDIC_OP_WRITE | (reg << E1000_MDIC_REG_SHIFT) | data;
 +	wr32(E1000_MDIC, mdic);
 +
 +	// wait for MDIC to complete or error;
 +	// release MDIO interface;
 +
-+	ret = igb_vc_m88sw_mdio_wait(hw);
++	ret = igb_vc_mdio_wait(hw);
++fail:
 +        hw->phy.ops.release(hw);
 +	if(ret < 0)
 +		goto out;
 +	ret = 0;
 +out:
++	return(ret);
++}
++
++// read MDIO SGMII register;
++// on 88e1112 point to the MAC of the port;
++
++static s32
++igb_vc_m88phy_sgmii_mdio_read(struct e1000_hw *hw, u32 reg, u16 *data)
++{
++	s32 ret;
++
++	ret = igb_vc_mdio_read(hw, IGB_VC_PAGE | (2 << 16) | reg, data);
++	vcdbg("%d/%d = %d 0x%x\n", 2, reg, ret, *data);
++	return(ret);
++}
++
++// write MDIO SGMII register;
++// on 88e1112 point to the MAC of the port;
++
++static s32
++igb_vc_m88phy_sgmii_mdio_write(struct e1000_hw *hw, u32 reg, u16 data)
++{
++	s32 ret;
++
++	ret = igb_vc_mdio_write(hw, IGB_VC_PAGE | (2 << 16) | reg, data);
++	vcdbg("%d/%d = %d 0x%x\n", 2, reg, ret, data);
++	return(ret);
++}
++
++// read MDIO SFP PHY register;
++// on 88e1112 point to the SFP side;
++
++static s32
++igb_vc_m88phy_sfp_mdio_read(struct e1000_hw *hw, u32 reg, u16 *data)
++{
++	s32 ret;
++
++	ret = igb_vc_mdio_read(hw, IGB_VC_PAGE | (1 << 16) | reg, data);
++	vcdbg("%d/%d = %d 0x%x\n", 1, reg, ret, *data);
++	return(ret);
++}
++
++// write MDIO PHY register;
++// on 88e1112 point to the SFP side;
++
++static s32
++igb_vc_m88phy_sfp_mdio_write(struct e1000_hw *hw, u32 reg, u16 data)
++{
++	s32 ret;
++
++	ret = igb_vc_mdio_write(hw, IGB_VC_PAGE | (1 << 16) | reg, data);
++	vcdbg("%d/%d = %d 0x%x\n", 1, reg, ret, data);
 +	return(ret);
 +}
 +
@@ -585,7 +683,7 @@
 +	if(write) {
 +		mdic = E1000_MDIC_OP_WRITE | (M88_GL2_SMI_DATA << E1000_MDIC_REG_SHIFT) | *data;
 +		wr32(E1000_MDIC, mdic);
-+		ret = igb_vc_m88sw_mdio_wait(hw);
++		ret = igb_vc_mdio_wait(hw);
 +		if(ret < 0)
 +			goto out;
 +		cmd |= M88_GL2_SMI_CMD_OP_WRITE;
@@ -596,7 +694,7 @@
 +
 +	mdic = E1000_MDIC_OP_WRITE | (M88_GL2_SMI_CMD << E1000_MDIC_REG_SHIFT) | cmd;
 +	wr32(E1000_MDIC, mdic);
-+	ret = igb_vc_m88sw_mdio_wait(hw);
++	ret = igb_vc_mdio_wait(hw);
 +	if(ret < 0)
 +		goto out;
 +
@@ -605,7 +703,7 @@
 +	for(i = 0; i < IGB_VC_SMI_MDIO_RETRIES; i++) {
 +		mdic = E1000_MDIC_OP_READ | (M88_GL2_SMI_CMD << E1000_MDIC_REG_SHIFT);
 +		wr32(E1000_MDIC, mdic);
-+		ret = igb_vc_m88sw_mdio_wait(hw);
++		ret = igb_vc_mdio_wait(hw);
 +		if(ret < 0)
 +			goto out;
 +		if( !(ret & M88_GL2_SMI_CMD_BUSY))
@@ -622,7 +720,7 @@
 +	if( !write) {
 +		mdic = E1000_MDIC_OP_READ | (M88_GL2_SMI_DATA << E1000_MDIC_REG_SHIFT);
 +		wr32(E1000_MDIC, mdic);
-+		ret = igb_vc_m88sw_mdio_wait(hw);
++		ret = igb_vc_mdio_wait(hw);
 +		if(ret < 0)
 +			goto out;
 +		*data = ret;
@@ -632,7 +730,7 @@
 +	return(ret);
 +}
 +
-+// read MDIO PHY registers;
++// read SMI MDIO registers;
 +// of Marvell switch acting as SGMII/copper PHY;
 +// the PHY registers cannot be accessed directly through bank;
 +// instead, we must go through the SMI_CMD/SMI_DATA registers;
@@ -666,7 +764,7 @@
 +
 +	mdic = E1000_MDIC_OP_READ | (M88_GL2_SMI_CMD << E1000_MDIC_REG_SHIFT);
 +	wr32(E1000_MDIC, mdic);
-+	ret = igb_vc_m88sw_mdio_wait(hw);
++	ret = igb_vc_mdio_wait(hw);
 +	if(ret < 0)
 +		goto out;
 +	if(mdic & M88_GL2_SMI_CMD_BUSY) {
@@ -689,7 +787,7 @@
 +	return(ret);
 +}
 +
-+// write MDIO PHY registers;
++// write SMI MDIO registers;
 +// of Marvell switch acting as SGMII/copper PHY;
 +// the PHY registers cannot be accessed directly through bank;
 +// instead, we must go through the SMI_CMD/SMI_DATA registers;
@@ -723,7 +821,7 @@
 +
 +	mdic = E1000_MDIC_OP_READ | (M88_GL2_SMI_CMD << E1000_MDIC_REG_SHIFT);
 +	wr32(E1000_MDIC, mdic);
-+	ret = igb_vc_m88sw_mdio_wait(hw);
++	ret = igb_vc_mdio_wait(hw);
 +	if(ret < 0)
 +		goto out;
 +
@@ -768,7 +866,6 @@
 +	return(ret);
 +}
 +
-+
 +// read MDIO PHY register;
 +// on 88e6320 point to the copper PHYs of the port;
 +
@@ -808,7 +905,7 @@
 +	printk("%s %d\n", __func__, hw->bus.func);
 +
 +	for(reg = 0; reg < 32; reg++) {
-+		ret = igb_vc_m88sw_mdio_read(hw, M88_SW_REG(page, reg), &data);
++		ret = igb_vc_mdio_read(hw, M88_SW_REG(page, reg), &data);
 +		if(ret)
 +			continue;
 +		printk(" reg%d/%d 0x%x\n", page, reg, data);
@@ -818,7 +915,7 @@
 +// dump page of m88 switch phy regs;
 +
 +static void
-+igb_dump_phy(struct e1000_hw *hw, u32 addr)
++igb_dump_swphy(struct e1000_hw *hw, u32 addr)
 +{
 +	int reg, ret;
 +	u16 data;
@@ -835,6 +932,28 @@
 +
 +#endif
 +
++#if defined(IGB_VC_DUMP_1112)
++
++// dump page of m88 phy regs;
++
++static void
++igb_dump_phy(struct e1000_hw *hw, u16 page)
++{
++	int reg, ret;
++	u16 data;
++
++	printk("%s %d\n", __func__, hw->bus.func);
++
++	for(reg = 0; reg < 32; reg++) {
++		ret = igb_vc_mdio_read(hw, IGB_VC_PAGE | (page << 16) | reg, &data);
++		if(ret)
++			continue;
++		printk(" phy%x/%d 0x%x\n", page, reg & 0x1f, data);
++	}
++}
++
++#endif
++
 +#if 0
 +
 +// software reset entire marvell switch;
@@ -846,13 +965,13 @@
 +	u16 sw_ctrl;
 +
 +	vcdbg("%d\n", hw->bus.func);
-+	ret = igb_vc_m88sw_mdio_read(hw,
++	ret = igb_vc_mdio_read(hw,
 +		M88_SW_REG(M88_SW_GLOBAL1, M88_SW_GL1_CTRL),
 +		&sw_ctrl);
 +	if(ret)
 +		goto out;
 +	sw_ctrl |= M88_SW_GL1_CTRL_SWRESET;
-+	ret = igb_vc_m88sw_mdio_write(hw,
++	ret = igb_vc_mdio_write(hw,
 +		M88_SW_REG(M88_SW_GLOBAL1, M88_SW_GL1_CTRL),
 +		sw_ctrl);
 +	udelay(1);
@@ -887,7 +1006,7 @@
 +	// read product ID from port;
 +	// make up marvell PHY ID;
 +
-+	ret = igb_vc_m88sw_mdio_read(hw,
++	ret = igb_vc_mdio_read(hw,
 +		M88_SW_PORT_REG(hw->phy.ports[e1000_port_cpu], M88_SW_PORT_PROD_ID),
 +		&prod_id);
 +	vcdbg("prod id  %d 0x%x\n", ret, prod_id);
@@ -1036,6 +1155,37 @@
 +	return(ret);
 +}
 +
++// reset sfp port;
++
++static s32
++igb_vc_m88phy_sfp_reset(struct e1000_hw *hw)
++{
++	s32 ret;
++	u16 ctrl;
++
++	// reset the sfp side;
++
++	ret = igb_vc_m88phy_sfp_mdio_read(hw, PHY_CONTROL, &ctrl);
++	if(ret)
++		goto out;
++	ctrl &= ~MII_CR_POWER_DOWN;
++	ctrl |= MII_CR_RESET;
++	ret = igb_vc_m88phy_sfp_mdio_write(hw, PHY_CONTROL, ctrl);
++	if(ret)
++		goto out;
++
++	// reset the sgmii side;
++
++	ret = igb_vc_m88phy_sgmii_mdio_read(hw, PHY_CONTROL, &ctrl);
++	if(ret)
++		goto out;
++	ctrl &= ~MII_CR_POWER_DOWN;
++	ctrl |= MII_CR_RESET;
++	ret = igb_vc_m88phy_sgmii_mdio_write(hw, PHY_CONTROL, ctrl);
++out:
++	return(ret);
++}
++
 +// setup sgmii link;
 +// link needs to be forced due to MAC-MAC link;
 +
@@ -1092,12 +1242,12 @@
 +	s32 ret;
 +	u16 ctrl;
 +
-+	ret = igb_vc_m88sw_mdio_read(hw,
++	ret = igb_vc_mdio_read(hw,
 +		M88_SW_PORT_REG(port, M88_SW_PORT_CONTROL), &ctrl);
 +	if(ret)
 +		goto out;
 +	ctrl |= M88_SW_PORT_CONTROL_FWD;
-+	ret = igb_vc_m88sw_mdio_write(hw,
++	ret = igb_vc_mdio_write(hw,
 +		M88_SW_PORT_REG(port, M88_SW_PORT_CONTROL), ctrl);
 +out:
 +	return(ret);
@@ -1136,12 +1286,12 @@
 +
 +	fid = hw->bus.func << 12;
 +
-+	ret = igb_vc_m88sw_mdio_write(hw,
++	ret = igb_vc_mdio_write(hw,
 +		M88_SW_PORT_REG(phy->ports[e1000_port_cpu], M88_SW_PORT_VLAN_MAP),
 +		fid | (1 << phy->ports[e1000_port_phy]));
 +	if(ret)
 +		goto out;
-+	ret = igb_vc_m88sw_mdio_write(hw,
++	ret = igb_vc_mdio_write(hw,
 +		M88_SW_PORT_REG(phy->ports[e1000_port_phy], M88_SW_PORT_VLAN_MAP),
 +		fid | (1 << phy->ports[e1000_port_cpu]));
 +	if(ret)
@@ -1163,9 +1313,9 @@
 +
 +	//igb_dump_sw(hw, M88_SW_GLOBAL1);
 +	igb_dump_sw(hw, M88_SW_PORT_BASE + phy->ports[e1000_port_cpu]);
-+	igb_dump_phy(hw, (1 << 16) | (phy->ports[e1000_port_sgmii] << 5));
++	igb_dump_swphy(hw, (1 << 16) | (phy->ports[e1000_port_sgmii] << 5));
 +	igb_dump_sw(hw, M88_SW_PORT_BASE + phy->ports[e1000_port_phy]);
-+	igb_dump_phy(hw, (0 << 16) | (phy->ports[e1000_port_phy] << 5));
++	igb_dump_swphy(hw, (0 << 16) | (phy->ports[e1000_port_phy] << 5));
 +
 +	ctrl = rd32(E1000_STATUS);
 +	printk("%s status 0x%x\n", __func__, ctrl);
@@ -1201,13 +1351,13 @@
 +
 +	// clear the sw port PHYDetect bit;
 +
-+	ret = igb_vc_m88sw_mdio_read(hw,
++	ret = igb_vc_mdio_read(hw,
 +		M88_SW_PORT_REG(phy->ports[e1000_port_cpu], M88_SW_PORT_STATUS),
 +		&data);
 +	if(ret)
 +		goto out;
 +	data &= ~M88_SW_PORT_STATUS_PHYDET;
-+	ret = igb_vc_m88sw_mdio_write(hw,
++	ret = igb_vc_mdio_write(hw,
 +		M88_SW_PORT_REG(phy->ports[e1000_port_cpu], M88_SW_PORT_STATUS),
 +		data);
 +	if(ret)
@@ -1219,11 +1369,11 @@
 +
 +	//igb_dump_sw(hw, M88_SW_GLOBAL1);
 +	igb_dump_sw(hw, M88_SW_PORT_BASE + 4);
-+	igb_dump_phy(hw, (1 << 16) | (0xf << 5));
-+	igb_dump_phy(hw, (0 << 16) | (0 << 5));
-+	igb_dump_phy(hw, (0 << 16) | (1 << 5));
-+	igb_dump_phy(hw, (0 << 16) | (2 << 5));
-+	igb_dump_phy(hw, (0 << 16) | (3 << 5));
++	igb_dump_swphy(hw, (1 << 16) | (0xf << 5));
++	igb_dump_swphy(hw, (0 << 16) | (0 << 5));
++	igb_dump_swphy(hw, (0 << 16) | (1 << 5));
++	igb_dump_swphy(hw, (0 << 16) | (2 << 5));
++	igb_dump_swphy(hw, (0 << 16) | (3 << 5));
 +
 +	ctrl = rd32(E1000_STATUS);
 +	printk("%s status 0x%x\n", __func__, ctrl);
@@ -1236,73 +1386,118 @@
 +}
 +
 +// setup link to a Marvell switch 88e1112;
++// PHY to SFP cage, which is always powered;
 +
 +static s32
 +igb_vc_setup_link_m88e1112(struct e1000_hw *hw)
 +{
-+	u32 ctrl, phy_pm;
++	u32 cfg, ctrl, lctl, an;
++	u16 data;
 +	s32 ret;
++
++	// setup the sgmii link;
++	// enable PCS;
++
++	cfg = rd32(E1000_PCS_CFG0);
++	cfg |= E1000_PCS_CFG_PCS_EN;
++	wr32(E1000_PCS_CFG0, cfg);
 +
 +	// set link up, clear forcing of speed and duplex;
 +
 +	ctrl = rd32(E1000_CTRL);
-+	ctrl |= E1000_CTRL_SLU;
 +	ctrl &= ~(E1000_CTRL_FRCSPD | E1000_CTRL_FRCDPX);
++	ctrl |= E1000_CTRL_SLU;
 +	wr32(E1000_CTRL, ctrl);
-+printk("%s ctrl 0x%x\n", __func__, ctrl);
++	vcdbg("ctrl 0x%x\n", ctrl);
 +
-+	// clear Go Link Disconnect bit on supported devices;
++	// setup sgmii link for autoneg;
 +
-+	switch(hw->mac.type) {
-+	case e1000_i350:
-+	//XXX case e1000_i354:
-+		phy_pm = rd32(E1000_82580_PHY_POWER_MGMT);
-+		phy_pm &= ~E1000_82580_PM_GO_LINKD;
-+		wr32(E1000_82580_PHY_POWER_MGMT, phy_pm);
++	lctl = rd32(E1000_PCS_LCTL);
++	lctl &= ~(E1000_PCS_LCTL_AN_TIMEOUT
++		| E1000_PCS_LCTL_FLV_LINK_UP
++		| E1000_PCS_LCTL_FSD
++		| E1000_PCS_LCTL_FORCE_FCTRL
++		| E1000_PCS_LCTL_FORCE_LINK);
++	lctl |= (E1000_PCS_LCTL_AN_ENABLE
++		| E1000_PCS_LCTL_AN_RESTART);
++
++	// configure flow-control for autoneg;
++
++	an = rd32(E1000_PCS_ANADV);
++	an &= ~(E1000_TXCW_ASM_DIR | E1000_TXCW_PAUSE);
++
++	switch(hw->fc.requested_mode) {
++	case e1000_fc_full:
++	case e1000_fc_rx_pause:
++		an |= E1000_TXCW_ASM_DIR;
++		an |= E1000_TXCW_PAUSE;
++		break;
++	case e1000_fc_tx_pause:
++		an |= E1000_TXCW_ASM_DIR;
 +		break;
 +	default:
 +		break;
 +	}
++	wr32(E1000_PCS_ANADV, an);
++	vcdbg("an 0x%x\n", an);
 +
-+	// setup the sgmii link;
++	wr32(E1000_PCS_LCTL, lctl);
++	vcdbg("lctl 0x%x\n", lctl);
 +
-+	//ret = igb_setup_serdes_link_82575(hw);
-+	ret = igb_vc_setup_sgmii_link(hw);
-+printk("1112 setup_serdes %d\n", ret);
-+ret = 0;
++	ctrl = rd32(E1000_PCS_LSTAT);
++	vcdbg("lsts 0x%x\n", ctrl);
++
++	// set polarity of SIGDET;
++	// this is retained across a sw reset;
++
++	ret = igb_vc_m88phy_sfp_mdio_read(hw, M88E1000_PHY_SPEC_CTRL, &data);
++	if(ret)
++		goto out;
++	data |= M88E1000_SPEC_CTRL_SIGDET;
++	ret = igb_vc_m88phy_sfp_mdio_write(hw, M88E1000_PHY_SPEC_CTRL, data);
 +	if(ret)
 +		goto out;
 +
-+	// reset the phy of the copper interface;
++	// reset the PHYs;
 +
-+	if(igb_sgmii_active_82575(hw) && !hw->phy.reset_disable) {
-+		ret = hw->phy.ops.reset(hw); 
-+		if(ret) {
-+			hw_dbg("error resetting the PHY\n");
-+			goto out;
-+		}
-+	}
-+//XXX
-+mdelay(800);
++	ret = hw->phy.ops.reset(hw); 
++	if(ret)
++		goto out;
 +
++	// set sgmii mode;
++	// after reset, as it is not retained;
++
++	ret = igb_vc_m88phy_sgmii_mdio_read(hw, M88E1000_PHY_SPEC_CTRL, &data);
++	if(ret)
++		goto out;
++	data &= ~(M88E1000_SPEC_CTRL_PREFER
++		| M88E1000_SPEC_CTRL_MODE);
++	data |= (M88E1000_SPEC_CTRL_MODE_1000BASEX_ONLY
++		| M88E1000_SPEC_CTRL_PWR_UP
++		| M88E1000_SPEC_CTRL_ENH_SGMII);
++	ret = igb_vc_m88phy_sgmii_mdio_write(hw, M88E1000_PHY_SPEC_CTRL, data);
++	if(ret)
++		goto out;
++
++#ifdef IGB_VC_DUMP_1112
 +{
-+ctrl = rd32(E1000_PCS_LCTL);
-+printk("igb lctl 0x%x\n", ctrl);
-+ctrl = rd32(E1000_PCS_LSTAT);
-+printk("igb lsts 0x%x\n", ctrl);
-+}
++	u32 ctrl;
 +
++	igb_dump_phy(hw, 2);
++	igb_dump_phy(hw, 1);
 +
++	ctrl = rd32(E1000_PCS_LCTL);
++	printk("%s lctl 0x%x\n", __func__, ctrl);
++	ctrl = rd32(E1000_PCS_LSTAT);
++	printk("%s lsts 0x%x\n", __func__, ctrl);
 +	ctrl = rd32(E1000_STATUS);
-+printk("%s status 0x%x\n", __func__, ctrl);
-+
-+	ret = 0;
-+//return(-2);
++	printk("%s status 0x%x\n", __func__, ctrl);
++}
++#endif
 +
 +out:
-+printk("%s ret %d\n", __func__, ret);
++	vcdbg("ret %d\n", ret);
 +	return(ret);
-+return(-2);
 +}
 +
 +
@@ -1319,7 +1514,7 @@
 +
 +	// read switch's port status;
 +
-+	ret = igb_vc_m88sw_mdio_read(hw,
++	ret = igb_vc_mdio_read(hw,
 +		M88_SW_PORT_REG(phy->ports[e1000_port_cpu], M88_SW_PORT_STATUS),
 +		&status);
 +	vcdbg("ret %d\n", ret);
@@ -1396,7 +1591,7 @@
 +
 +	// read switch port status register;
 +
-+	ret = igb_vc_m88sw_mdio_read(hw,
++	ret = igb_vc_mdio_read(hw,
 +		M88_SW_PORT_REG(hw->phy.ports[e1000_port_cpu], M88_SW_PORT_STATUS),
 +		&portsts);
 +	vcdbg("port status %d 0x%x\n", ret, portsts);
@@ -1423,7 +1618,7 @@
 +
 +	// always check port status;
 +
-+	ret = igb_vc_m88sw_mdio_read(hw,
++	ret = igb_vc_mdio_read(hw,
 +		M88_SW_PORT_REG(hw->phy.ports[e1000_port_phy], M88_SW_PORT_STATUS),
 +		&portsts);
 +	vcdbg("port status %d 0x%x\n", ret, portsts);
@@ -1440,6 +1635,38 @@
 +	// now, check sgmii;
 +
 +	ret = igb_vc_m88sw_check_for_link(hw);
++out:
++	return(ret);
++}
++
++// check for link on m88e1112 SFP;
++
++static s32
++igb_vc_m88phy_check_for_link_m88e1112(struct e1000_hw *hw)
++{
++	s32 ret;
++	u16 status;
++
++	// check if sfp side has link;
++	// some PHYs require double read to update;
++
++	igb_vc_m88phy_sfp_mdio_read(hw, PHY_STATUS, &status);
++	ret = igb_vc_m88phy_sfp_mdio_read(hw, PHY_STATUS, &status);
++	if(ret)
++		goto out;
++	if( !(status & MII_SR_LINK_STATUS)) {
++		hw->mac.get_link_status = true;
++		goto out;
++	}
++
++	// check if sgmii link is up;
++
++	ret = igb_vc_sgmii_check_for_link(hw);
++	if(ret <= 0)
++		goto out;
++
++	hw->mac.get_link_status = false;
++	ret = E1000_SUCCESS;
 +out:
 +	return(ret);
 +}
@@ -1572,12 +1799,24 @@
 +		break;
 +
 +	case M88E1112_ID:
-+return(-2); //XXX
++		mac->autoneg = true;
 +		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e1112;
-+		mac->ops.check_for_link = igb_vc_sgmii_check_for_link;
++		mac->ops.check_for_link = igb_vc_m88phy_check_for_link_m88e1112;
++		mac->ops.get_speed_and_duplex = igb_get_pcs_speed_and_duplex_82575;
++
++		phy->media_type = e1000_media_type_sfp;
++		phy->autoneg_mask = AUTONEG_ADVERTISE_SPEED_DEFAULT;
 +		phy->type = e1000_phy_m88;
++
++		phy->ops.read_reg = igb_vc_m88phy_sfp_mdio_read;
++		phy->ops.write_reg = igb_vc_m88phy_sfp_mdio_write;
++		phy->ops.reset = igb_vc_m88phy_sfp_reset;
++		phy->ops.check_polarity = NULL;
++		phy->ops.get_cable_length = NULL;
++		phy->ops.force_speed_duplex = igb_vc_bugon_phy_force_speed_duplex;
++		phy->ops.get_phy_info = NULL;
 +		break;
-+		//XXX
++
 +	default:
 +		ret = -E1000_ERR_PHY;
 +	}

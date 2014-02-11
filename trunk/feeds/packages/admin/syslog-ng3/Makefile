@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=syslog-ng
-PKG_VERSION:=3.0.5
-PKG_RELEASE:=5
+PKG_VERSION:=3.5.3
+PKG_RELEASE:=1
 
 PKG_SOURCE_URL:=http://www.balabit.com/downloads/files/syslog-ng/open-source-edition/$(PKG_VERSION)/source/
 PKG_SOURCE:=$(PKG_NAME)_$(PKG_VERSION).tar.gz
-PKG_MD5SUM:=28f0d9ff2243b330e8cd6311ef9b2f12
+PKG_MD5SUM:=4cc29efa55fc41e65c48ece9bc88f88b
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_IPV6 \
@@ -51,6 +51,9 @@ CONFIGURE_ARGS +=  \
 	--disable-glibtest \
 	--disable-spoof-source \
 	--disable-sql \
+	--disable-mongodb \
+	--disable-amqp \
+	--disable-stomp \
 	--enable-prce \
 	--disable-linux-caps \
 
@@ -62,7 +65,8 @@ CONFIGURE_VARS += \
 
 define Package/syslog-ng3/install
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/syslog-ng $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/syslog-ng/syslog-ng $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/syslog-ng/syslog-ng-ctl $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/syslog-ng.init $(1)/etc/init.d/syslog-ng
 	$(INSTALL_DIR) $(1)/etc

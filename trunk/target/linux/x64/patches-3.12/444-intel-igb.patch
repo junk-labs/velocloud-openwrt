@@ -227,7 +227,17 @@
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_FIBER), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_QUAD_FIBER), board_82575 },
-@@ -252,6 +253,10 @@
+@@ -184,6 +185,9 @@
+ static int igb_vf_configure(struct igb_adapter *adapter, int vf);
+ #endif
+ 
++extern int igb_vc_i2c_init(struct igb_adapter *);
++extern void igb_vc_i2c_exit(struct igb_adapter *);
++
+ #ifdef CONFIG_PM
+ #ifdef CONFIG_PM_SLEEP
+ static int igb_suspend(struct device *);
+@@ -252,6 +256,10 @@
  MODULE_LICENSE("GPL");
  MODULE_VERSION(DRV_VERSION);
  
@@ -238,7 +248,7 @@
  #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
  static int debug = -1;
  module_param(debug, int, 0);
-@@ -1996,6 +2001,18 @@
+@@ -1996,6 +2004,18 @@
  	return status;
  }
  
@@ -257,7 +267,7 @@
  /**
   *  igb_probe - Device Initialization Routine
   *  @pdev: PCI device information struct
-@@ -2109,6 +2126,8 @@
+@@ -2109,6 +2129,8 @@
  	memcpy(&hw->nvm.ops, ei->nvm_ops, sizeof(hw->nvm.ops));
  	/* Initialize skew-specific constants */
  	err = ei->get_invariants(hw);
@@ -266,7 +276,7 @@
  	if (err)
  		goto err_sw_init;
  
-@@ -2188,18 +2207,17 @@
+@@ -2188,18 +2210,17 @@
  	case e1000_i211:
  		if (igb_get_flash_presence_i210(hw)) {
  			if (hw->nvm.ops.validate(hw) < 0) {
@@ -291,7 +301,7 @@
  		}
  		break;
  	}
-@@ -2212,8 +2230,11 @@
+@@ -2212,8 +2233,11 @@
  
  	if (!is_valid_ether_addr(netdev->dev_addr)) {
  		dev_err(&pdev->dev, "Invalid MAC Address\n");
@@ -305,7 +315,27 @@
  	}
  
  	/* get firmware version for ethtool -i */
-@@ -3879,6 +3900,8 @@
+@@ -2309,6 +2333,10 @@
+ 		dev_err(&pdev->dev, "failed to init i2c interface\n");
+ 		goto err_eeprom;
+ 	}
++	// init vc i2c to sfp;
++	err = igb_vc_i2c_init(adapter);
++	if(err)
++		dev_err(&pdev->dev, "failed to init sfp i2c interface\n");
+ 
+ 	/* let the f/w know that the h/w is now under the control of the
+ 	 * driver. */
+@@ -2534,6 +2562,8 @@
+ {
+ 	/* free the adapter bus structure */
+ 	i2c_del_adapter(&adapter->i2c_adap);
++	// free vc i2c to sfp;
++	igb_vc_i2c_exit(adapter);
+ }
+ 
+ /**
+@@ -3879,6 +3909,8 @@
  	case e1000_media_type_copper:
  		if (!hw->mac.get_link_status)
  			return true;
@@ -316,7 +346,7 @@
  		link_active = !hw->mac.get_link_status;
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,1510 @@
+@@ -0,0 +1,1843 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -338,12 +368,14 @@
 +*/
 +
 +#include <linux/types.h>
++#include <linux/pci.h>
 +#include <linux/if_ether.h>
 +#include <linux/i2c.h>
 +
 +#include "e1000_mac.h"
 +#include "e1000_82575.h"
 +#include "e1000_hw.h"
++#include "igb.h"
 +
 +#undef IGB_VC_DEBUG
 +#ifdef IGB_VC_DEBUG
@@ -372,6 +404,9 @@
 +extern s32 igb_get_pcs_speed_and_duplex_82575(struct e1000_hw *, u16 *, u16 *);
 +extern s32 igb_check_polarity_m88(struct e1000_hw *hw);
 +extern s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw);
++
++s32 igb_vc_i2c_init(struct igb_adapter *adapter);
++void igb_vc_i2c_exit(struct igb_adapter *adapter);
 +
 +// MDIO timeout;
 +
@@ -452,6 +487,43 @@
 +// others;
 +
 +#define IGB_VC_PAGE 0x8000	// set phy page;
++
++// SFP I2C;
++
++#define IGB_VC_SFP "sfp"	// sfp i2c driver name;
++#define IGB_VC_SFP_BUS_FUNC	3
++
++#define SFP_OFF_IDENTIFIER	0
++#define SFP_IDENTIFIER_SFP	0x03
++
++#define SFP_OFF_VENDOR		20
++#define SFP_SIZE_VENDOR		16
++
++#define SFP_OFF_OUI		37
++#define SFP_SIZE_OUI		3
++
++#define SFP_OFF_PARTNUM		40
++#define SFP_SIZE_PARTNUM	16
++
++enum sfp_i2c_client {
++	SFP_EEPROM = 0,
++	SFP_DMI,
++	N_SFP_CLIENT,
++};
++
++struct vc_i2c_sfp {
++	struct igb_adapter *adapter;
++	struct i2c_client *client[N_SFP_CLIENT];
++	int plugged;
++	char vendor[SFP_SIZE_VENDOR+1];
++	unsigned char oui[SFP_SIZE_OUI];
++	char partnum[SFP_SIZE_PARTNUM+1];
++};
++
++// sfp i2c data;
++
++static unsigned short igb_vc_i2c_addrs[] = { 0x50, 0x51, I2C_CLIENT_END };
++static struct vc_i2c_sfp igb_vc_i2c_sfp;
 +
 +// busy-wait for MDIO completion;
 +// returns <0 if error, else mdic bits;
@@ -1190,7 +1262,7 @@
 +// link needs to be forced due to MAC-MAC link;
 +
 +static s32
-+igb_vc_setup_sgmii_link(struct e1000_hw *hw)
++igb_vc_setup_sgmii_link_forced(struct e1000_hw *hw)
 +{
 +	u32 cfg, ctrl, lctl;
 +
@@ -1234,6 +1306,67 @@
 +	return(E1000_SUCCESS);
 +}
 +
++// setup sgmii link for autoneg;
++
++static s32
++igb_vc_setup_sgmii_link_aneg(struct e1000_hw *hw)
++{
++	u32 cfg, ctrl, lctl, an;
++
++	// enable PCS;
++
++	cfg = rd32(E1000_PCS_CFG0);
++	cfg |= E1000_PCS_CFG_PCS_EN;
++	wr32(E1000_PCS_CFG0, cfg);
++
++	// set link up, clear forcing of speed and duplex;
++
++	ctrl = rd32(E1000_CTRL);
++	ctrl &= ~(E1000_CTRL_FRCSPD | E1000_CTRL_FRCDPX);
++	ctrl |= E1000_CTRL_SLU;
++	wr32(E1000_CTRL, ctrl);
++	vcdbg("ctrl 0x%x\n", ctrl);
++
++	// setup sgmii link for autoneg;
++
++	lctl = rd32(E1000_PCS_LCTL);
++	lctl &= ~(E1000_PCS_LCTL_AN_TIMEOUT
++		| E1000_PCS_LCTL_FLV_LINK_UP
++		| E1000_PCS_LCTL_FSD
++		| E1000_PCS_LCTL_FORCE_FCTRL
++		| E1000_PCS_LCTL_FORCE_LINK);
++	lctl |= (E1000_PCS_LCTL_AN_ENABLE
++		| E1000_PCS_LCTL_AN_RESTART);
++
++	// configure flow-control for autoneg;
++
++	an = rd32(E1000_PCS_ANADV);
++	an &= ~(E1000_TXCW_ASM_DIR | E1000_TXCW_PAUSE);
++
++	switch(hw->fc.requested_mode) {
++	case e1000_fc_full:
++	case e1000_fc_rx_pause:
++		an |= E1000_TXCW_ASM_DIR;
++		an |= E1000_TXCW_PAUSE;
++		break;
++	case e1000_fc_tx_pause:
++		an |= E1000_TXCW_ASM_DIR;
++		break;
++	default:
++		break;
++	}
++	wr32(E1000_PCS_ANADV, an);
++	vcdbg("an 0x%x\n", an);
++
++	wr32(E1000_PCS_LCTL, lctl);
++	vcdbg("lctl 0x%x\n", lctl);
++
++	ctrl = rd32(E1000_PCS_LSTAT);
++	vcdbg("lsts 0x%x\n", ctrl);
++
++	return(E1000_SUCCESS);
++}
++
 +// enable forwarding on port;
 +
 +static s32
@@ -1265,7 +1398,7 @@
 +
 +	// setup the sgmii link;
 +
-+	ret = igb_vc_setup_sgmii_link(hw);
++	ret = igb_vc_setup_sgmii_link_forced(hw);
 +	if(ret)
 +		goto out;
 +
@@ -1339,7 +1472,7 @@
 +
 +	// setup the sgmii link;
 +
-+	ret = igb_vc_setup_sgmii_link(hw);
++	ret = igb_vc_setup_sgmii_link_forced(hw);
 +	if(ret)
 +		goto out;
 +
@@ -1391,61 +1524,14 @@
 +static s32
 +igb_vc_setup_link_m88e1112(struct e1000_hw *hw)
 +{
-+	u32 cfg, ctrl, lctl, an;
 +	u16 data;
 +	s32 ret;
 +
 +	// setup the sgmii link;
-+	// enable PCS;
 +
-+	cfg = rd32(E1000_PCS_CFG0);
-+	cfg |= E1000_PCS_CFG_PCS_EN;
-+	wr32(E1000_PCS_CFG0, cfg);
-+
-+	// set link up, clear forcing of speed and duplex;
-+
-+	ctrl = rd32(E1000_CTRL);
-+	ctrl &= ~(E1000_CTRL_FRCSPD | E1000_CTRL_FRCDPX);
-+	ctrl |= E1000_CTRL_SLU;
-+	wr32(E1000_CTRL, ctrl);
-+	vcdbg("ctrl 0x%x\n", ctrl);
-+
-+	// setup sgmii link for autoneg;
-+
-+	lctl = rd32(E1000_PCS_LCTL);
-+	lctl &= ~(E1000_PCS_LCTL_AN_TIMEOUT
-+		| E1000_PCS_LCTL_FLV_LINK_UP
-+		| E1000_PCS_LCTL_FSD
-+		| E1000_PCS_LCTL_FORCE_FCTRL
-+		| E1000_PCS_LCTL_FORCE_LINK);
-+	lctl |= (E1000_PCS_LCTL_AN_ENABLE
-+		| E1000_PCS_LCTL_AN_RESTART);
-+
-+	// configure flow-control for autoneg;
-+
-+	an = rd32(E1000_PCS_ANADV);
-+	an &= ~(E1000_TXCW_ASM_DIR | E1000_TXCW_PAUSE);
-+
-+	switch(hw->fc.requested_mode) {
-+	case e1000_fc_full:
-+	case e1000_fc_rx_pause:
-+		an |= E1000_TXCW_ASM_DIR;
-+		an |= E1000_TXCW_PAUSE;
-+		break;
-+	case e1000_fc_tx_pause:
-+		an |= E1000_TXCW_ASM_DIR;
-+		break;
-+	default:
-+		break;
-+	}
-+	wr32(E1000_PCS_ANADV, an);
-+	vcdbg("an 0x%x\n", an);
-+
-+	wr32(E1000_PCS_LCTL, lctl);
-+	vcdbg("lctl 0x%x\n", lctl);
-+
-+	ctrl = rd32(E1000_PCS_LSTAT);
-+	vcdbg("lsts 0x%x\n", ctrl);
++	ret = igb_vc_setup_sgmii_link_aneg(hw);
++	if(ret)
++		goto out;
 +
 +	// set polarity of SIGDET;
 +	// this is retained across a sw reset;
@@ -1499,7 +1585,6 @@
 +	vcdbg("ret %d\n", ret);
 +	return(ret);
 +}
-+
 +
 +// get phy info of Marvell switch 88e6176;
 +// the switch is SGMII attached, so there isn't really a PHY;
@@ -1639,16 +1724,106 @@
 +	return(ret);
 +}
 +
++// read a block of bytes from sfp i2c;
++
++static int
++igb_vc_i2c_read(struct i2c_client *client, u32 off, u32 len, u8 *buf)
++{
++	int ret = 0;
++
++	for(; len; off++, len--) {
++		ret = i2c_smbus_read_byte_data(client, off);
++		if(ret < 0)
++			break;
++		*buf++ = (u8)ret;
++	}
++	return((ret < 0)? ret : 0);
++}
++
++// strip trailing spaces from strings;
++
++static void
++igb_vc_strip_tspc(u32 len, u8 *str)
++{
++	u8 *s = str + len;
++
++	for(*s = 0; len-- && (*--s == ' '); *s = 0);
++}
++
++// probe sfp cage i2c;
++// called for each i2c device after detecting, by the i2c core;
++// much of the probing has been done in detect;
++
++static int
++igb_vc_sfp_probe(struct e1000_hw *hw)
++{
++	struct vc_i2c_sfp *sfp = &igb_vc_i2c_sfp;
++	struct i2c_client *client = sfp->client[SFP_EEPROM];
++	struct igb_adapter *adapter = sfp->adapter;
++	struct pci_dev *pdev = adapter->pdev;
++	int ret;
++
++	// re-probe i2c if no device detected yet;
++
++	sfp->plugged = false;
++	if( !client) {
++		igb_vc_i2c_exit(adapter);
++		ret = igb_vc_i2c_init(adapter);
++		if(ret < 0)
++			return(ret);
++		client = sfp->client[SFP_EEPROM];
++	}
++	if( !client)
++		return(-ENODEV);
++
++	// read sfp/sff identifier;
++
++	ret = i2c_smbus_read_byte_data(client, SFP_OFF_IDENTIFIER);
++	if(ret < 0)
++		return(ret);
++	if(ret != SFP_IDENTIFIER_SFP) {
++		dev_err(&pdev->dev, "non-SFP identifier: 0x%x\n", ret);
++		return(-ENODEV);
++	}
++
++	// read vendor/oui/part;
++
++	ret = igb_vc_i2c_read(client, SFP_OFF_VENDOR, SFP_SIZE_VENDOR, sfp->vendor);
++	if(ret < 0)
++		goto out;
++	ret = igb_vc_i2c_read(client, SFP_OFF_OUI, SFP_SIZE_OUI, sfp->oui);
++	if(ret < 0)
++		goto out;
++	ret = igb_vc_i2c_read(client, SFP_OFF_PARTNUM, SFP_SIZE_PARTNUM, sfp->partnum);
++	if(ret < 0)
++		goto out;
++
++	// log sfp module info;
++
++	igb_vc_strip_tspc(SFP_SIZE_VENDOR, sfp->vendor);
++	igb_vc_strip_tspc(SFP_SIZE_PARTNUM, sfp->partnum);
++	dev_info(&pdev->dev, "sfp vendor=%s oui=%02x:%02x:%02x part=%s\n",
++		sfp->vendor,
++		sfp->oui[0], sfp->oui[1], sfp->oui[2],
++		sfp->partnum);
++	sfp->plugged = true;
++	ret = 0;
++out:
++	return(ret);
++}
++
 +// check for link on m88e1112 SFP;
 +
 +static s32
 +igb_vc_m88phy_check_for_link_m88e1112(struct e1000_hw *hw)
 +{
++	struct e1000_dev_spec_82575 *dev_spec = &hw->dev_spec._82575;
 +	s32 ret;
 +	u16 status;
 +
 +	// check if sfp side has link;
 +	// some PHYs require double read to update;
++	// force re-probing of sfp i2c when link is down;
 +
 +	igb_vc_m88phy_sfp_mdio_read(hw, PHY_STATUS, &status);
 +	ret = igb_vc_m88phy_sfp_mdio_read(hw, PHY_STATUS, &status);
@@ -1656,7 +1831,20 @@
 +		goto out;
 +	if( !(status & MII_SR_LINK_STATUS)) {
 +		hw->mac.get_link_status = true;
++		dev_spec->module_plugged = false;
 +		goto out;
++	}
++
++	// check sfp i2c;
++	// do this after sfp phy is up, so something must be plugged in;
++
++	if(dev_spec->module_plugged == false) {
++		ret = igb_vc_sfp_probe(hw);
++		if(ret) {
++			ret = -E1000_ERR_I2C;
++			goto out;
++		}
++		dev_spec->module_plugged = true;
 +	}
 +
 +	// check if sgmii link is up;
@@ -1706,6 +1894,7 @@
 +s32
 +igb_vc_probe(struct e1000_hw *hw)
 +{
++	struct igb_adapter *adapter = hw->back;
 +	struct e1000_mac_info *mac = &hw->mac;
 +	struct e1000_phy_info *phy = &hw->phy;
 +	u32 mdic;
@@ -1735,7 +1924,7 @@
 +	default:
 +		goto out;
 +	}
-+	printk("igb: found custom link: 0x%x\n", eeprom[1]);
++	dev_info(&adapter->pdev->dev, "found custom link: 0x%x\n", eeprom[1]);
 +
 +	// do all the work of init_phy_param() here;
 +
@@ -1820,10 +2009,184 @@
 +	default:
 +		ret = -E1000_ERR_PHY;
 +	}
-+
-+	ret = E1000_SUCCESS;
-+
 +out:
 +	return(ret);
++}
++
++// show sfp attributes;
++
++static ssize_t
++igb_vc_sfp_vendor_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct vc_i2c_sfp *sfp = &igb_vc_i2c_sfp;
++	ssize_t ret = -ENODEV;
++
++	if(sfp->client[SFP_EEPROM] && sfp->plugged)
++		ret = scnprintf(buf, PAGE_SIZE, "%s\n", sfp->vendor);
++        return(ret);
++}
++
++static ssize_t
++igb_vc_sfp_oui_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct vc_i2c_sfp *sfp = &igb_vc_i2c_sfp;
++	ssize_t ret = -ENODEV;
++
++	if(sfp->client[SFP_EEPROM] && sfp->plugged)
++		ret = scnprintf(buf, PAGE_SIZE, "%02x:%02x:%02x\n", sfp->oui[0], sfp->oui[1], sfp->oui[2]);
++        return(ret);
++}
++
++static ssize_t
++igb_vc_sfp_partnum_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct vc_i2c_sfp *sfp = &igb_vc_i2c_sfp;
++	ssize_t ret = -ENODEV;
++
++	if(sfp->client[SFP_EEPROM] && sfp->plugged)
++		ret = scnprintf(buf, PAGE_SIZE, "%s\n", sfp->partnum);
++        return(ret);
++}
++
++// all sfp attributes;
++
++static DEVICE_ATTR(vendor, S_IRUGO, igb_vc_sfp_vendor_show, NULL);
++static DEVICE_ATTR(oui, S_IRUGO, igb_vc_sfp_oui_show, NULL);
++static DEVICE_ATTR(partnum, S_IRUGO, igb_vc_sfp_partnum_show, NULL);
++
++static struct attribute *igb_vc_sfp_attrs[] = {
++	&dev_attr_vendor.attr,
++	&dev_attr_oui.attr,
++	&dev_attr_partnum.attr,
++	NULL,
++};
++
++static struct attribute_group igb_vc_sfp_group = {
++	.name = IGB_VC_SFP,
++	.attrs = igb_vc_sfp_attrs,
++};
++
++// detect i2c devices;
++// called for each i2c device before probing, by the i2c core;
++// device addresses are in struct i2c_driver.address_list;
++
++static int
++igb_vc_i2c_detect(struct i2c_client *client, struct i2c_board_info *info)
++{
++	struct i2c_adapter *adapter = client->adapter;
++
++	if( !i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA
++		| I2C_FUNC_SMBUS_WRITE_BYTE)) {
++		pr_err("igb: i2c adaptor does not support required smbus/i2c modes\n");
++		return(-ENODEV);
++	}
++
++	// success;
++
++	strlcpy(info->type, IGB_VC_SFP, I2C_NAME_SIZE);
++	return(0);
++}
++
++// probe sfp cage i2c;
++// called for each i2c device after detecting, by the i2c core;
++// the sfp may not be plugegd in yet, not much to do here;
++
++static int
++igb_vc_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
++{
++	struct vc_i2c_sfp *sfp = &igb_vc_i2c_sfp;
++	struct igb_adapter *adapter = sfp->adapter;
++	struct pci_dev *pdev = adapter->pdev;
++	int ret = -ENODEV;
++
++	// EEPROM probe;
++	// create sysfs entries for sfp info;
++
++	if(client->addr == igb_vc_i2c_addrs[0]) {
++		sfp->client[SFP_EEPROM] = client;
++		ret = sysfs_create_group(&pdev->dev.kobj, &igb_vc_sfp_group);
++        	if(ret < 0)
++                	dev_err(&pdev->dev, "couldn't register sfp sysfs group\n");
++	}
++
++	// DMI probe;
++
++	if(client->addr == igb_vc_i2c_addrs[1]) {
++		sfp->client[SFP_DMI] = client;
++		ret = 0;
++	}
++
++	return(ret);
++}
++
++// remove driver;
++
++static int
++igb_vc_i2c_remove(struct i2c_client *client)
++{
++	struct vc_i2c_sfp *sfp = &igb_vc_i2c_sfp;
++	struct igb_adapter *adapter = sfp->adapter;
++
++	// remove sysfs entries;
++
++	sysfs_remove_group(&adapter->pdev->dev.kobj, &igb_vc_sfp_group);
++
++	sfp->client[SFP_EEPROM] = NULL;
++	sfp->client[SFP_DMI] = NULL;
++	return(0);
++}
++
++// i2c device id;
++
++static const struct i2c_device_id igb_vc_i2c_id[] = {
++	{ IGB_VC_SFP, 0 },
++	{},
++};
++
++// i2c driver struct;
++// can't have module_i2c_driver(vc_i2c_driver);
++
++static struct i2c_driver igb_vc_i2c_driver = {
++	.class = I2C_CLASS_HWMON,
++	.driver = {
++		.name = IGB_VC_SFP,
++	},
++	.address_list = igb_vc_i2c_addrs,
++	.probe = igb_vc_i2c_probe,
++	.remove = igb_vc_i2c_remove,
++	.id_table = igb_vc_i2c_id,
++	.detect = igb_vc_i2c_detect,
++};
++
++// init i2c to sfp;
++// sfp is on port 3;
++
++s32
++igb_vc_i2c_init(struct igb_adapter *adapter)
++{
++	struct vc_i2c_sfp *sfp = &igb_vc_i2c_sfp;
++	struct e1000_hw *hw = &adapter->hw;
++	int ret;
++
++	if(hw->bus.func != IGB_VC_SFP_BUS_FUNC)
++		return(0);
++
++	sfp->adapter = adapter;
++
++	ret = i2c_add_driver(&igb_vc_i2c_driver);
++	return(ret);
++}
++
++// free i2c to sfp;
++
++void
++igb_vc_i2c_exit(struct igb_adapter *adapter)
++{
++	struct e1000_hw *hw = &adapter->hw;
++
++	if(hw->bus.func != IGB_VC_SFP_BUS_FUNC)
++		return;
++
++	i2c_del_driver(&igb_vc_i2c_driver);
 +}
 +

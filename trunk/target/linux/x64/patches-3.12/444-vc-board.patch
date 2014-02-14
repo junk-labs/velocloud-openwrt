@@ -311,7 +311,7 @@
 +
 +static struct platform_device edge500_i2c_device = { 
 +	.name = "i2c-gpio", 
-+	.id = 0, 
++	.id = 2, 
 +	.dev.platform_data = &edge500_i2c_gpio,
 +}; 
 +

@@ -26,7 +26,7 @@
  	depends on PCI
 --- /dev/null
 +++ b/drivers/gpio/gpio-pcu.c
-@@ -0,0 +1,467 @@
+@@ -0,0 +1,430 @@
 +/*
 + * Copyright (C) 2014 Velocloud Inc.
 + *
@@ -261,8 +261,7 @@
 +static inline void
 +pcu_warn_fw_setup(struct device *dev, char *name, struct pcu_gpio *chip, int idx, u32 bad)
 +{
-+	dev_err(dev, "%s: %s use_sel bios=0x%x, should be 0x%x, FIX bits 0x%x\n",
-+		__func__, name,
++	dev_err(dev, "%s use_sel bios=0x%x, should be 0x%x, FIX bits 0x%x\n", name,
 +		chip->use_sel_bios[idx], chip->use_sel_fixed[idx], bad);
 +}
 +
@@ -325,6 +324,7 @@
 +	if((gbase & 3) != (REG_LPC_GBASE_EN | REG_LPC_GBASE_IO))
 +		goto err_request_regions;
 +	gbase &= REG_LPC_GBASE_MASK;
++	dev_info(&pdev->dev, "gbase at 0x%x\n", gbase);
 +	if( !gbase)
 +		goto err_request_regions;
 +
@@ -416,63 +416,26 @@
 +	kfree(chip);
 +}
 +
-+#ifdef XXXX
 +#ifdef CONFIG_PM
-+static int pch_gpio_suspend(struct pci_dev *pdev, pm_message_t state)
++static int
++pcu_gpio_suspend(struct pci_dev *pdev, pm_message_t state)
 +{
-+	s32 ret;
-+	struct pch_gpio *chip = pci_get_drvdata(pdev);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chip->spinlock, flags);
-+	pch_gpio_save_reg_conf(chip);
-+	spin_unlock_irqrestore(&chip->spinlock, flags);
-+
-+	ret = pci_save_state(pdev);
-+	if (ret) {
-+		dev_err(&pdev->dev, "pci_save_state Failed-%d\n", ret);
-+		return ret;
-+	}
-+	pci_disable_device(pdev);
-+	pci_set_power_state(pdev, PCI_D0);
-+	ret = pci_enable_wake(pdev, PCI_D0, 1);
-+	if (ret)
-+		dev_err(&pdev->dev, "pci_enable_wake Failed -%d\n", ret);
-+
-+	return 0;
++	pci_save_state(pdev);
++	pci_set_power_state(pdev, pci_choose_state(pdev, state));
++	return(0);
 +}
 +
-+static int pch_gpio_resume(struct pci_dev *pdev)
++static int
++pcu_gpio_resume(struct pci_dev *pdev)
 +{
-+	s32 ret;
-+	struct pch_gpio *chip = pci_get_drvdata(pdev);
-+	unsigned long flags;
-+
-+	ret = pci_enable_wake(pdev, PCI_D0, 0);
-+
 +	pci_set_power_state(pdev, PCI_D0);
-+	ret = pci_enable_device(pdev);
-+	if (ret) {
-+		dev_err(&pdev->dev, "pci_enable_device Failed-%d ", ret);
-+		return ret;
-+	}
 +	pci_restore_state(pdev);
-+
-+	spin_lock_irqsave(&chip->spinlock, flags);
-+	iowrite32(0x01, &chip->reg->reset);
-+	iowrite32(0x00, &chip->reg->reset);
-+	pch_gpio_restore_reg_conf(chip);
-+	spin_unlock_irqrestore(&chip->spinlock, flags);
-+
-+	return 0;
++	return(0);
 +}
 +#else
-+#define pch_gpio_suspend NULL
-+#define pch_gpio_resume NULL
-+#endif
-+#endif
 +#define pcu_gpio_suspend NULL
 +#define pcu_gpio_resume NULL
++#endif
 +
 +static DEFINE_PCI_DEVICE_TABLE(pcu_gpio_pcidev_id) = {
 +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x1f38) },

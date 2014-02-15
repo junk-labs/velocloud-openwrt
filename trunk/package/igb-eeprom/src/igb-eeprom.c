@@ -13,6 +13,27 @@
 #include <string.h>
 #include <unistd.h>
 
+// manufacturing run data;
+
+typedef struct mfg mfg_t;
+struct mfg {
+	char *name;		// name of run;
+	char *board;		// name of board;
+	char *tmp;		// template file;
+	unsigned bnums[2];
+	unsigned char mac_min[6];
+	unsigned char mac_max[6];
+};
+
+mfg_t Mfg[] = {
+	{ "pw-pilot",
+	  "edge500",
+	  "atom-c2000-igb-sgmii.bin",
+	  { 1, 50 },
+	  { 0xF0,0x8E,0xDB,0x01,0x00,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x00,0xC7 }, },
+	{ 0 },
+};
+
 // global data;
 
 typedef struct g g_t;
@@ -23,15 +44,18 @@ struct g {
 	char opt_mac;
 	char opt_bid;
 	char opt_pciid;
+	char opt_dry;
 	char nmacs;
 	char *bid;
 	char *board;
+	char *umac;
 	unsigned short pciid[2];
 	unsigned char mac[6];
 	unsigned char mac0[6];
 	unsigned char mac1[6];
 	unsigned char mac2[6];
 	unsigned char mac3[6];
+	unsigned int bnum;
 	char *ifname;
 	char *tmp;
 	void (*extra)(g_t *g, unsigned char *eeprom, int size);
@@ -268,6 +292,65 @@ get_board(char *name, int size)
 	return(name);
 }
 
+// manufacturing support;
+
+char *
+mfg_init(g_t *g)
+{
+	char *p, *ep;
+	int len;
+	mfg_t *mfg;
+	unsigned int bnum;
+	unsigned long long mac;
+
+	// check manufacturing run string;
+
+	p = strchr(g->umac, ':');
+	if( !p)
+		return("missing board number");
+	if(p <= g->umac)
+		return("missing manufacturer run");
+	len = p - g->umac;
+	bnum = strtoul(++p, &ep, 10);
+	if(ep <= p)
+		return("missing/illegal board number");
+
+	// lookup run;
+
+	for(mfg = Mfg; p = mfg->name; mfg++) {
+		if( !strncmp(g->umac, p, len))
+			break;
+	}
+	if( !p)
+		return("unknown manufacturer run");
+	if(strcmp(mfg->board, g->board))
+		return("unsupported board type");
+	if((bnum < mfg->bnums[0]) || (bnum > mfg->bnums[1]))
+		return("board number out of range");
+
+	// init MAC addresses;
+
+	mac = ((unsigned long long)mfg->mac_min[0] << 40)
+		| ((unsigned long long)mfg->mac_min[1] << 32)
+		| ((unsigned long long)mfg->mac_min[2] << 24)
+		| ((unsigned long long)mfg->mac_min[3] << 16)
+		| ((unsigned long long)mfg->mac_min[4] << 8)
+		| ((unsigned long long)mfg->mac_min[5] << 0);
+	mac += ((bnum - 1) * g->nmacs);
+	g->mac[0] = (mac >> 40) & 0xff;
+	g->mac[1] = (mac >> 32) & 0xff;
+	g->mac[2] = (mac >> 24) & 0xff;
+	g->mac[3] = (mac >> 16) & 0xff;
+	g->mac[4] = (mac >> 8) & 0xff;
+	g->mac[5] = (mac >> 0) & 0xff;
+
+	// init template file;
+
+	g->tmp = mfg->tmp;
+
+	return(0);
+}
+
 // main entry;
 
 int
@@ -276,6 +359,7 @@ main(int argc, char **argv)
 	g_t *g = &G;
 	int c, fd, n, nb;
 	unsigned short pciid;
+	char *msg;
 	char mac0str[20];
 	char mac1str[20];
 	char mac2str[20];
@@ -287,6 +371,7 @@ main(int argc, char **argv)
 
 	g->cmd = argv[0];
 	g->ifname = "eth0";
+	g->bid = "image";
 	g->mac[0] = 'V';
 	g->mac[1] = 'C';
 	g->mac[2] = '1';
@@ -301,14 +386,14 @@ main(int argc, char **argv)
 
 	// get options;
 
-	while((c = getopt(argc, argv, "o:n:m:B:b:p:i:t:h")) != EOF) {
+	while((c = getopt(argc, argv, "o:N:m:B:b:p:i:t:u:nh")) != EOF) {
 		switch(c) {
 		case 'o' :
 			if( !get_num(optarg, &g->mac[0], 3))
 				Msg("@bad OUI: %s\n", optarg);
 			g->opt_oui = 1;
 			break;
-		case 'n' :
+		case 'N' :
 			if( !get_num(optarg, &g->mac[3], 3))
 				Msg("@bad NIC: %s\n", optarg);
 			g->opt_nic = 1;
@@ -339,17 +424,25 @@ main(int argc, char **argv)
 		case 't' :
 			g->tmp = optarg;
 			break;
+		case 'u' :
+			g->umac = optarg;
+			break;
+		case 'n' :
+			g->opt_dry = 1;
+			break;
 		case 'h':
 			Msg("help\n"
 				"  %s [options]\n"
 				"  [-o OUI]       (DEC, 0xHEX, ab:cd:ef)\n"
-				"  [-n NIC]       (DEC, 0xHEX, ab:cd:ef)\n"
+				"  [-N NIC]       (DEC, 0xHEX, ab:cd:ef)\n"
 				"  [-m MAC]       (00:11:22:33:44:55)\n"
 				"  [-B board]     (force board: ve1000, edge500)\n"
 				"  [-b board-id]  (DEC, 0xHEX)\n"
 				"  [-p pci-id]    (8086:1509)\n"
 				"  [-i if]        (eth0)\n"
 				"  [-t intel-tmp] (intel template file)\n"
+				"  [-u mfg:id]    (unique MAC from pool with board id)\n"
+				"  [-n]           (dry run, do not program)\n"
 				"  [-h]           (this help)\n",
 				g->cmd);
 			break;
@@ -361,10 +454,8 @@ main(int argc, char **argv)
 		Msg("@options -m and [-o,-n,-b] are mutually exclusive\n");
 	if(g->opt_bid & g->opt_nic)
 		Msg("@options -b and -n are mutually exclusive\n");
-	if( !(g->opt_mac | g->opt_bid))
-		Msg("@at least -b or -m options are required\n");
-	if( !g->tmp)
-		Msg("@need intel eeprom template file (-t)\n");
+	if( !(g->opt_mac || g->opt_bid || g->umac))
+		Msg("@at least one of the -b,-m or -u options are required\n");
 
 	// check board;
 
@@ -379,6 +470,21 @@ main(int argc, char **argv)
 		Msg("@board '%s' not supported\n", g->board);
 	if( !g->opt_pciid)
 		g->pciid[1] = pciid;
+
+	// setup defaults for manufacturing;
+
+	if(g->umac) {
+		if(g->opt_oui | g->opt_nic | g->opt_mac | g->opt_bid)
+			Msg("@options -u and [-o,-n,-m,-b] are mutually exclusive\n");
+		msg = mfg_init(g);
+		if(msg)
+			Msg("@%s: %s\n", g->umac, msg);
+	}
+
+	// require template file;
+
+	if( !g->tmp)
+		Msg("@need intel eeprom template file (-t)\n");
 
 	// make default macs;
 
@@ -456,9 +562,11 @@ main(int argc, char **argv)
 
 	sprintf(cmd, "ethtool -E %s magic %s offset 0 < %s",
 		g->ifname, magic, file);
-	Msg("flashing: %s\n", cmd);
-	n = system(cmd);
-	Msg("flash status 0x%x: %s\n", n, n? "FAILED" : "success");
+	Msg("%sflashing: %s\n", g->opt_dry? "dry run, not " : "", cmd);
+	if( !g->opt_dry) {
+		n = system(cmd);
+		Msg("flash status 0x%x: %s\n", n, n? "FAILED" : "success");
+	}
 
 	return(0);
 }

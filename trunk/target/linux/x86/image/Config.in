@@ -86,6 +86,13 @@ config X86_VELOCLOUD_INSTALLER
 	default y if TARGET_x86_sb_itc
 	default y if TARGET_x86_pw_dev
 
+config X86_VELOCLOUD_MANUFACTURING_INSTALLER
+	bool "Build Velocloud manufacturing installer image"
+	depends on X86_GRUB_IMAGES
+	depends on X86_VELOCLOUD_INSTALLER
+	depends on TARGET_x86
+	depends on TARGET_ROOTFS_EXT4FS
+
 config X86_VMDK_IMAGES
 	bool "Build VMware image files (VMDK)"
 	depends on X86_GRUB_IMAGES

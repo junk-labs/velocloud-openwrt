@@ -259,6 +259,32 @@ define Image/Build/Profile/sitecom
 	rm $(KDIR)/tmp.img $(KDIR)/bzImage.tmp
 endef
 
+ifneq ($(CONFIG_X64_VELOCLOUD_MANUFACTURING_INSTALLER),)
+  define Image/Build/velocloud-manufacturing-installer
+	echo "Building Velocloud Manufacturing Installer Image."
+	sed \
+		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
+		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
+		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/ext4) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
+		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
+		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/grub-manufacturing.cfg \
+		> $(KDIR)/root.grub/boot/grub/grub.cfg
+	GRUB2_MODULES="$(GRUB2_MODULES)" PATH="$(TARGET_PATH)" ./gen_image_velocloud.sh \
+		$(BIN_DIR)/$(IMG_PREFIX)-manufacturing-$(1).img \
+		1024 \
+		$(CONFIG_TARGET_KERNEL_PARTSIZE) $(KDIR)/root.grub \
+		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $(KDIR)/root.$(1) \
+		$(CONFIG_TARGET_ROOTFS_INSTSIZE) \
+		$(TARGET_DIR) \
+		$(KDIR)/root.grub \
+		$(KDIR)/inst.grub
+	grub-bios-setup \
+		--device-map="$(KDIR)/grub2/device.map" \
+		-d "$(KDIR)/grub2" \
+		-r "hd0,msdos1" \
+		"$(BIN_DIR)/$(IMG_PREFIX)-manufacturing-$(1).img"
+  endef
+endif
 ifneq ($(CONFIG_X64_VELOCLOUD_INSTALLER),)
   define Image/Build/velocloud-installer
 	echo "Building Velocloud Installer Image."
@@ -339,6 +365,7 @@ define Image/Build
 	$(call Image/Build/grub2,$(1))
 	$(call Image/Build/vdi,$(1))
 	$(call Image/Build/velocloud-installer,$(1))
+	$(call Image/Build/velocloud-manufacturing-installer,$(1))
 	$(call Image/Build/vmdk,$(1))
 	$(call Image/Build/vc-ec2,$(1))
 	$(CP) $(KDIR)/root.$(1) $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img

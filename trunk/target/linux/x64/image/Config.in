@@ -69,6 +69,14 @@ config X64_VELOCLOUD_INSTALLER
 	default y if TARGET_x64_edge500
 	default y if TARGET_x64_pw_dev
 
+config X64_VELOCLOUD_MANUFACTURING_INSTALLER
+	bool "Build Velocloud manufacturing installer image"
+	depends on X64_GRUB_IMAGES
+	depends on X64_VELOCLOUD_INSTALLER
+	depends on TARGET_x64
+	depends on TARGET_ROOTFS_EXT4FS
+	default y if TARGET_x64_edge500
+
 config X64_VMDK_IMAGES
 	bool "Build VMware image files (VMDK)"
 	depends on X64_GRUB_IMAGES

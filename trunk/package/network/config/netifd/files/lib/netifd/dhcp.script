@@ -20,10 +20,6 @@ setup_interface () {
 	local metric=${interface//eth}
 	# TODO: apply $broadcast
 
-	# add 100 to USB-modem routes
-	if [ "${interface//eth[0-2]}" != "" ]; then
-		metric=$(expr $metric + 100)
-	fi
 	for i in $router; do
 		proto_add_ipv4_route 0.0.0.0 0 "$i" "$metric"
 	done

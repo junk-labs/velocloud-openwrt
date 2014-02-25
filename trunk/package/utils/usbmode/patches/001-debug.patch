@@ -1,0 +1,18 @@
+--- a/switch.c
++++ b/switch.c
+@@ -73,6 +73,15 @@ static void send_messages(struct usbdev_data *data, struct msg_entry *msg, int n
+ 			return;
+ 	}
+ 
++	/* With -# 3.12.3 kernel + USB-1.1 devices #- setup: Mode switch 
++	 * does not work correctly. Fails 7 out of 10 times. 
++	 * Cause: A possible race between the mode-switch message 
++	 * (msg type: bulk) and halt message (msg type: control).
++	 * Introducing a small delay to make sure the control message is acted
++	 * upon after the completion of the mode switch message. 
++	 * */
++	usleep(200000);
++
+ 	libusb_clear_halt(data->devh, data->msg_endpoint);
+ 	libusb_clear_halt(data->devh, data->response_endpoint);
+ 

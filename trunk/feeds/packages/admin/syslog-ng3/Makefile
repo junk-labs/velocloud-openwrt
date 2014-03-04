@@ -18,13 +18,15 @@ PKG_MD5SUM:=4cc29efa55fc41e65c48ece9bc88f88b
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_IPV6 \
 
+PKG_INSTALL := 1
+
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
 
 define Package/syslog-ng3
   SECTION:=admin
   CATEGORY:=Administration
-  DEPENDS:=+libpcre +glib2 +libeventlog +libopenssl +libwrap +libpthread +librt +zlib +libdbi
+  DEPENDS:=+libpcre +glib2 +libeventlog +libopenssl +libwrap +libpthread +librt +zlib +libdbi +libuuid +libjson-c
   TITLE:=A powerful syslog daemon
   URL:=http://www.balabit.com/network-security/syslog-ng/opensource-logging-system/
 endef
@@ -64,9 +66,11 @@ CONFIGURE_VARS += \
 	LIBDBI_CFLAGS="-I$(STAGING_DIR)/usr/include"
 
 define Package/syslog-ng3/install
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/syslog-ng/syslog-ng $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/syslog-ng/syslog-ng-ctl $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/usr/sbin $(1)/usr/lib $(1)/usr/lib/syslog-ng
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/syslog-ng $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/syslog-ng-ctl $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/libsyslog-ng-$(PKG_VERSION).so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/syslog-ng/*.so $(1)/usr/lib/syslog-ng/
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/syslog-ng.init $(1)/etc/init.d/syslog-ng
 	$(INSTALL_DIR) $(1)/etc

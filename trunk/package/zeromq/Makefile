@@ -34,6 +34,7 @@ define Package/zeromq/description
     clustered products and supercomputing.
 endef
 
+TARGET_CFLAGS += -O2 -g
 
 define Build/InstallDev
 	$(INSTALL_DIR) \

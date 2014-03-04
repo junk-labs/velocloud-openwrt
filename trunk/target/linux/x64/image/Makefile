@@ -9,7 +9,7 @@ include $(INCLUDE_DIR)/image.mk
 
 export PATH=$(TARGET_PATH):/sbin
 
-GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos reboot vga
+GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos part_gpt reboot vga
 GRUB2_MODULES_ISO = biosdisk boot chain configfile iso9660 linux ls part_msdos reboot vga
 GRUB_TERMINALS =
 GRUB_SERIAL_CONFIG =
@@ -83,7 +83,7 @@ endif
   endef
 
   define Image/cmdline/velocloud
-    rootfstype=ext4 rootwait
+    root=@PARTUUID@ rootfstype=ext4 rootwait
   endef
 
   define Image/Build/grub2
@@ -259,66 +259,71 @@ define Image/Build/Profile/sitecom
 	rm $(KDIR)/tmp.img $(KDIR)/bzImage.tmp
 endef
 
-ifneq ($(CONFIG_X64_VELOCLOUD_MANUFACTURING_INSTALLER),)
-  define Image/Build/velocloud-manufacturing-installer
-	echo "Building Velocloud Manufacturing Installer Image."
-	sed \
-		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
-		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
-		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/ext4) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
-		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
-		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/grub-manufacturing.cfg \
-		> $(KDIR)/root.grub/boot/grub/grub.cfg
-	GRUB2_MODULES="$(GRUB2_MODULES)" PATH="$(TARGET_PATH)" ./gen_image_velocloud.sh \
-		$(BIN_DIR)/$(IMG_PREFIX)-manufacturing-$(1).img \
-		1024 \
-		$(CONFIG_TARGET_KERNEL_PARTSIZE) $(KDIR)/root.grub \
-		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $(KDIR)/root.$(1) \
-		$(CONFIG_TARGET_ROOTFS_INSTSIZE) \
-		$(TARGET_DIR) \
-		$(KDIR)/root.grub \
-		$(KDIR)/inst.grub
-	grub-bios-setup \
-		--device-map="$(KDIR)/grub2/device.map" \
-		-d "$(KDIR)/grub2" \
-		-r "hd0,msdos1" \
-		"$(BIN_DIR)/$(IMG_PREFIX)-manufacturing-$(1).img"
-  endef
-endif
-ifneq ($(CONFIG_X64_VELOCLOUD_INSTALLER),)
-  define Image/Build/velocloud-installer
-	echo "Building Velocloud Installer Image."
-	$(INSTALL_DIR) $(KDIR)/inst.grub/boot/grub
+# velocloud common image generator;
+
+# $(1): install dir
+# $(2): in
+# $(3): out
+
+define Image/Build/velocloud/grubcfg
+	$(INSTALL_DIR) $(KDIR)/$(1)/boot/grub
 	sed \
 		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
 		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
 		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/velocloud) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
 		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
-		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/grub-velocloud.cfg \
-		> $(KDIR)/inst.grub/boot/grub/grub-velocloud.cfg
-	sed \
-		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
-		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
-		-e 's#@CMDLINE@#$(strip $(call Image/cmdline/ext4) $(BOOTOPTS) $(GRUB_CONSOLE_CMDLINE))#g' \
-		-e 's#@TIMEOUT@#$(GRUB_TIMEOUT)#g' \
-		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/grub-installer.cfg \
-		> $(KDIR)/root.grub/boot/grub/grub.cfg
+		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/$(2) \
+		> $(KDIR)/$(1)/boot/grub/$(3)
+endef
+
+# $1: root fstype;
+# $2: image name;
+
+define Image/Build/velocloud/gpt
+	$(INSTALL_DIR) $(KDIR)/root.grub/boot/grub $(KDIR)/grub2
+	$(CP) $(KDIR)/bzImage $(KDIR)/root.grub/boot/vmlinuz
+	grub-mkimage \
+		-d $(STAGING_DIR_HOST)/lib/grub/i386-pc \
+		-o $(KDIR)/grub2/core.img \
+		-O i386-pc \
+		-c ./grub-gpt-early.cfg \
+		$(GRUB2_MODULES)
+	$(CP) $(STAGING_DIR_HOST)/lib/grub/i386-pc/*.img $(KDIR)/grub2/
+	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
 	chmod u+x ./gen_image_velocloud.sh
-	GRUB2_MODULES="$(GRUB2_MODULES)" PATH="$(TARGET_PATH)" ./gen_image_velocloud.sh \
-		$(BIN_DIR)/$(IMG_PREFIX)-installer-$(1).img \
-		1024 \
+	GRUB2_MODULES="$(GRUB2_MODULES)" \
+	PATH="$(TARGET_PATH)" \
+	STAGING_DIR_HOST=$(STAGING_DIR_HOST) \
+		./gen_image_velocloud.sh \
+		$(BIN_DIR)/$(2) \
 		$(CONFIG_TARGET_KERNEL_PARTSIZE) $(KDIR)/root.grub \
 		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $(KDIR)/root.$(1) \
 		$(CONFIG_TARGET_ROOTFS_INSTSIZE) \
 		$(TARGET_DIR) \
 		$(KDIR)/root.grub \
 		$(KDIR)/inst.grub
+	echo '(hd0) $(BIN_DIR)/$(2)' > $(KDIR)/grub2/device.map
 	grub-bios-setup \
 		--device-map="$(KDIR)/grub2/device.map" \
 		-d "$(KDIR)/grub2" \
-		-r "hd0,msdos1" \
-		"$(BIN_DIR)/$(IMG_PREFIX)-installer-$(1).img"
+		-r "hd0,gpt2" \
+		"$(BIN_DIR)/$(2)"
 	$(call Image/Build/grub/$(1))
+endef
+
+ifneq ($(CONFIG_X64_VELOCLOUD_MANUFACTURING_INSTALLER),)
+  define Image/Build/velocloud-manufacturing
+	echo "Building Velocloud Manufacturing Image."
+	$(call Image/Build/velocloud/grubcfg,root.grub,grub-manufacturing.cfg,grub.cfg)
+	$(call Image/Build/velocloud/gpt,$(1),$(IMG_PREFIX)-manufacturing-$(1).img)
+  endef
+endif
+
+ifneq ($(CONFIG_X64_VELOCLOUD_INSTALLER),)
+  define Image/Build/velocloud-installer
+	echo "Building Velocloud Installer Image."
+	$(call Image/Build/velocloud/grubcfg,root.grub,grub-installer.cfg,grub.cfg)
+	$(call Image/Build/velocloud/gpt,$(1),$(IMG_PREFIX)-installer-$(1).img)
   endef
 endif
 
@@ -362,10 +367,10 @@ define Image/Build
 	$(call Image/Build/$(1))
 	$(call Image/Build/bootscript,$(1))
   ifneq ($(1),iso)
+	$(call Image/Build/velocloud-installer,$(1))
+	$(call Image/Build/velocloud-manufacturing,$(1))
 	$(call Image/Build/grub2,$(1))
 	$(call Image/Build/vdi,$(1))
-	$(call Image/Build/velocloud-installer,$(1))
-	$(call Image/Build/velocloud-manufacturing-installer,$(1))
 	$(call Image/Build/vmdk,$(1))
 	$(call Image/Build/vc-ec2,$(1))
 	$(CP) $(KDIR)/root.$(1) $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img

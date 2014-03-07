@@ -10,6 +10,7 @@
 /staging_dir
 /tmp
 /logs
+/files
 *.orig
 *.rej
 *~

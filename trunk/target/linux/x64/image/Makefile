@@ -82,6 +82,8 @@ endif
     block2mtd.block2mtd=$(ROOTPART),65536,rootfs root=/dev/mtdblock0 rootfstype=squashfs rootwait
   endef
 
+  # The root=@PARTUUID@ below is really for when we have GPTs in the
+  # installed images. For now, the installer will strip it out.
   define Image/cmdline/velocloud
     root=@PARTUUID@ rootfstype=ext4 rootwait
   endef

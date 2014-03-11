@@ -58,24 +58,25 @@ TAIL_END="$(($TAIL_OFF + $TAIL_SIZE))"
 
 # copy rootfs image;
 
-dd if="$ROOT_FSIMAGE" of="$OUTPUT" bs=1M seek="$ROOT_OFF" conv=notrunc count="$ROOT_SIZE"
-dd if=/dev/zero of="$OUTPUT" bs=1M seek="$TAIL_OFF" conv=notrunc count="$TAIL_SIZE"
+dd if="$ROOT_FSIMAGE" of="$OUTPUT" bs=1M seek="$ROOT_OFF" conv=notrunc count="$ROOT_SIZE" || exit 1
+dd if=/dev/zero of="$OUTPUT" bs=1M seek="$TAIL_OFF" conv=notrunc count="$TAIL_SIZE" || exit 1
 
 # copy installer trees;
 
-BLOCKS="$(($ROOT_SIZE * 1024))"
+BLOCK_SIZE=4096
+BLOCKS="$(($ROOT_SIZE * 1024 / 4))"
 
-mkdir -p $root_dirs
+mkdir -p $root_dirs || exit 1
 echo $INST_ROOT_SIZE > $IROOT/$INST_PATH/root-size
 echo $GRUB2_MODULES > $IROOT/$INST_PATH/grub-modules
-$STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$IROOT" -b "$BLOCKS" "$OUTPUT.inst"
+$STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$IROOT" -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.inst" || exit 1
 rm -rf "$IROOT"
-$STAGING_DIR_HOST/bin/genext2fs -U -x "$OUTPUT.inst" $inst_dirs -b "$BLOCKS" "$OUTPUT.inst"
+$STAGING_DIR_HOST/bin/genext2fs -U -x "$OUTPUT.inst" $inst_dirs -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.inst" || exit 1
 INST_UUID=`uuidgen`
-$STAGING_DIR_HOST/bin/tune2fs -O extents,uninit_bg,dir_index -U $INST_UUID "$OUTPUT.inst"
+$STAGING_DIR_HOST/bin/tune2fs -O extents,uninit_bg,dir_index -U $INST_UUID "$OUTPUT.inst" || exit 1
 $STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.inst"
 
-dd if="$OUTPUT.inst" of="$OUTPUT" bs=1M seek="$INST_OFF" conv=notrunc
+dd if="$OUTPUT.inst" of="$OUTPUT" bs=1M seek="$INST_OFF" conv=notrunc || exit 1
 rm -rf "$OUTPUT.inst"
 
 # create gpt partition table;
@@ -107,9 +108,10 @@ sed -i \
 # make final boot partition;
 # install grub;
 
-BLOCKS="$(($BOOT_SIZE * 1024))"
+BLOCK_SIZE=4096
+BLOCKS="$(($BOOT_SIZE * 1024 / 4))"
 
-$STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$BOOT_DIR" -b "$BLOCKS" "$OUTPUT.boot"
-dd if="$OUTPUT.boot" of="$OUTPUT" bs=1M seek="$BOOT_OFF" conv=notrunc
+$STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$BOOT_DIR" -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.boot" || exit 1
+dd if="$OUTPUT.boot" of="$OUTPUT" bs=1M seek="$BOOT_OFF" conv=notrunc || exit 1
 rm -f "$OUTPUT.boot"
 

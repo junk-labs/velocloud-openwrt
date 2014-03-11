@@ -1,15 +1,17 @@
 #!/bin/sh
 # installer for velocloud image;
 
-INST_DEV=/dev/sda3
+INST_UUID=`cat /proc/cmdline | tr ' ' '\n' | grep vc.install | sed -e 's/vc.install=//'`
+INST_DEV=`blkid -U $INST_UUID`
 INST_ROOT=/tmp/mnt-inst
 MNT_ROOT=/tmp/mnt-root
 
+# edge500 on-board flash;
+DISK=sda
 DRIVE=hd0
-PARTYPE=msdos
+PARTYPE=gpt
 FSTYPE="-t ext4"
 
-DISK=mmcblk0
 IMG_ROOT=$INST_ROOT
 IMG_PATH=$IMG_ROOT/images
 
@@ -28,11 +30,21 @@ GRUB_CFG_SRC=$GRUB_DIR/grub-velocloud.cfg
 GRUB_CFG=$GRUB_DIR/grub.cfg
 GRUB_ENV=$GRUB_DIR/grubenv
 
+# check root uuid
+
+check_root_uuid() {
+	if [ x"$1" == "x" ]; then
+		echo "error: no partition $2 on disk $DEVICE"
+		umount $INST_ROOT
+		exit 13
+	fi
+}
+
 DEF_ID=0
 
 if [ $# -lt 1 ]; then
 	echo "usage: $0 [-d dev] [-p] [-grub] root-id [...]"
-	echo "  -d dsk    install to disk other than mmcblk0, such as sdX"
+	echo "  -d dsk    install to disk other than sda"
 	echo "  -vga      force use of vga console for grub and kernel"
 	echo "  -r dev    force root device for runtime (if different from install time)"
 	echo "  -p        force new partition layout, implies -grub"
@@ -69,12 +81,6 @@ DEVICE=/dev/${DISK}
 DEVRUN=/dev/${DRUN}
 DEVPART=$DEVICE
 RUNPART=$DEVRUN
-if [ "$(echo $DISK | cut -c-6)" == "mmcblk" ]; then
-	DEVPART="${DEVPART}p"
-fi
-if [ "$(echo $DRUN | cut -c-6)" == "mmcblk" ]; then
-	RUNPART="${RUNPART}p"
-fi
 
 # mount installer partition;
 
@@ -104,38 +110,39 @@ DISK_BLOCKS=`cat /sys/block/$DISK/size`
 DISK_MB=$(($DISK_BLOCKS / 2 / 1024))
 echo "disk $DEVICE is ${DISK_MB}MB"
 
-BOOT_OFF=1
-BOOT_END=19
-BOOT_IDX=1
+# partition sizing;
+
+GRUB_OFF=1
+GRUB_END=2
+GRUB_IDX=1
+
+BOOT_OFF=$GRUB_END
+BOOT_END=$(($BOOT_OFF + 18))
+BOOT_IDX=2
 BOOT_PART=$DRIVE,$PARTYPE$BOOT_IDX
 BOOT_DEV=${DEVPART}${BOOT_IDX}
 
-EXT_OFF=$(($BOOT_END + 1))
-ROOT0_OFF=$(($EXT_OFF + 1))
+ROOT0_OFF=$BOOT_END
 ROOT0_END=$(($ROOT0_OFF + $ROOT_SIZE))
-ROOT0_IDX=5
+ROOT0_IDX=3
 ROOT0_PART=$DRIVE,$PARTYPE$ROOT0_IDX
 ROOT0_DEV=${DEVPART}${ROOT0_IDX}
-ROOT0_RUN=${RUNPART}${ROOT0_IDX}
 
-ROOT1_OFF=$(($ROOT0_END + 1))
+ROOT1_OFF=$ROOT0_END
 ROOT1_END=$(($ROOT1_OFF + $ROOT_SIZE))
-ROOT1_IDX=6
+ROOT1_IDX=4
 ROOT1_PART=$DRIVE,$PARTYPE$ROOT1_IDX
 ROOT1_DEV=${DEVPART}${ROOT1_IDX}
-ROOT1_RUN=${RUNPART}${ROOT1_IDX}
 
-ROOT2_OFF=$(($ROOT1_END + 1))
+ROOT2_OFF=$ROOT1_END
 ROOT2_END=$(($ROOT2_OFF + $ROOT_SIZE))
-ROOT2_IDX=7
+ROOT2_IDX=5
 ROOT2_PART=$DRIVE,$PARTYPE$ROOT2_IDX
 ROOT2_DEV=${DEVPART}${ROOT2_IDX}
-ROOT2_RUN=${RUNPART}${ROOT2_IDX}
-EXT_END=$(($ROOT2_END + 1))
 
-USER_OFF=$(($EXT_END + 1))
+USER_OFF=$ROOT2_END
 USER_END=$(($DISK_MB - 10))
-USER_IDX=3
+USER_IDX=6
 USER_DEV=${DEVPART}${USER_IDX}
 
 # check minimun user size;
@@ -152,16 +159,23 @@ fi
 if [ "$part_disk" == "1" ] ; then
 	echo "creating new partition layout on $DEVICE, root size ${ROOT_SIZE}MB ..."
 
-	$PARTED -s $DEVICE mklabel $PARTYPE
-	$PARTED -s $DEVICE mkpart primary ${BOOT_OFF}MiB ${BOOT_END}MiB
-	$PARTED -s $DEVICE mkpart extended ${EXT_OFF}MiB ${EXT_END}MiB
-	$PARTED -s $DEVICE mkpart logical ${ROOT0_OFF}MiB ${ROOT0_END}MiB
-	$PARTED -s $DEVICE mkpart logical ${ROOT1_OFF}MiB ${ROOT1_END}MiB
-	$PARTED -s $DEVICE mkpart logical ${ROOT2_OFF}MiB ${ROOT2_END}MiB
-	$PARTED -s $DEVICE mkpart primary ${USER_OFF}MiB ${USER_END}MiB
-	$PARTED -s $DEVICE set 1 boot on
+	$PARTED -s $DEVICE \
+		unit MiB \
+		mklabel $PARTYPE \
+		mkpart grub $GRUB_OFF $GRUB_END \
+		set $GRUB_IDX bios_grub on \
+		mkpart boot $BOOT_OFF $BOOT_END \
+		set $BOOT_IDX boot on \
+		mkpart root0 $ROOT0_OFF $ROOT0_END \
+		set $ROOT0_IDX boot off \
+		mkpart root1 $ROOT1_OFF $ROOT1_END \
+		set $ROOT1_IDX boot off \
+		mkpart root2 $ROOT2_OFF $ROOT2_END \
+		set $ROOT2_IDX boot off \
+		mkpart user $USER_OFF $USER_END \
+		set $USER_IDX boot off \
+		print
 	sync
-	sleep 5
 	partprobe -s
 	sync
 
@@ -171,6 +185,24 @@ if [ "$part_disk" == "1" ] ; then
 	echo "making user filesystem on $USER_DEV ..."
 	$MKFS -q -i 16384 -L user -m 1 $USER_DEV
 fi
+
+# check that we have a gpt disk;
+
+DISK_TYPE=`parted -s $DEVICE print | grep 'Partition Table: ' | sed -e 's/Partition Table: //'`
+if [ "$DISK_TYPE" != "gpt" ]; then
+	echo "error: disk $DEVICE is not a GPT disk"
+	umount $INST_ROOT
+	exit 12
+fi
+
+ROOT0_UUID=`sgdisk -i $ROOT0_IDX $DEVICE | grep 'unique GUID' | sed -e 's/^.*: //'`
+check_root_uuid $ROOT0_UUID $ROOT0_IDX
+
+ROOT1_UUID=`sgdisk -i $ROOT1_IDX $DEVICE | grep 'unique GUID' | sed -e 's/^.*: //'`
+check_root_uuid $ROOT1_UUID $ROOT1_IDX
+
+ROOT2_UUID=`sgdisk -i $ROOT2_IDX $DEVICE | grep 'unique GUID' | sed -e 's/^.*: //'`
+check_root_uuid $ROOT2_UUID $ROOT2_IDX
 
 # setup embedded grub modules;
 
@@ -184,6 +216,8 @@ if [ -z "$GRUB2_MODULES" ]; then
 	exit 6
 fi
 GRUB2_MODULES="$GRUB2_MODULES test echo loadenv"
+
+mkdir -m 700 -p $MNT_ROOT
 
 if [ "$inst_grub" == "1" ]; then
 	# configure device map;
@@ -223,9 +257,10 @@ if [ "$inst_grub" == "1" ]; then
 		-e s#@ROOT0_PART@#$ROOT0_PART#g \
 		-e s#@ROOT1_PART@#$ROOT1_PART#g \
 		-e s#@ROOT2_PART@#$ROOT2_PART#g \
-		-e s#@ROOT0_DEV@#$ROOT0_RUN#g \
-		-e s#@ROOT1_DEV@#$ROOT1_RUN#g \
-		-e s#@ROOT2_DEV@#$ROOT2_RUN#g \
+		-e s#@ROOT0_DEV@#PARTUUID=$ROOT0_UUID#g \
+		-e s#@ROOT1_DEV@#PARTUUID=$ROOT1_UUID#g \
+		-e s#@ROOT2_DEV@#PARTUUID=$ROOT2_UUID#g \
+		-e s#root=@PARTUUID@##g \
 		$GRUB_CFG_SRC \
 		> $GRUB_CFG
 
@@ -241,7 +276,6 @@ if [ "$inst_grub" == "1" ]; then
 	fi
 
 	echo "installing grub modules/configs in boot partition $BOOT_DEV ..."
-	mkdir -m 700 -p $MNT_ROOT
 	mount $FSTYPE $BOOT_DEV $MNT_ROOT
 	if [ $? -ne 0 ]; then
 		echo "error: could not mount $BOOT_DEV on $MNT_ROOT"

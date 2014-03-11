@@ -1,0 +1,61 @@
+Patched from the following commits in 3.14:
+
+commit 905468fa4d54c3e572ed3045cd47cce37780716e
+Author: Fabio Porcedda <fabio.porcedda@gmail.com>
+Date:   Wed Sep 25 11:21:25 2013 +0200
+
+    net: qmi_wwan: add Telit LE920 newer firmware support
+    
+commit 7653aabfbdc73c1567e29a9790701f5898ba1420
+Author: Raymond Wanyoike <raymond.wanyoike@gmail.com>
+Date:   Sun Feb 9 00:01:02 2014 +0300
+
+    net: qmi_wwan: add ZTE MF667
+    
+commit fbd3a77d813f211060f86cc7a2f8416caf0e03b1
+Author: Bjørn Mork <bjorn@mork.no>
+Date:   Tue Feb 4 13:04:33 2014 +0100
+
+    net: qmi_wwan: add Netgear Aircard 340U
+    
+commit f948dcf9e9973c05d957bc65b3185682f45feda3
+Author: Bjørn Mork <bjorn@mork.no>
+Date:   Tue Feb 4 13:02:31 2014 +0100
+
+    usb: qcserial: add Netgear Aircard 340U
+    
+--- a/drivers/net/usb/qmi_wwan.c	2014-03-07 14:22:41.130925561 -0800
++++ b/drivers/net/usb/qmi_wwan.c	2014-03-07 14:25:57.386920704 -0800
+@@ -699,6 +699,7 @@
+ 	{QMI_FIXED_INTF(0x19d2, 0x1255, 3)},
+ 	{QMI_FIXED_INTF(0x19d2, 0x1255, 4)},
+ 	{QMI_FIXED_INTF(0x19d2, 0x1256, 4)},
++	{QMI_FIXED_INTF(0x19d2, 0x1270, 5)},	/* ZTE MF667 */
+ 	{QMI_FIXED_INTF(0x19d2, 0x1401, 2)},
+ 	{QMI_FIXED_INTF(0x19d2, 0x1402, 2)},	/* ZTE MF60 */
+ 	{QMI_FIXED_INTF(0x19d2, 0x1424, 2)},
+@@ -710,10 +711,12 @@
+ 	{QMI_FIXED_INTF(0x1199, 0x68a2, 8)},	/* Sierra Wireless MC7710 in QMI mode */
+ 	{QMI_FIXED_INTF(0x1199, 0x68a2, 19)},	/* Sierra Wireless MC7710 in QMI mode */
+ 	{QMI_FIXED_INTF(0x1199, 0x901c, 8)},    /* Sierra Wireless EM7700 */
++	{QMI_FIXED_INTF(0x1199, 0x9051, 8)},	/* Netgear AirCard 340U */
+ 	{QMI_FIXED_INTF(0x1bbb, 0x011e, 4)},	/* Telekom Speedstick LTE II (Alcatel One Touch L100V LTE) */
+ 	{QMI_FIXED_INTF(0x2357, 0x0201, 4)},	/* TP-LINK HSUPA Modem MA180 */
+ 	{QMI_FIXED_INTF(0x2357, 0x9000, 4)},	/* TP-LINK MA260 */
+ 	{QMI_FIXED_INTF(0x1bc7, 0x1200, 5)},	/* Telit LE920 */
++	{QMI_FIXED_INTF(0x1bc7, 0x1201, 2)},	/* Telit LE920 */
+ 	{QMI_FIXED_INTF(0x0b3c, 0xc005, 6)},    /* Olivetti Olicard 200 */
+ 	{QMI_FIXED_INTF(0x1e2d, 0x0060, 4)},	/* Cinterion PLxx */
+ 
+--- a/drivers/usb/serial/qcserial.c	2014-03-07 14:22:41.130925561 -0800
++++ b/drivers/usb/serial/qcserial.c	2014-03-07 14:28:36.422921909 -0800
+@@ -139,6 +139,9 @@
+ 	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901c, 0)},	/* Sierra Wireless EM7700 Device Management */
+ 	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901c, 2)},	/* Sierra Wireless EM7700 NMEA */
+ 	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901c, 3)},	/* Sierra Wireless EM7700 Modem */
++	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9051, 0)},	/* Netgear AirCard 340U Device Management */
++	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9051, 2)},	/* Netgear AirCard 340U NMEA */
++	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9051, 3)},	/* Netgear AirCard 340U Modem */
+ 
+ 	{ }				/* Terminating entry */
+ };

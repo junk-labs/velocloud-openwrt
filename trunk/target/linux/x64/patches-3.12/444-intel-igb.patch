@@ -227,17 +227,19 @@
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_FIBER), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_QUAD_FIBER), board_82575 },
-@@ -184,6 +185,9 @@
+@@ -184,6 +185,11 @@
  static int igb_vf_configure(struct igb_adapter *adapter, int vf);
  #endif
  
 +extern int igb_vc_i2c_init(struct igb_adapter *);
 +extern void igb_vc_i2c_exit(struct igb_adapter *);
++extern int igb_vc_dsa_init(struct igb_adapter *);
++extern void igb_vc_dsa_exit(struct igb_adapter *);
 +
  #ifdef CONFIG_PM
  #ifdef CONFIG_PM_SLEEP
  static int igb_suspend(struct device *);
-@@ -252,6 +256,10 @@
+@@ -252,6 +258,10 @@
  MODULE_LICENSE("GPL");
  MODULE_VERSION(DRV_VERSION);
  
@@ -248,7 +250,7 @@
  #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
  static int debug = -1;
  module_param(debug, int, 0);
-@@ -1996,6 +2004,18 @@
+@@ -1996,6 +2006,18 @@
  	return status;
  }
  
@@ -267,7 +269,7 @@
  /**
   *  igb_probe - Device Initialization Routine
   *  @pdev: PCI device information struct
-@@ -2109,6 +2129,8 @@
+@@ -2109,6 +2131,8 @@
  	memcpy(&hw->nvm.ops, ei->nvm_ops, sizeof(hw->nvm.ops));
  	/* Initialize skew-specific constants */
  	err = ei->get_invariants(hw);
@@ -276,7 +278,7 @@
  	if (err)
  		goto err_sw_init;
  
-@@ -2188,18 +2210,17 @@
+@@ -2188,18 +2212,17 @@
  	case e1000_i211:
  		if (igb_get_flash_presence_i210(hw)) {
  			if (hw->nvm.ops.validate(hw) < 0) {
@@ -301,7 +303,7 @@
  		}
  		break;
  	}
-@@ -2212,8 +2233,11 @@
+@@ -2212,8 +2235,11 @@
  
  	if (!is_valid_ether_addr(netdev->dev_addr)) {
  		dev_err(&pdev->dev, "Invalid MAC Address\n");
@@ -315,7 +317,7 @@
  	}
  
  	/* get firmware version for ethtool -i */
-@@ -2309,6 +2333,10 @@
+@@ -2309,6 +2335,10 @@
  		dev_err(&pdev->dev, "failed to init i2c interface\n");
  		goto err_eeprom;
  	}
@@ -326,7 +328,19 @@
  
  	/* let the f/w know that the h/w is now under the control of the
  	 * driver. */
-@@ -2534,6 +2562,8 @@
+@@ -2319,6 +2349,11 @@
+ 	if (err)
+ 		goto err_register;
+ 
++	// init vc mdio for dsa switch;
++	err = igb_vc_dsa_init(adapter);
++	if(err)
++		dev_err(&pdev->dev, "failed to init dsa interface\n");
++
+ 	/* carrier off reporting is important to ethtool even BEFORE open */
+ 	netif_carrier_off(netdev);
+ 
+@@ -2534,6 +2569,8 @@
  {
  	/* free the adapter bus structure */
  	i2c_del_adapter(&adapter->i2c_adap);
@@ -335,7 +349,16 @@
  }
  
  /**
-@@ -3879,6 +3909,8 @@
+@@ -2575,6 +2612,8 @@
+ 		wr32(E1000_DCA_CTRL, E1000_DCA_CTRL_DCA_MODE_DISABLE);
+ 	}
+ #endif
++	// free vc dsa interface;
++	igb_vc_dsa_exit(adapter);
+ 
+ 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
+ 	 * would have already happened in close and is redundant.
+@@ -3879,6 +3918,8 @@
  	case e1000_media_type_copper:
  		if (!hw->mac.get_link_status)
  			return true;
@@ -346,7 +369,7 @@
  		link_active = !hw->mac.get_link_status;
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,1843 @@
+@@ -0,0 +1,2726 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -377,6 +400,10 @@
 +#include "e1000_hw.h"
 +#include "igb.h"
 +
++#include <linux/phy.h>
++#include <linux/platform_device.h>
++#include <net/dsa.h>
++
 +#undef IGB_VC_DEBUG
 +#ifdef IGB_VC_DEBUG
 +#define vcdbg(fmt, ...) printk("%s/%d " fmt, __func__, hw->bus.func, ##__VA_ARGS__);
@@ -389,6 +416,20 @@
 +#undef IGB_VC_DUMP_6320
 +#undef IGB_VC_DUMP_6176
 +#undef IGB_VC_DUMP_1112
++
++#undef IGB_VC_DUMP_DSA_REG
++#ifdef IGB_VC_DUMP_DSA_REG
++#define vcdsareg(fmt, ...) printk("%s:" fmt, __func__, ##__VA_ARGS__);
++#else
++#define vcdsareg(fmt, ...)
++#endif
++
++#undef IGB_VC_DUMP_DSA_PHY
++#ifdef IGB_VC_DUMP_DSA_PHY
++#define vcdsaphy(fmt, ...) printk("%s:" fmt, __func__, ##__VA_ARGS__);
++#else
++#define vcdsaphy(fmt, ...)
++#endif
 +
 +// number of i354 rangeley bus functions;
 +
@@ -524,6 +565,38 @@
 +
 +static unsigned short igb_vc_i2c_addrs[] = { 0x50, 0x51, I2C_CLIENT_END };
 +static struct vc_i2c_sfp igb_vc_i2c_sfp;
++
++// DSA specific;
++
++#define VC_NAME "vc"
++#define VC_DSA "dsa"
++
++#define IGB_VC_DSA_BUS_FUNC	1
++
++// switch tree;
++
++static struct dsa_chip_data vc_switch = {
++	.sw_addr = 0,
++	.port_names = {
++		"sw%d",         // 0
++		"sw%d",         // 1
++		"sw%d",         // 2
++		"sw%d",         // 3
++		"cpu",          // 4
++	},
++};
++
++static struct dsa_platform_data vc_switch_data = {
++	.nr_chips = 1,
++	.chip = &vc_switch,
++};
++
++struct vc_dsa_priv {
++	struct e1000_hw *hw;
++	struct platform_device pdev;
++	int irqs[PHY_MAX_ADDR];
++};
++
 +
 +// busy-wait for MDIO completion;
 +// returns <0 if error, else mdic bits;
@@ -1029,6 +1102,7 @@
 +#if 0
 +
 +// software reset entire marvell switch;
++// XXX it doesn't really put the switch back into full hw reset;
 +
 +static s32
 +igb_vc_m88sw_reset(struct e1000_hw *hw)
@@ -2190,3 +2264,846 @@
 +	i2c_del_driver(&igb_vc_i2c_driver);
 +}
 +
++// dsa interface to m88e7176 switch;
++// cannot use mv88e6xxx driver as mdio bus access, mdio locking,
++// and m88e6176 phy register access are different;
++// much code copied from the marvell driver;
++
++#define REG_DIRECT	0x10
++#define REG_PORT(p)	(REG_DIRECT + (p))
++#define REG_GLOBAL	0x1b
++#define REG_GLOBAL2	0x1c
++
++struct m88e6176_priv {
++	struct mutex stats;	// serialize stats access;
++	int id;			// switch id;
++};
++
++struct m88e6176_hw_stat {
++	char string[ETH_GSTRING_LEN];
++	int sizeof_stat;
++	int reg;
++};
++
++// read switch register;
++
++static int
++m88e6176_reg_read(struct dsa_switch *ds, int addr, int reg)
++{
++	struct mii_bus *bus = ds->master_mii_bus;
++	struct vc_dsa_priv *priv = bus->priv;
++	struct e1000_hw *hw = priv->hw;
++	int ret = -EINVAL;
++	u16 data;
++
++	if(addr >= REG_DIRECT)
++		ret = igb_vc_mdio_read(hw, (addr << 5) | reg, &data);
++	vcdsareg("%d addr %d reg %d data 0x%x\n", ret, addr, reg, data);
++	return(ret? ret : data);
++}
++
++// write switch register;
++
++static int
++m88e6176_reg_write(struct dsa_switch *ds, int addr, int reg, u16 val)
++{
++	struct mii_bus *bus = ds->master_mii_bus;
++	struct vc_dsa_priv *priv = bus->priv;
++	struct e1000_hw *hw = priv->hw;
++	int ret = -EINVAL;
++
++	if(addr >= REG_DIRECT)
++		ret = igb_vc_mdio_write(hw, (addr << 5) | reg, val);
++	vcdsareg("%d addr %d reg %d data 0x%x\n", ret, addr, reg, val);
++	return(ret);
++}
++
++// read phy register;
++
++static int
++m88e6176_phy_read(struct dsa_switch *ds, int port, int reg)
++{
++	struct mii_bus *bus = ds->master_mii_bus;
++	struct vc_dsa_priv *priv = bus->priv;
++	struct e1000_hw *hw = priv->hw;
++	int addr = port;
++	int ret = -EINVAL;
++	u16 data;
++
++	if(addr < 4)
++		ret = igb_vc_smi_mdio_read(hw, (addr << 5) | reg, &data);
++	vcdsaphy("%d addr %d reg %d data 0x%x\n", ret, addr, reg, data);
++	return(ret? ret : data);
++}
++
++// write phy register;
++
++static int
++m88e6176_phy_write(struct dsa_switch *ds, int port, int reg, u16 val)
++{
++	struct mii_bus *bus = ds->master_mii_bus;
++	struct vc_dsa_priv *priv = bus->priv;
++	struct e1000_hw *hw = priv->hw;
++	int addr = port;
++	int ret = -EINVAL;
++
++	if(addr < 4)
++		ret = igb_vc_smi_mdio_write(hw, (addr << 5) | reg, val);
++	vcdsaphy("%d addr %d reg %d data 0x%x\n", ret, addr, reg, val);
++	return(ret);
++}
++
++// set MAC address;
++
++static int
++m88e6176_set_addr(struct dsa_switch *ds, u8 *addr)
++{
++	int ret;
++	int i, j;
++
++	for(i = 0; i < 6; i++) {
++		ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x0d, 0x8000 | (i << 8) | addr[i]);
++		if(ret)
++			return(ret);
++
++		// wait for write to complete;
++		for(j = 0; j < 16; j++) {
++			ret = m88e6176_reg_read(ds, REG_GLOBAL2, 0x0d);
++			if(ret < 0)
++				return(ret);
++			if((ret & 0x8000) == 0)
++				break;
++		}
++		if(j == 16)
++			return(-ETIMEDOUT);
++	}
++	return(0);
++}
++
++// poll a link;
++
++static void
++m88e6176_poll_link(struct dsa_switch *ds)
++{
++	int i;
++	struct net_device *dev;
++	int sts, link, speed, duplex, fc;
++
++	for(i = 0; i < DSA_MAX_PORTS; i++) {
++		dev = ds->ports[i];
++		if(dev == NULL)
++			continue;
++
++		link = sts = 0;
++		if(dev->flags & IFF_UP) {
++			sts = m88e6176_reg_read(ds, REG_PORT(i), 0x00);
++			if(sts < 0)
++				continue;
++			link = !!(sts & 0x0800);
++		}
++
++		if( !link) {
++			if(netif_carrier_ok(dev)) {
++				netdev_info(dev, "link down\n");
++				netif_carrier_off(dev);
++			}
++			continue;
++		}
++
++		switch(sts & 0x0300) {
++		case 0x0000: speed = 10; break;
++		case 0x0100: speed = 100; break;
++		case 0x0200: speed = 1000; break;
++		default: speed = -1; break;
++		}
++		duplex = (sts & 0x0400)? 1 : 0;
++		fc = (sts & 0x8000)? 1 : 0;
++
++		if( !netif_carrier_ok(dev)) {
++			netdev_info(dev,
++				"link up, %d Mb/s, %s duplex, flow control %sabled\n",
++				speed, duplex? "full" : "half", fc? "en" : "dis");
++			netif_carrier_on(dev);
++		}
++	}
++}
++
++// wait for stats to be ready;
++
++static int
++m88e6176_stats_wait(struct dsa_switch *ds)
++{
++	int ret;
++	int i;
++
++	for(i = 0; i < 10; i++) {
++		ret = m88e6176_reg_read(ds, REG_GLOBAL, 0x1d);
++		if(ret < 0)
++			return(ret);
++		if( !(ret & 0x8000))
++			return(0);
++	}
++	return(-ETIMEDOUT);
++}
++
++// take a snapshot of the stats;
++
++static int
++m88e6176_stats_snapshot(struct dsa_switch *ds, int port)
++{
++	int ret;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1d, 0xdc00 | port);
++	if(ret == 0)
++		ret = m88e6176_stats_wait(ds);
++	return(ret);
++}
++
++// read a single stat;
++
++static int
++m88e6176_stats_read(struct dsa_switch *ds, int stat, u32 *valp)
++{
++	int ret;
++	u32 val;
++
++	*valp = 0;
++
++	// which stat to read;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1d, 0xcc00 | stat);
++	if(ret)
++		goto out;
++	ret = m88e6176_stats_wait(ds);
++	if(ret < 0)
++		goto out;
++
++	// read high and low word;
++
++	ret = m88e6176_reg_read(ds, REG_GLOBAL, 0x1e);
++	if(ret < 0)
++		goto out;
++	val = ret << 16;
++	ret = m88e6176_reg_read(ds, REG_GLOBAL, 0x1f);
++	if(ret < 0)
++		goto out;
++	val |= ret;
++	*valp = val;
++out:
++	return(ret);
++}
++
++// get strings;
++
++static void
++m88e6176_get_n_strings(struct dsa_switch *ds,
++	int nr_stats, struct m88e6176_hw_stat *stats,
++	int port, uint8_t *data)
++{
++	int i;
++
++	for(i = 0; i < nr_stats; i++)
++		memcpy(data + i * ETH_GSTRING_LEN, stats[i].string, ETH_GSTRING_LEN);
++}
++
++// read all stats;
++
++static void
++m88e6176_get_n_stats(struct dsa_switch *ds,
++	int nr_stats, struct m88e6176_hw_stat *stats,
++	int port, uint64_t *data)
++{
++	struct m88e6176_priv *priv = (void *)(ds + 1);
++	struct m88e6176_hw_stat *s;
++	int ret, i;
++	u32 lo, hi;
++
++	mutex_lock(&priv->stats);
++
++	ret = m88e6176_stats_snapshot(ds, port);
++	if(ret < 0)
++		goto out;
++
++	// read each stat;
++
++	for(i = 0; i < nr_stats; i++) {
++		s = stats + i;
++		m88e6176_stats_read(ds, s->reg, &lo);
++		hi = 0;
++		if(s->sizeof_stat == 8)
++			m88e6176_stats_read(ds, s->reg + 1, &hi);
++		data[i] = (((u64)hi) << 32) | lo;
++	}
++out:
++	mutex_unlock(&priv->stats);
++}
++
++// probe for m88e6176 switch;
++
++static char *
++m88e6176_probe(struct mii_bus *bus, int sw_addr)
++{
++	struct vc_dsa_priv *priv = bus->priv;
++	struct e1000_hw *hw = priv->hw;
++
++	if(hw->phy.id == M88E6176_ID)
++		return("Marvell m88e6176");
++	return(NULL);
++}
++
++// reset the switch ports;
++// however, do not touch the cpu link;
++
++static int
++m88e6176_switch_reset(struct dsa_switch *ds)
++{
++	int i, ret;
++
++	// set all ports to disabled state;
++	// reg 0x4 switch reset doesn't really hw reset the switch;
++
++	for(i = 0; i < 4; i++) {
++		ret = m88e6176_reg_read(ds, REG_PORT(i), 0x04);
++		if(ret >= 0)
++			m88e6176_reg_write(ds, REG_PORT(i), 0x04, ret & 0xfffc);
++        }
++
++	// wait for tx queues to drain;
++
++	usleep_range(2000, 4000);
++
++	return(0);
++}
++
++// config priority;
++
++static int
++m88e6176_config_prio(struct dsa_switch *ds)
++{
++	int ret;
++
++	// configure the IP ToS mapping registers
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x10, 0x0000);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x11, 0x0000);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x12, 0x5555);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x13, 0x5555);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x14, 0xaaaa);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x15, 0xaaaa);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x16, 0xffff);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x17, 0xffff);
++	if(ret)
++		goto out;
++
++	// configure the IEEE 802.1p priority mapping register
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x18, 0xfa41);
++out:
++	return(ret);
++}
++
++// setup globals;
++
++static int
++m88e6176_setup_global(struct dsa_switch *ds)
++{
++	int ret, i;
++
++	// bit 14 must not be cleared, or PHY regs are inaccessible;
++	// don't discard packets with excessive collisions;
++	// mask all interrupts;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x04, 0x4000);
++	if(ret)
++		goto out;
++
++	// set the default address aging time to 5 minutes;
++	// enable address learn messages to be sent to all message ports;
++	// configure the priority mapping registers;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0a, 0x0148);
++	if(ret)
++		goto out;
++        ret = m88e6176_config_prio(ds);
++        if(ret < 0)
++		goto out;
++
++	// configure the upstream port as the port to which
++	// ingress and egress monitor frames are to be sent;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1a, (dsa_upstream_port(ds) * 0x1110));
++	if(ret)
++		goto out;
++
++	// disable remote management;
++	// set the switch's DSA device number.
++
++        ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1c, ds->index & 0x1f);
++	if(ret)
++		goto out;
++
++	// send all frames with destination addresses matching
++	// 01:80:c2:00:00:2x to the CPU port;
++	// 01:80:c2:00:00:0x to the CPU port;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x02, 0xffff);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x03, 0xffff);
++	if(ret)
++		goto out;
++
++	// disable the loopback filter;
++	// disable flow control messages;
++	// disable flood broadcast override;
++	// disable removing of provider tags;
++	// disable ATU age violation interrupts;
++	// disable tag flow control;
++	// force flow control priority to the highest;
++	// send all special multicast frames to the CPU at the highest priority;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x05, 0x00ff);
++	if(ret)
++		goto out;
++
++	// program the DSA routing table;
++
++	for(i = 0; i < 32; i++) {
++		int nexthop = 0x1f;
++
++		if((i != ds->index) && (i < ds->dst->pd->nr_chips))
++			nexthop = ds->pd->rtable[i] & 0x1f;
++		ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x06, 0x8000 | (i << 8) | nexthop);
++		if(ret)
++			goto out;
++	}
++
++	// clear all trunk masks;
++
++	for(i = 0; i < 8; i++) {
++		ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x07, 0x8000 | (i << 12) | 0xff);
++		if(ret)
++			goto out;
++	}
++
++	// clear all trunk mappings;
++
++	for(i = 0; i < 16; i++) {
++		ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x08, 0x8000 | (i << 11));
++		if(ret)
++			goto out;
++	}
++
++	// disable ingress rate limiting by resetting all ingress
++	// rate limit registers to their initial state;
++
++	for(i = 0; i < 6; i++) {
++		ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x09, 0x9000 | (i << 8));
++		if(ret)
++			goto out;
++	}
++
++	// initialise cross-chip port VLAN table to reset defaults;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x0b, 0x9000);
++	if(ret)
++		goto out;
++
++	// clear the priority override table;
++
++	for(i = 0; i < 16; i++) {
++		ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x0f, 0x8000 | (i << 8));
++		if(ret)
++			goto out;
++	}
++out:
++	return(ret);
++}
++
++// setup single port;
++
++static int
++m88e6176_setup_port(struct dsa_switch *ds, int p)
++{
++	int ret;
++	int addr = REG_PORT(p);
++	u16 val;
++
++	// don't force link, speed, duplex or flow control state on ports;
++	// but force the CPU port and all DSA ports to 1000 Mb/s full duplex;
++
++	ret = m88e6176_reg_write(ds, addr, 0x01, 0x000f);
++	if(ret)
++		goto out;
++
++	// do not limit the period of time that this port can be
++	// paused for by the remote end or the period of time that
++	// this port can pause the remote end.
++
++	ret = m88e6176_reg_write(ds, addr, 0x02, 0x0000);
++	if(ret)
++		goto out;
++
++	// disable drop-on-unlock, drop-on-lock;
++	// disable header mode;
++	// enable IGMP/MLD snooping;
++	// disable VLAN tunneling;
++	// determine priority by looking at 802.1p and IP priority fields
++	// (IP prio has precedence), and set STP state to forwarding;
++
++	// if this is the CPU link, use DSA or EDSA tagging;
++	// if this is a link to another switch, use DSA tagging mode;
++	// if this is the upstream port for this switch,
++	// then enable forwarding of unknown unicasts and multicasts.
++
++	val = 0x0433;
++	if(dsa_is_cpu_port(ds, p)) {
++		if (ds->dst->tag_protocol == htons(ETH_P_EDSA))
++			val |= 0x3300;
++		else
++			val |= 0x0100;
++	}
++	if(ds->dsa_port_mask & (1 << p))
++		val |= 0x0100;
++	if(p == dsa_upstream_port(ds))
++		val |= 0x000c;
++	ret = m88e6176_reg_write(ds, addr, 0x04, val);
++	if(ret)
++		goto out;
++
++	// disable trunking;
++	// if this is the CPU port, enable learn messages to be sent to this port;
++
++	val = dsa_is_cpu_port(ds, p)? 0x8000 : 0x0000;
++	ret = m88e6176_reg_write(ds, addr, 0x05, val);
++	if(ret)
++		goto out;
++
++	// port based VLAN map;
++	// give each port its own address database;
++	// allow the CPU port to talk to each of the 'real' ports;
++	// allow each of the 'real' ports to talk to each other and the upstream port;
++
++	val = ds->phys_port_mask;
++	if( !dsa_is_cpu_port(ds, p)) {
++		val |= 1 << dsa_upstream_port(ds);
++		val &= ~(1 << p);
++	}
++	ret = m88e6176_reg_write(ds, addr, 0x06, val);
++	if(ret)
++		goto out;
++
++	// don't set a default VLAN id;
++	// set the default packet priority to zero;
++
++	ret = m88e6176_reg_write(ds, addr, 0x07, 0x0000);
++	if(ret)
++		goto out;
++
++	// don't force a good FCS;
++	// set the maximum frame size to 10240 bytes;
++	// don't let the switch add or strip 802.1q tags;
++	// don't discard tagged or untagged frames on this port;
++	// do a destination address lookup on all received packets as usual;
++	// disable ARP mirroring and don't send a copy of all
++	// transmitted/received frames on this port to the CPU;
++
++	ret = m88e6176_reg_write(ds, addr, 0x08, 0x2080);
++	if(ret)
++		goto out;
++
++	// disable egress rate control;
++
++	ret = m88e6176_reg_write(ds, addr, 0x09, 0x0001);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, addr, 0x0a, 0x0000);
++	if(ret)
++		goto out;
++
++	// port association vector;
++	// when learning source addresses of packets, add the address
++	// to the address database using a port bitmap that has only the bit
++	// for this port set and the other bits clear;
++
++	ret = m88e6176_reg_write(ds, addr, 0x0b, 1 << p);
++	if(ret)
++		goto out;
++
++	// port ATU control: disable limiting the number of address
++	// database entries that this port is allowed to use;
++
++	ret = m88e6176_reg_write(ds, addr, 0x0c, 0x0000);
++	if(ret)
++		goto out;
++
++	// disable DA, SA and VTU priority override;
++
++	ret = m88e6176_reg_write(ds, addr, 0x0d, 0x0000);
++	if(ret)
++		goto out;
++
++	// use the DSA ethertype value;
++
++	ret = m88e6176_reg_write(ds, addr, 0x0f, ETH_P_EDSA);
++	if(ret)
++		goto out;
++
++	// use an identity 802.1p prio -> switch prio mapping;
++
++	ret = m88e6176_reg_write(ds, addr, 0x18, 0x3210);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, addr, 0x19, 0x7654);
++	if(ret)
++		goto out;
++
++out:
++	return(0);
++}
++
++// setup switch;
++
++static int
++m88e6176_setup(struct dsa_switch *ds)
++{
++	struct m88e6176_priv *priv = (void *)(ds + 1);
++	int ret, i;
++
++	mutex_init(&priv->stats);
++
++	ret = m88e6176_switch_reset(ds);
++	if(ret < 0)
++		goto out;
++
++	ret = m88e6176_setup_global(ds);
++	if(ret < 0)
++		goto out;
++
++	for(i = 0; i < 5; i++) {
++		ret = m88e6176_setup_port(ds, i);
++		if(ret < 0)
++			goto out;
++	}
++out:
++	return(ret);
++}
++
++// hardware stats;
++
++static struct m88e6176_hw_stat m88e6176_hw_stats[] = {
++	{ "in_good_octets", 8, 0x00, },
++	{ "in_bad_octets", 4, 0x02, },
++	{ "in_unicast", 4, 0x04, },
++	{ "in_broadcasts", 4, 0x06, },
++	{ "in_multicasts", 4, 0x07, },
++	{ "in_pause", 4, 0x16, },
++	{ "in_undersize", 4, 0x18, },
++	{ "in_fragments", 4, 0x19, },
++	{ "in_oversize", 4, 0x1a, },
++	{ "in_jabber", 4, 0x1b, },
++	{ "in_rx_error", 4, 0x1c, },
++	{ "in_fcs_error", 4, 0x1d, },
++	{ "out_octets", 8, 0x0e, },
++	{ "out_unicast", 4, 0x10, },
++	{ "out_broadcasts", 4, 0x13, },
++	{ "out_multicasts", 4, 0x12, },
++	{ "out_pause", 4, 0x15, },
++	{ "excessive", 4, 0x11, },
++	{ "collisions", 4, 0x1e, },
++	{ "deferred", 4, 0x05, },
++	{ "single", 4, 0x14, },
++	{ "multiple", 4, 0x17, },
++	{ "out_fcs_error", 4, 0x03, },
++	{ "late", 4, 0x1f, },
++	{ "hist_64bytes", 4, 0x08, },
++	{ "hist_65_127bytes", 4, 0x09, },
++	{ "hist_128_255bytes", 4, 0x0a, },
++	{ "hist_256_511bytes", 4, 0x0b, },
++	{ "hist_512_1023bytes", 4, 0x0c, },
++	{ "hist_1024_max_bytes", 4, 0x0d, },
++};
++
++static void
++m88e6176_get_strings(struct dsa_switch *ds, int port, uint8_t *data)
++{
++	m88e6176_get_n_strings(ds,
++		ARRAY_SIZE(m88e6176_hw_stats),
++		m88e6176_hw_stats, port, data);
++}
++
++static void
++m88e6176_get_stats(struct dsa_switch *ds, int port, uint64_t *data)
++{
++	m88e6176_get_n_stats(ds,
++		ARRAY_SIZE(m88e6176_hw_stats),
++		m88e6176_hw_stats, port, data);
++}
++
++// get number of hw stats;
++
++static int
++m88e6176_get_sset_count(struct dsa_switch *ds)
++{
++	return(ARRAY_SIZE(m88e6176_hw_stats));
++}
++
++// dsa switch driver;
++
++struct dsa_switch_driver m88e6176_switch_driver = {
++	.tag_protocol      = cpu_to_be16(ETH_P_EDSA),
++	.priv_size         = sizeof(struct m88e6176_priv),
++	.probe             = m88e6176_probe,
++	.setup             = m88e6176_setup,
++	.set_addr          = m88e6176_set_addr,
++	.phy_read          = m88e6176_phy_read,
++	.phy_write         = m88e6176_phy_write,
++	.poll_link         = m88e6176_poll_link,
++	.get_strings       = m88e6176_get_strings,
++	.get_ethtool_stats = m88e6176_get_stats,
++	.get_sset_count    = m88e6176_get_sset_count,
++};
++
++// dsa mdio read;
++
++static int
++igb_vc_dsa_read(struct mii_bus *bus, int addr, int reg)
++{
++	struct vc_dsa_priv *priv = bus->priv;
++	struct e1000_hw *hw = priv->hw;
++	u16 data;
++	int ret;
++
++	ret = igb_vc_mdio_read(hw, (addr << 5) | reg, &data);
++	//printk("%s: %d phy %d reg %d data 0x%x\n", __func__, ret, addr, reg, data);
++	return(ret? ret : data);
++}
++
++// dsa mdio write;
++
++static int
++igb_vc_dsa_write(struct mii_bus *bus, int addr, int reg, u16 val)
++{
++	struct vc_dsa_priv *priv = bus->priv;
++	struct e1000_hw *hw = priv->hw;
++	int ret;
++
++	ret = igb_vc_mdio_write(hw, (addr << 5) | reg, val);
++	//printk("%s: %d phy %d reg %d data 0x%x\n", __func__, ret, addr, reg, val);
++	return(ret);
++}
++
++// init dsa interface;
++
++s32
++igb_vc_dsa_init(struct igb_adapter *adapter)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	struct net_device *netdev = adapter->netdev;
++	struct mii_bus *bus;
++	struct vc_dsa_priv *priv;
++	struct platform_device *pdev;
++	s32 ret;
++	int i;
++
++	if(hw->bus.func != IGB_VC_DSA_BUS_FUNC)
++		return(0);
++
++	// allocate and register mdio bus;
++
++	bus = mdiobus_alloc_size(sizeof(struct vc_dsa_priv));
++	if( !bus)
++		return(-ENOMEM);
++
++	adapter->mii_dsa = bus;
++	priv = bus->priv;
++	priv->hw = hw;
++
++	pdev = &priv->pdev;
++	pdev->name = VC_DSA;
++	pdev->id = 0;
++	pdev->num_resources = 0;
++	pdev->dev.platform_data = &vc_switch_data;
++
++	bus->name = "mdio-dsa";
++	bus->phy_mask = ~0;
++	bus->irq = priv->irqs;
++	bus->parent = &netdev->dev;
++
++	bus->read = igb_vc_dsa_read;
++	bus->write = igb_vc_dsa_write;
++
++	for(i = 0; i < PHY_MAX_ADDR; i++) {
++		if( !bus->irq[i])
++			bus->irq[i] = PHY_POLL;
++	}
++	snprintf(bus->id, MII_BUS_ID_SIZE, VC_NAME);
++
++	ret = mdiobus_register(bus);
++	if(ret < 0)
++		goto fail_mdio_reg;
++
++	// register dsa switch;
++
++	register_switch_driver(&m88e6176_switch_driver);
++
++	vc_switch_data.netdev = &netdev->dev;
++	vc_switch.mii_bus = &bus->dev;
++	ret = platform_device_register(pdev);
++	if(ret < 0)
++		goto fail_dsa_reg;
++
++	return(0);
++
++fail_dsa_reg:
++	mdiobus_unregister(bus);
++fail_mdio_reg:
++	mdiobus_free(bus);
++	return(ret);
++}
++
++// free dsa interface;
++
++void
++igb_vc_dsa_exit(struct igb_adapter *adapter)
++{
++	struct mii_bus *bus = adapter->mii_dsa;
++	struct vc_dsa_priv *priv;
++
++	if( !bus)
++		return;
++
++	priv = bus->priv;
++
++	platform_device_unregister(&priv->pdev);
++	unregister_switch_driver(&m88e6176_switch_driver);
++
++	mdiobus_unregister(bus);
++	mdiobus_free(bus);
++}
++
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -450,6 +450,8 @@
+ 	u8 rss_indir_tbl[IGB_RETA_SIZE];
+ 
+ 	unsigned long link_check_timeout;
++
++	struct mii_bus *mii_dsa;
+ };
+ 
+ #define IGB_FLAG_HAS_MSI		(1 << 0)

@@ -1,0 +1,10 @@
+--- /dev/null
++++ b/usb-modeswitch-data-20131113/usb_modeswitch.d/1199:9051
+@@ -0,0 +1,7 @@
++# Sierra devices (specific driver)
++
++TargetVendor=   0x1199
++SierraMode=1
++Configuration=1
++NoDriverLoading=1
++

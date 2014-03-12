@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+39894
 svn://svn.openwrt.org/openwrt/trunk/package/network/config/netifd/files/lib/netifd/proto
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-17T13:12:06.382125Z
-38437
-cyrus
+2014-02-18T13:34:04.268980Z
+39621
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:29:11.458165Z
-537099ebbc8570c6211a542effdef244
-2013-10-17T13:12:06.382125Z
-38437
-cyrus
+2014-02-26T23:23:05.008859Z
+8e6b451c815a256382dd25e7d8bc443a
+2014-02-18T13:34:04.268980Z
+39621
+blogic
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1355
+1390
 

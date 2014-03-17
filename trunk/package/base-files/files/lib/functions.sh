@@ -260,6 +260,26 @@ mtd_get_mac_ascii()
 	[ -n "$mac_dirty" ] && macaddr_canonicalize "$mac_dirty"
 }
 
+mtd_get_blob()
+{
+	local mtdname="$1"
+	local offset="$2"
+	local count="$3"
+	local firmware="$4"
+	local part
+
+	part=$(find_mtd_part "$mtdname")
+	if [ -z "$part" ]; then
+		echo "mtd_get_blob: partition $mtdname not found!" >&2
+		return 1
+	fi
+
+	dd if=$part of=$firmware bs=1 skip=$offset count=$count 2>/dev/null || {
+		echo "mtd_get_blob: failed to extract $firmware from $part" >&2
+		return 1
+	}
+}
+
 mtd_get_mac_binary() {
 	local mtdname="$1"
 	local offset="$2"
@@ -548,12 +568,12 @@ dupe() { # <new_root> <old_root>
 }
 
 pivot() { # <new_root> <old_root>
-	mount -o noatime,move /proc $1/proc && \
+	/bin/mount -o noatime,move /proc $1/proc && \
 	pivot_root $1 $1$2 && {
-		mount -o noatime,move $2/dev /dev
-		mount -o noatime,move $2/tmp /tmp
-		mount -o noatime,move $2/sys /sys 2>&-
-		mount -o noatime,move $2/overlay /overlay 2>&-
+		/bin/mount -o noatime,move $2/dev /dev
+		/bin/mount -o noatime,move $2/tmp /tmp
+		/bin/mount -o noatime,move $2/sys /sys 2>&-
+		/bin/mount -o noatime,move $2/overlay /overlay 2>&-
 		return 0
 	}
 }
@@ -562,16 +582,16 @@ fopivot() { # <rw_root> <ro_root> <dupe?>
 	root=$1
 	{
 		if grep -q overlay /proc/filesystems; then
-			mount -o noatime,lowerdir=/,upperdir=$1 -t overlayfs "overlayfs:$1" /mnt && root=/mnt
+			/bin/mount -o noatime,lowerdir=/,upperdir=$1 -t overlayfs "overlayfs:$1" /mnt && root=/mnt
 		elif grep -q mini_fo /proc/filesystems; then
-			mount -t mini_fo -o noatime,base=/,sto=$1 "mini_fo:$1" /mnt 2>&- && root=/mnt
+			/bin/mount -t mini_fo -o noatime,base=/,sto=$1 "mini_fo:$1" /mnt 2>&- && root=/mnt
 		else
-			mount --bind -o noatime / /mnt
-			mount --bind -o noatime,union "$1" /mnt && root=/mnt
+			/bin/mount --bind -o noatime / /mnt
+			/bin/mount --bind -o noatime,union "$1" /mnt && root=/mnt
 		fi
 	} || {
 		[ "$3" = "1" ] && {
-		mount | grep "on $1 type" 2>&- 1>&- || mount -o noatime,bind $1 $1
+		/bin/mount | grep "on $1 type" 2>&- 1>&- || /bin/mount -o noatime,bind $1 $1
 		dupe $1 $rom
 		}
 	}
@@ -580,7 +600,7 @@ fopivot() { # <rw_root> <ro_root> <dupe?>
 
 ramoverlay() {
 	mkdir -p /tmp/root
-	mount -t tmpfs -o noatime,mode=0755 root /tmp/root
+	/bin/mount -t tmpfs -o noatime,mode=0755 root /tmp/root
 	fopivot /tmp/root /rom 1
 }
 

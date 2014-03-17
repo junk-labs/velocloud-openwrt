@@ -411,7 +411,7 @@
  		if ((hdr.network - data) > (max_len - VLAN_HLEN))
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,2886 @@
+@@ -0,0 +1,2857 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -459,7 +459,6 @@
 +#undef IGB_VC_DUMP_6320
 +#undef IGB_VC_DUMP_6176
 +#undef IGB_VC_DUMP_1112
-+#undef IGB_VC_DUMP_DSA
 +#undef IGB_VC_DUMP_ATU
 +
 +#undef IGB_VC_DUMP_DSA_REG
@@ -2578,7 +2577,6 @@
 +		if(s->sizeof_stat == 8)
 +			m88e6176_stats_read(ds, s->reg + 1, &hi);
 +		data[i] = (((u64)hi) << 32) | lo;
-+printk("dsa p%d %s=%lld\n", port, s->string, data[i]);
 +	}
 +out:
 +	mutex_unlock(&priv->stats);
@@ -2811,15 +2809,6 @@
 +        ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1c, ds->index & 0x1f);
 +	if(ret)
 +		goto out;
-+#ifdef IGB_VC_DUMP_DSA
-+{ int reg;
-+
-+for(reg = 0; reg < 32; reg++) {
-+ ret = m88e6176_reg_read(ds, REG_GLOBAL, reg);
-+ printk("dsa g1 reg%x 0x%x\n", reg, ret);
-+}
-+}
-+#endif // IGB_VC_DUMP_DSA
 +
 +	// send all frames with destination addresses matching
 +	// 01:80:c2:00:00:2x to the CPU port;
@@ -2895,15 +2884,6 @@
 +		if(ret)
 +			goto out;
 +	}
-+#ifdef IGB_VC_DUMP_DSA
-+{ int reg;
-+
-+for(reg = 0; reg < 32; reg++) {
-+ ret = m88e6176_reg_read(ds, REG_GLOBAL2, reg);
-+ printk("dsa g2 reg%x 0x%x\n", reg, ret);
-+}
-+}
-+#endif // IGB_VC_DUMP_DSA
 +out:
 +	return(ret);
 +}
@@ -3054,15 +3034,6 @@
 +	if(ret)
 +		goto out;
 +
-+#ifdef IGB_VC_DUMP_DSA
-+{ int reg;
-+
-+for(reg = 0; reg < 32; reg++) {
-+ ret = m88e6176_reg_read(ds, REG_PORT(p), reg);
-+ printk("dsa p%d reg%x 0x%x\n", p, reg, ret);
-+}
-+}
-+#endif // IGB_VC_DUMP_DSA
 +out:
 +	return(0);
 +}

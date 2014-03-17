@@ -363,7 +363,7 @@
  
  	adapter->max_frame_size = netdev->mtu + ETH_HLEN + ETH_FCS_LEN +
 -				  VLAN_HLEN;
-+				  VLAN_HLEN + ETH_DSA_LEN;
++				  VLAN_HLEN + ETH_EDSA_LEN;
  	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
  
  	spin_lock_init(&adapter->stats64_lock);
@@ -381,10 +381,34 @@
  	struct igb_adapter *adapter = netdev_priv(netdev);
  	struct pci_dev *pdev = adapter->pdev;
 -	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
-+	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN + ETH_DSA_LEN;
++	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN + ETH_EDSA_LEN;
  
  	if ((new_mtu < 68) || (max_frame > MAX_JUMBO_FRAME_SIZE)) {
  		dev_err(&pdev->dev, "Invalid MTU setting\n");
+@@ -6466,6 +6507,7 @@
+ 		unsigned char *network;
+ 		/* l2 headers */
+ 		struct ethhdr *eth;
++		__be16 edsa[4];
+ 		struct vlan_hdr *vlan;
+ 		/* l3 headers */
+ 		struct iphdr *ipv4;
+@@ -6486,6 +6528,15 @@
+ 	protocol = hdr.eth->h_proto;
+ 	hdr.network += ETH_HLEN;
+ 
++	// handle any EDSA tag if present;
++	if(protocol == __constant_htons(ETH_P_EDSA)) {
++		if ((hdr.network - data) > (max_len - ETH_EDSA_LEN))
++			return max_len;
++
++		protocol = hdr.edsa[3];
++		hdr.network += ETH_EDSA_LEN;
++	}
++
+ 	/* handle any vlan tag if present */
+ 	if (protocol == __constant_htons(ETH_P_8021Q)) {
+ 		if ((hdr.network - data) > (max_len - VLAN_HLEN))
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
 @@ -0,0 +1,2886 @@
@@ -3291,7 +3315,7 @@
  #define ETH_DATA_LEN	1500		/* Max. octets in payload	 */
  #define ETH_FRAME_LEN	1514		/* Max. octets in frame sans FCS */
  #define ETH_FCS_LEN	4		/* Octets in the FCS		 */
-+#define ETH_DSA_LEN	8		// ethertype DSA tag;
++#define ETH_EDSA_LEN	8		// ethertype EDSA tag;
  
  /*
   *	These are the defined Ethernet Protocol ID's.

@@ -446,7 +446,7 @@ $(eval $(call KernelPackage,e1000e))
 define KernelPackage/intel-igb
   SUBMENU:=$(NETWORK_DEVICES_MENU)
   TITLE:=Intel(R) IGB 825xx cards kernel support
-  DEPENDS:=@PCIE_SUPPORT
+  DEPENDS:=@PCIE_SUPPORT +kmod-dsa-core
   KCONFIG:=CONFIG_IGB
   FILES:=$(LINUX_DIR)/drivers/net/ethernet/intel/igb/igb.ko
   AUTOLOAD:=$(call AutoProbe,igb)

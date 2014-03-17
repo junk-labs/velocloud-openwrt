@@ -358,6 +358,15 @@
  
  	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
  	 * would have already happened in close and is redundant.
+@@ -2721,7 +2760,7 @@
+ 	adapter->tx_work_limit = IGB_DEFAULT_TX_WORK;
+ 
+ 	adapter->max_frame_size = netdev->mtu + ETH_HLEN + ETH_FCS_LEN +
+-				  VLAN_HLEN;
++				  VLAN_HLEN + ETH_DSA_LEN;
+ 	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
+ 
+ 	spin_lock_init(&adapter->stats64_lock);
 @@ -3879,6 +3918,8 @@
  	case e1000_media_type_copper:
  		if (!hw->mac.get_link_status)
@@ -367,9 +376,18 @@
  	case e1000_media_type_internal_serdes:
  		hw->mac.ops.check_for_link(hw);
  		link_active = !hw->mac.get_link_status;
+@@ -4844,7 +4885,7 @@
+ {
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	struct pci_dev *pdev = adapter->pdev;
+-	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
++	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN + ETH_DSA_LEN;
+ 
+ 	if ((new_mtu < 68) || (max_frame > MAX_JUMBO_FRAME_SIZE)) {
+ 		dev_err(&pdev->dev, "Invalid MTU setting\n");
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,2726 @@
+@@ -0,0 +1,2886 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -390,6 +408,7 @@
 +  the file called "COPYING".
 +*/
 +
++#include <linux/module.h>
 +#include <linux/types.h>
 +#include <linux/pci.h>
 +#include <linux/if_ether.h>
@@ -416,6 +435,8 @@
 +#undef IGB_VC_DUMP_6320
 +#undef IGB_VC_DUMP_6176
 +#undef IGB_VC_DUMP_1112
++#undef IGB_VC_DUMP_DSA
++#undef IGB_VC_DUMP_ATU
 +
 +#undef IGB_VC_DUMP_DSA_REG
 +#ifdef IGB_VC_DUMP_DSA_REG
@@ -2453,7 +2474,7 @@
 +{
 +	int ret;
 +
-+	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1d, 0xdc00 | port);
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1d, 0xdc00 | ((port + 1) << 5));
 +	if(ret == 0)
 +		ret = m88e6176_stats_wait(ds);
 +	return(ret);
@@ -2528,15 +2549,124 @@
 +
 +	for(i = 0; i < nr_stats; i++) {
 +		s = stats + i;
-+		m88e6176_stats_read(ds, s->reg, &lo);
-+		hi = 0;
++		lo = hi = 0;
++		ret = m88e6176_stats_read(ds, s->reg, &lo);
 +		if(s->sizeof_stat == 8)
 +			m88e6176_stats_read(ds, s->reg + 1, &hi);
 +		data[i] = (((u64)hi) << 32) | lo;
++printk("dsa p%d %s=%lld\n", port, s->string, data[i]);
 +	}
 +out:
 +	mutex_unlock(&priv->stats);
 +}
++
++#ifdef IGB_VC_DUMP_ATU
++
++// dump ATU;
++
++static int
++m88e6176_dump_atu(struct dsa_switch *ds, u16 fid)
++{
++	int ret, i;
++	unsigned int macpri;
++	unsigned int aov;
++	unsigned int mbv;
++	unsigned int miv;
++	unsigned int full;
++	unsigned int trunk;
++	unsigned int dpv;
++	unsigned int state;
++	unsigned char mac[6];
++	u16 bcast;
++
++	// program broadcast MAC addr to start from;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0d, 0xffff);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0e, 0xffff);
++	if(ret)
++		goto out;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0f, 0xffff);
++	if(ret)
++		goto out;
++
++	// set atu FID;
++
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x01, fid);
++	if(ret)
++		goto out;
++
++	do {
++		// start atu op;
++
++		ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0b, 0xc000);
++		if(ret)
++			goto out;
++
++		// wait for atu done;
++
++		ret = -ETIMEDOUT;
++		for(i = 0; i < 20; i++) {
++			ret = m88e6176_reg_read(ds, REG_GLOBAL, 0x0b);
++			if(ret < 0x8000)
++				break;
++		}
++		if(i >= 20)
++			goto out;
++
++		// read the atu data;
++
++		macpri = (ret >> 8) & 7;
++		aov = (ret >> 7) & 1;
++		mbv = (ret >> 6) & 1;
++		miv = (ret >> 5) & 1;
++		full = (ret >> 4) & 1;
++	
++		ret = m88e6176_reg_read(ds, REG_GLOBAL, 0x0c);
++		if(ret < 0)
++			goto out;
++
++		trunk = (ret >> 15) & 1;
++		dpv = (ret >> 4) & 0xff;
++		state = (ret >> 0) & 0xf;
++
++		bcast = 0xffff;
++
++		ret = m88e6176_reg_read(ds, REG_GLOBAL, 0x0d);
++		if(ret < 0)
++			goto out;
++		mac[0] = ret >> 8;
++		mac[1] = ret & 0xff;
++		bcast &= ret;
++
++		ret = m88e6176_reg_read(ds, REG_GLOBAL, 0x0e);
++		if(ret < 0)
++			goto out;
++		mac[2] = ret >> 8;
++		mac[3] = ret & 0xff;
++		bcast &= ret;
++
++		ret = m88e6176_reg_read(ds, REG_GLOBAL, 0x0f);
++		if(ret < 0)
++			goto out;
++		mac[4] = ret >> 8;
++		mac[5] = ret & 0xff;
++		bcast &= ret;
++
++		printk("atu fid=0x%x pri=0x%x aov=%d mbv=%d miv=%d full=%d "
++			"trunk=%d dpv=0x%x state=0x%x mac=%02x:%02x:%02x:%02x:%02x:%02x\n",
++			fid, macpri, aov, mbv, miv, full,
++			trunk, dpv, state,
++			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
++
++	} while(bcast != 0xffff);
++
++out:
++	printk("%s %d\n", __func__, ret);
++	return(ret);
++}
++#endif // IGB_VC_DUMP_ATU
 +
 +// probe for m88e6176 switch;
 +
@@ -2561,8 +2691,9 @@
 +
 +	// set all ports to disabled state;
 +	// reg 0x4 switch reset doesn't really hw reset the switch;
++	// do not reset the cpu port;
 +
-+	for(i = 0; i < 4; i++) {
++	for(i = 0; i < 7; i++) {
 +		ret = m88e6176_reg_read(ds, REG_PORT(i), 0x04);
 +		if(ret >= 0)
 +			m88e6176_reg_write(ds, REG_PORT(i), 0x04, ret & 0xfffc);
@@ -2623,7 +2754,8 @@
 +{
 +	int ret, i;
 +
-+	// bit 14 must not be cleared, or PHY regs are inaccessible;
++	// bit 14 was PE (PPU enable) on m88e6165;
++	// it must be set, otherwise PHY regs are inaccessible;
 +	// don't discard packets with excessive collisions;
 +	// mask all interrupts;
 +
@@ -2635,7 +2767,7 @@
 +	// enable address learn messages to be sent to all message ports;
 +	// configure the priority mapping registers;
 +
-+	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0a, 0x0148);
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0a, 0x0149);
 +	if(ret)
 +		goto out;
 +        ret = m88e6176_config_prio(ds);
@@ -2655,6 +2787,15 @@
 +        ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1c, ds->index & 0x1f);
 +	if(ret)
 +		goto out;
++#ifdef IGB_VC_DUMP_DSA
++{ int reg;
++
++for(reg = 0; reg < 32; reg++) {
++ ret = m88e6176_reg_read(ds, REG_GLOBAL, reg);
++ printk("dsa g1 reg%x 0x%x\n", reg, ret);
++}
++}
++#endif // IGB_VC_DUMP_DSA
 +
 +	// send all frames with destination addresses matching
 +	// 01:80:c2:00:00:2x to the CPU port;
@@ -2711,7 +2852,7 @@
 +	// disable ingress rate limiting by resetting all ingress
 +	// rate limit registers to their initial state;
 +
-+	for(i = 0; i < 6; i++) {
++	for(i = 0; i < 7; i++) {
 +		ret = m88e6176_reg_write(ds, REG_GLOBAL2, 0x09, 0x9000 | (i << 8));
 +		if(ret)
 +			goto out;
@@ -2730,6 +2871,15 @@
 +		if(ret)
 +			goto out;
 +	}
++#ifdef IGB_VC_DUMP_DSA
++{ int reg;
++
++for(reg = 0; reg < 32; reg++) {
++ ret = m88e6176_reg_read(ds, REG_GLOBAL2, reg);
++ printk("dsa g2 reg%x 0x%x\n", reg, ret);
++}
++}
++#endif // IGB_VC_DUMP_DSA
 +out:
 +	return(ret);
 +}
@@ -2739,9 +2889,15 @@
 +static int
 +m88e6176_setup_port(struct dsa_switch *ds, int p)
 +{
-+	int ret;
++	int ret = 0;
 +	int addr = REG_PORT(p);
 +	u16 val;
++
++	// do not enable port if not in switch config;
++
++	val = ds->phys_port_mask | (1 << dsa_upstream_port(ds));
++	if( !(val & (1 << p)))
++		goto out;
 +
 +	// don't force link, speed, duplex or flow control state on ports;
 +	// but force the CPU port and all DSA ports to 1000 Mb/s full duplex;
@@ -2787,6 +2943,7 @@
 +
 +	// disable trunking;
 +	// if this is the CPU port, enable learn messages to be sent to this port;
++	// set FID[11:4] = 0;
 +
 +	val = dsa_is_cpu_port(ds, p)? 0x8000 : 0x0000;
 +	ret = m88e6176_reg_write(ds, addr, 0x05, val);
@@ -2794,9 +2951,10 @@
 +		goto out;
 +
 +	// port based VLAN map;
-+	// give each port its own address database;
++	// all ports use same address database;
 +	// allow the CPU port to talk to each of the 'real' ports;
 +	// allow each of the 'real' ports to talk to each other and the upstream port;
++	// set FID[3:0] = 0;
 +
 +	val = ds->phys_port_mask;
 +	if( !dsa_is_cpu_port(ds, p)) {
@@ -2872,6 +3030,15 @@
 +	if(ret)
 +		goto out;
 +
++#ifdef IGB_VC_DUMP_DSA
++{ int reg;
++
++for(reg = 0; reg < 32; reg++) {
++ ret = m88e6176_reg_read(ds, REG_PORT(p), reg);
++ printk("dsa p%d reg%x 0x%x\n", p, reg, ret);
++}
++}
++#endif // IGB_VC_DUMP_DSA
 +out:
 +	return(0);
 +}
@@ -2894,7 +3061,7 @@
 +	if(ret < 0)
 +		goto out;
 +
-+	for(i = 0; i < 5; i++) {
++	for(i = 0; i < 7; i++) {
 +		ret = m88e6176_setup_port(ds, i);
 +		if(ret < 0)
 +			goto out;
@@ -3007,6 +3174,12 @@
 +	return(ret);
 +}
 +
++// module param to disable dsa;
++
++static int dsa = 0;
++module_param(dsa, int, 0);
++MODULE_PARM_DESC(dsa, "Enable DSA on switch.");
++
 +// init dsa interface;
 +
 +s32
@@ -3020,6 +3193,8 @@
 +	s32 ret;
 +	int i;
 +
++	if( !dsa)
++		return(0);
 +	if(hw->bus.func != IGB_VC_DSA_BUS_FUNC)
 +		return(0);
 +
@@ -3084,6 +3259,8 @@
 +	struct mii_bus *bus = adapter->mii_dsa;
 +	struct vc_dsa_priv *priv;
 +
++	if( !dsa)
++		return;
 +	if( !bus)
 +		return;
 +
@@ -3096,6 +3273,7 @@
 +	mdiobus_free(bus);
 +}
 +
++
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
 @@ -450,6 +450,8 @@
@@ -3107,3 +3285,13 @@
  };
  
  #define IGB_FLAG_HAS_MSI		(1 << 0)
+--- a/include/uapi/linux/if_ether.h
++++ b/include/uapi/linux/if_ether.h
+@@ -34,6 +34,7 @@
+ #define ETH_DATA_LEN	1500		/* Max. octets in payload	 */
+ #define ETH_FRAME_LEN	1514		/* Max. octets in frame sans FCS */
+ #define ETH_FCS_LEN	4		/* Octets in the FCS		 */
++#define ETH_DSA_LEN	8		// ethertype DSA tag;
+ 
+ /*
+  *	These are the defined Ethernet Protocol ID's.

@@ -36,6 +36,7 @@ OPENWRT_TSYS = \
 # Default subtargets
 DEFAULT_OPENWRT_TSYS = \
 	vc-vmdk \
+	vc-xen-aws \
 	pw-dev \
 	edge500 \
 

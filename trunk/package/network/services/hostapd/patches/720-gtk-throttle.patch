@@ -1,0 +1,82 @@
+--- a/src/ap/wpa_auth_i.h
++++ b/src/ap/wpa_auth_i.h
+@@ -183,6 +183,8 @@
+ 
+ 	struct rsn_pmksa_cache *pmksa;
+ 	struct wpa_ft_pmk_cache *ft_pmk_cache;
++
++	int gtk_throttle;
+ };
+ 
+ 
+--- a/src/ap/wpa_auth.c
++++ b/src/ap/wpa_auth.c
+@@ -230,8 +230,10 @@
+ 	}
+ }
+ 
++static void wpa_rekey_gtk(void *eloop_ctx, void *timeout_ctx);
++static void wpa_rekey_gtk_throttle(void *eloop_ctx, void *timeout_ctx);
+ 
+-static void wpa_rekey_gtk(void *eloop_ctx, void *timeout_ctx)
++static void wpa_rekey_gtk_do(void *eloop_ctx, void *timeout_ctx)
+ {
+ 	struct wpa_authenticator *wpa_auth = eloop_ctx;
+ 	struct wpa_group *group;
+@@ -249,6 +251,38 @@
+ 		eloop_register_timeout(wpa_auth->conf.wpa_group_rekey,
+ 				       0, wpa_rekey_gtk, wpa_auth, NULL);
+ 	}
++	eloop_register_timeout(5, 0, wpa_rekey_gtk_throttle, wpa_auth, NULL);
++}
++
++// wpa gtk rekey throttle timer;
++// timer expired to allow further gtk rekeys;
++
++static void
++wpa_rekey_gtk_throttle(void *eloop_ctx, void *timeout_ctx)
++{
++	struct wpa_authenticator *wpa_auth = eloop_ctx;
++
++	if(wpa_auth->gtk_throttle > 1) {
++		wpa_auth->gtk_throttle = 1;
++		wpa_rekey_gtk_do(eloop_ctx, timeout_ctx);
++	} else
++		wpa_auth->gtk_throttle = 0;
++}
++
++// throttle gtk rekey;
++// to put minimum spacing between rekeys, so that certain STA
++// do not get hung-up on too frequent/out-of-oirder rekeys;
++
++static void
++wpa_rekey_gtk(void *eloop_ctx, void *timeout_ctx)
++{
++	struct wpa_authenticator *wpa_auth = eloop_ctx;
++
++	wpa_auth->gtk_throttle++;
++	if(wpa_auth->gtk_throttle > 1)
++		wpa_auth_logger(wpa_auth, NULL, LOGGER_DEBUG, "GTK rekey throttled");
++	else
++		wpa_rekey_gtk_do(eloop_ctx, timeout_ctx);
+ }
+ 
+ 
+@@ -448,6 +482,7 @@
+ 
+ 	eloop_cancel_timeout(wpa_rekey_gmk, wpa_auth, NULL);
+ 	eloop_cancel_timeout(wpa_rekey_gtk, wpa_auth, NULL);
++	eloop_cancel_timeout(wpa_rekey_gtk_throttle, wpa_auth, NULL);
+ 
+ #ifdef CONFIG_PEERKEY
+ 	while (wpa_auth->stsl_negotiations)
+@@ -595,8 +630,7 @@
+ 				"strict rekeying - force GTK rekey since STA "
+ 				"is leaving");
+ 		eloop_cancel_timeout(wpa_rekey_gtk, sm->wpa_auth, NULL);
+-		eloop_register_timeout(0, 500000, wpa_rekey_gtk, sm->wpa_auth,
+-				       NULL);
++		wpa_rekey_gtk(sm->wpa_auth, NULL);
+ 	}
+ 
+ 	eloop_cancel_timeout(wpa_send_eapol_timeout, sm->wpa_auth, sm);

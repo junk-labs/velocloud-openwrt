@@ -57,8 +57,8 @@ $(eval $(call KernelPackage,virtio-random))
 define KernelPackage/xen
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen Kernel Settings
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws
-  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws)
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:= \
   	CONFIG_PARAVIRT=y \
   	CONFIG_HYPERVISOR_GUEST=y \
@@ -86,8 +86,8 @@ $(eval $(call KernelPackage,xen))
 define KernelPackage/xen-fs
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen filesystem
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws
-  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws)
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:= \
   	CONFIG_XENFS \
   	CONFIG_XEN_COMPAT_XENFS=y
@@ -107,8 +107,8 @@ $(eval $(call KernelPackage,xen-fs))
 define KernelPackage/xen-evtchn
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen event channels
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws
-  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws)
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:=CONFIG_XEN_DEV_EVTCHN
   FILES:=$(LINUX_DIR)/drivers/xen/xen-evtchn.ko
   AUTOLOAD:=$(call AutoLoad,06,xen-evtchn)
@@ -123,8 +123,8 @@ $(eval $(call KernelPackage,xen-evtchn))
 define KernelPackage/xen-fbdev
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen virtual frame buffer
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws +kmod-fb
-  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws)
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws +kmod-fb
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:= \
   	CONFIG_XEN_FBDEV_FRONTEND \
   	CONFIG_FB_DEFERRED_IO=y \
@@ -159,8 +159,8 @@ $(eval $(call KernelPackage,xen-fbdev))
 define KernelPackage/xen-kbddev
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen virtual keyboard and mouse
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws
-  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws)
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:=CONFIG_XEN_KBDDEV_FRONTEND
   FILES:=$(LINUX_DIR)/drivers/input/xen-kbdfront.ko
   AUTOLOAD:=$(call AutoLoad,08,xen-kbdfront)
@@ -176,8 +176,8 @@ $(eval $(call KernelPackage,xen-kbddev))
 define KernelPackage/xen-netdev
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen network device frontend
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws
-  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws)
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:=CONFIG_XEN_NETDEV_FRONTEND
   FILES:=$(LINUX_DIR)/drivers/net/xen-netfront.ko
   AUTOLOAD:=$(call AutoLoad,09,xen-netfront)
@@ -193,8 +193,8 @@ $(eval $(call KernelPackage,xen-netdev))
 define KernelPackage/xen-pcidev
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen PCI device frontend
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws
-  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws)
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:=CONFIG_XEN_PCIDEV_FRONTEND
   FILES:=$(LINUX_DIR)/drivers/pci/xen-pcifront.ko
   AUTOLOAD:=$(call AutoLoad,10,xen-pcifront)

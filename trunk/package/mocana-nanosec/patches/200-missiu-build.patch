@@ -30,7 +30,7 @@ diff -ru mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/make/Makefile.common mo
 diff -u mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_custom.h mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_custom.h
 --- mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_custom.h	2013-11-08 11:39:18.000000000 -0800
 +++ mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_custom.h	2014-02-01 15:28:54.959921265 -0800
-@@ -15,6 +15,27 @@
+@@ -15,6 +15,24 @@
  /*------------------------------------------------------------------*/
 
 
@@ -51,9 +51,6 @@ diff -u mocana-nanosec-5.8.0-33895/mss_2013_10_31_33895/src/common/moptions_cust
 +//#define __ENABLE_MOCANA_EXAMPLES__
 +#define __ENABLE_MOCANA_MEM_PART__
 +#define MOC_LITTLE_ENDIAN
-+#define __ENABLE_ALL_DEBUGGING__
-+#define __ENABLE_MOCANA_DEBUG_CONSOLE__
-+#define __MOCANA_DUMP_CONSOLE_TO_STDOUT__
 +#endif /* KERNEL_CREATE_DEVICE */
 
 

@@ -80,7 +80,7 @@ define Build/Configure
 endef
 
 ifeq ($(CONFIG_ARCH_64BIT),y)
-MOCANA_64_BIT="-D__ENABLE_MOCANA_64_BIT__"
+MOCANA_64_BIT="-D__ENABLE_MOCANA_64_BIT__="
 endif
 
 define Build/Compile

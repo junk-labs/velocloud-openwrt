@@ -217,6 +217,32 @@
  
  	bool disable_polarity_correction;
  	bool is_mdix;
+@@ -535,6 +548,17 @@
+ 	bool module_plugged;
+ };
+ 
++// switch-as-phy data;
++// controls copper side port;
++
++struct e1000_swphy {
++	u8 autoneg;
++	u8 duplex;
++	u16 speed;
++	u32 autoneg_supported;
++	u32 autoneg_advertised;
++};
++
+ struct e1000_hw {
+ 	void *back;
+ 
+@@ -549,6 +573,7 @@
+ 	struct e1000_bus_info  bus;
+ 	struct e1000_mbx_info mbx;
+ 	struct e1000_host_mng_dhcp_cookie mng_cookie;
++	struct e1000_swphy swphy;
+ 
+ 	union {
+ 		struct e1000_dev_spec_82575	_82575;
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
 @@ -91,6 +91,7 @@
@@ -411,7 +437,7 @@
  		if ((hdr.network - data) > (max_len - VLAN_HLEN))
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,2857 @@
+@@ -0,0 +1,3087 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -540,6 +566,11 @@
 +#define M88_GL2_SMI_CMD_ADDR 0x003e	// SMI device address;
 +#define M88_GL2_SMI_CMD_REG 0x001f	// SMI register address;
 +#define M88_GL2_SMI_DATA 0x19		// SMI data;
++
++#define SUPPORTED_M88E6320 (SUPPORTED_Autoneg | SUPPORTED_TP \
++	| SUPPORTED_10baseT_Half | SUPPORTED_10baseT_Full \
++	| SUPPORTED_100baseT_Half | SUPPORTED_100baseT_Full \
++	| SUPPORTED_1000baseT_Full)
 +
 +// per-port registers;
 +
@@ -1317,10 +1348,70 @@
 +	ret = igb_vc_m88sw_phy_mdio_read(hw, PHY_CONTROL, &ctrl);
 +	if(ret)
 +		goto out;
++	ctrl &= ~(MII_CR_POWER_DOWN
++		| MII_CR_FULL_DUPLEX
++		| MII_CR_SPEED_100 | MII_CR_SPEED_1000
++		| MII_CR_AUTO_NEG_EN);
++
++	if(hw->swphy.autoneg)
++		ctrl |= MII_CR_AUTO_NEG_EN;
++	else {
++		if(hw->swphy.duplex)
++			ctrl |= MII_CR_FULL_DUPLEX;
++		switch(hw->swphy.speed) {
++		case SPEED_10:
++			ctrl |= MII_CR_SPEED_10;
++			break;
++		case SPEED_100:
++			ctrl |= MII_CR_SPEED_100;
++			break;
++		case SPEED_1000:
++			ctrl |= MII_CR_SPEED_1000;
++			break;
++		}
++	}
 +	ctrl |= MII_CR_RESET;
-+	ctrl &= ~MII_CR_POWER_DOWN;
++
 +	ret = igb_vc_m88sw_phy_mdio_write(hw, PHY_CONTROL, ctrl);
 +        udelay(1);
++out:
++	return(ret);
++}
++
++// force a switch port up or down;
++
++enum {
++	IGB_SW_PORT_UNFORCE = 0,
++	IGB_SW_PORT_DOWN,
++	IGB_SW_PORT_UP,
++};
++
++static s32
++igb_vc_m88sw_port_force(struct e1000_hw *hw, int what)
++{
++	s32 ret;
++	u16 ctrl;
++	u32 port = hw->phy.ports[e1000_port_phy];
++
++	ret = igb_vc_mdio_read(hw,
++		M88_SW_PORT_REG(port, M88_SW_PORT_PHYSCTRL), &ctrl);
++	if(ret)
++		goto out;
++
++	switch(what) {
++	case IGB_SW_PORT_UNFORCE:
++		ctrl &= ~0x10;
++		break;
++	case IGB_SW_PORT_DOWN:
++		ctrl |= 0x10;
++		ctrl &= ~0x20;
++		break;
++	case IGB_SW_PORT_UP:
++		ctrl |= 0x30;
++		break;
++	}
++	ret = igb_vc_mdio_write(hw,
++		M88_SW_PORT_REG(port, M88_SW_PORT_PHYSCTRL), ctrl);
 +out:
 +	return(ret);
 +}
@@ -2003,6 +2094,161 @@
 +	return(-E1000_ERR_PHY);
 +}
 +
++// get speed and duplex for m88e6320 copper ports;
++// only get link stat from phy, all others come from igb;
++
++static s32
++igb_m88sw_get_speed_and_duplex(struct e1000_hw *hw, u16 *speed, u16 *duplex)
++{
++	s32 ret;
++	u16 sts;
++
++	*speed = -1;
++	*duplex = -1;
++
++	// read port status;
++
++	ret = igb_vc_mdio_read(hw,
++		M88_SW_PORT_REG(hw->phy.ports[e1000_port_phy], M88_SW_PORT_STATUS),
++		&sts);
++	vcdbg("port status %d 0x%x\n", ret, sts);
++	if(ret)
++		goto out;
++	ret = 0;
++	if( !(sts & M88_SW_PORT_STATUS_LINK_UP))
++		goto out;
++
++	switch(sts & M88_SW_PORT_STATUS_SPEED) {
++	case M88_SW_PORT_STATUS_SPEED_10:
++		*speed = SPEED_10;
++		break;
++	case M88_SW_PORT_STATUS_SPEED_100:
++		*speed = SPEED_100;
++		break;
++	case M88_SW_PORT_STATUS_SPEED_1000:
++		*speed = SPEED_1000;
++		break;
++	}
++	if(sts & M88_SW_PORT_STATUS_DUPLEX)
++		*duplex = FULL_DUPLEX;
++	else
++		*duplex = HALF_DUPLEX;
++	ret = sts;
++out:
++	return(ret);
++}
++
++// ethtool get interfaces;
++
++int
++igb_m88sw_get_settings(struct igb_adapter *adapter, struct ethtool_cmd *ecmd)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	s32 ret;
++	u16 speed, duplex;
++
++	// set fixed values;
++
++	ecmd->supported = hw->swphy.autoneg_supported;
++	ecmd->advertising = hw->swphy.autoneg_advertised;
++	if(hw->swphy.autoneg)
++		ecmd->advertising |= ADVERTISED_Autoneg;
++
++	ecmd->port = PORT_TP;
++	ecmd->phy_address = hw->phy.addr;
++	ecmd->transceiver = XCVR_INTERNAL;
++
++	ecmd->speed = -1;
++	ecmd->duplex = -1;
++	ecmd->autoneg = AUTONEG_DISABLE;
++
++	// get speed and duplex;
++
++	ret = igb_m88sw_get_speed_and_duplex(hw, &speed, &duplex);
++	if(ret < 0)
++		goto out;
++	ethtool_cmd_speed_set(ecmd, speed);
++	if(duplex == FULL_DUPLEX)
++		ecmd->duplex = DUPLEX_FULL;
++	else if(duplex == HALF_DUPLEX)
++		ecmd->duplex = DUPLEX_HALF;
++
++	if(hw->swphy.autoneg)
++		ecmd->autoneg = AUTONEG_ENABLE;
++
++	return(0);
++
++out:
++	return(-EIO);
++}
++
++// ethtool set interfaces;
++// only set link modes of phy;
++
++int
++igb_m88sw_set_settings(struct igb_adapter *adapter, struct ethtool_cmd *ecmd)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	struct e1000_hw *hw = &adapter->hw;
++	s32 ret;
++	u32 speed;
++
++	// check valid configs;
++
++	if(ecmd->advertising & ~hw->swphy.autoneg_supported) {
++		dev_err(&pdev->dev, "Unsupported Advertise Modes (supported 0x%x)\n", hw->swphy.autoneg_supported);
++		goto inval;
++	}
++	if(ecmd->duplex & ~DUPLEX_FULL) {
++		dev_err(&pdev->dev, "Unsupported Duplex Mode\n");
++		goto inval;
++	}
++
++	if(ecmd->autoneg == AUTONEG_ENABLE) {
++		hw->swphy.autoneg = 1;
++		hw->swphy.autoneg_advertised = ADVERTISED_TP
++			| ADVERTISED_Autoneg | ecmd->advertising;
++		ecmd->advertising = hw->swphy.autoneg_advertised;
++	} else {
++		speed = ethtool_cmd_speed(ecmd);
++		switch(speed + ecmd->duplex) {
++		case SPEED_10 + DUPLEX_HALF:
++		case SPEED_10 + DUPLEX_FULL:
++		case SPEED_100 + DUPLEX_HALF:
++		case SPEED_100 + DUPLEX_FULL:
++		case SPEED_1000 + DUPLEX_FULL:
++			break;
++		default:
++			dev_err(&pdev->dev, "Unsupported Speed/Duplex Mode\n");
++			goto inval;
++		}
++		hw->swphy.autoneg = 0;
++		hw->swphy.speed = speed;
++		hw->swphy.duplex = ecmd->duplex;
++	}
++
++	// force the switch port down;
++	// reset the copper PHY;
++	// unforce the switch port;
++
++	ret = igb_vc_m88sw_port_force(hw, IGB_SW_PORT_DOWN);
++	if(ret)
++		goto out;
++	msleep(1);
++	ret = igb_vc_m88sw_phy_reset(hw);
++	if(ret)
++		goto out;
++	msleep(1);
++	ret = igb_vc_m88sw_port_force(hw, IGB_SW_PORT_UNFORCE);
++	if(ret)
++		goto out;
++	return(0);
++inval:
++	return(-EINVAL);
++out:
++	return(-EIO);
++}
++
 +// probe for velocloud board;
 +// using eeprom customer words 0x6/0x7;
 +
@@ -2071,7 +2317,7 @@
 +		mac->autoneg = false;
 +		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e6320;
 +		mac->ops.check_for_link = igb_vc_m88sw_check_for_link_m88e6320;
-+		//mac->ops.get_speed_and_duplex = igb_vc_m88sw_get_speed_and_duplex;
++		mac->ops.get_speed_and_duplex = igb_m88sw_get_speed_and_duplex;
 +
 +		phy->media_type = e1000_media_type_switch;
 +		phy->autoneg_mask = AUTONEG_ADVERTISE_SPEED_DEFAULT;
@@ -2084,6 +2330,17 @@
 +		phy->ops.get_cable_length = igb_get_cable_length_m88_gen2;
 +		phy->ops.force_speed_duplex = igb_vc_bugon_phy_force_speed_duplex; //XXX
 +		phy->ops.get_phy_info = igb_vc_m88sw_get_phy_info;
++
++		// init switch-as-phy;
++
++		hw->swphy.autoneg = 1;
++		hw->swphy.autoneg_supported = SUPPORTED_M88E6320;
++		hw->swphy.autoneg_advertised = ADVERTISED_TP
++			| ADVERTISED_10baseT_Half | ADVERTISED_10baseT_Full
++			| ADVERTISED_100baseT_Half | ADVERTISED_100baseT_Full
++			| ADVERTISED_1000baseT_Full;
++		hw->swphy.speed = SPEED_1000;
++		hw->swphy.duplex = FULL_DUPLEX;
 +		break;
 +
 +	case M88E6176_ID:
@@ -3268,7 +3525,6 @@
 +	mdiobus_free(bus);
 +}
 +
-+
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
 @@ -450,6 +450,8 @@
@@ -3286,7 +3542,47 @@
  #define ETH_DATA_LEN	1500		/* Max. octets in payload	 */
  #define ETH_FRAME_LEN	1514		/* Max. octets in frame sans FCS */
  #define ETH_FCS_LEN	4		/* Octets in the FCS		 */
-+#define ETH_EDSA_LEN	8		// ethertype EDSA tag;
++#define ETH_EDSA_LEN	8		// ethertype DSA tag;
  
  /*
   *	These are the defined Ethernet Protocol ID's.
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -42,6 +42,9 @@
+ 
+ #include "igb.h"
+ 
++extern int igb_m88sw_get_settings(struct igb_adapter *adapter, struct ethtool_cmd *ecmd);
++extern int igb_m88sw_set_settings(struct igb_adapter *adapter, struct ethtool_cmd *ecmd);
++
+ struct igb_stats {
+ 	char stat_string[ETH_GSTRING_LEN];
+ 	int sizeof_stat;
+@@ -146,6 +149,9 @@
+ 	struct e1000_sfp_flags *eth_flags = &dev_spec->eth_flags;
+ 	u32 status;
+ 
++	if(hw->phy.media_type == e1000_media_type_switch)
++		return(igb_m88sw_get_settings(adapter, ecmd));
++
+ 	if (hw->phy.media_type == e1000_media_type_copper) {
+ 
+ 		ecmd->supported = (SUPPORTED_10baseT_Half |
+@@ -167,6 +173,7 @@
+ 		ecmd->port = PORT_TP;
+ 		ecmd->phy_address = hw->phy.addr;
+ 		ecmd->transceiver = XCVR_INTERNAL;
++
+ 	} else {
+ 		ecmd->supported = (SUPPORTED_FIBRE |
+ 				   SUPPORTED_Autoneg |
+@@ -259,6 +266,9 @@
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 
++	if(hw->phy.media_type == e1000_media_type_switch)
++		return(igb_m88sw_set_settings(adapter, ecmd));
++
+ 	/* When SoL/IDER sessions are active, autoneg/speed/duplex
+ 	 * cannot be changed
+ 	 */

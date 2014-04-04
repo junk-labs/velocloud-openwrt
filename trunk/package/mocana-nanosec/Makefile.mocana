@@ -11,8 +11,8 @@ KDIR ?= '/usr/src/linux/.'
 # IPv6 support
 IPV6 ?= y
 
-# by default, enable debug output
-DEBUG ?= y
+# by default, do not enable debug output
+DEBUG ?= n
 
 # by default, do a clean build
 CLEAN ?= clean

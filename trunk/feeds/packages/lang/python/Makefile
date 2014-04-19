@@ -169,6 +169,7 @@ define Build/Configure
 		ac_cv_have_long_long_format=yes \
 		ac_cv_buggy_getaddrinfo=no \
 		OPT="$(TARGET_CFLAGS)" \
+		LIBS="-lrt" \
 	)
 endef
 

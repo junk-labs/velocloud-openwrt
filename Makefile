@@ -28,19 +28,19 @@ else
 OPENWRT_CPUARCH=x86_64
 # Supported subtargets
 OPENWRT_TSYS = \
+	vc-kvm \
 	vc-vmdk \
 	vc-xen-aws \
 	pw-dev \
 	edge500 \
-	vc-kvm \
 
 # Default subtargets
 DEFAULT_OPENWRT_TSYS = \
+	vc-kvm \
 	vc-vmdk \
 	vc-xen-aws \
 	pw-dev \
 	edge500 \
-	vc-kvm \
 
 endif
 

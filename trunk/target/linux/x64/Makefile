@@ -10,7 +10,7 @@ ARCH:=x86_64
 BOARD:=x64
 BOARDNAME:=x64
 FEATURES:=squashfs ext4 vdi vmdk pcmcia targz
-SUBTARGETS=generic edge500 pw-dev vc-vmdk vc-xen-aws
+SUBTARGETS=generic edge500 pw-dev vc-vmdk vc-xen-aws vc-kvm
 
 LINUX_VERSION:=3.12.3
 

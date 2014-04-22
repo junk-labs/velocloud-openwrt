@@ -84,6 +84,7 @@ config X64_VMDK_IMAGES
 	depends on TARGET_ROOTFS_EXT4FS
 	default y if TARGET_x64_vc_vmdk
 	default y if TARGET_x64_vc_xen_aws
+	default y if TARGET_x64_vc_kvm
 	select PACKAGE_kmod-e1000
 	select PACKAGE_kmod-pcnet32
 

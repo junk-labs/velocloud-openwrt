@@ -32,6 +32,7 @@ OPENWRT_TSYS = \
 	vc-xen-aws \
 	pw-dev \
 	edge500 \
+	vc-kvm \
 
 # Default subtargets
 DEFAULT_OPENWRT_TSYS = \
@@ -39,6 +40,7 @@ DEFAULT_OPENWRT_TSYS = \
 	vc-xen-aws \
 	pw-dev \
 	edge500 \
+	vc-kvm \
 
 endif
 

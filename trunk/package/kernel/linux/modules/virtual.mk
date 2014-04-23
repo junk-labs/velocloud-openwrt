@@ -236,3 +236,19 @@ endef
 
 $(eval $(call KernelPackage,kvm))
 
+define KernelPackage/vc_kvm_guest
+  SUBMENU:=$(VIRTUAL_MENU)
+  TITLE:=Kernel KVM Guest support for OpenStack Havana/Qemu-KVM-1.5
+  DEPENDS:=@TARGET_x64_vc_kvm_guest
+  KCONFIG:=CONFIG_KVM_GUEST=y \
+	CONFIG_HYPERVISOR_GUEST=y \
+	CONFIG_PARAVIRT=y \
+	CONFIG_PARAVIRT_CLOCK=y
+endef
+
+define KernelPackage/vc_kvm_guest/description
+ Kernel modules for supporting qemu-kvm-1.5x on OpenStack Havana
+endef
+
+$(eval $(call KernelPackage,vc_kvm_guest))
+

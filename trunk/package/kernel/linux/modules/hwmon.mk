@@ -220,7 +220,7 @@ define KernelPackage/hwmon-pc87360
   KCONFIG:=CONFIG_SENSORS_PC87360
   FILES:=$(LINUX_DIR)/drivers/hwmon/pc87360.ko
   AUTOLOAD:=$(call AutoProbe,pc87360)
-  $(call AddDepends/hwmon,@TARGET_x86 +kmod-hwmon-vid)
+  $(call AddDepends/hwmon,@TARGET_x86||TARGET_x64 +kmod-hwmon-vid)
 endef
 
 define KernelPackage/hwmon-pc87360/description
@@ -235,7 +235,7 @@ define KernelPackage/hwmon-w83627hf
   KCONFIG:=CONFIG_SENSORS_W83627HF
   FILES:=$(LINUX_DIR)/drivers/hwmon/w83627hf.ko
   AUTOLOAD:=$(call AutoLoad,50,w83627hf)
-  $(call AddDepends/hwmon,@TARGET_rdc||TARGET_x86 +kmod-hwmon-vid)
+  $(call AddDepends/hwmon,@TARGET_rdc||TARGET_x86||TARGET_x64 +kmod-hwmon-vid)
 endef
 
 define KernelPacakge/hwmon-w83627hf/description
@@ -250,7 +250,7 @@ define KernelPackage/hwmon-w83627ehf
   KCONFIG:=CONFIG_SENSORS_W83627EHF
   FILES:=$(LINUX_DIR)/drivers/hwmon/w83627ehf.ko
   AUTOLOAD:=$(call AutoLoad,50,w83627ehf)
-  $(call AddDepends/hwmon,@TARGET_rdc||TARGET_x86 +kmod-hwmon-vid)
+  $(call AddDepends/hwmon,@TARGET_rdc||TARGET_x86||TARGET_x64 +kmod-hwmon-vid)
 endef
 
 define KernelPacakge/hwmon-w83627ehf/description

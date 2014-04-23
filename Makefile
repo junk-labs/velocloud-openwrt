@@ -28,6 +28,7 @@ else
 OPENWRT_CPUARCH=x86_64
 # Supported subtargets
 OPENWRT_TSYS = \
+	vc-kvm-guest \
 	vc-vmdk \
 	vc-xen-aws \
 	pw-dev \
@@ -35,6 +36,7 @@ OPENWRT_TSYS = \
 
 # Default subtargets
 DEFAULT_OPENWRT_TSYS = \
+	vc-kvm-guest \
 	vc-vmdk \
 	vc-xen-aws \
 	pw-dev \

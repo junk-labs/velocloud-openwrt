@@ -15,7 +15,7 @@
  LINKFLAGS  = -lrt -Wl,--no-as-needed -lpthread
  #CFLAGS    = -Os -D__RTOS_LINUX__ -Wall
 -override CFLAGS += -D__RTOS_LINUX__ -g -Wall
-+override CFLAGS += -D__RTOS_LINUX__ -g -O3 -Wall
++override CFLAGS += -D__RTOS_LINUX__ -g -O3 -Wall -D__ASM_386_GCC__
  CXXFLAGS   = $(CFLAGS)
  LIBS       = $(LINKFLAGS)
  

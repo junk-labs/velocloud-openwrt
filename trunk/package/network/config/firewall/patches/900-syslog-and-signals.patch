@@ -1,0 +1,128 @@
+--- a/main.c	2014-03-18 20:41:26.000000000 -0700
++++ b/main.c	2014-04-26 15:56:53.201467102 -0700
+@@ -18,6 +18,8 @@
+ 
+ #include <stdio.h>
+ #include <unistd.h>
++#include <syslog.h>
++#include <signal.h>
+ 
+ #include "options.h"
+ #include "defaults.h"
+@@ -175,6 +177,7 @@
+ 		return rv;
+ 	}
+ 
++	syslog(LOG_NOTICE, "stopping");
+ 	if (!print_family && run_state)
+ 		fw3_hotplug_zones(run_state, false);
+ 
+@@ -228,6 +231,7 @@
+ 	if (!rv && run_state)
+ 		fw3_write_statefile(run_state);
+ 
++	syslog(LOG_NOTICE, "stopped");
+ 	return rv;
+ }
+ 
+@@ -241,6 +245,8 @@
+ 
+ 	if (!print_family)
+ 		fw3_create_ipsets(cfg_state);
++	if (!print_family)
++		syslog(LOG_NOTICE, "starting");
+ 
+ 	for (family = FW3_FAMILY_V4; family <= FW3_FAMILY_V6; family++)
+ 	{
+@@ -305,6 +311,8 @@
+ 			fw3_write_statefile(cfg_state);
+ 		}
+ 	}
++	if (!print_family)
++		syslog(LOG_NOTICE, "started");
+ 
+ 	return rv;
+ }
+@@ -321,6 +329,7 @@
+ 	if (!run_state)
+ 		return start();
+ 
++	syslog(LOG_NOTICE, "reloading");
+ 	fw3_hotplug_zones(run_state, false);
+ 
+ 	for (family = FW3_FAMILY_V4; family <= FW3_FAMILY_V6; family++)
+@@ -391,6 +400,7 @@
+ 		fw3_hotplug_zones(cfg_state, true);
+ 		fw3_write_statefile(cfg_state);
+ 	}
++	syslog(LOG_NOTICE, "reloaded");
+ 
+ 	return rv;
+ }
+@@ -448,6 +458,11 @@
+ 	return 1;
+ }
+ 
++static void handler(int signal)
++{
++	if (!print_family)
++		error("Exiting on signal %d; firewall may be in inconsistent state!", signal);
++}
+ 
+ int main(int argc, char **argv)
+ {
+@@ -491,6 +506,19 @@
+ 		goto out;
+ 	}
+ 
++	/* Bad signals */
++	signal(SIGABRT, handler);
++	signal(SIGBUS, handler);
++	signal(SIGILL, handler);
++	signal(SIGSEGV, handler);
++	/* User signals */
++	signal(SIGHUP, handler);
++	signal(SIGTERM, handler);
++	signal(SIGINT, handler);
++	signal(SIGQUIT, handler);
++
++	openlog("firewall", LOG_CONS|LOG_PID, LOG_DAEMON);
++
+ 	if (!strcmp(argv[optind], "print"))
+ 	{
+ 		if (family == FW3_FAMILY_ANY)
+@@ -576,5 +604,6 @@
+ 	if (run_state)
+ 		free_state(run_state);
+ 
++	closelog();
+ 	return rv;
+ }
+--- a/utils.c	2014-03-18 20:41:26.000000000 -0700
++++ b/utils.c	2014-04-26 15:57:09.181102117 -0700
+@@ -16,6 +16,7 @@
+  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  */
+ 
++#include <syslog.h>
+ #include "utils.h"
+ #include "options.h"
+ 
+@@ -119,6 +120,8 @@
+     va_end(argptr);
+ 	fprintf(stderr, "\n");
+ 
++	vsyslog(LOG_ERR, format, argptr);
++
+ 	exit(1);
+ }
+ 
+@@ -368,7 +371,7 @@
+ 		warn("Cannot release exclusive lock: %s", strerror(errno));
+ 
+ 	close(lock_fd);
+-	unlink(FW3_LOCKFILE);
++	/* unlink(FW3_LOCKFILE); Do NOT unlink the lock file! */
+ 
+ 	lock_fd = -1;
+ }

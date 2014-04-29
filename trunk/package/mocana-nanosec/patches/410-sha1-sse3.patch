@@ -148,19 +148,22 @@
  
 --- a/mss_2013_10_31_33895/src/crypto/sha1.c
 +++ b/mss_2013_10_31_33895/src/crypto/sha1.c
-@@ -9,6 +9,8 @@
-  *
-  */
+@@ -26,6 +26,10 @@
+ #endif
+ #include "../harness/harness.h"
  
++#ifdef __ENABLE_MOCANA_64_BIT__
 +#define __VC_SHA1__	// undef to completely compile out sha1 sse3 code;
++#endif
 +
- #include "../common/moptions.h"
- #include "../common/mtypes.h"
- #include "../common/mocana.h"
-@@ -75,6 +77,35 @@
+ 
+ /*------------------------------------------------------------------*/
+ 
+@@ -75,6 +79,37 @@
  /* local prototypes */
  static void sha1_transform(shaDescr *p_shaContext, const ubyte* M);
  
++#ifdef __VC_SHA1__
 +// init SSE3 state;
 +// determines if SSE3 instructions are available on this platform;
 +// cpuid checked once for first sha1 context init;
@@ -188,12 +191,13 @@
 +	if(c & (1 << 9))
 +		use_sse3 = SSE3_USE;
 +}
++#endif // __VC_SHA1__
 +
 +
  /*------------------------------------------------------------------*/
  
  extern MSTATUS
-@@ -133,6 +164,13 @@
+@@ -133,6 +168,13 @@
  {
      MSTATUS status;
  
@@ -207,7 +211,7 @@
  #if( defined(__ENABLE_MOCANA_FIPS_MODULE__) )
     if (OK != getFIPS_powerupStatus(FIPS_ALGO_SHA1))
          return getFIPS_powerupStatus(FIPS_ALGO_SHA1);
-@@ -349,7 +387,7 @@
+@@ -349,7 +391,7 @@
  
  #if ((!(defined(__SHA1_HARDWARE_HASH__))) || (!(defined(__DISABLE_MOCANA_RNG__))))
  static void
@@ -216,7 +220,7 @@
  {
  #ifdef __ENABLE_MOCANA_MINIMUM_STACK__
      ubyte4 *W = p_shaContext->W;
-@@ -461,6 +499,20 @@
+@@ -461,6 +503,20 @@
      p_shaContext->hashBlocks[4] += E;
  }
  

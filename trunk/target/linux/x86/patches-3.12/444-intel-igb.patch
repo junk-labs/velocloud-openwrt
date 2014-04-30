@@ -3046,7 +3046,7 @@
 +	// enable address learn messages to be sent to all message ports;
 +	// configure the priority mapping registers;
 +
-+	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0a, 0x0149);
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0a, 0x0141);
 +	if(ret)
 +		goto out;
 +        ret = m88e6176_config_prio(ds);

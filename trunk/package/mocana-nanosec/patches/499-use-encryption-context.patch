@@ -1,0 +1,147 @@
+--- a/mss_2013_10_31_33895/src/ipsec/ipsec.c	2013-11-08 11:39:19.000000000 -0800
+--- b/mss_2013_10_31_33895/src/ipsec/ipsec.c	2014-05-13 14:46:08.058483410 -0700
+@@ -2203,6 +2203,15 @@
+                 }
+                 else
+ #endif
++#if 1
++                if (OK > (status = pCipherSuite->pBEAlgo->cipherFunc(
++                                                   MOC_SYM(hwAccelCtx)
++                                                   pxSa->pCipherCtx,
++                                                   poPayload + wIPSecHdrLen,
++                                                   wPayloadLen - wIPSecHdrLen,
++                                                   FALSE,
++                                                   poPayload + sizeof(struct espHdr) /* IV */)))
++#else
+                 if (OK != (status = CRYPTO_Process(MOC_SYM(hwAccelCtx)
+                                                    pCipherSuite->pBEAlgo,
+                                                    pxSa->poEncrKey,
+@@ -2211,6 +2220,7 @@
+                                                    poPayload + wIPSecHdrLen,
+                                                    wPayloadLen - wIPSecHdrLen,
+                                                    FALSE)))
++#endif
+                 {
+                     LOG_IPSEC_PERMIT_FAIL(status, oProtocol, dwSpi, pxSa)
+                     EXIT_IPSEC
+@@ -4151,6 +4161,15 @@
+                 }
+                 else
+ #endif
++#if 1
++                if (OK > (status = pCipherSuite->pBEAlgo->cipherFunc(
++                                                   MOC_SYM(hwAccelCtx)
++                                                   pxSa->pCipherCtx,
++                                                   poPayload + wIPSecHdrLen,
++                                                   wPayloadLen - wIPSecHdrLen,
++                                                   TRUE,
++                                                   poIv /* to be modified */)))
++#else
+                 if (OK != (status = CRYPTO_Process(MOC_SYM(hwAccelCtx)
+                                                    pCipherSuite->pBEAlgo,
+                                                    pxSa->poEncrKey,
+@@ -4159,6 +4178,7 @@
+                                                    poPayload + wIPSecHdrLen,
+                                                    wPayloadLen - wIPSecHdrLen,
+                                                    TRUE)))
++#endif
+                     EXIT_IPSEC
+             }
+ 
+--- a/mss_2013_10_31_33895/src/ipsec/sadb.h	2013-11-08 11:39:19.000000000 -0800
+--- b/mss_2013_10_31_33895/src/ipsec/sadb.h	2014-05-13 14:46:13.882483283 -0700
+@@ -143,8 +143,8 @@
+     ubyte       poEncrKey[IPSEC_ENCRKEY_MAX];   /* encryption key */
+     struct SADB_cipherSuiteInfo *pCipherSuite;
+ 
+-#ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+     BulkCtx     pCipherCtx;
++#ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+     sbyte4      users;
+ #endif
+ 
+--- a/mss_2013_10_31_33895/src/ipsec/sadb.c	2013-11-08 11:39:19.000000000 -0800
+--- b/mss_2013_10_31_33895/src/ipsec/sadb.c	2014-05-13 14:46:11.814483371 -0700
+@@ -560,7 +560,7 @@
+     SADB_cipherSuiteInfo* pCipherSuite = NULL;
+     ubyte2 wEncrKeyLen;
+ 
+-#ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
++#if 1 //def __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+     BulkCtx pCipherCtx;
+     ubyte *poEncrKey;
+     ubyte encrKey[IPSEC_ENCRKEY_MAX];
+@@ -877,14 +877,14 @@
+ #endif
+ 
+     /* create cipher context */
+-#ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+     if (NULL != pCipherSuite)
+     {
++#ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+         hwAccelDescr hwAccelCtx;
+ 
+         if (OK > (status = IPSEC_getHwAccelChannel(&hwAccelCtx, bInbound)))
+             goto exit;
+-
++#endif
+         /* get encryption key first */
+         if (IPSEC_SA_FLAG_HEXKEY & flags)
+         {
+@@ -905,15 +905,15 @@
+         pCipherCtx = pCipherSuite->pBEAlgo->createFunc(MOC_SYM(hwAccelCtx)
+                                         poEncrKey, wEncrKeyLen, !bInbound);
+ 
++#ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+         IPSEC_releaseHwAccelChannel(&hwAccelCtx);
+-
++#endif
+         if (NULL == pCipherCtx)
+         {
+             status = ERR_HARDWARE_ACCEL_NO_MEMORY;
+             goto exit;
+         }
+     }
+-#endif /* __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__ */
+ 
+     /* clean up */
+     if (IPSEC_SA_FLAG_INUSE & pxSa->saFlags)
+@@ -1053,7 +1053,7 @@
+         pxSa->wEncrKeyLen = wEncrKeyLen;
+         pxSa->pCipherSuite = pCipherSuite;
+ 
+-#ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
++#if 1 //def __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+         MOC_MEMCPY(pxSa->poEncrKey, poEncrKey, wEncrKeyLen);
+         pxSa->pCipherCtx = pCipherCtx;
+ #else
+@@ -1203,12 +1203,14 @@
+ #ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+     if (0 < pxSa->users) status = -1; /* FOR NOW */
+     else
++#endif
+     {
+         BulkCtx pCipherCtx = pxSa->pCipherCtx;
+         SADB_cipherSuiteInfo* pCipherSuite = pxSa->pCipherSuite;
+ 
+         if (pCipherCtx && pCipherSuite /*jic*/)
+         {
++#ifdef __ENABLE_HARDWARE_ACCEL_ASYNC_CRYPTO__
+             hwAccelDescr    hwAccelCtx;
+ 
+             pxSa->pCipherCtx = NULL;
+@@ -1222,9 +1224,13 @@
+                                                   &pCipherCtx);
+                 IPSEC_releaseHwAccelChannel(&hwAccelCtx);
+             }
++#else
++            pxSa->pCipherCtx = NULL;
++            pCipherSuite->pBEAlgo->deleteFunc(MOC_SYM(hwAccelCtx)
++                                              &pCipherCtx);
++#endif
+         }
+     }
+-#endif
+ 
+     pxSa->saFlags |= IPSEC_SA_FLAG_DELETED;
+     UP_SA_LOCK(pxSa)

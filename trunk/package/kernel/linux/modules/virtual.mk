@@ -238,9 +238,11 @@ $(eval $(call KernelPackage,kvm))
 
 define KernelPackage/vc_kvm_guest
   SUBMENU:=$(VIRTUAL_MENU)
-  TITLE:=Kernel KVM Guest support for OpenStack Havana/Qemu-KVM-1.5
+  TITLE:=Kernel KVM Guest support
   DEPENDS:=@TARGET_x64_vc_kvm_guest
-  KCONFIG:=CONFIG_KVM_GUEST=y \
+  DEFAULT:=y if (TARGET_x64_vc_kvm_guest)
+  KCONFIG:= \
+	CONFIG_KVM_GUEST=y \
 	CONFIG_HYPERVISOR_GUEST=y \
 	CONFIG_PARAVIRT=y \
 	CONFIG_PARAVIRT_CLOCK=y

@@ -1,0 +1,90 @@
+--- a/hostapd/main.c
++++ b/hostapd/main.c
+@@ -567,6 +569,26 @@
+ 	return 0;
+ }
+ 
++int
++hostapd_get_hacks(char *arg)
++{
++	char *s;
++	int hacks = 0;
++
++	do {
++		s = strchr(arg, ',');
++		if(s)
++			*s++ = 0;
++		if( !strcmp(arg, "no-olbc"))
++			hacks |= HOSTAPD_HACK_NO_OLBC;
++		else
++			wpa_printf(MSG_ERROR, "unknown hack: %s", arg);
++		arg = s;
++	} while(arg && *arg);
++
++	return(hacks);
++}
++
+ void hostapd_wpa_event(void *ctx, enum wpa_event_type event,
+                        union wpa_event_data *data);
+ 
+@@ -596,7 +618,7 @@
+ 
+ 	wpa_supplicant_event = hostapd_wpa_event;
+ 	for (;;) {
+-		c = getopt(argc, argv, "Bde:f:hKP:tg:G:v::");
++		c = getopt(argc, argv, "Bde:f:hKP:tg:G:H:v::");
+ 		if (c < 0)
+ 			break;
+ 		switch (c) {
+@@ -641,6 +663,9 @@
+ 			if (hostapd_get_ctrl_iface_group(&interfaces, optarg))
+ 				return -1;
+ 			break;
++		case 'H':
++			hostapd_hacks = hostapd_get_hacks(optarg);
++			break;
+ 		default:
+ 			usage();
+ 			break;
+--- a/src/ap/hostapd.h
++++ b/src/ap/hostapd.h
+@@ -13,6 +13,14 @@
+ #include "ap_config.h"
+ #include "ubus.h"
+ 
++// hacks;
++
++enum hostapd_hack_t {
++	HOSTAPD_HACK_NONE = 0,
++	HOSTAPD_HACK_NO_OLBC = 0x01,
++};
++extern int hostapd_hacks;
++
+ struct wpa_driver_ops;
+ struct wpa_ctrl_dst;
+ struct radius_server_data;
+--- a/src/ap/hostapd.c
++++ b/src/ap/hostapd.c
+@@ -34,6 +34,7 @@
+ #include "p2p_hostapd.h"
+ #include "gas_serv.h"
+ 
++int hostapd_hacks = 0;
+ 
+ static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason);
+ static int hostapd_setup_encryption(char *iface, struct hostapd_data *hapd);
+--- a/src/ap/ieee802_11_ht.c
++++ b/src/ap/ieee802_11_ht.c
+@@ -104,6 +104,12 @@
+ 	u16 cur_op_mode, new_op_mode;
+ 	int op_mode_changes = 0;
+ 
++	//XXX velocloud no-olbc hack;
++	if(hostapd_hacks & HOSTAPD_HACK_NO_OLBC) {
++		iface->conf->ht_op_mode_fixed = 1;
++		wpa_printf(MSG_DEBUG, "%s olbc disabled via hacks", __func__);
++	}
++
+ 	if (!iface->conf->ieee80211n || iface->conf->ht_op_mode_fixed)
+ 		return 0;
+ 

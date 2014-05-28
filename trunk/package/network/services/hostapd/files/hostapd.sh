@@ -354,6 +354,6 @@ ${hwmode:+hw_mode=${hwmode#11}}
 ${channel:+channel=$channel}
 $hostapd_cfg
 EOF
-	hostapd -P /var/run/wifi-$ifname.pid -B /var/run/hostapd-$ifname.conf
+	hostapd -P /var/run/wifi-$ifname.pid -B /var/run/hostapd-$ifname.conf -H no-olbc
 }
 

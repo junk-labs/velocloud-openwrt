@@ -88,3 +88,31 @@
  	if (!iface->conf->ieee80211n || iface->conf->ht_op_mode_fixed)
  		return 0;
  
+--- a/src/ap/ap_list.c
++++ b/src/ap/ap_list.c
+@@ -244,6 +244,12 @@
+ 	}
+ #endif /* CONFIG_IEEE80211N */
+ 
++	//XXX velocloud hack;
++	if(set_beacon && (hostapd_hacks & HOSTAPD_HACK_NO_OLBC)) {
++		set_beacon = 0;
++		wpa_printf(MSG_DEBUG, "%s olbc beacon change disabled via hacks", __func__);
++	}
++
+ 	if (set_beacon)
+ 		ieee802_11_update_beacons(iface);
+ }
+@@ -299,6 +305,12 @@
+ #endif /* CONFIG_IEEE80211N */
+ 	}
+ 
++	//XXX velocloud hack;
++	if(set_beacon && (hostapd_hacks & HOSTAPD_HACK_NO_OLBC)) {
++		set_beacon = 0;
++		wpa_printf(MSG_DEBUG, "%s olbc beacon change disabled via hacks", __func__);
++	}
++
+ 	if (set_beacon)
+ 		ieee802_11_update_beacons(iface);
+ }

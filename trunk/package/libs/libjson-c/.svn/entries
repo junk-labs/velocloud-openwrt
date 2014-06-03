@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/libs/libjson-c
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-07-01T15:36:12.414094Z
-37119
-nbd
+2014-01-12T12:06:57.208668Z
+39228
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:28:31.446164Z
-0c6715ea6ecfb5183a38694cbb876c64
-2013-07-01T15:36:12.414094Z
-37119
-nbd
+2014-06-03T20:19:30.294339Z
+c805adb66789d3138763c30c2e14bdda
+2014-01-12T12:06:57.208668Z
+39228
+blogic
 
 
 
@@ -58,5 +58,5 @@ nbd
 
 
 
-2005
+2081
 

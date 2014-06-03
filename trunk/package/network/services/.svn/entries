@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/network/services
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-21T21:52:24.986868Z
-38888
-nbd
+2014-06-02T12:44:40.831340Z
+40934
+blogic
 
 
 
@@ -29,25 +29,7 @@ nbd
 relayd
 dir
 
-odhcpd
-dir
-
-hostapd
-dir
-
 openvpn
-dir
-
-dnsmasq
-dir
-
-ipset-dns
-dir
-
-openvpn-easy-rsa
-dir
-
-uhttpd
 dir
 
 ead
@@ -59,12 +41,36 @@ dir
 samba36
 dir
 
+igmpproxy
+dir
+
 dropbear
+dir
+
+ppp
 dir
 
 lldpd
 dir
 
-ppp
+odhcpd
+dir
+
+hostapd
+dir
+
+mdnsd
+dir
+
+ipset-dns
+dir
+
+dnsmasq
+dir
+
+openvpn-easy-rsa
+dir
+
+uhttpd
 dir
 

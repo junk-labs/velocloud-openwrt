@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm47xx/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-07-31T17:41:52.602141Z
-37625
+2013-12-01T16:32:32.438544Z
+38973
 hauke
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:27:56.198163Z
-89730815249bccca8d3e0a7b8d4113f1
-2013-07-31T17:41:52.602141Z
-37625
+2014-06-03T20:52:03.566293Z
+4068b8fb992731bf676675c7af098281
+2013-12-01T16:32:32.438544Z
+38973
 hauke
 
 
@@ -58,5 +58,5 @@ hauke
 
 
 
-67
+70
 

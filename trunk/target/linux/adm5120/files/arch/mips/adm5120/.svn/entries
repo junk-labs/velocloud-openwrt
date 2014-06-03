@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/adm5120/files/arch/mips/adm5120
 svn://svn.openwrt.org/openwrt
 
@@ -26,13 +26,68 @@ juhosg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+mikrotik
+dir
+
+compex
+dir
+
+zyxel
+dir
+
+generic
+dir
+
+motorola
+dir
+
+prom
+dir
+
+osbridge
+dir
+
+Kconfig
+file
+
+
+
+
+2014-06-03T20:17:37.870341Z
+cb964eca35c3ec840ab02b5196d9ff90
+2012-04-25T12:57:26.783779Z
+31472
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4108
+
 Platform
 file
 
 
 
 
-2013-12-02T20:28:10.186164Z
+2014-06-03T20:17:37.870341Z
 1c9868ed7b6213fbbe26e87345022d2d
 2012-04-29T07:36:43.201180Z
 31511
@@ -71,59 +126,4 @@ dir
 
 common
 dir
-
-mikrotik
-dir
-
-compex
-dir
-
-zyxel
-dir
-
-generic
-dir
-
-motorola
-dir
-
-prom
-dir
-
-osbridge
-dir
-
-Kconfig
-file
-
-
-
-
-2013-12-02T20:28:10.186164Z
-cb964eca35c3ec840ab02b5196d9ff90
-2012-04-25T12:57:26.783779Z
-31472
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4108
 

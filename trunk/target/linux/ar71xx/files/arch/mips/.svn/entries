@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/ar71xx/files/arch/mips
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-15T10:11:20.222876Z
-38813
-juhosg
+2014-06-02T15:02:54.782097Z
+40976
+blogic
 
 
 
@@ -26,9 +26,9 @@ juhosg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-include
+ath79
 dir
 
-ath79
+include
 dir
 

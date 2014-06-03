@@ -75,7 +75,10 @@ sub parse_target_metadata() {
 	}
 	close FILE;
 	foreach my $target (@target) {
-		next if @{$target->{subtargets}} > 0;
+		if (@{$target->{subtargets}} > 0) {
+			$target->{profiles} = [];
+			next;
+		}
 		@{$target->{profiles}} > 0 or $target->{profiles} = [
 			{
 				id => 'Default',
@@ -180,6 +183,7 @@ sub target_config_features(@) {
 		/nommu/ and $ret .= "\tselect NOMMU\n";
 		/mips16/ and $ret .= "\tselect HAS_MIPS16\n";
 		/rfkill/ and $ret .= "\tselect RFKILL_SUPPORT\n";
+		/low_mem/ and $ret .= "\tselect LOW_MEMORY_FOOTPRINT\n";
 	}
 	return $ret;
 }
@@ -674,14 +678,7 @@ sub gen_package_mk() {
 
 		next if defined $pkg->{vdepends};
 
-		if ($ENV{SDK}) {
-			$conf{$pkg->{src}} or do {
-				$config = 'm';
-				$conf{$pkg->{src}} = 1;
-			};
-		} else {
-			$config = "\$(CONFIG_PACKAGE_$name)"
-		}
+		$config = "\$(CONFIG_PACKAGE_$name)";
 		if ($config) {
 			$pkg->{buildonly} and $config = "";
 			print "package-$config += $pkg->{subdir}$pkg->{src}\n";
@@ -781,9 +778,10 @@ sub gen_package_mk() {
 				} elsif (defined($srcpackage{$dep})) {
 					$idx = $subdir{$dep}.$dep;
 				}
-				$idx .= $suffix;
 				undef $idx if $idx eq 'base-files';
 				if ($idx) {
+					$idx .= $suffix;
+
 					my $depline;
 					next if $pkg->{src} eq $pkg_dep->{src}.$suffix;
 					next if $dep{$condition.":".$pkg->{src}."->".$idx};

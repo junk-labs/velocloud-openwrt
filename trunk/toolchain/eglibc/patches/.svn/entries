@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/toolchain/eglibc/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-06-24T14:51:22.048146Z
-37029
-mirko
+2014-02-24T15:35:10.950617Z
+39743
+nbd
 
 
 
@@ -29,9 +29,6 @@ mirko
 2.15
 dir
 
-2.16
-dir
-
-2.17
+2.19
 dir
 

@@ -1,15 +1,15 @@
 10
 
 dir
-39894
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/system/ubox
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-18T13:33:43.968568Z
-39616
-blogic
+2014-05-28T21:28:14.522664Z
+40869
+nbd
 
 
 
@@ -26,20 +26,17 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2014-02-27T00:44:01.492740Z
-df3ac5e46e1fee1bf33e229103fc0637
-2014-01-30T09:02:58.283894Z
-39425
-blogic
+2014-06-03T20:36:39.082315Z
+5af2f910189dba9006d456ec9547282b
+2014-05-28T21:28:14.522664Z
+40869
+nbd
 
 
 
@@ -61,7 +58,7 @@ blogic
 
 
 
-2147
+1317
 
 files
 dir

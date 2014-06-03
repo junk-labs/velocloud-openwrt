@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/utils/busybox/config/archival
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-06-21T16:54:37.987982Z
-37007
-blogic
+2014-05-25T17:42:09.256426Z
+40852
+nbd
 
 
 
@@ -32,12 +32,11 @@ file
 
 
 
-2013-12-02T20:28:13.646164Z
-4f786d4cab95f2a5ff9d84d4f39a62f2
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-has-props
+2014-06-03T20:36:35.762315Z
+3092f3e16a5ea5b8bd54565da085163a
+2014-05-25T17:42:09.256426Z
+40852
+nbd
 
 
 
@@ -58,5 +57,6 @@ has-props
 
 
 
-11858
+
+13378
 

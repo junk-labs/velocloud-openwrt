@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/utils/usbreset
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-09-03T15:46:39.309014Z
-37893
+2014-02-23T23:42:12.415917Z
+39738
 jow
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:28:13.946164Z
-d9597d97ab37cd0bf4c243b587ac078d
-2013-09-03T15:46:39.309014Z
-37893
+2014-06-03T20:36:39.074315Z
+ad5d1f71b42dc88760cd4957bf071fda
+2014-02-23T23:42:12.415917Z
+39738
 jow
 
 

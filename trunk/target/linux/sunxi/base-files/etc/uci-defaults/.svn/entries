@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/sunxi/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-05T08:00:34.962866Z
-38651
-luka
+2014-06-01T12:18:53.916252Z
+40895
+wigyori
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:28:09.190164Z
-f666524b29c2d04951e8ce450e713c4a
-2013-11-05T08:00:34.962866Z
-38651
-luka
+2014-06-03T20:52:29.542293Z
+5707ea6643ddff610d408dfc56ad5be3
+2014-06-01T12:18:53.916252Z
+40895
+wigyori
 
 
 
@@ -58,5 +58,5 @@ luka
 
 
 
-312
+515
 

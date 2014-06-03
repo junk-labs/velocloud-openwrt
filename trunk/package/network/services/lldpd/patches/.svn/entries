@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/network/services/lldpd/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:29:11.026165Z
+2014-06-03T20:17:37.758341Z
 8e86a48475025e3667815b3be7fae1fa
 2012-10-12T11:58:19.209594Z
 33729

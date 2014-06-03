@@ -1,15 +1,15 @@
 10
 
 dir
-39894
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/utils/usbmode
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-01-17T21:45:55.499882Z
-39317
-blogic
+2014-03-26T16:08:06.012816Z
+40027
+nbd
 
 
 
@@ -26,20 +26,17 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
 Makefile
 file
 
 
 
 
-2014-02-06T01:25:23.380312Z
-8aef8646a61c282c126f3a3a10d7e2fd
-2014-01-17T21:45:55.499882Z
-39317
-blogic
+2014-06-03T20:36:27.754315Z
+f5fc172414ac4d861be21fcb6ce48796
+2014-03-26T16:08:06.012816Z
+40027
+nbd
 
 
 
@@ -61,5 +58,8 @@ blogic
 
 
 
-1701
+1702
+
+files
+dir
 

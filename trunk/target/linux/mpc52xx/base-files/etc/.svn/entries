@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/mpc52xx/base-files/etc
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:01.418164Z
+2014-06-03T20:17:38.262341Z
 53c665c44f4592a843fd582d03687212
 2010-12-13T08:01:21.821616Z
 24540

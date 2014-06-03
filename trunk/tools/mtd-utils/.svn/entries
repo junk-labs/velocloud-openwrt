@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/tools/mtd-utils
 svn://svn.openwrt.org/openwrt
 
@@ -26,19 +26,13 @@ juhosg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-include
-dir
-
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T20:29:12.262165Z
+2014-06-03T20:17:38.466341Z
 a84f05e699cf4969248f884aed171c8a
 2012-08-12T12:34:30.330423Z
 33140
@@ -65,4 +59,10 @@ has-props
 
 
 1805
+
+include
+dir
+
+patches
+dir
 

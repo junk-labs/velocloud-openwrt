@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/atheros/base-files/etc/config
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:01.270164Z
+2014-06-03T20:17:37.962341Z
 d89198aa4547bb2e3841f7505f9d9480
 2011-11-10T12:16:41.178346Z
 28933

@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/libs/libusb/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:31.846164Z
+2014-06-03T20:17:37.698341Z
 dc81a91f10d4e67d54ed457b791d09be
 2013-01-29T10:48:37.032580Z
 35373

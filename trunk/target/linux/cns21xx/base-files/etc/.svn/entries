@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/cns21xx/base-files/etc
 svn://svn.openwrt.org/openwrt
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T20:28:09.034164Z
+2014-06-03T20:17:38.022341Z
 0fa24aeaadca5ae8b578ae05f74f88e3
 2013-06-21T16:53:43.412099Z
 36999

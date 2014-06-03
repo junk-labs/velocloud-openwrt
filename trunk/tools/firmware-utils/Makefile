@@ -64,7 +64,9 @@ define Host/Compile
 	$(call cc,fix-u-media-header cyg_crc32,-Wall)
 	$(call cc,hcsmakeimage bcmalgo)
 	$(call cc,mkporayfw, -Wall)
+	#$(call cc,mkhilinkfw, -lcrypto)
 	$(call cc,mkdcs932, -Wall)
+	$(call cc,mkheader_gemtek,-lz)
 endef
 
 define Host/Install

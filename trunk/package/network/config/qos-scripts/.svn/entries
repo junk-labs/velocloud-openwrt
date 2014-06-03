@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/network/config/qos-scripts
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-04-09T14:59:10.443223Z
-36294
-nbd
+2014-06-02T12:44:47.814134Z
+40936
+blogic
 
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:29:11.418165Z
+2014-06-03T20:17:37.734341Z
 0a6610a4956deecf01760c0452296a6d
 2012-10-10T12:49:37.020840Z
 33693

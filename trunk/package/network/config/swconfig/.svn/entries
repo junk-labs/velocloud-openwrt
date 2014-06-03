@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/network/config/swconfig
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-13T22:15:31.921127Z
-38387
-hauke
+2014-01-12T12:07:01.383218Z
+39229
+blogic
 
 
 
@@ -38,7 +38,7 @@ file
 
 
 
-2013-12-02T20:29:11.526165Z
+2014-06-03T20:17:37.734341Z
 528ab54c98065bb65c2d18e1fa3e1c31
 2013-10-13T22:15:31.921127Z
 38387

@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/atheros/base-files/lib/upgrade
 svn://svn.openwrt.org/openwrt
 
 
 
-2009-09-22T01:09:04.904545Z
-17668
-jow
+2014-06-02T12:43:22.188606Z
+40915
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:28:01.342164Z
-9a90a54f1ac93b214395eff4b8bb0853
-2009-09-22T01:09:04.904545Z
-17668
-jow
+2014-06-03T20:49:34.270297Z
+341fd8d8f3fbb3003e11407859665d35
+2014-06-02T12:43:22.188606Z
+40915
+blogic
 
 
 
@@ -58,5 +58,5 @@ jow
 
 
 
-2083
+2080
 

@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/package/network/config/soloscli
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-10-17T22:45:58.668189Z
-33830
+2014-06-02T12:45:01.845256Z
+40940
 blogic
 
 
@@ -38,10 +38,10 @@ file
 
 
 
-2013-12-02T20:29:11.446165Z
-9f83905a4b148adefe46725583d2257e
-2012-10-17T22:45:58.668189Z
-33830
+2014-06-03T20:21:33.962336Z
+f326f7b8301e5fc862f5a2a1583bedc4
+2014-06-02T12:45:01.845256Z
+40940
 blogic
 
 
@@ -64,5 +64,5 @@ blogic
 
 
 
-1155
+1161
 

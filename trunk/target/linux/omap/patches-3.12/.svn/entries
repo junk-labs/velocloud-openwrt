@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/omap/patches-3.12
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-15T12:23:17.384916Z
-38816
+2014-03-18T19:05:37.682150Z
+39948
 kaloz
 
 
@@ -26,866 +26,16 @@ kaloz
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-410-ARM-dts-am335x-evm-Add-audio-support-for-am335x-evm.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-321eeca2936f1de19bf7cade298743a9
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2557
-
-301-ARM-dts-AM33XX-Add-AES-data-and-documentation.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-59e76593e8af7a3971d91782723b8c1d
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3364
-
-302-ARM-dts-AM33XX-Fix-AES-interrupt-number.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-34cc025082544b27b10860a8781c5813
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-698
-
-416-ARM-dts-am335x-evm-Remove-num-serializer-property-fo.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-af2db97cd2503c70b562a709fdaf4ef3
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-892
-
-601-crypto-omap-des-Add-config-and-build-options.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-4774cb75deafc45e59c5095588438e20
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2487
-
-805-ARM_dts_TWL4030_Add_missing_regulators.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-5bc968f16b67be88862aeaf592686182
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1984
-
-408-ARM-dts-am33xx-Add-mcasp0-and-mcasp1-device-tree-ent.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-08d7c39351c7307a5eb7fe3e6caa8647
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1295
-
-801-ARM_dts_am33xx_change_usb_ctrl_module_label.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-1ce25e9ad52e724fc0fd3f68d1ee25e8
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1234
-
-103-ARM-dts-add-AM33XX-MMC-support-and-documentation.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-9d5b5d2dcd09fc3d19934e1f946f24ee
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4960
-
-407-ASoC-tlv320aic3x-Add-codec-pins-to-DT-bindings-docum.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-fd4a2ea02bbd28fa6a8fbdbc1d6babb1
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1264
-
-415-ASoC-davinci-mcasp-Remove-redundant-num-serializer-D.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-ba644c48064308ed5df5e1d5dd9079f1
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3525
-
-806-ARM_dts_TWL4030_Add_power_button_support.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-de2b1d0112e7300a32ca27c8cd1ccbac
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-730
-
-406-ASoC-tlv320aic3x-Add-regulators-to-DT-bindings-docum.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-f333443e35e69f86379b3384da698c60
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1300
-
-0752-video-da8xx-fb-fix-defect-with-vsync-callback-invoca.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-2e783113ee64530e1042a5d35c4f81e5
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1582
-
-400-ASoC-davinci-evm-Move-sysclk-logic-away-from-evm_hw_.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-1853a101ff03e88261d8ca58ce9e1faa
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4656
-
-300-ARM-dts-AM33XX-Add-SHAM-data-and-documentation.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-3bba46cb7b09c09d910a1ac33ee9f9bd
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3330
-
-0343-video-da8xx-fb-Add-API-to-register-wait-for-vsync-ca.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-1cfe6e86e8625d48095ee83ff3cf7194
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2934
-
-404-ASoC-davinci-mcasp-Interrupts-property-to-optional-a.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-02921e1525dadb33593b6aba3b6019be
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1932
-
-201-ARM-dts-omap-Add-new-bindings-for-OMAP.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-84068983f8f44b97f5f848e364aab826
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3554
-
-901-arm-dts-am335x-sk-add-touchscreen-support.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-b63a439f148ffa116bbc81e55b7e4cc3
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-889
-
-804-ARM_OMAP3plus_use_cpu0-cpufreq_driver_in_device_tree_supported_boot.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-7110378a04b1bdcc5ec3e0698301997f
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1579
-
-402-ASoC-davinci-mcasp-Add-DMA-register-locations-to-DT.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-745ca83cb6b842e9164c19c322677953
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6121
-
-100-ARM-dts-add-AM33XX-EDMA-support.patch
-file
-
-
-
-
-2013-12-02T20:28:00.622164Z
-ca379e86ae388ef8bf1e07b203de3a0c
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1068
-
-200-ARM-OMAP2-hwmod-cleanup-HWMOD_INIT_NO_RESET-usage.patch
-file
-
-
-
-
-2013-12-02T20:28:00.626164Z
-9491bfc56ebfb3132e746d959e2bba5e
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5787
-
-600-crypto-omap-des-Add-omap-des-driver-for-OMAP4-AM43xx.patch
-file
-
-
-
-
-2013-12-02T20:28:00.626164Z
-325f272f0a83a6808d57907603f94ac3
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-30946
-
 202-ARM-OMAP2-hwmod-Extract-no-idle-and-no-reset-info-from-DT.patch
 file
 
 
 
 
-2013-12-02T20:28:00.626164Z
-41eca0d90d83991873fa6132ef8b35d1
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.330293Z
+c58464af1cf869580d48f2d48f208e4b
+2014-02-13T12:57:36.354910Z
+39581
 kaloz
 
 
@@ -908,18 +58,18 @@ kaloz
 
 
 
-2381
+2919
 
-900-arm-dts-am335x-evmsk-add-support-for-lcd-panel.patch
+950-am335x-evmsk-wilink-dts.patch
 file
 
 
 
 
-2013-12-02T20:28:00.626164Z
-cd686767448fceb41632819bd9cd57a5
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.330293Z
+7475d91c698fce3e8d9a2b919335a72c
+2014-03-18T19:05:37.682150Z
+39948
 kaloz
 
 
@@ -942,7 +92,41 @@ kaloz
 
 
 
-3212
+1735
+
+920-arm-dts-am335x-evmsk-add-support-for-lcd-panel.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+9b5dc42abcffd32d8d584137f9597618
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3083
 
 417-ARM-dts-am335x-evmsk-Remove-num-serializer-property.patch
 file
@@ -950,10 +134,10 @@ file
 
 
 
-2013-12-02T20:28:00.626164Z
-3075790bbcc250958c1a48d9e4372c55
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.330293Z
+862c2cf113f826a66f1b9f2f1bd52a89
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -976,41 +160,7 @@ kaloz
 
 
 
-904
-
-411-ARM-dts-am335x-evm-Remove-blank-lines.patch
-file
-
-
-
-
-2013-12-02T20:28:00.626164Z
-bd9171d053330d00adf960bc8f88a598
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-875
+775
 
 204-ARM-dts-AM335x-evmsk-Do-not-reset-gpio0.patch
 file
@@ -1018,10 +168,10 @@ file
 
 
 
-2013-12-02T20:28:00.626164Z
-5ea9d259d3aeb66b93b01eb918eaab1f
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.318293Z
+515e25ae197e9dccf3c0a85d8505b1a6
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1044,7 +194,41 @@ kaloz
 
 
 
-630
+503
+
+411-ARM-dts-am335x-evm-Remove-blank-lines.patch
+file
+
+
+
+
+2014-06-03T20:52:29.318293Z
+27460904acf8cd6daaccd4e6fe3fc5fa
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+750
 
 403-ASoC-davinci-mcasp-Extract-DMA-channels-directly-fro.patch
 file
@@ -1052,10 +236,10 @@ file
 
 
 
-2013-12-02T20:28:00.626164Z
-62d1c202d9de6cda7f187e17c8c6b50a
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.318293Z
+f3606f74c9e1acee655950342ff3cfdb
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1078,7 +262,7 @@ kaloz
 
 
 
-4727
+4208
 
 797-ARM_dts_omap4-panda-es_Do_not_reset_gpio1.patch
 file
@@ -1086,10 +270,10 @@ file
 
 
 
-2013-12-02T20:28:00.626164Z
-8c7e2d1e7f0e417650b9cd4d6f7c2ab8
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.318293Z
+f26d5caeb05cfc5fe38eb1305236ce2b
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1112,41 +296,7 @@ kaloz
 
 
 
-972
-
-800-ARM_OMAP2plus_irq_AM33XX_add_missing_register_check.patch
-file
-
-
-
-
-2013-12-02T20:28:00.626164Z
-61a1ebf9e5066f032d097f2a32a44e07
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1010
+838
 
 409-ARM-dts-am33xx-mcasp-Add-new-dma-register-location-t.patch
 file
@@ -1154,10 +304,10 @@ file
 
 
 
-2013-12-02T20:28:00.626164Z
-749694dbc41496dc696d8bc3f7861549
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.318293Z
+1f6f216ff18577eba2d0fbccfc364ed5
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1180,41 +330,7 @@ kaloz
 
 
 
-1676
-
-802-ARM_OMAP3plus_do_not register_non-dt_OPP_tables_for_device_tree_boot.patch
-file
-
-
-
-
-2013-12-02T20:28:00.626164Z
-b63f78664a988ed3eaf07d6ddfeb45c5
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1253
+1557
 
 101-ARM-dts-add-AM33XX-SPI-DMA-support.patch
 file
@@ -1222,10 +338,10 @@ file
 
 
 
-2013-12-02T20:28:00.626164Z
-76cc4a303a3a42380de39498600dc241
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.318293Z
+b70ad86bb4104097e4535d7231ddaa69
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1248,7 +364,7 @@ kaloz
 
 
 
-874
+769
 
 401-ASoC-davinci-evm-Add-device-tree-binding.patch
 file
@@ -1256,10 +372,10 @@ file
 
 
 
-2013-12-02T20:28:00.626164Z
-75b5d3c02b4262ab9ebbd379f968bf7a
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.318293Z
+f9fb575224f03bba1c72f9be5b15cab9
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1282,7 +398,7 @@ kaloz
 
 
 
-7614
+7281
 
 0334-video-da8xx-fb-adding-dt-support.patch
 file
@@ -1290,10 +406,10 @@ file
 
 
 
-2013-12-02T20:28:00.626164Z
-a595362b09f3d06a9e0978d088d9963c
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+b707fed1de05a1eb4059050462043839
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1316,7 +432,7 @@ kaloz
 
 
 
-6510
+6185
 
 412-ARM-dts-am335x-evm-Clarify-the-audio-codec-node.patch
 file
@@ -1324,78 +440,10 @@ file
 
 
 
-2013-12-02T20:28:00.618164Z
-0743a20724e14da879188cff3dd2d620
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1201
-
-602-crypto-omap-des-Add-triple-DES-des3_ede-support-to-driver.patch
-file
-
-
-
-
-2013-12-02T20:28:00.618164Z
-a563820ada50576afcf26c89bd93495a
-2013-11-15T12:23:17.384916Z
-38816
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3705
-
-413-ARM-dts-am335x-evm-Add-unique-name-for-the-sound-car.patch
-file
-
-
-
-
-2013-12-02T20:28:00.618164Z
-d34076c0421d41f3798d4a2959831dc5
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+b0ff8967b923630a52d9cbe1b7886625
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1420,16 +468,16 @@ kaloz
 
 1076
 
-203-ARM-OMAP2-hwmod-Cleanup-usag~RESET-and-HWMOD_INIT_NO_IDLE.patch
+602-crypto-omap-des-Add-triple-DES-des3_ede-support-to-driver.patch
 file
 
 
 
 
-2013-12-02T20:28:00.618164Z
-5c45a16079e5a6504eed16e1fdf1c017
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+791afb2c8d31d8a93c74041d36bc47b4
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1452,7 +500,75 @@ kaloz
 
 
 
-3663
+3612
+
+413-ARM-dts-am335x-evm-Add-unique-name-for-the-sound-car.patch
+file
+
+
+
+
+2014-06-03T20:52:29.322293Z
+1abf6e7bcc4cb7162d040bc10241ec10
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+951
+
+203-ARM-OMAP2-hwmod-Cleanup-usag~RESET-and-HWMOD_INIT_NO_IDLE.patch
+file
+
+
+
+
+2014-06-03T20:52:29.322293Z
+ebf418f92f627b8bfa414058e6730ccd
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3211
 
 350-ARM-AM33xx-hwmod-Add-RNG-module-data.patch
 file
@@ -1460,10 +576,10 @@ file
 
 
 
-2013-12-02T20:28:00.618164Z
-2293d7238dcda9fc34bca94632d8f88f
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+1b5bd589051de6ccc994b5167bb38ba7
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1486,7 +602,7 @@ kaloz
 
 
 
-1824
+1647
 
 807-ARM_dts_AM33XX_Add_hwspinlock_node.patch
 file
@@ -1494,10 +610,10 @@ file
 
 
 
-2013-12-02T20:28:00.622164Z
-1a7d8d79fe478027082213deb40e156d
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+530f81918e0594cf1c59ffc195553620
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1520,7 +636,7 @@ kaloz
 
 
 
-822
+702
 
 803-ARM_OMAP2plus_add_missing_lateinit_hook_for_calling_pm_late_init.patch
 file
@@ -1528,10 +644,10 @@ file
 
 
 
-2013-12-02T20:28:00.622164Z
-664c832efebcaca2764542ec3dfec4dc
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+f0b165cec1e79ebbd764058f6ac85358
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1554,7 +670,7 @@ kaloz
 
 
 
-4333
+3903
 
 500-ARM-dts-AM33XX-Add-LCDC-info-into-am335x-evm.patch
 file
@@ -1562,10 +678,10 @@ file
 
 
 
-2013-12-02T20:28:00.622164Z
-5c6816aa41ec2b84b573738e68a2b8b9
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+20cca8f888d185e107e2e17780e775fd
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1596,10 +712,10 @@ file
 
 
 
-2013-12-02T20:28:00.622164Z
-e8fd2661448543ba05540ba3da1f086e
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+2af69801ae42ac2c6362134d072d34d3
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1622,7 +738,7 @@ kaloz
 
 
 
-2523
+2373
 
 405-ASoC-davinci-Add-support-for-AM33xx-SoC-Audio.patch
 file
@@ -1630,10 +746,10 @@ file
 
 
 
-2013-12-02T20:28:00.622164Z
-d917110af9e21ca2373db4d0517437dc
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+57730830fde8c98a05859542b1b553f6
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1656,7 +772,7 @@ kaloz
 
 
 
-2536
+2306
 
 808-ARM_dts_AM33xx_Add_RNG_node.patch
 file
@@ -1664,10 +780,10 @@ file
 
 
 
-2013-12-02T20:28:00.622164Z
-7bc1782c1f413ba544030ae901602dd3
-2013-11-15T12:23:17.384916Z
-38816
+2014-06-03T20:52:29.322293Z
+521f132641904ccfb61ebc2a47e173dd
+2013-11-27T12:34:41.487993Z
+38932
 kaloz
 
 
@@ -1690,5 +806,957 @@ kaloz
 
 
 
-1715
+1413
+
+002-ARM-dts-AM33xx-Correct-gpio-interrupt-cells-property.patch
+file
+
+
+
+
+2014-06-03T20:52:29.322293Z
+ddb5c3c5520315e70dc38ceb764405a7
+2013-11-27T12:33:06.843023Z
+38931
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1676
+
+410-ARM-dts-am335x-evm-Add-audio-support-for-am335x-evm.patch
+file
+
+
+
+
+2014-06-03T20:52:29.322293Z
+40c22e730a262dec800182cf80318cf5
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2432
+
+301-ARM-dts-AM33XX-Add-AES-data-and-documentation.patch
+file
+
+
+
+
+2014-06-03T20:52:29.322293Z
+84b892deddd7c381fd152386a5f87085
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2753
+
+302-ARM-dts-AM33XX-Fix-AES-interrupt-number.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+10d41f0e2deb27fa19b6a719f777de34
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+593
+
+416-ARM-dts-am335x-evm-Remove-num-serializer-property-fo.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+fa43a94b52afbb3f13ceebcedadc93fa
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+767
+
+601-crypto-omap-des-Add-config-and-build-options.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+c8603c73b2469beafbdbca2e21bb2d67
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2289
+
+801-ARM_dts_am33xx_change_usb_ctrl_module_label.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+eae1aa5117d8c0d95e9307f660e20d03
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1114
+
+408-ARM-dts-am33xx-Add-mcasp0-and-mcasp1-device-tree-ent.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+db977b6ec0c7bb9135f65daf65e7d6d0
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1167
+
+805-ARM_dts_TWL4030_Add_missing_regulators.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+c6dd83edc6b5894edde7e58b323f35cb
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1862
+
+415-ASoC-davinci-mcasp-Remove-redundant-num-serializer-D.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+1a5e4c67b5f37e893ebb33278930ed24
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3175
+
+407-ASoC-tlv320aic3x-Add-codec-pins-to-DT-bindings-docum.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+7aa01e515cac02ba00cd5e82910e55cd
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1093
+
+103-ARM-dts-add-AM33XX-MMC-support-and-documentation.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+b43667d4421189d7a9e2b55453dd5915
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4349
+
+0752-video-da8xx-fb-fix-defect-with-vsync-callback-invoca.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+a4fbd3fd88ad8a1cc319e81207576743
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1429
+
+406-ASoC-tlv320aic3x-Add-regulators-to-DT-bindings-docum.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+b8502591d5d370e5dc1091eb41143f69
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1129
+
+806-ARM_dts_TWL4030_Add_power_button_support.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+58c8715f8487903d18095458a0e24a72
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+608
+
+400-ASoC-davinci-evm-Move-sysclk-logic-away-from-evm_hw_.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+564f68ba42eb00711371a78af6388542
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4486
+
+802-ARM_OMAP3plus_do_not_register_non-dt_OPP_tables_for_device_tree_boot.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+9ae6a528ff2f2e295cb19541224e6431
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1121
+
+300-ARM-dts-AM33XX-Add-SHAM-data-and-documentation.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+3b9540d9f476db7ed6a2d99bd0bb16a2
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2712
+
+0343-video-da8xx-fb-Add-API-to-register-wait-for-vsync-ca.patch
+file
+
+
+
+
+2014-06-03T20:52:29.326293Z
+a3bc5e705aa8b4ffc28897891747e4f4
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2605
+
+900-wlcore-Add-support-for-DT-platform-data.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+801f5dd9e7d11de38d3427f5715afdfb
+2014-03-18T18:54:27.801609Z
+39946
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4526
+
+404-ASoC-davinci-mcasp-Interrupts-property-to-optional-a.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+68a603b93f0028424ec5948caa3043b8
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1745
+
+201-ARM-dts-omap-Add-new-bindings-for-OMAP.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+a17aed232dcd62cefd64bbf383a6eb1d
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3094
+
+804-ARM_OMAP3plus_use_cpu0-cpufreq_driver_in_device_tree_supported_boot.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+52263378db874d8b0cc781ba51363020
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1463
+
+402-ASoC-davinci-mcasp-Add-DMA-register-locations-to-DT.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+6632d1b41c7e577f0893d1fbcd31dd04
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5699
+
+921-arm-dts-am335x-sk-add-touchscreen-support.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+e3bc4ca8bd8243a9a761fa829eb88930
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+770
+
+200-ARM-OMAP2-hwmod-cleanup-HWMOD_INIT_NO_RESET-usage.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+d52c4a325be7dd02481d18ef172004f5
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5273
+
+100-ARM-dts-add-AM33XX-EDMA-support.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+6aa8e972db103e095eaf170c676ebe32
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+963
+
+600-crypto-omap-des-Add-omap-des-driver-for-OMAP4-AM43xx.patch
+file
+
+
+
+
+2014-06-03T20:52:29.330293Z
+2124a995cec633d7da46d1fe6521439e
+2013-11-27T12:34:41.487993Z
+38932
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+30835
 

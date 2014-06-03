@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/trunk/target/linux/x86/olpc/base-files/lib/upgrade
 svn://svn.openwrt.org/openwrt
 
 
 
-2007-10-28T21:20:48.722342Z
-9457
-ryd
+2014-06-02T12:43:22.188606Z
+40915
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:27:57.686163Z
-c4e755af6dabe9fd271e599924967dc6
-2007-10-28T21:20:48.722342Z
-9457
-ryd
+2014-06-03T20:44:01.614305Z
+2ce90987347b7c44b48b9fb6d50fbc85
+2014-06-02T12:43:22.188606Z
+40915
+blogic
 
 
 
@@ -58,5 +58,5 @@ ryd
 
 
 
-662
+659
 

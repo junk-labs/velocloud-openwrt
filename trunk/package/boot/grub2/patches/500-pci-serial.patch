@@ -57,61 +57,6 @@ Index: include/grub/serial.h
  void grub_ns8250_init (void);
  char *grub_serial_ns8250_add_port (grub_port_t port);
  #endif
-Index: grub-core/term/ns8250.c
-===================================================================
---- a/grub-core/term/ns8250.c
-+++ b/grub-core/term/ns8250.c
-@@ -41,41 +41,17 @@
- serial_get_divisor (const struct grub_serial_port *port __attribute__ ((unused)),
- 		    const struct grub_serial_config *config)
- {
--  unsigned int i;
-+	unsigned int baud_clk = 1843200;
-+	unsigned int div;
- 
--  /* The structure for speed vs. divisor.  */
--  struct divisor
--  {
--    unsigned int speed;
--    unsigned short div;
--  };
-+	// port can overwrite baud_clk;
- 
--  /* The table which lists common configurations.  */
--  /* 1843200 / (speed * 16)  */
--  static struct divisor divisor_tab[] =
--    {
--      { 2400,   0x0030 },
--      { 4800,   0x0018 },
--      { 9600,   0x000C },
--      { 19200,  0x0006 },
--      { 38400,  0x0003 },
--      { 57600,  0x0002 },
--      { 115200, 0x0001 }
--    };
--
--  /* Set the baud rate.  */
--  for (i = 0; i < ARRAY_SIZE (divisor_tab); i++)
--    if (divisor_tab[i].speed == config->speed)
--      {
--	/* internal Loongson UART runs twice the usual rate.  */
--#ifdef GRUB_MACHINE_MIPS_LOONGSON
--	if (port->port == 0xbff003f8)
--	  return 2 * divisor_tab[i].div;
--	else
--#endif
--	  return divisor_tab[i].div;
--      }
--  return 0;
-+	if(port->baud_clk)
-+		baud_clk = port->baud_clk;
-+	div = (baud_clk >> 4) / config->speed;
-+	if(div >= 0xffff)
-+		div = 0;
-+	return(div);
- }
- 
- static void
 Index: grub-core/term/serial.c
 ===================================================================
 --- a/grub-core/term/serial.c
@@ -119,7 +64,7 @@ Index: grub-core/term/serial.c
 @@ -383,6 +383,7 @@
  	       sizeof (grub_serial_terminfo_input));
  
- #if !defined (GRUB_MACHINE_EMU) && (defined(__mips__) || defined (__i386__) || defined (__x86_64__))
+ #if !defined (GRUB_MACHINE_EMU) && !defined(GRUB_MACHINE_ARC) && (defined(__mips__) || defined (__i386__) || defined (__x86_64__))
 +  grub_pci_serial_init();
    grub_ns8250_init ();
  #endif
@@ -282,6 +227,7 @@ Index: grub-core/term/pci-serial.c
 +		.word_len = 8,
 +		.parity = GRUB_SERIAL_PARITY_NONE,
 +		.stop_bits = GRUB_SERIAL_STOP_BITS_1,
++		.base_clock = 192000000,
 +	};
 +
 +	p = grub_malloc(sizeof (*p));
@@ -290,7 +236,6 @@ Index: grub-core/term/pci-serial.c
 +
 +	p->name = name;
 +	p->driver = &grub_ns8250_driver;
-+	p->baud_clk = 192000000;
 +	p->driver->configure(p, &config);
 +	p->port = port;
 +	grub_serial_register(p);  
@@ -469,8 +414,8 @@ Index: grub-core/term/pci-serial.c
 +
 +// callback for each pci device;
 +
-+static int NESTED_FUNC_ATTR
-+grub_pci_serial_iter(grub_pci_device_t dev, grub_pci_id_t pci_id)
++static int
++grub_pci_serial_iter(grub_pci_device_t dev, grub_pci_id_t pci_id, void *data)
 +{
 +	grub_uint32_t vendor_id, device_id, class;
 +	grub_pci_address_t addr;
@@ -521,7 +466,7 @@ Index: grub-core/term/pci-serial.c
 +void
 +grub_pci_serial_init(void)
 +{
-+	grub_pci_iterate(grub_pci_serial_iter);
++	grub_pci_iterate(grub_pci_serial_iter, NULL);
 +}
 +
 +

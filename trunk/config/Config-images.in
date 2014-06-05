@@ -186,7 +186,7 @@ menu "Target Images"
 
 	config GRUB_IMAGES
 		bool "Build GRUB images (Linux x86 or x86_64 host only)"
-		depends on TARGET_x86_64 || (TARGET_x86 && !(TARGET_x86_olpc || TARGET_x86_rdc))
+		depends on TARGET_x86_64 || TARGET_x64 || (TARGET_x86 && !(TARGET_x86_olpc || TARGET_x86_rdc))
 		depends on TARGET_ROOTFS_EXT4FS || TARGET_ROOTFS_ISO || TARGET_ROOTFS_JFFS2 || TARGET_ROOTFS_SQUASHFS
 		select PACKAGE_grub2
 		default y
@@ -252,9 +252,7 @@ menu "Target Images"
 		depends on GRUB_IMAGES
 		depends on TARGET_x64
 		depends on TARGET_ROOTFS_EXT4FS
-		default y if TARGET_x64_sb_itc
-		default y if TARGET_x64_edge500
-		default y if TARGET_x64_pw_dev
+		default y if (TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500)
 
 	config VELOCLOUD_MANUFACTURING_INSTALLER
 		bool "Build Velocloud manufacturing installer image"
@@ -315,7 +313,7 @@ menu "Target Images"
 		string "Root partition on target device"
 		depends on OLPC_BOOTSCRIPT_IMAGES || GRUB_IMAGES
 		default "/dev/xvda2" if TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
-		default "/dev/sdb2" if TARGET_x64_pw_dev
+		default "/dev/sdb2" if TARGET_x64_pw_dev || TARGET_x64_edge500
 		default "/dev/sda2" if ! TARGET_x86_xen_domu
 		help
 		  The root partition on the final device.  If you don't know,

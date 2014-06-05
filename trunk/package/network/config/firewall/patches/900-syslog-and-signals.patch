@@ -101,9 +101,9 @@
 --- a/utils.c	2014-03-18 20:41:26.000000000 -0700
 +++ b/utils.c	2014-04-26 15:57:09.181102117 -0700
 @@ -16,6 +16,7 @@
-  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
   */
  
+ #define _GNU_SOURCE
 +#include <syslog.h>
  #include "utils.h"
  #include "options.h"

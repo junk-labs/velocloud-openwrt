@@ -31,15 +31,15 @@
  
  	wpa_supplicant_event = hostapd_wpa_event;
  	for (;;) {
--		c = getopt(argc, argv, "Bde:f:hKP:tg:G:v::");
-+		c = getopt(argc, argv, "Bde:f:hKP:tg:G:H:v::");
+-		c = getopt(argc, argv, "b:Bde:f:hKP:Ttu:g:G:v::");
++		c = getopt(argc, argv, "b:Bde:f:hKP:Ttu:g:G:H:v::");
  		if (c < 0)
  			break;
  		switch (c) {
 @@ -641,6 +663,9 @@
- 			if (hostapd_get_ctrl_iface_group(&interfaces, optarg))
- 				return -1;
- 			break;
+ 		case 'u':
+ 			return gen_uuid(optarg);
+ #endif /* CONFIG_WPS */
 +		case 'H':
 +			hostapd_hacks = hostapd_get_hacks(optarg);
 +			break;
@@ -49,7 +49,7 @@
 --- a/src/ap/hostapd.h
 +++ b/src/ap/hostapd.h
 @@ -13,6 +13,14 @@
- #include "ap_config.h"
+ #include "drivers/driver.h"
  #include "ubus.h"
  
 +// hacks;
@@ -60,9 +60,9 @@
 +};
 +extern int hostapd_hacks;
 +
- struct wpa_driver_ops;
  struct wpa_ctrl_dst;
  struct radius_server_data;
+ struct upnp_wps_device_sm;
 --- a/src/ap/hostapd.c
 +++ b/src/ap/hostapd.c
 @@ -34,6 +34,7 @@

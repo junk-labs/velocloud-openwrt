@@ -12,7 +12,6 @@ DEFAULT_PACKAGES += \
 	kmod-xen-fs \
 	kmod-xen-evtchn \
 	kmod-xen-netdev \
-	kmod-xen-kbddev \
 
 
 define Target/Description

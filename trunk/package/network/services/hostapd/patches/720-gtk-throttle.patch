@@ -6,9 +6,9 @@
  	struct wpa_ft_pmk_cache *ft_pmk_cache;
 +
 +	int gtk_throttle;
- };
  
- 
+ #ifdef CONFIG_P2P
+ 	struct bitfield *ip_pool;
 --- a/src/ap/wpa_auth.c
 +++ b/src/ap/wpa_auth.c
 @@ -230,8 +230,10 @@

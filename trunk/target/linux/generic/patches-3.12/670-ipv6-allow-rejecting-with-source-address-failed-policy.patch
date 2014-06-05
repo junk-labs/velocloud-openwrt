@@ -113,9 +113,9 @@ Signed-off-by: Jonas Gorski <jogo@openwrt.org>
 --- a/net/ipv6/route.c
 +++ b/net/ipv6/route.c
 @@ -86,6 +86,8 @@ static int		ip6_pkt_discard(struct sk_bu
+ 
+ static int		ip6_pkt_discard(struct sk_buff *skb);
  static int		ip6_pkt_discard_out(struct sk_buff *skb);
- static int		ip6_pkt_prohibit(struct sk_buff *skb);
- static int		ip6_pkt_prohibit_out(struct sk_buff *skb);
 +static int		ip6_pkt_policy_failed(struct sk_buff *skb);
 +static int		ip6_pkt_policy_failed_out(struct sk_buff *skb);
  static void		ip6_link_failure(struct sk_buff *skb);

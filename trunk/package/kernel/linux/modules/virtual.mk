@@ -86,7 +86,7 @@ $(eval $(call KernelPackage,xen))
 define KernelPackage/xen-privcmd
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen private commands
-  DEPENDS:=@TARGET_x86_xen_domu
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
   KCONFIG:=CONFIG_XEN_PRIVCMD
   FILES:=$(LINUX_DIR)/drivers/xen/xen-privcmd.ko
   AUTOLOAD:=$(call AutoLoad,04,xen-privcmd)
@@ -176,7 +176,7 @@ define KernelPackage/xen-kbddev
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen virtual keyboard and mouse
   DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws +kmod-input-core
-  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
+  DEFAULT:=y if TARGET_x86_xen_domu
   KCONFIG:=CONFIG_INPUT_MISC=y \
 	CONFIG_INPUT_XEN_KBDDEV_FRONTEND
   FILES:=$(LINUX_DIR)/drivers/input/xen-kbdfront.ko

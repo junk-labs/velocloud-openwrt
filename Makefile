@@ -173,12 +173,16 @@ define OpenwrtConfig
 		-e '/CONFIG_TARGET_BOARD/d' \
 		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
 		-e '/CONFIG_X\(64\|86\)_/d' \
+		-e '/CONFIG_GRUB_/d' \
+		-e '/CONFIG_VELOCLOUD_/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)_$(call target_conf,$(1))=y' \
 		-e '$$ aCONFIG_TARGET_BOARD="$(OPENWRT_ARCH)"' \
 		-e '$$ aCONFIG_$(OPENWRT_CPUARCH)=y' \
 		-e '$$ aCONFIG_ARCH="$(OPENWRT_CPUARCH)"' \
+		-e '$$ aCONFIG_GRUB_IMAGES=y' \
+		-e '$$ aCONFIG_GRUB_TIMEOUT="2"' \
 		-e '$$ aCONFIG_VERSION_NICK="OpenWRT $(1)"' \
 		-e '$$ aCONFIG_VERSION_NUMBER="$(OPENWRT_VC_VERSION)"' \
 	$(OPENWRT_CONFIG) > $(OPENWRT_ROOT)/.config

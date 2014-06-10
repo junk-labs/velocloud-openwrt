@@ -264,7 +264,7 @@ menu "Target Images"
 
 	config VMDK_IMAGES
 		bool "Build VMware image files (VMDK)"
-		depends on TARGET_x86 || TARGET_x86_64
+		depends on TARGET_x86 || TARGET_x86_64 || TARGET_x64
 		select GRUB_IMAGES
 		select TARGET_ROOTFS_EXT4FS
 		select PACKAGE_kmod-e1000

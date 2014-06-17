@@ -57,8 +57,8 @@ $(eval $(call KernelPackage,virtio-random))
 define KernelPackage/xen
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen Kernel Settings
-  DEPENDS:=@TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
-  DEFAULT:=y if (TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:= \
   	CONFIG_PARAVIRT=y \
   	CONFIG_HYPERVISOR_GUEST=y \
@@ -83,26 +83,10 @@ endef
 
 $(eval $(call KernelPackage,xen))
 
-define KernelPackage/xen-privcmd
-  SUBMENU:=$(VIRTUAL_MENU)
-  TITLE:=Xen private commands
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
-  KCONFIG:=CONFIG_XEN_PRIVCMD
-  FILES:=$(LINUX_DIR)/drivers/xen/xen-privcmd.ko
-  AUTOLOAD:=$(call AutoLoad,04,xen-privcmd)
-endef
-
-define KernelPackage/xen-privcmd/description
- Kernel module for Xen private commands
-endef
-
-$(eval $(call KernelPackage,xen-privcmd))
-
-
 define KernelPackage/xen-fs
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen filesystem
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws +kmod-xen-privcmd
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
   DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:= \
   	CONFIG_XENFS \
@@ -175,10 +159,9 @@ $(eval $(call KernelPackage,xen-fbdev))
 define KernelPackage/xen-kbddev
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=Xen virtual keyboard and mouse
-  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws +kmod-input-core
-  DEFAULT:=y if TARGET_x86_xen_domu
-  KCONFIG:=CONFIG_INPUT_MISC=y \
-	CONFIG_INPUT_XEN_KBDDEV_FRONTEND
+  DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
+  DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
+  KCONFIG:=CONFIG_XEN_KBDDEV_FRONTEND
   FILES:=$(LINUX_DIR)/drivers/input/xen-kbdfront.ko
   AUTOLOAD:=$(call AutoLoad,08,xen-kbdfront)
 endef
@@ -231,6 +214,7 @@ define KernelPackage/kvm
   KCONFIG:=CONFIG_VIRTUALIZATION=y \
 	CONFIG_IOMMU_SUPPORT=y \
 	CONFIG_AMD_IOMMU=y \
+	CONFIG_AMD_IOMMU_V2=y \
 	CONFIG_INTEL_IOMMU=y \
 	CONFIG_HYPERVISOR_GUEST=y \
 	CONFIG_HIGH_RES_TIMERS=y \

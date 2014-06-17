@@ -10,26 +10,10 @@ OTHER_MENU:=Other modules
 WATCHDOG_DIR:=watchdog
 
 
-define KernelPackage/6lowpan-iphc
-  USBMENU:=$(OTHER_MENU)
-  TITLE:=6lowpan shared code
-  DEPENDS:=@LINUX_3_14
-  KCONFIG:=CONFIG_6LOWPAN_IPHC
-  HIDDEN:=1
-  FILES:=$(LINUX_DIR)/net/ieee802154/6lowpan_iphc.ko
-  AUTOLOAD:=$(call Autoprobe,6lowpan_iphc)
-endef
-
-define KernelPackage/6lowpan-iphc/description
-  Shared 6lowpan code for IEEE 802.15.4 and Bluetooth.
-endef
-
-$(eval $(call KernelPackage,6lowpan-iphc))
-
 define KernelPackage/bluetooth
   SUBMENU:=$(OTHER_MENU)
   TITLE:=Bluetooth support
-  DEPENDS:=@USB_SUPPORT +kmod-usb-core +kmod-crypto-hash +LINUX_3_14:kmod-6lowpan-iphc
+  DEPENDS:=@USB_SUPPORT +kmod-usb-core +kmod-crypto-hash
   KCONFIG:= \
 	CONFIG_BLUEZ \
 	CONFIG_BLUEZ_L2CAP \
@@ -318,12 +302,14 @@ endef
 
 $(eval $(call KernelPackage,sdhci))
 
+OPROFILE_KARCH=$(subst x86_64,x86,$(LINUX_KARCH))
 
 define KernelPackage/oprofile
   SUBMENU:=$(OTHER_MENU)
   TITLE:=OProfile profiling support
-  KCONFIG:=CONFIG_OPROFILE
-  FILES:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/oprofile/oprofile.ko
+  KCONFIG:=CONFIG_OPROFILE \
+	CONFIG_OPROFILE_EVENT_MULTIPLEX=n
+  FILES:=$(LINUX_DIR)/arch/$(OPROFILE_KARCH)/oprofile/oprofile.ko
   DEPENDS:=@KERNEL_PROFILING
 endef
 
@@ -499,23 +485,6 @@ define KernelPackage/pwm-gpio/description
 endef
 
 $(eval $(call KernelPackage,pwm-gpio))
-
-
-define KernelPackage/rtc-ds1672
-  SUBMENU:=$(OTHER_MENU)
-  TITLE:=Dallas/Maxim DS1672 RTC support
-  $(call AddDepends/rtc)
-  DEPENDS+=+kmod-i2c-core
-  KCONFIG:=CONFIG_RTC_DRV_DS1672
-  FILES:=$(LINUX_DIR)/drivers/rtc/rtc-ds1672.ko
-  AUTOLOAD:=$(call AutoProbe,rtc-ds1672)
-endef
-
-define KernelPackage/rtc-ds1672/description
- Kernel module for Dallas/Maxim DS1672 RTC.
-endef
-
-$(eval $(call KernelPackage,rtc-ds1672))
 
 
 define KernelPackage/rtc-isl1208
@@ -721,17 +690,10 @@ define KernelPackage/zram
   KCONFIG:= \
 	CONFIG_ZSMALLOC \
 	CONFIG_ZRAM \
-	CONFIG_ZRAM_DEBUG=n \
-	CONFIG_PGTABLE_MAPPING=n
-ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),ge,3.14.0)),1)
-  FILES:=\
-	$(LINUX_DIR)/mm/zsmalloc.ko \
-	$(LINUX_DIR)/drivers/block/zram/zram.ko
-else
+	CONFIG_ZRAM_DEBUG=n
   FILES:= \
 	$(LINUX_DIR)/drivers/staging/zsmalloc/zsmalloc.ko \
 	$(LINUX_DIR)/drivers/staging/zram/zram.ko
-endif
   AUTOLOAD:=$(call AutoLoad,20,zsmalloc zram)
 endef
 
@@ -773,24 +735,6 @@ define KernelPacakge/pps/description
 endef
 
 $(eval $(call KernelPackage,pps))
-
-
-define KernelPackage/pps-gpio
-  SUBMENU:=$(OTHER_MENU)
-  TITLE:=PPS client using GPIO
-  DEPENDS:=+kmod-pps
-  KCONFIG:=CONFIG_PPS_CLIENT_GPIO
-  FILES:=$(LINUX_DIR)/drivers/pps/clients/pps-gpio.ko
-  AUTOLOAD:=$(call AutoLoad,18,pps-gpio,1)
-endef
-
-define KernelPacakge/pps-gpio/description
- Support for a PPS source using GPIO. To be useful you must
- also register a platform device specifying the GPIO pin and
- other options, usually in your board setup.
-endef
-
-$(eval $(call KernelPackage,pps-gpio))
 
 
 define KernelPackage/ptp
@@ -848,7 +792,6 @@ define KernelPackage/thermal
   HIDDEN:=1
   KCONFIG:= \
 	CONFIG_THERMAL \
-	CONFIG_THERMAL_OF=y \
 	CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE=y \
 	CONFIG_THERMAL_DEFAULT_GOV_FAIR_SHARE=n \
 	CONFIG_THERMAL_DEFAULT_GOV_USER_SPACE=n \

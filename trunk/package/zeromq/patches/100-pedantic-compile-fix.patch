@@ -1,0 +1,37 @@
+--- a/include/zmq.h	2013-12-07 23:02:10.000000000 -0800
++++ b/include/zmq.h	2014-03-31 11:02:32.065539401 -0700
+@@ -337,8 +337,8 @@
+ 
+ /*  Socket event data  */
+ typedef struct {
+-    uint16_t event;  // id of the event as bitfield
+-    int32_t  value ; // value is either error code, fd or reconnect interval
++    uint16_t event;  /* id of the event as bitfield */
++    int32_t  value ; /* value is either error code, fd or reconnect interval */
+ } zmq_event_t;
+ 
+ ZMQ_EXPORT void *zmq_socket (void *, int type);
+--- a/tools/curve_keygen.c	2013-11-13 09:57:50.000000000 -0800
++++ b/tools/curve_keygen.c	2014-03-31 11:03:41.833538602 -0700
+@@ -31,6 +31,10 @@
+ 
+ int main (void)
+ {
++    char public_key [41];
++    char secret_key [41];
++    int rc;
++
+     puts ("This tool generates a CurveZMQ keypair, as two printable strings you can");
+     puts ("use in configuration files or source code. The encoding uses Z85, which");
+     puts ("is a base-85 format that is described in 0MQ RFC 32, and which has an");
+@@ -38,9 +42,7 @@
+     puts ("always works with the secret key held by one party and the public key");
+     puts ("distributed (securely!) to peers wishing to connect to it.");
+ 
+-    char public_key [41];
+-    char secret_key [41];
+-    int rc = zmq_curve_keypair (public_key, secret_key);
++    rc = zmq_curve_keypair (public_key, secret_key);
+     if (rc != 0) {
+       if (zmq_errno () == ENOTSUP) {
+           puts ("To use curve_keygen, please install libsodium and then rebuild libzmq.");

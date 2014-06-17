@@ -9,12 +9,3 @@
  		if test "$?" != "0"; then
  			# couldn't load the module
  			return
-@@ -278,7 +278,7 @@ load_module_24()
- {
- 	grep oprof /proc/devices >/dev/null
- 	if test "$?" -ne 0; then
--		modprobe oprofile
-+		insmod oprofile
- 		if test "$?" != "0"; then
- 			# couldn't load a module
- 			return

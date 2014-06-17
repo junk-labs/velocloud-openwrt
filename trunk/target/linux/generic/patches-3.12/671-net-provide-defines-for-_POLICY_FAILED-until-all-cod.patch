@@ -18,17 +18,6 @@ Signed-off-by: Jonas Gorski <jogo@openwrt.org>
  include/uapi/linux/rtnetlink.h | 2 ++
  3 files changed, 6 insertions(+)
 
---- a/include/uapi/linux/fib_rules.h
-+++ b/include/uapi/linux/fib_rules.h
-@@ -71,6 +71,8 @@ enum {
- 	__FR_ACT_MAX,
- };
- 
-+#define FR_ACT_FAILED_POLICY FR_ACT_POLICY_FAILED
-+
- #define FR_ACT_MAX (__FR_ACT_MAX - 1)
- 
- #endif
 --- a/include/uapi/linux/icmpv6.h
 +++ b/include/uapi/linux/icmpv6.h
 @@ -118,6 +118,8 @@ struct icmp6hdr {
@@ -40,14 +29,3 @@ Signed-off-by: Jonas Gorski <jogo@openwrt.org>
  /*
   *	Codes for Time Exceeded
   */
---- a/include/uapi/linux/rtnetlink.h
-+++ b/include/uapi/linux/rtnetlink.h
-@@ -207,6 +207,8 @@ enum {
- 	__RTN_MAX
- };
- 
-+#define RTN_FAILED_POLICY RTN_POLICY_FAILED
-+
- #define RTN_MAX (__RTN_MAX - 1)
- 
- 

@@ -50,6 +50,8 @@ define Package/mocana-nanosec/description
  Mocana NanoSec IPSec stack
 endef
 
+PATCHED_MOCANA_TARBALL=mocana-$(MOCANA_PKG_BASE)-patched.tar.gz
+
 define Package/mocana-nanosec/install
 	$(INSTALL_DIR) $(1)/opt/vc/sbin
 	$(CP) $(PKG_SOURCE_DIR)/bin/{ike,loadConfig} $(1)/opt/vc/sbin/
@@ -67,6 +69,7 @@ define Build/InstallDev
 		$(1)/usr/include/mocana/ike2 \
 		$(1)/usr/include/mocana/ipsec \
 		$(1)/usr/include/mocana/platform
+	$(CP) $(PKG_BUILD_DIR)/$(PATCHED_MOCANA_TARBALL) $(BIN_DIR)
 	$(CP) $(PKG_SOURCE_DIR)/bin/libikeipsec.a $(1)/usr/lib
 	$(CP) $(PKG_SOURCE_DIR)/src/common/*.h $(1)/usr/include/mocana/common
 	$(CP) $(PKG_SOURCE_DIR)/src/crypto/*.h $(1)/usr/include/mocana/crypto
@@ -92,6 +95,11 @@ define Build/Compile
 		KDIR="$(LINUX_DIR)" \
 		MOCANA_64_BIT=$(MOCANA_64_BIT) \
 		all
+	tar -C $(PKG_BUILD_DIR) \
+		-czf $(PKG_BUILD_DIR)/$(PATCHED_MOCANA_TARBALL) \
+		--exclude=$(MOCANA_PKG_BASE)/bin \
+		--exclude=$(MOCANA_PKG_BASE)/obj \
+		$(MOCANA_PKG_BASE)
 endef
 
 $(eval $(call BuildPackage,mocana-nanosec))

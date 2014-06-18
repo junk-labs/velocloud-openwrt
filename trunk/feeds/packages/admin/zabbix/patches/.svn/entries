@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/admin/zabbix/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-05-28T10:03:03.482592Z
-36740
-mirko
+2014-05-01T18:32:49.218133Z
+40639
+hauke
 
 
 
@@ -26,17 +26,51 @@ mirko
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+010-change-agentd-config.patch
+file
+
+
+
+
+2014-06-17T22:32:00.702136Z
+b6370b81af53b0bc3fdb4334c8046b6e
+2014-05-01T18:32:49.218133Z
+40639
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1416
+
 002-uclibc_loadavg.patch
 file
 
 
 
 
-2013-12-02T22:38:12.582323Z
-d22426aa55cd01aa00f4d6ddd224258d
-2013-02-17T12:13:42.041856Z
-35636
-juhosg
+2014-06-17T22:32:00.702136Z
+3037388cc7c68fac2a8fe8cfeb23fe77
+2014-02-05T21:27:13.140933Z
+39489
+hauke
 
 
 
@@ -58,7 +92,7 @@ juhosg
 
 
 
-1023
+921
 
 002-fix-res_send-on-uclibc.patch
 file
@@ -66,11 +100,11 @@ file
 
 
 
-2013-12-02T22:38:12.586323Z
-113f9752257f2da29cf641021a35a07b
-2013-02-17T12:13:42.041856Z
-35636
-juhosg
+2014-06-17T22:32:00.702136Z
+853a8cca7e848a6c267afe4885eb84e3
+2014-05-01T18:32:49.218133Z
+40639
+hauke
 
 
 
@@ -92,7 +126,7 @@ juhosg
 
 
 
-1592
+1609
 
 001-cross_compile.patch
 file
@@ -100,11 +134,11 @@ file
 
 
 
-2013-12-02T22:38:12.586323Z
-91cd93e6ed55fa37b59a4d4dc5b02aef
-2013-02-17T12:13:42.041856Z
-35636
-juhosg
+2014-06-17T22:32:00.702136Z
+1c4d1c8eef28e646b121b70a36fe38d6
+2014-05-01T18:32:49.218133Z
+40639
+hauke
 
 
 
@@ -126,39 +160,5 @@ juhosg
 
 
 
-731
-
-010-change-agentd-config.patch
-file
-
-
-
-
-2013-12-02T22:38:12.582323Z
-947adfe71583357a7cfb32e258c0c0c2
-2013-05-28T10:03:03.482592Z
-36740
-mirko
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1372
+700
 

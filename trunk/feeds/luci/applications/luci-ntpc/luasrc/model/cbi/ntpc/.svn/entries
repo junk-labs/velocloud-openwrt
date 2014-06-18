@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-ntpc/luasrc/model/cbi/ntpc
 http://svn.luci.subsignal.org
 
@@ -26,47 +26,13 @@ soma
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-ntpc.lua
-file
-
-
-
-
-2013-12-02T22:38:39.466324Z
-42a093b94dc75ecc52dd4007c260a9f6
-2012-11-10T20:55:50.676032Z
-9417
-soma
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1543
-
 ntpcmini.lua
 file
 
 
 
 
-2013-12-02T22:38:39.466324Z
+2014-06-17T22:32:19.418136Z
 1c3a994d657fcc0bddf14f7b187608cd
 2012-11-10T20:55:50.676032Z
 9417
@@ -93,4 +59,38 @@ has-props
 
 
 1186
+
+ntpc.lua
+file
+
+
+
+
+2014-06-17T22:32:19.418136Z
+42a093b94dc75ecc52dd4007c260a9f6
+2012-11-10T20:55:50.676032Z
+9417
+soma
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1543
 

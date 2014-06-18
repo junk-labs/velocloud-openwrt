@@ -1,7 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
-V 34
-/!svn/ver/9893/luci/trunk/po/pt_BR
+V 35
+/!svn/ver/10215/luci/trunk/po/pt_BR
+END
+samba.po
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/10089/luci/trunk/po/pt_BR/samba.po
 END
 rrdtool.po
 K 25
@@ -36,14 +42,14 @@ END
 statistics.po
 K 25
 svn:wc:ra_dav:version-url
-V 48
-/!svn/ver/9551/luci/trunk/po/pt_BR/statistics.po
+V 49
+/!svn/ver/10090/luci/trunk/po/pt_BR/statistics.po
 END
 splash.po
 K 25
 svn:wc:ra_dav:version-url
-V 44
-/!svn/ver/9893/luci/trunk/po/pt_BR/splash.po
+V 45
+/!svn/ver/10215/luci/trunk/po/pt_BR/splash.po
 END
 minidlna.po
 K 25
@@ -54,8 +60,8 @@ END
 watchcat.po
 K 25
 svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/8928/luci/trunk/po/pt_BR/watchcat.po
+V 47
+/!svn/ver/10092/luci/trunk/po/pt_BR/watchcat.po
 END
 uvc_streamer.po
 K 25
@@ -72,8 +78,8 @@ END
 commands.po
 K 25
 svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/9477/luci/trunk/po/pt_BR/commands.po
+V 47
+/!svn/ver/10085/luci/trunk/po/pt_BR/commands.po
 END
 wol.po
 K 25
@@ -96,8 +102,8 @@ END
 freifunk.po
 K 25
 svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/9519/luci/trunk/po/pt_BR/freifunk.po
+V 47
+/!svn/ver/10086/luci/trunk/po/pt_BR/freifunk.po
 END
 p910nd.po
 K 25
@@ -144,8 +150,8 @@ END
 openvpn.po
 K 25
 svn:wc:ra_dav:version-url
-V 45
-/!svn/ver/9286/luci/trunk/po/pt_BR/openvpn.po
+V 46
+/!svn/ver/10088/luci/trunk/po/pt_BR/openvpn.po
 END
 ddns.po
 K 25
@@ -168,8 +174,8 @@ END
 transmission.po
 K 25
 svn:wc:ra_dav:version-url
-V 50
-/!svn/ver/9457/luci/trunk/po/pt_BR/transmission.po
+V 51
+/!svn/ver/10091/luci/trunk/po/pt_BR/transmission.po
 END
 coovachilli.po
 K 25
@@ -210,14 +216,14 @@ END
 base.po
 K 25
 svn:wc:ra_dav:version-url
-V 42
-/!svn/ver/9670/luci/trunk/po/pt_BR/base.po
+V 43
+/!svn/ver/10084/luci/trunk/po/pt_BR/base.po
 END
 ahcp.po
 K 25
 svn:wc:ra_dav:version-url
-V 42
-/!svn/ver/9331/luci/trunk/po/pt_BR/ahcp.po
+V 43
+/!svn/ver/10083/luci/trunk/po/pt_BR/ahcp.po
 END
 p2pblock.po
 K 25
@@ -240,18 +246,12 @@ END
 meshwizard.po
 K 25
 svn:wc:ra_dav:version-url
-V 48
-/!svn/ver/9477/luci/trunk/po/pt_BR/meshwizard.po
+V 49
+/!svn/ver/10087/luci/trunk/po/pt_BR/meshwizard.po
 END
 vnstat.po
 K 25
 svn:wc:ra_dav:version-url
 V 44
 /!svn/ver/8867/luci/trunk/po/pt_BR/vnstat.po
-END
-samba.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/8867/luci/trunk/po/pt_BR/samba.po
 END

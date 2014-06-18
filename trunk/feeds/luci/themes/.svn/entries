@@ -1,15 +1,15 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/themes
 http://svn.luci.subsignal.org
 
 
 
-2013-09-19T17:19:17.311691Z
-9907
-soma
+2013-12-03T15:51:54.413528Z
+9938
+jow
 
 
 
@@ -26,6 +26,9 @@ soma
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+base
+dir
+
 bootstrap
 dir
 
@@ -36,8 +39,5 @@ freifunk-generic
 dir
 
 freifunk-bno
-dir
-
-base
 dir
 

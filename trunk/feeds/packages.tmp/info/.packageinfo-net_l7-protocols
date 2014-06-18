@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/net/l7-protocols/Makefile
 Package: l7-protocols
 Submenu: Firewall
-Version: 2009-05-28-1
+Version: 2009-05-28-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread iptables-mod-filter
 Menu-Depends: 
 Provides: 
@@ -21,7 +21,7 @@ http://l7-filter.sourceforge.net/
 
 Package: l7-protocols-testing
 Submenu: Firewall
-Version: 2009-05-28-1
+Version: 2009-05-28-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread iptables-mod-filter l7-protocols +USE_UCLIBCXX:uclibcxx +USE_LIBSTDCXX:libstdcpp
 Menu-Depends: 
 Provides: 

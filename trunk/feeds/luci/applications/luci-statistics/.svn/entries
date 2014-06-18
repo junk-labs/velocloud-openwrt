@@ -1,15 +1,15 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-statistics
 http://svn.luci.subsignal.org
 
 
 
-2013-10-18T10:42:15.595232Z
-9926
-stargieg
+2013-12-03T23:58:15.041938Z
+9939
+jow
 has-props
 
 
@@ -41,7 +41,7 @@ file
 
 
 
-2013-12-02T22:38:42.734324Z
+2014-06-17T22:32:22.242136Z
 8094eb3a0b683e4ed3131d44cbf90d5d
 2009-05-19T02:18:28.983459Z
 4560

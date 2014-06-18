@@ -3,12 +3,6 @@ svn:wc:ra_dav:version-url
 V 49
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/docsrc
 END
-Makefile
-K 25
-svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/docsrc/Makefile
-END
 axTLS.dox
 K 25
 svn:wc:ra_dav:version-url
@@ -20,4 +14,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 66
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/docsrc/doco_footer.html
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/docsrc/Makefile
 END

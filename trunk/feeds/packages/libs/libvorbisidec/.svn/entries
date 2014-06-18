@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/libvorbisidec
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-08-04T16:41:41.688403Z
-37692
-jogo
+2014-03-27T07:04:47.258938Z
+40162
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:13.626324Z
-e9af880743c3ab4b05b0ace26bcc8ddb
-2013-08-04T16:41:41.688403Z
-37692
-jogo
+2014-06-17T22:32:01.546136Z
+f430b7689606749347e32441c8d2e238
+2014-03-27T07:04:47.258938Z
+40162
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1489
+1487
 

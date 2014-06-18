@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/lang/jamvm
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-01-09T21:47:49.768429Z
-35073
-acinonyx
+2014-03-27T07:02:58.679336Z
+40065
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:06.994323Z
-340080500de693ce6cafc6bc66cbf0dd
-2013-01-09T21:47:49.768429Z
-35073
-acinonyx
+2014-06-17T22:31:56.634137Z
+6e55c4970dcdc30ff271a5f2e08249c8
+2014-03-27T07:02:58.679336Z
+40065
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1761
+1774
 

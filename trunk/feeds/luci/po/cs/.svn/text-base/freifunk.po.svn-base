@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2012-06-30 22:25+0200\n"
-"Last-Translator: h0nzZik <jenda.tusil@gmail.com>\n"
+"PO-Revision-Date: 2014-05-23 12:53+0200\n"
+"Last-Translator: koli <lukas.koluch@gmail.com>\n"
 "Language-Team: none\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
@@ -53,7 +53,6 @@ msgstr "Komunitní profil"
 msgid "Community settings"
 msgstr "Nastavení komunity"
 
-#, fuzzy
 msgid "Confirm Upgrade"
 msgstr "Potvrďte upgrade"
 
@@ -89,7 +88,7 @@ msgid "Edit index page"
 msgstr ""
 
 msgid "Enable IPv6"
-msgstr ""
+msgstr "Povolit IPv6"
 
 msgid "Error"
 msgstr "Chyba"
@@ -116,7 +115,7 @@ msgid "Good (2 < ETX < 4)"
 msgstr ""
 
 msgid "Green"
-msgstr ""
+msgstr "Zelený"
 
 msgid "Hello and welcome in the network of"
 msgstr "Dobrý den, vítejte v síti"
@@ -128,13 +127,13 @@ msgid "Homepage"
 msgstr "Domovská stránka"
 
 msgid "Hostname"
-msgstr ""
+msgstr "Hostname"
 
 msgid "IPv6 Config"
 msgstr ""
 
 msgid "IPv6 Prefix"
-msgstr ""
+msgstr "IPv6 Prefix"
 
 msgid "IPv6 network in CIDR notation."
 msgstr ""
@@ -255,7 +254,7 @@ msgid "Realname"
 msgstr "Skutečné jméno"
 
 msgid "Red"
-msgstr ""
+msgstr "Červený"
 
 msgid "SSID"
 msgstr "SSID"
@@ -295,7 +294,7 @@ msgid "System"
 msgstr "Systém"
 
 msgid "TX"
-msgstr ""
+msgstr "TX"
 
 msgid ""
 "The <em>libiwinfo</em> package is not installed. You must install this "
@@ -326,7 +325,7 @@ msgid ""
 msgstr ""
 
 msgid "This is the access point"
-msgstr ""
+msgstr "To je přístupový bod (AP)"
 
 msgid "Update Settings"
 msgstr ""
@@ -335,7 +334,7 @@ msgid "Update available!"
 msgstr ""
 
 msgid "Uptime"
-msgstr ""
+msgstr "Uptime"
 
 msgid "Verify downloaded images"
 msgstr ""
@@ -352,7 +351,7 @@ msgid "Wireless Overview"
 msgstr ""
 
 msgid "Yellow"
-msgstr ""
+msgstr "Žlutý"
 
 msgid ""
 "You can display additional content on the public index page by inserting "
@@ -382,7 +381,7 @@ msgid "cached"
 msgstr ""
 
 msgid "e.g."
-msgstr ""
+msgstr "např."
 
 msgid "free"
 msgstr ""

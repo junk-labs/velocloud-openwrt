@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-21T12:57:29.672675Z
-38887
-tripolar
+2014-06-02T17:03:33.165529Z
+40978
+kerneis
 
 
 
@@ -26,6 +26,21 @@ tripolar
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+devel
+dir
+
+utils
+dir
+
+lang
+dir
+
+skels
+dir
+
+mail
+dir
+
 ipv6
 dir
 
@@ -35,7 +50,7 @@ file
 
 
 
-2013-12-02T22:38:15.318324Z
+2014-06-17T22:32:04.090136Z
 da87fa36d74e7258ba8ef5edfec5e3c7
 2013-09-25T14:20:37.988576Z
 38176
@@ -76,20 +91,5 @@ libs
 dir
 
 multimedia
-dir
-
-devel
-dir
-
-utils
-dir
-
-lang
-dir
-
-skels
-dir
-
-mail
 dir
 

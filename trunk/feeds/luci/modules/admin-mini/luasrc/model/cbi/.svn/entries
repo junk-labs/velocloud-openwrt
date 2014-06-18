@@ -1,14 +1,14 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/modules/admin-mini/luasrc/model/cbi
 http://svn.luci.subsignal.org
 
 
 
-2012-08-08T20:07:36.385056Z
-8953
+2014-02-13T12:06:47.244058Z
+9955
 jow
 
 
@@ -26,9 +26,9 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-mini-network
+mini
 dir
 
-mini
+mini-network
 dir
 

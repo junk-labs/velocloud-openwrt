@@ -1,7 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
 V 68
-/!svn/ver/9678/luci/trunk/modules/admin-full/luasrc/controller/admin
+/!svn/ver/9951/luci/trunk/modules/admin-full/luasrc/controller/admin
+END
+uci.lua
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/7362/luci/trunk/modules/admin-full/luasrc/controller/admin/uci.lua
 END
 filebrowser.lua
 K 25
@@ -31,11 +37,5 @@ network.lua
 K 25
 svn:wc:ra_dav:version-url
 V 80
-/!svn/ver/9636/luci/trunk/modules/admin-full/luasrc/controller/admin/network.lua
-END
-uci.lua
-K 25
-svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/7362/luci/trunk/modules/admin-full/luasrc/controller/admin/uci.lua
+/!svn/ver/9951/luci/trunk/modules/admin-full/luasrc/controller/admin/network.lua
 END

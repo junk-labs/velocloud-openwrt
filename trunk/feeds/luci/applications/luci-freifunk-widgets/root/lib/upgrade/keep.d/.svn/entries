@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-freifunk-widgets/root/lib/upgrade/keep.d
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:39.702324Z
+2014-06-17T22:32:19.834136Z
 b43359e5170ff64cd1b54525ecd7d6c3
 2012-09-17T14:20:36.911324Z
 9300

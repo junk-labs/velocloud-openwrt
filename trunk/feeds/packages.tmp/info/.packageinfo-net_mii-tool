@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/net/mii-tool/Makefile
 Package: mii-tool
-Version: 1.9.1.1-1
+Version: 2014-02-18-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -8,7 +8,7 @@ Section: net
 Category: Network
 Title: configure media type using MII commands
 Maintainer: 
-Source: mii-tool-1.9.1.1.tar.bz2
+Source: mii-tool-2014-02-18.tar.gz
 Type: ipkg
 Description: 	The mii-tool command allows you to set or autodetect the media type
 	or mii chipset-based ethernet devices. It traditionally had been

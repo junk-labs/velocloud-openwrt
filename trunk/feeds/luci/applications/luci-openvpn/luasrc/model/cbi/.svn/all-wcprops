@@ -3,12 +3,6 @@ svn:wc:ra_dav:version-url
 V 68
 /!svn/ver/8880/luci/trunk/applications/luci-openvpn/luasrc/model/cbi
 END
-openvpn-advanced.lua
-K 25
-svn:wc:ra_dav:version-url
-V 89
-/!svn/ver/7774/luci/trunk/applications/luci-openvpn/luasrc/model/cbi/openvpn-advanced.lua
-END
 openvpn-basic.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -20,4 +14,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 80
 /!svn/ver/8880/luci/trunk/applications/luci-openvpn/luasrc/model/cbi/openvpn.lua
+END
+openvpn-advanced.lua
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/7774/luci/trunk/applications/luci-openvpn/luasrc/model/cbi/openvpn-advanced.lua
 END

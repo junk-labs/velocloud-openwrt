@@ -10,7 +10,7 @@ Title: A netcat like utility with SSL support
 Maintainer: 
 Source: sslcat.tgz
 Type: ipkg
-Description:  SSLCat is a simple Unix utility that reads and writes data across an 
+Description:  SSLCat is a simple Unix utility that reads and writes data across an
  SSL enable network connection.
 http://www.bindshell.net/tools/sslcat
 

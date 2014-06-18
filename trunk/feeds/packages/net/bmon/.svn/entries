@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/bmon
 svn://svn.openwrt.org/openwrt
 
 
 
-2009-04-17T15:22:00.575847Z
-15247
-nico
+2014-03-27T07:03:57.550093Z
+40108
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:10.366323Z
-64e379968ef3245d42cdabde33bee13e
-2009-04-17T15:22:00.575847Z
-15247
-nico
+2014-06-17T22:31:58.690137Z
+f9c93e7663569fe70e3753e7e21b2723
+2014-03-27T07:03:57.550093Z
+40108
+juhosg
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1096
+1093
 
 patches
 dir

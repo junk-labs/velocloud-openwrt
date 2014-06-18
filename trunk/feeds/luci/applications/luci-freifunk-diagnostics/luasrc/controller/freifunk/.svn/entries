@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-freifunk-diagnostics/luasrc/controller/freifunk
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:47.930324Z
+2014-06-17T22:32:22.930136Z
 026e67dd95daca2a69d152b3039d3915
 2013-01-09T18:50:07.385575Z
 9602

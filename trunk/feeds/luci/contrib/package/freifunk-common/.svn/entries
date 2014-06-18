@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/contrib/package/freifunk-common
 http://svn.luci.subsignal.org
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:50.554324Z
+2014-06-17T22:32:29.574136Z
 2a6dd066109f68b62a2d4020fe3528b5
 2011-10-23T14:20:51.856269Z
 7771

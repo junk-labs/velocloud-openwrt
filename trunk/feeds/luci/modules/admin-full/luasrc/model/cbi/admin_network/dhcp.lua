@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: dhcp.lua 9768 2013-03-20 15:25:38Z jow $
+$Id: dhcp.lua 9949 2014-01-17 15:46:56Z Cyrus $
 ]]--
 
 local sys = require "luci.sys"
@@ -240,6 +240,8 @@ mac.rmempty  = true
 
 ip = s:option(Value, "ip", translate("<abbr title=\"Internet Protocol Version 4\">IPv4</abbr>-Address"))
 ip.datatype = "or(ip4addr,'ignore')"
+
+hostid = s:option(Value, "hostid", translate("<abbr title=\"Internet Protocol Version 6\">IPv6</abbr>-Suffix (hex)"))
 
 sys.net.arptable(function(entry)
 	ip:value(entry["IP address"])

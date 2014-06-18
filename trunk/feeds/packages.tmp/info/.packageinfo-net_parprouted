@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/net/parprouted/Makefile
 Package: parprouted
 Submenu: Routing and Redirection
-Version: 0.64-5
+Version: 0.70-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread
 Menu-Depends: 
 Provides: 
@@ -9,7 +9,7 @@ Section: net
 Category: Network
 Title: Proxy ARP daemon
 Maintainer: 
-Source: parprouted-0.64.tar.gz
+Source: parprouted-0.7.tar.gz
 Type: ipkg
 Description: 	parprouted is a daemon for transparent IP (Layer 3) proxy ARP bridging.
 	This is useful for creation of transparent firewalls and bridging networks

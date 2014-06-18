@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/multimedia/crtmpserver/Makefile
 Package: crtmpserver
-Version: r726-1
+Version: r726-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +libstdcpp +liblua
 Menu-Depends: 
 Provides: 
@@ -16,7 +16,7 @@ stream (live or recorded) in the following technologies:
  * To and from embedded devices: iPhone, Android
  * From surveillance cameras
  * IP-TV using MPEG-TS and RTSP/RTCP/RTP protocols
-                
+
 Also, crtmpserver can be used as a high performance rendes-vous
 server. For example, it enables you to do:
  * Audio/Video conferencing

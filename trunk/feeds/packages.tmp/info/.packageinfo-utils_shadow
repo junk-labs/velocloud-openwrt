@@ -4,6 +4,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility chage from the PLD Linux shadow utilities
@@ -21,6 +22,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility groupadd from the PLD Linux shadow utilities
@@ -38,6 +40,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility groupdel from the PLD Linux shadow utilities
@@ -55,6 +58,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility groupmod from the PLD Linux shadow utilities
@@ -72,6 +76,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility groups from the PLD Linux shadow utilities
@@ -89,6 +94,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility passwd from the PLD Linux shadow utilities
@@ -106,6 +112,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility su from the PLD Linux shadow utilities
@@ -123,6 +130,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility useradd from the PLD Linux shadow utilities
@@ -140,6 +148,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility userdel from the PLD Linux shadow utilities
@@ -157,6 +166,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-common
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Utility usermod from the PLD Linux shadow utilities
@@ -174,6 +184,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +shadow-chage +shadow-groupadd +shadow-groupdel +shadow-groupmod +shadow-groups +shadow-passwd +shadow-su +shadow-useradd +shadow-userdel +shadow-usermod
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: The PLD Linux shadow utilities
@@ -192,6 +203,7 @@ Version: 4.1.5.1-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
+Build-Depends: libintl
 Section: utils
 Category: Utilities
 Title: Shared definitions for the PLD Linux shadow utilities

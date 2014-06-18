@@ -10,7 +10,7 @@ Title: libmodbus
 Maintainer: 
 Source: libmodbus-3.0.3.tar.gz
 Type: ipkg
-Description: A Modbus library for Linux, Mac OS X, FreeBSD, QNX and Win32 
+Description: A Modbus library for Linux, Mac OS X, FreeBSD, QNX and Win32
 http://www.libmodbus.org
 
 @@

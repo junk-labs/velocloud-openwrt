@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/libsoup
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:14.462324Z
+2014-06-17T22:32:01.758136Z
 965ccb8a54c5021512f4788237e6e7d1
 2012-12-05T17:31:12.200766Z
 34513

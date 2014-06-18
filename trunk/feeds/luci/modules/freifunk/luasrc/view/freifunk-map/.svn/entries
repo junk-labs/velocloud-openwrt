@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/modules/freifunk/luasrc/view/freifunk-map
 http://svn.luci.subsignal.org
 
@@ -26,47 +26,13 @@ soma
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-map.htm
-file
-
-
-
-
-2013-12-02T22:38:51.106324Z
-14505c379665b3de451b2dd4f9a0961b
-2012-11-30T23:55:35.288522Z
-9516
-soma
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3088
-
 frame.htm
 file
 
 
 
 
-2013-12-02T22:38:51.106324Z
+2014-06-17T22:32:35.954136Z
 b0790e9cb66702b4c2ed1ee478f40b1e
 2012-11-30T23:55:35.288522Z
 9516
@@ -93,4 +59,38 @@ soma
 
 
 1108
+
+map.htm
+file
+
+
+
+
+2014-06-17T22:32:35.954136Z
+14505c379665b3de451b2dd4f9a0961b
+2012-11-30T23:55:35.288522Z
+9516
+soma
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3088
 

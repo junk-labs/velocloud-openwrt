@@ -3,6 +3,24 @@ svn:wc:ra_dav:version-url
 V 49
 /!svn/ver/4760/luci/trunk/libs/nixio/axTLS/config
 END
+win32config
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/win32config
+END
+Config.in
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/Config.in
+END
+config.h
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4760/luci/trunk/libs/nixio/axTLS/config/config.h
+END
 makefile.dotnet.conf
 K 25
 svn:wc:ra_dav:version-url
@@ -68,22 +86,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 61
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/linuxconfig
-END
-win32config
-K 25
-svn:wc:ra_dav:version-url
-V 61
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/win32config
-END
-Config.in
-K 25
-svn:wc:ra_dav:version-url
-V 59
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/config/Config.in
-END
-config.h
-K 25
-svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/4760/luci/trunk/libs/nixio/axTLS/config/config.h
 END

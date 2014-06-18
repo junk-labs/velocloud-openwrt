@@ -10,8 +10,8 @@ Title: RADIUS client library
 Maintainer: 
 Source: radiusclient-ng-0.5.6.tar.gz
 Type: ipkg
-Description:  Purpose of this project is to build a portable, easy-to-use and 
- standard compliant library suitable for developing free and commercial 
+Description:  Purpose of this project is to build a portable, easy-to-use and
+ standard compliant library suitable for developing free and commercial
  software that need support for RADIUS protocol (RFCs 2128 and 2139).
  This package contains shared libraries, needed by other programs.
 http://developer.berlios.de/projects/radiusclient-ng/
@@ -29,8 +29,8 @@ Title: RADIUS client
 Maintainer: 
 Source: radiusclient-ng-0.5.6.tar.gz
 Type: ipkg
-Description:  Purpose of this project is to build a portable, easy-to-use and 
- standard compliant library suitable for developing free and commercial 
+Description:  Purpose of this project is to build a portable, easy-to-use and
+ standard compliant library suitable for developing free and commercial
  software that need support for RADIUS protocol (RFCs 2128 and 2139).
  This package contains a RADIUS client.
 http://developer.berlios.de/projects/radiusclient-ng/

@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/sound/mpd
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-11-13T22:16:27.036361Z
-29080
-nico
+2014-05-01T19:48:46.488656Z
+40648
+hauke
 
 
 
@@ -26,6 +26,9 @@ nico
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+files
+dir
+
 patches
 dir
 
@@ -35,11 +38,11 @@ file
 
 
 
-2013-12-02T22:38:12.874323Z
-37ee517d5904cdb50b7ada2af1a1686c
-2011-11-13T22:16:27.036361Z
-29080
-nico
+2014-06-17T22:32:00.746136Z
+8d5166125fed682b3e80c35993060ae0
+2014-05-01T19:48:46.488656Z
+40648
+hauke
 has-props
 
 
@@ -61,8 +64,5 @@ has-props
 
 
 
-4874
-
-files
-dir
+4900
 

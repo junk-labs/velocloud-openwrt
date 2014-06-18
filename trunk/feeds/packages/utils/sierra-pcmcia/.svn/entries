@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/sierra-pcmcia
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:05.850323Z
+2014-06-17T22:32:03.482136Z
 4cb90007e022ec186cc4e900d21de6e9
 2011-11-11T18:07:06.624899Z
 28960

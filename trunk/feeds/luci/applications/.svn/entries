@@ -1,14 +1,14 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications
 http://svn.luci.subsignal.org
 
 
 
-2013-11-11T20:12:40.330865Z
-9934
+2014-04-27T13:45:53.491945Z
+9978
 soma
 
 
@@ -25,60 +25,6 @@ soma
 
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
-
-luci-ahcp
-dir
-
-luci-meshwizard
-dir
-
-luci-ltqtapi
-dir
-
-luci-freifunk-diagnostics
-dir
-
-luci-freifunk-policyrouting
-dir
-
-luci-vnstat
-dir
-
-luci-mmc-over-gpio
-dir
-
-luci-upnp
-dir
-
-luci-openvpn
-dir
-
-luci-tinyproxy
-dir
-
-luci-asterisk
-dir
-
-luci-ushare
-dir
-
-luci-ddns
-dir
-
-luci-pbx
-dir
-
-luci-siitwizard
-dir
-
-luci-diag-core
-dir
-
-luci-minidlna
-dir
-
-luci-diag-devinfo
-dir
 
 luci-pbx-voicemail
 dir
@@ -159,5 +105,59 @@ luci-polipo
 dir
 
 luci-hd-idle
+dir
+
+luci-ahcp
+dir
+
+luci-meshwizard
+dir
+
+luci-ltqtapi
+dir
+
+luci-freifunk-diagnostics
+dir
+
+luci-freifunk-policyrouting
+dir
+
+luci-vnstat
+dir
+
+luci-mmc-over-gpio
+dir
+
+luci-upnp
+dir
+
+luci-openvpn
+dir
+
+luci-tinyproxy
+dir
+
+luci-asterisk
+dir
+
+luci-ushare
+dir
+
+luci-ddns
+dir
+
+luci-pbx
+dir
+
+luci-siitwizard
+dir
+
+luci-diag-core
+dir
+
+luci-minidlna
+dir
+
+luci-diag-devinfo
 dir
 

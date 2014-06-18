@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/net/mosquitto/Makefile
 Package: mosquitto
-Version: 1.2-1
+Version: 1.3.1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libopenssl
 Menu-Depends: 
 Provides: 
@@ -9,7 +9,7 @@ Section: net
 Category: Network
 Title: mosquitto - an MQTT message broker (with SSL support)
 Maintainer: Karl Palsson <karlp@remake.is>
-Source: mosquitto-1.2.tar.gz
+Source: mosquitto-1.3.1.tar.gz
 Type: ipkg
 Description: 	 mosquitto is a message broker that supports v3.1 of the MQ Telemetry
 Transport protocol. MQTT provides a lightweight method for
@@ -22,7 +22,7 @@ Karl Palsson <karlp@remake.is>
 @@
 
 Package: mosquitto-nossl
-Version: 1.2-1
+Version: 1.3.1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt
 Menu-Depends: 
 Provides: 
@@ -31,7 +31,7 @@ Section: net
 Category: Network
 Title: mosquitto - an MQTT message broker (without SSL support)
 Maintainer: Karl Palsson <karlp@remake.is>
-Source: mosquitto-1.2.tar.gz
+Source: mosquitto-1.3.1.tar.gz
 Type: ipkg
 Description:          mosquitto is a message broker that supports v3.1 of the MQ Telemetry
 Transport protocol. MQTT provides a lightweight method for
@@ -44,8 +44,8 @@ Karl Palsson <karlp@remake.is>
 @@
 
 Package: libmosquitto
-Version: 1.2-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +librt +libopenssl
+Version: 1.3.1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +librt +libcares +libopenssl
 Menu-Depends: 
 Provides: 
 Build-Variant: ssl
@@ -53,7 +53,7 @@ Section: libs
 Category: Libraries
 Title: mosquitto - client library (With SSL Support)
 Maintainer: Karl Palsson <karlp@remake.is>
-Source: mosquitto-1.2.tar.gz
+Source: mosquitto-1.3.1.tar.gz
 Type: ipkg
 Description:      Library required for mosquitto's command line client tools, also for
 use by any third party software that wants to communicate with a
@@ -67,8 +67,8 @@ Karl Palsson <karlp@remake.is>
 @@
 
 Package: libmosquitto-nossl
-Version: 1.2-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +librt
+Version: 1.3.1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +librt +libcares
 Menu-Depends: 
 Provides: 
 Build-Variant: nossl
@@ -76,7 +76,7 @@ Section: libs
 Category: Libraries
 Title: mosquitto - client library (Without SSL Support)
 Maintainer: Karl Palsson <karlp@remake.is>
-Source: mosquitto-1.2.tar.gz
+Source: mosquitto-1.3.1.tar.gz
 Type: ipkg
 Description:      Library required for mosquitto's command line client tools, also for
 use by any third party software that wants to communicate with a
@@ -90,8 +90,8 @@ Karl Palsson <karlp@remake.is>
 @@
 
 Package: mosquitto-client
-Version: 1.2-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libmosquitto
+Version: 1.3.1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libcares +libmosquitto
 Menu-Depends: 
 Provides: 
 Build-Variant: ssl
@@ -99,7 +99,7 @@ Section: net
 Category: Network
 Title: mosquitto - client tools (With SSL support)
 Maintainer: Karl Palsson <karlp@remake.is>
-Source: mosquitto-1.2.tar.gz
+Source: mosquitto-1.3.1.tar.gz
 Type: ipkg
 Description:  Command line client tools for publishing messages to MQTT servers
 and subscribing to topics.
@@ -109,8 +109,8 @@ Karl Palsson <karlp@remake.is>
 @@
 
 Package: mosquitto-client-nossl
-Version: 1.2-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libmosquitto-nossl
+Version: 1.3.1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libcares +libmosquitto-nossl
 Menu-Depends: 
 Provides: 
 Build-Variant: nossl
@@ -118,7 +118,7 @@ Section: net
 Category: Network
 Title: mosquitto - client tools (Without SSL support)
 Maintainer: Karl Palsson <karlp@remake.is>
-Source: mosquitto-1.2.tar.gz
+Source: mosquitto-1.3.1.tar.gz
 Type: ipkg
 Description:  Command line client tools for publishing messages to MQTT servers
 and subscribing to topics.

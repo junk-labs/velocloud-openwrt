@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/slurm
 svn://svn.openwrt.org/openwrt
 
 
 
-2010-02-18T13:10:21.112707Z
-19705
-lars
+2014-03-27T07:05:45.037242Z
+40219
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:10.718323Z
-c4799f4d381c1487b96f5dca32162edd
-2010-02-18T13:10:21.112707Z
-19705
-lars
+2014-06-17T22:31:57.782137Z
+54b5410e339f8df86c618facc3fab3ae
+2014-03-27T07:05:45.037242Z
+40219
+juhosg
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1328
+1327
 
 patches
 dir

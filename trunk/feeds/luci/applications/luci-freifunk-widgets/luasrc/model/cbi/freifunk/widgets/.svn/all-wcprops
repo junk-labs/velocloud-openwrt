@@ -3,12 +3,6 @@ svn:wc:ra_dav:version-url
 V 94
 /!svn/ver/9306/luci/trunk/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets
 END
-heightwidth.lua
-K 25
-svn:wc:ra_dav:version-url
-V 110
-/!svn/ver/9306/luci/trunk/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/heightwidth.lua
-END
 rssfeed.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -44,4 +38,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 105
 /!svn/ver/9306/luci/trunk/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/search.lua
+END
+heightwidth.lua
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/9306/luci/trunk/applications/luci-freifunk-widgets/luasrc/model/cbi/freifunk/widgets/heightwidth.lua
 END

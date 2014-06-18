@@ -1,13 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
 V 34
-/!svn/ver/9801/luci/trunk/libs/web
+/!svn/ver/9952/luci/trunk/libs/web
 END
 Makefile
 K 25
 svn:wc:ra_dav:version-url
 V 43
-/!svn/ver/9492/luci/trunk/libs/web/Makefile
+/!svn/ver/9952/luci/trunk/libs/web/Makefile
 END
 standalone.mk
 K 25

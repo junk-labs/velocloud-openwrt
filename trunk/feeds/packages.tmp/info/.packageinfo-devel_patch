@@ -10,7 +10,7 @@ Title: patch
 Maintainer: 
 Source: patch-2.5.9.tar.gz
 Type: ipkg
-Description:   The Patch package contains a program for modifying or creating files 
+Description:   The Patch package contains a program for modifying or creating files
   by applying a "patch" file typically created by the diff program.
 http://www.gnu.org/
 

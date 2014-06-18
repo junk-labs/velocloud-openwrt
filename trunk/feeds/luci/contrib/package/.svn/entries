@@ -1,15 +1,15 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/contrib/package
 http://svn.luci.subsignal.org
 
 
 
-2013-10-19T14:23:28.120930Z
-9930
-soma
+2014-04-24T21:42:58.586662Z
+9977
+jow
 has-props
 
 
@@ -26,21 +26,6 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-freifunk-mapupdate
-dir
-
-freifunk-watchdog
-dir
-
-remote-update
-dir
-
-freifunk-firewall
-dir
-
-luci
-dir
-
 meshwizard
 dir
 
@@ -50,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:50.870324Z
+2014-06-17T22:32:31.858136Z
 f1f6e420b1487ea32da1fc4d1c34a4f4
 2008-07-24T13:55:11.304188Z
 2658
@@ -91,5 +76,20 @@ freifunk-p2pblock
 dir
 
 community-profiles
+dir
+
+freifunk-mapupdate
+dir
+
+freifunk-watchdog
+dir
+
+remote-update
+dir
+
+freifunk-firewall
+dir
+
+luci
 dir
 

@@ -3,6 +3,12 @@ svn:wc:ra_dav:version-url
 V 38
 /!svn/ver/9893/luci/trunk/po/templates
 END
+olsr.pot
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/9477/luci/trunk/po/templates/olsr.pot
+END
 tinyproxy.pot
 K 25
 svn:wc:ra_dav:version-url
@@ -15,143 +21,11 @@ svn:wc:ra_dav:version-url
 V 50
 /!svn/ver/8800/luci/trunk/po/templates/openvpn.pot
 END
-asterisk.pot
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/8800/luci/trunk/po/templates/asterisk.pot
-END
-ushare.pot
-K 25
-svn:wc:ra_dav:version-url
-V 49
-/!svn/ver/8892/luci/trunk/po/templates/ushare.pot
-END
-ddns.pot
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/9477/luci/trunk/po/templates/ddns.pot
-END
 pbx.pot
 K 25
 svn:wc:ra_dav:version-url
 V 46
 /!svn/ver/8800/luci/trunk/po/templates/pbx.pot
-END
-voice_diag.pot
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/8800/luci/trunk/po/templates/voice_diag.pot
-END
-minidlna.pot
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/8545/luci/trunk/po/templates/minidlna.pot
-END
-uvc_streamer.pot
-K 25
-svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/5474/luci/trunk/po/templates/uvc_streamer.pot
-END
-pbx-voicemail.pot
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/8800/luci/trunk/po/templates/pbx-voicemail.pot
-END
-commands.pot
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/9468/luci/trunk/po/templates/commands.pot
-END
-ntpc.pot
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/8800/luci/trunk/po/templates/ntpc.pot
-END
-firewall.pot
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/9262/luci/trunk/po/templates/firewall.pot
-END
-freifunk.pot
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/9519/luci/trunk/po/templates/freifunk.pot
-END
-wshaper.pot
-K 25
-svn:wc:ra_dav:version-url
-V 50
-/!svn/ver/8510/luci/trunk/po/templates/wshaper.pot
-END
-base.pot
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/9670/luci/trunk/po/templates/base.pot
-END
-p910nd.pot
-K 25
-svn:wc:ra_dav:version-url
-V 49
-/!svn/ver/8800/luci/trunk/po/templates/p910nd.pot
-END
-p2pblock.pot
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/6903/luci/trunk/po/templates/p2pblock.pot
-END
-ffwizard.pot
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/6856/luci/trunk/po/templates/ffwizard.pot
-END
-voice_core.pot
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/8800/luci/trunk/po/templates/voice_core.pot
-END
-olsr.pot
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/9477/luci/trunk/po/templates/olsr.pot
-END
-samba.pot
-K 25
-svn:wc:ra_dav:version-url
-V 48
-/!svn/ver/6984/luci/trunk/po/templates/samba.pot
-END
-rrdtool.pot
-K 25
-svn:wc:ra_dav:version-url
-V 50
-/!svn/ver/6623/luci/trunk/po/templates/rrdtool.pot
-END
-mmc_over_gpio.pot
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/8797/luci/trunk/po/templates/mmc_over_gpio.pot
-END
-hd_idle.pot
-K 25
-svn:wc:ra_dav:version-url
-V 50
-/!svn/ver/8800/luci/trunk/po/templates/hd_idle.pot
 END
 transmission.pot
 K 25
@@ -171,23 +45,17 @@ svn:wc:ra_dav:version-url
 V 49
 /!svn/ver/9893/luci/trunk/po/templates/splash.pot
 END
-coovachilli.pot
-K 25
-svn:wc:ra_dav:version-url
-V 54
-/!svn/ver/8800/luci/trunk/po/templates/coovachilli.pot
-END
 watchcat.pot
 K 25
 svn:wc:ra_dav:version-url
 V 51
 /!svn/ver/8588/luci/trunk/po/templates/watchcat.pot
 END
-radvd.pot
+pbx-voicemail.pot
 K 25
 svn:wc:ra_dav:version-url
-V 48
-/!svn/ver/8562/luci/trunk/po/templates/radvd.pot
+V 56
+/!svn/ver/8800/luci/trunk/po/templates/pbx-voicemail.pot
 END
 multiwan.pot
 K 25
@@ -195,35 +63,23 @@ svn:wc:ra_dav:version-url
 V 51
 /!svn/ver/8800/luci/trunk/po/templates/multiwan.pot
 END
-wol.pot
-K 25
-svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/8800/luci/trunk/po/templates/wol.pot
-END
-qos.pot
-K 25
-svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/8800/luci/trunk/po/templates/qos.pot
-END
 polipo.pot
 K 25
 svn:wc:ra_dav:version-url
 V 49
 /!svn/ver/8800/luci/trunk/po/templates/polipo.pot
 END
+wshaper.pot
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/8510/luci/trunk/po/templates/wshaper.pot
+END
 ahcp.pot
 K 25
 svn:wc:ra_dav:version-url
 V 47
 /!svn/ver/8411/luci/trunk/po/templates/ahcp.pot
-END
-diag_core.pot
-K 25
-svn:wc:ra_dav:version-url
-V 52
-/!svn/ver/8800/luci/trunk/po/templates/diag_core.pot
 END
 meshwizard.pot
 K 25
@@ -254,4 +110,148 @@ K 25
 svn:wc:ra_dav:version-url
 V 47
 /!svn/ver/8800/luci/trunk/po/templates/upnp.pot
+END
+samba.pot
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/6984/luci/trunk/po/templates/samba.pot
+END
+rrdtool.pot
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/6623/luci/trunk/po/templates/rrdtool.pot
+END
+asterisk.pot
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/8800/luci/trunk/po/templates/asterisk.pot
+END
+mmc_over_gpio.pot
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/8797/luci/trunk/po/templates/mmc_over_gpio.pot
+END
+ushare.pot
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/!svn/ver/8892/luci/trunk/po/templates/ushare.pot
+END
+ddns.pot
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/9477/luci/trunk/po/templates/ddns.pot
+END
+hd_idle.pot
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/8800/luci/trunk/po/templates/hd_idle.pot
+END
+voice_diag.pot
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/8800/luci/trunk/po/templates/voice_diag.pot
+END
+minidlna.pot
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/8545/luci/trunk/po/templates/minidlna.pot
+END
+coovachilli.pot
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/8800/luci/trunk/po/templates/coovachilli.pot
+END
+uvc_streamer.pot
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/5474/luci/trunk/po/templates/uvc_streamer.pot
+END
+radvd.pot
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/8562/luci/trunk/po/templates/radvd.pot
+END
+commands.pot
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/9468/luci/trunk/po/templates/commands.pot
+END
+wol.pot
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/8800/luci/trunk/po/templates/wol.pot
+END
+qos.pot
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/8800/luci/trunk/po/templates/qos.pot
+END
+ntpc.pot
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/8800/luci/trunk/po/templates/ntpc.pot
+END
+firewall.pot
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/9262/luci/trunk/po/templates/firewall.pot
+END
+freifunk.pot
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/9519/luci/trunk/po/templates/freifunk.pot
+END
+base.pot
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/9670/luci/trunk/po/templates/base.pot
+END
+p910nd.pot
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/!svn/ver/8800/luci/trunk/po/templates/p910nd.pot
+END
+p2pblock.pot
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/6903/luci/trunk/po/templates/p2pblock.pot
+END
+diag_core.pot
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/8800/luci/trunk/po/templates/diag_core.pot
+END
+ffwizard.pot
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/6856/luci/trunk/po/templates/ffwizard.pot
+END
+voice_core.pot
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/8800/luci/trunk/po/templates/voice_core.pot
 END

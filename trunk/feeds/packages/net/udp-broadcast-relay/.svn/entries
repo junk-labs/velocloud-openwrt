@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/udp-broadcast-relay
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-03-12T06:55:07.858326Z
-26072
-cshore
+2014-03-27T07:05:58.091630Z
+40233
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:09.890323Z
-022c3db479b40b27f8269cfc625e9d22
-2011-03-12T06:55:07.858326Z
-26072
-cshore
+2014-06-17T22:31:59.094136Z
+a04781420bc0b94fd0514aff10c999b8
+2014-03-27T07:05:58.091630Z
+40233
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1594
+1610
 

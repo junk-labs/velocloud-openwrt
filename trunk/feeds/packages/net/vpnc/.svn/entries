@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/vpnc
 svn://svn.openwrt.org/openwrt
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:10.750323Z
+2014-06-17T22:31:58.970136Z
 045ff93a6d812eb3d5d2d2f565a6b24d
 2012-08-07T16:09:12.344426Z
 33042

@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/strace
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-11-19T14:37:33.614449Z
-34257
-florian
+2014-05-01T16:41:22.237289Z
+40632
+hauke
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:05.094323Z
-30989b0e7bda23e21f0c84082ca1e2a5
-2012-11-17T21:49:45.865626Z
-34224
-florian
+2014-06-17T22:32:04.078136Z
+65feb7209ec2a7ecf7bb76bf4ddf628e
+2014-05-01T16:41:22.237289Z
+40632
+hauke
 has-props
 
 
@@ -59,10 +59,4 @@ has-props
 
 
 1217
-
-patches-4.5.16
-dir
-
-patches
-dir
 

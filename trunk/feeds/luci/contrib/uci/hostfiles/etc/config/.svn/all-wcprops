@@ -3,18 +3,6 @@ svn:wc:ra_dav:version-url
 V 58
 /!svn/ver/5290/luci/trunk/contrib/uci/hostfiles/etc/config
 END
-mactodevinfo
-K 25
-svn:wc:ra_dav:version-url
-V 71
-/!svn/ver/5170/luci/trunk/contrib/uci/hostfiles/etc/config/mactodevinfo
-END
-dhcp
-K 25
-svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/3591/luci/trunk/contrib/uci/hostfiles/etc/config/dhcp
-END
 httpd
 K 25
 svn:wc:ra_dav:version-url
@@ -92,4 +80,16 @@ K 25
 svn:wc:ra_dav:version-url
 V 66
 /!svn/ver/3591/luci/trunk/contrib/uci/hostfiles/etc/config/batmand
+END
+mactodevinfo
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/5170/luci/trunk/contrib/uci/hostfiles/etc/config/mactodevinfo
+END
+dhcp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/3591/luci/trunk/contrib/uci/hostfiles/etc/config/dhcp
 END

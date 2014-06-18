@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/mail
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-20T15:22:27.883363Z
-38877
+2014-05-21T01:04:06.728484Z
+40806
 tripolar
 
 
@@ -25,18 +25,6 @@ tripolar
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-mutt
-dir
-
-xmail
-dir
-
-fetchmail
-dir
-
-imapfilter
-dir
 
 msmtp
 dir
@@ -57,5 +45,17 @@ alpine
 dir
 
 mini_sendmail
+dir
+
+mutt
+dir
+
+xmail
+dir
+
+fetchmail
+dir
+
+imapfilter
 dir
 

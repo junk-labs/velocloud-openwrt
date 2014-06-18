@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/utils/collectd/Makefile
 Package: collectd
 Menu: 1
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +zlib +libltdl +libip4tc
 Menu-Depends: 
 Provides: 
@@ -18,7 +18,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-apache
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-apache:libcurl
 Menu-Depends: 
 Provides: 
@@ -34,7 +34,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-apcups
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -50,7 +50,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-ascent
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-ascent:libcurl +PACKAGE_collectd-mod-ascent:libxml2
 Menu-Depends: 
 Provides: 
@@ -66,7 +66,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-bind
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-bind:libcurl +PACKAGE_collectd-mod-bind:libxml2
 Menu-Depends: 
 Provides: 
@@ -82,7 +82,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-conntrack
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -98,7 +98,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-contextswitch
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -114,7 +114,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-cpu
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -130,7 +130,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-csv
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -146,7 +146,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-curl
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-curl:libcurl
 Menu-Depends: 
 Provides: 
@@ -162,7 +162,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-dbi
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-dbi:libdbi
 Menu-Depends: 
 Provides: 
@@ -178,7 +178,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-df
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -194,7 +194,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-disk
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -210,7 +210,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-dns
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-dns:libpcap
 Menu-Depends: 
 Provides: 
@@ -226,7 +226,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-email
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -242,7 +242,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-exec
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -258,7 +258,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-filecount
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -274,7 +274,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-fscache
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -290,7 +290,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-interface
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -306,7 +306,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-iptables
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-iptables:iptables +libiptc
 Menu-Depends: 
 Provides: 
@@ -322,7 +322,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-irq
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -338,7 +338,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-iwinfo
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-iwinfo:libiwinfo
 Menu-Depends: 
 Provides: 
@@ -354,7 +354,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-load
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -370,7 +370,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-logfile
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -386,7 +386,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-madwifi
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -402,7 +402,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-mysql
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-mysql:libmysqlclient-r
 Menu-Depends: 
 Provides: 
@@ -418,7 +418,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-memory
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -434,7 +434,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-modbus
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-modbus:libmodbus @BROKEN
 Menu-Depends: 
 Provides: 
@@ -450,8 +450,8 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-netlink
-Version: 4.10.8-2
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-netlink:ip
+Version: 4.10.8-3
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-netlink:ip @BROKEN
 Menu-Depends: 
 Provides: 
 Section: utils
@@ -466,7 +466,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-network
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -482,7 +482,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-nginx
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-nginx:libcurl
 Menu-Depends: 
 Provides: 
@@ -498,7 +498,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-ntpd
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -514,8 +514,8 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-nut
-Version: 4.10.8-2
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd nut
+Version: 4.10.8-3
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-nut:nut
 Menu-Depends: 
 Provides: 
 Section: utils
@@ -530,7 +530,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-olsrd
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -546,7 +546,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-onewire
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-onewire:libow-capi @BROKEN
 Menu-Depends: 
 Provides: 
@@ -562,7 +562,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-openvpn
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -578,7 +578,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-ping
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-ping:liboping
 Menu-Depends: 
 Provides: 
@@ -594,7 +594,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-postgresql
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-postgresql:libpq
 Menu-Depends: 
 Provides: 
@@ -610,7 +610,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-powerdns
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -626,7 +626,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-processes
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -642,7 +642,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-protocols
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -658,7 +658,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-rrdtool
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-rrdtool:librrd1
 Menu-Depends: 
 Provides: 
@@ -674,7 +674,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-sensors
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-sensors:libsensors @BROKEN
 Menu-Depends: 
 Provides: 
@@ -690,7 +690,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-snmp
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-snmp:libnetsnmp
 Menu-Depends: 
 Provides: 
@@ -706,7 +706,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-syslog
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -722,7 +722,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-tail
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -738,7 +738,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-table
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -754,7 +754,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-teamspeak2
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -770,7 +770,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-ted
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd @((!TARGET_avr32)||BROKEN)
 Menu-Depends: 
 Provides: 
@@ -786,7 +786,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-tcpconns
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -802,7 +802,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-thermal
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -818,7 +818,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-unixsock
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -834,7 +834,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-uptime
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -850,7 +850,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-users
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -866,7 +866,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-vmem
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -882,7 +882,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-wireless
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd
 Menu-Depends: 
 Provides: 
@@ -898,7 +898,7 @@ http://verplant.org/collectd/
 @@
 
 Package: collectd-mod-write-http
-Version: 4.10.8-2
+Version: 4.10.8-3
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread collectd +PACKAGE_collectd-mod-write-http:libcurl
 Menu-Depends: 
 Provides: 

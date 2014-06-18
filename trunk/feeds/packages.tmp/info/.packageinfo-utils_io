@@ -10,7 +10,7 @@ Title: Raw memory i/o utility
 Maintainer: 
 Source: 
 Type: ipkg
-Description: 	This tool can be used to access physical memory addresses from userspace. 
+Description: 	This tool can be used to access physical memory addresses from userspace.
 	It can be useful to access hardware for which no device driver exists!
 http://www.sleepie.demon.co.uk/linuxvme/io.c
 

@@ -3,7 +3,7 @@ Package: kmod-madwifi
 Menu: 1
 Submenu: Wireless Drivers
 Version: <LINUX_VERSION>+r3314-6
-Depends: +wireless-tools @PCI_SUPPORT @(!(TARGET_avr32||TARGET_brcm63xx||TARGET_cobalt||TARGET_ep93xx||TARGET_etrax||TARGET_octeon||TARGET_pxcab||TARGET_sibyte)||BROKEN) +@DRIVER_WEXT_SUPPORT
+Depends: +wireless-tools @PCI_SUPPORT @(!(TARGET_avr32||TARGET_brcm63xx||TARGET_cobalt||TARGET_ep93xx||TARGET_etrax||TARGET_octeon||TARGET_pxcab||TARGET_sibyte)||BROKEN) +@DRIVER_WEXT_SUPPORT +hostapd-common-old
 Menu-Depends: 
 Provides: 
 Build-Depends: wprobe

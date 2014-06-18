@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/multimedia/tvheadend/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-12-04T16:20:54.086756Z
-34486
+2014-05-05T19:30:56.578736Z
+40699
 florian
 
 
@@ -26,16 +26,16 @@ florian
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-010-SHA1.patch
+001-fix_Makefile_VFP_CFLAGS.patch
 file
 
 
 
 
-2013-12-02T22:38:15.274324Z
-e590e55d7d7992ea1e34d7462f2fcc29
-2012-12-04T16:20:54.086756Z
-34486
+2014-06-17T22:32:02.162136Z
+cdcc1f0d411384e7c152485411de4ef6
+2014-05-05T19:30:56.578736Z
+40699
 florian
 
 
@@ -58,39 +58,5 @@ florian
 
 
 
-559
-
-020-Werror.patch
-file
-
-
-
-
-2013-12-02T22:38:15.270324Z
-152fb4fc1eed59863f33608612871f15
-2012-12-04T16:20:54.086756Z
-34486
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-771
+289
 

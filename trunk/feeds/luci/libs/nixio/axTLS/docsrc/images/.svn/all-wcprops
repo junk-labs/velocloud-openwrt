@@ -3,15 +3,15 @@ svn:wc:ra_dav:version-url
 V 56
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/docsrc/images
 END
-tsbasbw.gif
-K 25
-svn:wc:ra_dav:version-url
-V 68
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/docsrc/images/tsbasbw.gif
-END
 axolotl.jpg
 K 25
 svn:wc:ra_dav:version-url
 V 68
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/docsrc/images/axolotl.jpg
+END
+tsbasbw.gif
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/docsrc/images/tsbasbw.gif
 END

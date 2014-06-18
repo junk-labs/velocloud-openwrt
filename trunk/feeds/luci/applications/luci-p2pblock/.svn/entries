@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-p2pblock
 http://svn.luci.subsignal.org
 
@@ -26,19 +26,13 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-luasrc
-dir
-
-ipkg
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:39.690324Z
+2014-06-17T22:32:19.802136Z
 d48976d5ea6ac433a79c8b0458095268
 2009-06-07T20:06:23.970071Z
 4793
@@ -67,5 +61,11 @@ jow
 75
 
 root
+dir
+
+luasrc
+dir
+
+ipkg
 dir
 

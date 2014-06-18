@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/utils/wview/Makefile
 Package: wview
 Version: 5.19.0-jgoerzen-7bfac6c11e756290c38e7b5862a4c51b6bc6c51e-r2
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libcurl +zlib +libpng +libgd +libreadline +libsqlite3 +libusb-1.0 +radlib +sqlite3-cli
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libcurl +zlib +libpng +libgd +libreadline +libsqlite3 +libusb-1.0 +radlib +sqlite3-cli +libopenssl
 Menu-Depends: 
 Provides: 
 Section: utils

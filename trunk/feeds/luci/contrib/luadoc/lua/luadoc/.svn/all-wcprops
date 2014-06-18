@@ -3,12 +3,6 @@ svn:wc:ra_dav:version-url
 V 51
 /!svn/ver/4889/luci/trunk/contrib/luadoc/lua/luadoc
 END
-lp.lua
-K 25
-svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/3591/luci/trunk/contrib/luadoc/lua/luadoc/lp.lua
-END
 util.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -26,4 +20,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 62
 /!svn/ver/3591/luci/trunk/contrib/luadoc/lua/luadoc/config.lua
+END
+lp.lua
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/3591/luci/trunk/contrib/luadoc/lua/luadoc/lp.lua
 END

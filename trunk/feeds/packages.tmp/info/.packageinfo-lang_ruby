@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/lang/ruby/Makefile
 Package: ruby
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libruby
 Menu-Depends: 
 Provides: 
@@ -11,18 +11,18 @@ Section: lang
 Category: Languages
 Title: Ruby scripting language (interpreter)
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
-Description:  Ruby is the interpreted scripting language for quick and  easy 
- object-oriented programming.  It has many features to process text files 
- and to do system management tasks (as in perl).  It is simple, 
+Description:  Ruby is the interpreted scripting language for quick and  easy
+ object-oriented programming.  It has many features to process text files
+ and to do system management tasks (as in perl).  It is simple,
  straight-forward, and extensible.
 http://www.ruby-lang.org/
 
 @@
 
 Package: libruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +librt
 Menu-Depends: 
 Provides: 
@@ -32,7 +32,7 @@ Section: libs
 Category: Libraries
 Title: Ruby scripting language (shared library)
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby scripting language (shared library)
 http://www.ruby-lang.org/
@@ -41,7 +41,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-core
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby +libdb47 +libffi
 Menu-Depends: 
 Provides: 
@@ -51,7 +51,7 @@ Section: lang
 Category: Languages
 Title: Ruby standard libraries
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby standard libraries
 http://www.ruby-lang.org/
@@ -60,7 +60,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-cgi
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -70,7 +70,7 @@ Section: lang
 Category: Languages
 Title: Ruby CGI support toolkit
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby CGI support toolkit
 http://www.ruby-lang.org/
@@ -79,7 +79,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-dl
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -89,7 +89,7 @@ Section: lang
 Category: Languages
 Title: Ruby scripting language (dynamic linker support) (adds 5MB+)
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby scripting language (dynamic linker support) (adds 5MB+)
 http://www.ruby-lang.org/
@@ -98,7 +98,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-enc
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -108,7 +108,7 @@ Section: lang
 Category: Languages
 Title: Ruby scripting language (character re-coding library) (adds 2MB+)
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby scripting language (character re-coding library) (adds 2MB+)
 http://www.ruby-lang.org/
@@ -117,7 +117,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-erb
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -127,7 +127,7 @@ Section: lang
 Category: Languages
 Title: Ruby scripting language (embedded interpreter)
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby scripting language (embedded interpreter)
 http://www.ruby-lang.org/
@@ -136,7 +136,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-gdbm
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby +libgdbm
 Menu-Depends: 
 Provides: 
@@ -146,7 +146,7 @@ Section: lang
 Category: Languages
 Title: Ruby support for gdbm
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby support for gdbm
 http://www.ruby-lang.org/
@@ -155,7 +155,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-gems
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby +ruby-yaml +ruby-zlib +ruby-openssl +ruby-webrick +ruby-erb
 Menu-Depends: 
 Provides: 
@@ -165,7 +165,7 @@ Section: lang
 Category: Languages
 Title: Ruby gems packet management
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby gems packet management
 http://www.ruby-lang.org/
@@ -174,7 +174,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-json
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -184,7 +184,7 @@ Section: lang
 Category: Languages
 Title: Ruby support for JSON
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby support for JSON
 http://www.ruby-lang.org/
@@ -193,7 +193,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-irb
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby +ruby-core
 Menu-Depends: 
 Provides: 
@@ -203,7 +203,7 @@ Section: lang
 Category: Languages
 Title: Ruby scripting language (interactive shell)
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby scripting language (interactive shell)
 http://www.ruby-lang.org/
@@ -212,7 +212,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-ncurses
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby +libncurses +libncursesw
 Menu-Depends: 
 Provides: 
@@ -222,7 +222,7 @@ Section: lang
 Category: Languages
 Title: Ruby support for ncurses
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby support for ncurses
 http://www.ruby-lang.org/
@@ -231,7 +231,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-nkf
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -241,7 +241,7 @@ Section: lang
 Category: Languages
 Title: Ruby Network Kanji Filter
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby Network Kanji Filter
 http://www.ruby-lang.org/
@@ -250,7 +250,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-openssl
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby +libopenssl
 Menu-Depends: 
 Provides: 
@@ -260,7 +260,7 @@ Section: lang
 Category: Languages
 Title: Ruby support for openssl
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby support for openssl
 http://www.ruby-lang.org/
@@ -269,7 +269,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-rake
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -279,7 +279,7 @@ Section: lang
 Category: Languages
 Title: Ruby scripting language Ruby Rake (make replacement)
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby scripting language Ruby Rake (make replacement)
 http://www.ruby-lang.org/
@@ -288,7 +288,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-rdoc
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -298,7 +298,7 @@ Section: lang
 Category: Languages
 Title: Ruby scripting language (documentation generator)
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby scripting language (documentation generator)
 http://www.ruby-lang.org/
@@ -307,7 +307,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-readline
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby +libncurses +libreadline
 Menu-Depends: 
 Provides: 
@@ -317,7 +317,7 @@ Section: lang
 Category: Languages
 Title: Ruby support for readline
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby support for readline
 http://www.ruby-lang.org/
@@ -326,7 +326,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-rexml
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -336,7 +336,7 @@ Section: lang
 Category: Languages
 Title: Ruby XML toolkit
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby XML toolkit
 http://www.ruby-lang.org/
@@ -345,7 +345,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-rss
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -355,7 +355,7 @@ Section: lang
 Category: Languages
 Title: Ruby RSS toolkit
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby RSS toolkit
 http://www.ruby-lang.org/
@@ -364,7 +364,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-unit
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -374,7 +374,7 @@ Section: lang
 Category: Languages
 Title: Ruby unit testing toolkit
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby unit testing toolkit
 http://www.ruby-lang.org/
@@ -383,7 +383,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-webrick
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -393,7 +393,7 @@ Section: lang
 Category: Languages
 Title: Ruby Web server toolkit
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby Web server toolkit
 http://www.ruby-lang.org/
@@ -402,7 +402,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-xmlrpc
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -412,7 +412,7 @@ Section: lang
 Category: Languages
 Title: Ruby XML-RPC toolkit
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby XML-RPC toolkit
 http://www.ruby-lang.org/
@@ -421,7 +421,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-yaml
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby
 Menu-Depends: 
 Provides: 
@@ -431,7 +431,7 @@ Section: lang
 Category: Languages
 Title: Ruby YAML toolkit
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby YAML toolkit
 http://www.ruby-lang.org/
@@ -440,7 +440,7 @@ http://www.ruby-lang.org/
 
 Package: ruby-zlib
 Submenu: Ruby
-Version: 1.9.2-p0-1
+Version: 1.9.3-p545-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread ruby +zlib
 Menu-Depends: 
 Provides: 
@@ -450,7 +450,7 @@ Section: lang
 Category: Languages
 Title: Ruby support for zlib
 Maintainer: 
-Source: ruby-1.9.2-p0.tar.bz2
+Source: ruby-1.9.3-p545.tar.bz2
 Type: ipkg
 Description: Ruby support for zlib
 http://www.ruby-lang.org/

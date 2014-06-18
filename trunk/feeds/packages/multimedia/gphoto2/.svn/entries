@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/multimedia/gphoto2
 svn://svn.openwrt.org/openwrt
 
@@ -26,16 +26,13 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:15.134324Z
+2014-06-17T22:32:02.074136Z
 6a0e98a10dac025f62aa999b9839e4c4
 2012-06-12T23:47:55.026824Z
 32296
@@ -62,4 +59,7 @@ has-props
 
 
 1323
+
+patches
+dir
 

@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-splash/htdocs/cgi-bin/splash
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:45.906324Z
+2014-06-17T22:32:22.410136Z
 2421a7435aab7c4975bccbbe3e610c09
 2013-08-18T20:41:30.632158Z
 9887

@@ -3,18 +3,6 @@ svn:wc:ra_dav:version-url
 V 69
 /!svn/ver/4397/luci/trunk/applications/luci-asterisk/luasrc/model/cbi
 END
-asterisk-voice.lua
-K 25
-svn:wc:ra_dav:version-url
-V 88
-/!svn/ver/3620/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk-voice.lua
-END
-asterisk-mod-format.lua
-K 25
-svn:wc:ra_dav:version-url
-V 93
-/!svn/ver/3618/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-format.lua
-END
 asterisk-mod-res.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -92,4 +80,16 @@ K 25
 svn:wc:ra_dav:version-url
 V 82
 /!svn/ver/3618/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk.lua
+END
+asterisk-voice.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/3620/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk-voice.lua
+END
+asterisk-mod-format.lua
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/3618/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk-mod-format.lua
 END

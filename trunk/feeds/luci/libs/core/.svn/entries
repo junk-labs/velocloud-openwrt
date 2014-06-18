@@ -1,15 +1,15 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/libs/core
 http://svn.luci.subsignal.org
 
 
 
-2013-05-23T10:14:20.549084Z
-9825
-Cyrus
+2013-12-03T15:23:09.529817Z
+9937
+jow
 has-props
 
 
@@ -26,6 +26,12 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+root
+dir
+
+src
+dir
+
 luasrc
 dir
 
@@ -35,7 +41,7 @@ file
 
 
 
-2013-12-02T22:38:50.118324Z
+2014-06-17T22:32:28.490136Z
 f1f6e420b1487ea32da1fc4d1c34a4f4
 2008-11-20T21:14:58.410563Z
 3801
@@ -62,10 +68,4 @@ Cyrus
 
 
 60
-
-root
-dir
-
-src
-dir
 

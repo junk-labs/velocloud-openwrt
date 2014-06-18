@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/multimedia/gstreamer
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-01-18T13:20:39.507263Z
-35223
-hcg
+2014-03-27T07:06:10.210025Z
+40246
+juhosg
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2013-12-02T22:38:15.202324Z
-c814e1bdc4c2d9ef6ebee3c87dffaf04
-2013-01-18T13:20:39.507263Z
-35223
-hcg
+2014-06-17T22:32:02.134136Z
+b25b8f19c5e5cb7e7528cb81955239ed
+2014-03-27T07:06:10.210025Z
+40246
+juhosg
 has-props
 
 
@@ -61,5 +61,5 @@ has-props
 
 
 
-4623
+4620
 

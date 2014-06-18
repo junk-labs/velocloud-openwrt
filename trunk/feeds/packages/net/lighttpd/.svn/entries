@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/lighttpd
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-20T15:58:14.471593Z
-38469
-juhosg
+2014-04-29T21:31:15.000361Z
+40601
+hauke
 
 
 
@@ -26,20 +26,17 @@ juhosg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:10.262323Z
-64e7a1ee254a8fece73df08e854796c5
-2013-10-20T15:58:14.471593Z
-38469
-juhosg
+2014-06-17T22:31:58.630137Z
+e492afd2913248acf07b4365ab42f289
+2014-04-29T21:31:15.000361Z
+40601
+hauke
 has-props
 
 
@@ -61,5 +58,8 @@ has-props
 
 
 
-5482
+5723
+
+files
+dir
 

@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/poco
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-06-11T23:30:36.598713Z
-32242
-nbd
+2014-03-08T00:57:37.182900Z
+39824
+florian
 
 
 
@@ -26,20 +26,17 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:14.662324Z
-cce70b7dd52921b2bde384f9bd6a875f
-2012-06-11T23:30:36.598713Z
-32242
-nbd
+2014-06-17T22:32:01.658136Z
+b21d1efee5a32047395e8056aa2c4489
+2014-03-08T00:57:37.182900Z
+39824
+florian
 
 
 
@@ -61,5 +58,8 @@ nbd
 
 
 
-1408
+1524
+
+patches
+dir
 

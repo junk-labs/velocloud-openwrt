@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/bc
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-06-11T22:19:34.307561Z
-32217
-nbd
+2014-03-27T07:02:19.824991Z
+40042
+juhosg
 
 
 
@@ -26,17 +26,20 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:05.714323Z
-0aa1b1f08baba6527613348a91dc37d7
-2012-06-11T22:19:34.307561Z
-32217
-nbd
+2014-06-17T22:32:03.030136Z
+f9c7346d8a2a9d3f5996cef1ef204e77
+2014-03-27T07:02:19.824991Z
+40042
+juhosg
 has-props
 
 
@@ -58,8 +61,5 @@ has-props
 
 
 
-1393
-
-patches
-dir
+1391
 

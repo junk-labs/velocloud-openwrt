@@ -3,6 +3,18 @@ svn:wc:ra_dav:version-url
 V 36
 /!svn/ver/9411/luci/trunk/libs/nixio
 END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/!svn/ver/9194/luci/trunk/libs/nixio/Makefile
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/4437/luci/trunk/libs/nixio/README
+END
 standalone.mk
 K 25
 svn:wc:ra_dav:version-url
@@ -32,16 +44,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 57
 /!svn/ver/5064/luci/trunk/libs/nixio/nixio-0.3-1.rockspec
-END
-Makefile
-K 25
-svn:wc:ra_dav:version-url
-V 45
-/!svn/ver/9194/luci/trunk/libs/nixio/Makefile
-END
-README
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/4437/luci/trunk/libs/nixio/README
 END

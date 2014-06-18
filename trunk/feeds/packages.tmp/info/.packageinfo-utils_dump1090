@@ -12,7 +12,7 @@ Source: dump1090-2013-02-04.tar.gz
 Type: ipkg
 Description:  Dump1090 is a Mode S decoder specifically designed for RTLSDR devices.
  Embedded HTTP server that displays the currently detected aircrafts on
- Google Maps. Network output in Basestation and AVR formats. 
+ Google Maps. Network output in Basestation and AVR formats.
 https://github.com/antirez/dump1090
 Nuno Goncalves <nunojpg@gmail.com>
 @@

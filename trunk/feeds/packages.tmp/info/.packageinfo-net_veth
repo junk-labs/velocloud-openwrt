@@ -10,7 +10,7 @@ Title: Virtual Ethernet Device for Linux
 Maintainer: 
 Source: veth-1.0.tar.gz
 Type: ipkg
-Description: 	VETH is a daemon that virtualizes a ethernet card in Linux. 
+Description: 	VETH is a daemon that virtualizes a ethernet card in Linux.
 	The virtualization is done via Universal TUN/TAP Driver.
 http://w3.epca.com.ve/projects/veth/
 

@@ -3,30 +3,6 @@ svn:wc:ra_dav:version-url
 V 49
 /!svn/ver/4269/luci/trunk/libs/nixio/axTLS/crypto
 END
-crypto_misc.c
-K 25
-svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/crypto_misc.c
-END
-Makefile
-K 25
-svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/Makefile
-END
-bigint.c
-K 25
-svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/bigint.c
-END
-sha1.c
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/sha1.c
-END
 bigint.h
 K 25
 svn:wc:ra_dav:version-url
@@ -80,4 +56,28 @@ K 25
 svn:wc:ra_dav:version-url
 V 55
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/rc4.c
+END
+crypto_misc.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/crypto_misc.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/Makefile
+END
+bigint.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/bigint.c
+END
+sha1.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/crypto/sha1.c
 END

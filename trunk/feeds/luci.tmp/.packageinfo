@@ -1,17 +1,56 @@
-Source-Makefile: feeds/luci/contrib/package/freifunk-common/Makefile
-Package: freifunk-common
+Source-Makefile: feeds/luci/contrib/package/freifunk-watchdog/Makefile
+Package: freifunk-watchdog
 Submenu: 9. Freifunk
-Version: 1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Version: 8
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread libuci
+Menu-Depends: 
+Provides: 
+Build-Depends: uci
+Section: luci
+Category: LuCI
+Title: Freifunk Ad-Hoc watchdog daemon
+Maintainer: 
+Source: 
+Type: ipkg
+Description:   A watchdog daemon that monitors wireless interfaces to ensure the correct bssid and channel.
+  The process will initiate a wireless restart as soon as it detects a bssid or channel mismatch.
+
+@@
+
+
+Source-Makefile: feeds/luci/contrib/package/community-profiles/Makefile
+Package: community-profiles
+Submenu: 9. Freifunk
+Version: 2
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread freifunk-common
 Menu-Depends: 
 Provides: 
 Section: luci
 Category: LuCI
-Title: Freifunk common files
+Title: Community profiles
 Maintainer: 
 Source: 
 Type: ipkg
-Description:   Common files and scripts that are needed to run free wireless mesh networks.
+Description:   These community profiles set defaults for various free network/freifunk communities and are used by wizards like ffwizard and meshwizard.
+
+@@
+
+
+Source-Makefile: feeds/luci/contrib/package/remote-update/Makefile
+Package: remote-update
+Submenu: 9. Freifunk
+Version: 4
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_atheros||@TARGET_ar71xx||@TARGET_brcm_2_4
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Title: Freifunk remote update utility.
+Maintainer: 
+Source: 
+Type: ipkg
+Description:   The freifunk remote-update utility uses sysupgrade to reflash the currently 
+  running firmware while keeping most of the existing configuratio.
 
 @@
 
@@ -52,6 +91,24 @@ Description:   This script updates the freifunkmap (also known as the global map
 @@
 
 
+Source-Makefile: feeds/luci/contrib/package/freifunk-policyrouting/Makefile
+Package: freifunk-policyrouting
+Submenu: 9. Freifunk
+Version: 6
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +ip
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Title: Freifunk policy routing addon
+Maintainer: 
+Source: 
+Type: ipkg
+Description:   Allows you to send your own traffic via your own default gateway while sending traffic received from the mesh to a gateway in the mesh.
+
+@@
+
+
 Source-Makefile: feeds/luci/contrib/package/freifunk-firewall/Makefile
 Package: freifunk-firewall
 Submenu: 9. Freifunk
@@ -70,22 +127,57 @@ Description:   Various firewall extensions for Freifunk. Includes NAT fixes and 
 @@
 
 
-Source-Makefile: feeds/luci/contrib/package/freifunk-watchdog/Makefile
-Package: freifunk-watchdog
+Source-Makefile: feeds/luci/contrib/package/freifunk-gwcheck/Makefile
+Package: freifunk-gwcheck
 Submenu: 9. Freifunk
-Version: 8
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread libuci
+Version: 4
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread firewall +ip +iptables-mod-ipopt +olsrd-mod-dyn-gw-plain
 Menu-Depends: 
 Provides: 
-Build-Depends: uci
 Section: luci
 Category: LuCI
-Title: Freifunk Ad-Hoc watchdog daemon
+Title: Freifunk gateway check script
 Maintainer: 
 Source: 
 Type: ipkg
-Description:   A watchdog daemon that monitors wireless interfaces to ensure the correct bssid and channel.
-  The process will initiate a wireless restart as soon as it detects a bssid or channel mismatch.
+Description:   This script periodically checks if internet is available via your own gateway. If it detects that it is broken, then the defaultroute is removed from the main table and temporarilly placed in table gw-check until your internet works again. Config file is /etc/config/freifunk-gwcheck.
+
+@@
+
+
+Source-Makefile: feeds/luci/contrib/package/freifunk-common/Makefile
+Package: freifunk-common
+Submenu: 9. Freifunk
+Version: 1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Title: Freifunk common files
+Maintainer: 
+Source: 
+Type: ipkg
+Description:   Common files and scripts that are needed to run free wireless mesh networks.
+
+@@
+
+
+Source-Makefile: feeds/luci/contrib/package/freifunk-p2pblock/Makefile
+Package: freifunk-p2pblock
+Submenu: 9. Freifunk
+Version: 3
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +iptables-mod-filter +iptables-mod-ipp2p +l7-protocols +iptables-mod-conntrack-extra
+Menu-Depends: 
+Provides: 
+Section: luci
+Category: LuCI
+Title: Freifunk p2pblock Addon
+Maintainer: 
+Source: 
+Type: ipkg
+Description:   Simple Addon for Freifunk which use iptables layer7-, ipp2p- and recent-modules 
+  to block p2p/filesharing traffic
 
 @@
 
@@ -93,7 +185,7 @@ Description:   A watchdog daemon that monitors wireless interfaces to ensure the
 Source-Makefile: feeds/luci/contrib/package/luci/Makefile
 Package: luci-lib-core
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +lua +libuci-lua +libubus-lua
 Menu-Depends: 
 Provides: 
@@ -130,7 +222,7 @@ Config:
 
 Package: luci-lib-fastindex
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +PACKAGE_luci-lib-fastindex:liblua
 Menu-Depends: 
 Provides: 
@@ -148,7 +240,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-httpclient
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +luci-lib-web +luci-lib-nixio
 Menu-Depends: 
 Provides: 
@@ -166,7 +258,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-ipkg
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -184,7 +276,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-json
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -202,7 +294,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-lucid
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +luci-lib-nixio +luci-lib-web +luci-lib-px5g
 Menu-Depends: 
 Provides: 
@@ -220,7 +312,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-lucid-http
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +luci-lib-lucid
 Menu-Depends: 
 Provides: 
@@ -238,7 +330,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-lucid-rpc
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +luci-lib-lucid
 Menu-Depends: 
 Provides: 
@@ -256,7 +348,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-nixio
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +PACKAGE_luci-lib-nixio_openssl:libopenssl +PACKAGE_luci-lib-nixio_cyassl:libcyassl
 Menu-Depends: 
 Provides: 
@@ -294,7 +386,7 @@ Config:
 
 Package: luci-lib-px5g
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +luci-lib-nixio
 Menu-Depends: 
 Provides: 
@@ -312,7 +404,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-sys
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -330,7 +422,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-web
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +luci-lib-sys +luci-lib-nixio +luci-lib-core +luci-sgi-cgi
 Menu-Depends: 
 Provides: 
@@ -348,7 +440,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-lib-luaneightbl
 Submenu: 8. Libraries
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-core +luci-lib-core
 Menu-Depends: 
 Provides: 
@@ -366,7 +458,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-proto-core
 Submenu: 6. Protocols
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -384,7 +476,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-proto-ppp
 Submenu: 6. Protocols
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -402,7 +494,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-proto-ipv6
 Submenu: 6. Protocols
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -420,7 +512,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-proto-3g
 Submenu: 6. Protocols
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-proto-3g:comgt
 Menu-Depends: 
 Provides: 
@@ -438,7 +530,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-proto-relay
 Submenu: 6. Protocols
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-proto-relay:relayd
 Menu-Depends: 
 Provides: 
@@ -456,7 +548,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-mod-freifunk-community
 Submenu: 9. Freifunk
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-web +luci-app-splash +luci-i18n-german +PACKAGE_luci-mod-freifunk-community:olsrd +PACKAGE_luci-mod-freifunk-community:olsrd-mod-dyn-gw-plain +PACKAGE_luci-mod-freifunk-community:olsrd-mod-jsoninfo +PACKAGE_luci-mod-freifunk-community:olsrd-mod-nameservice +PACKAGE_luci-mod-freifunk-community:olsrd-mod-watchdog +PACKAGE_luci-mod-freifunk-community:kmod-tun +PACKAGE_luci-mod-freifunk-community:ip +PACKAGE_luci-mod-freifunk-community:freifunk-watchdog +luci-app-olsr +luci-app-olsr-services +freifunk-gwcheck +freifunk-mapupdate
 Menu-Depends: 
 Provides: 
@@ -474,7 +566,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-mod-admin-core
 Submenu: 2. Modules
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-web +luci-proto-core +luci-i18n-english
 Menu-Depends: 
 Provides: 
@@ -492,7 +584,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-mod-admin-mini
 Submenu: 2. Modules
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-mod-admin-core @BROKEN
 Menu-Depends: 
 Provides: 
@@ -510,7 +602,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-mod-admin-full
 Submenu: 2. Modules
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-mod-admin-core +luci-lib-ipkg
 Menu-Depends: 
 Provides: 
@@ -528,7 +620,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-mod-failsafe
 Submenu: 2. Modules
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-mod-admin-core
 Menu-Depends: 
 Provides: 
@@ -546,7 +638,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-mod-rpc
 Submenu: 2. Modules
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-json
 Menu-Depends: 
 Provides: 
@@ -564,7 +656,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-mod-freifunk
 Submenu: 2. Modules
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-mod-admin-full +luci-lib-json +PACKAGE_luci-mod-freifunk:freifunk-firewall +freifunk-common
 Menu-Depends: 
 Provides: 
@@ -582,7 +674,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-mod-niu
 Submenu: 2. Modules
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-mod-admin-core @BROKEN
 Menu-Depends: 
 Provides: 
@@ -600,7 +692,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-siitwizard
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-siitwizard:kmod-siit
 Menu-Depends: 
 Provides: 
@@ -618,7 +710,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-firewall
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-firewall:firewall
 Menu-Depends: 
 Provides: 
@@ -636,7 +728,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-freifunk-policyrouting
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-freifunk-policyrouting:freifunk-policyrouting
 Menu-Depends: 
 Provides: 
@@ -654,7 +746,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-freifunk-widgets
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-freifunk-widgets:luci-mod-freifunk
 Menu-Depends: 
 Provides: 
@@ -672,7 +764,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-meshwizard
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-freifunk-meshwizard:meshwizard
 Menu-Depends: 
 Provides: 
@@ -690,7 +782,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-olsr
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +olsrd +olsrd-mod-jsoninfo +luci-lib-luaneightbl
 Menu-Depends: 
 Provides: 
@@ -708,7 +800,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-olsr-viz
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread luci-app-olsr +olsrd-mod-txtinfo
 Menu-Depends: 
 Provides: 
@@ -726,7 +818,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-freifunk-diagnostics
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -744,7 +836,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-olsr-services
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread luci-app-olsr +olsrd-mod-nameservice
 Menu-Depends: 
 Provides: 
@@ -762,7 +854,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-qos
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-qos:qos-scripts
 Menu-Depends: 
 Provides: 
@@ -780,7 +872,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-splash
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-lib-nixio +tc +kmod-sched +iptables-mod-nat-extra +iptables-mod-ipopt
 Menu-Depends: 
 Provides: 
@@ -798,7 +890,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-statistics
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-statistics:collectd +PACKAGE_luci-app-statistics:rrdtool1 +PACKAGE_luci-app-statistics:collectd-mod-rrdtool +PACKAGE_luci-app-statistics:collectd-mod-iwinfo +PACKAGE_luci-app-statistics:collectd-mod-interface +PACKAGE_luci-app-statistics:collectd-mod-load
 Menu-Depends: 
 Provides: 
@@ -816,7 +908,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-diag-core
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -834,7 +926,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-diag-devinfo
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-app-diag-core +PACKAGE_luci-app-diag-devinfo:smap +PACKAGE_luci-app-diag-devinfo:netdiscover +PACKAGE_luci-app-diag-devinfo:mac-to-devinfo +PACKAGE_luci-app-diag-devinfo:httping +PACKAGE_luci-app-diag-devinfo:smap-to-devinfo +PACKAGE_luci-app-diag-devinfo:netdiscover-to-devinfo
 Menu-Depends: 
 Provides: 
@@ -852,7 +944,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-voice-core
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -870,7 +962,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-voice-diag
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread luci-app-diag-devinfo
 Menu-Depends: 
 Provides: 
@@ -888,7 +980,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-commands
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -906,7 +998,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-upnp
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-upnp:miniupnpd
 Menu-Depends: 
 Provides: 
@@ -924,7 +1016,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-ntpc
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-ntpc:ntpclient
 Menu-Depends: 
 Provides: 
@@ -942,7 +1034,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-ddns
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-ddns:ddns-scripts
 Menu-Depends: 
 Provides: 
@@ -960,7 +1052,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-samba
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-samba:samba36-server
 Menu-Depends: 
 Provides: 
@@ -978,7 +1070,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-mmc-over-gpio
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-mmc-over-gpio:kmod-mmc-over-gpio
 Menu-Depends: 
 Provides: 
@@ -996,7 +1088,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-p910nd
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-p910nd:p910nd
 Menu-Depends: 
 Provides: 
@@ -1014,7 +1106,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-ushare
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-ushare:ushare
 Menu-Depends: 
 Provides: 
@@ -1032,7 +1124,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-hd-idle
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-hd-idle:hd-idle
 Menu-Depends: 
 Provides: 
@@ -1050,7 +1142,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-tinyproxy
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-tinyproxy:tinyproxy
 Menu-Depends: 
 Provides: 
@@ -1068,7 +1160,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-polipo
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-polipo:polipo
 Menu-Depends: 
 Provides: 
@@ -1086,7 +1178,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-openvpn
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-openvpn:openvpn @BROKEN
 Menu-Depends: 
 Provides: 
@@ -1104,7 +1196,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-p2pblock
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread luci-app-firewall +PACKAGE_luci-app-p2pblock:freifunk-p2pblock
 Menu-Depends: 
 Provides: 
@@ -1122,7 +1214,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-multiwan
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread luci-app-firewall +PACKAGE_luci-app-multiwan:multiwan
 Menu-Depends: 
 Provides: 
@@ -1140,7 +1232,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-wol
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-wol:etherwake
 Menu-Depends: 
 Provides: 
@@ -1158,7 +1250,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-vnstat
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-vnstat:vnstat +PACKAGE_luci-app-vnstat:vnstati
 Menu-Depends: 
 Provides: 
@@ -1176,7 +1268,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-radvd
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-radvd:radvd
 Menu-Depends: 
 Provides: 
@@ -1194,7 +1286,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-ahcp
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-ahcp:ahcpd
 Menu-Depends: 
 Provides: 
@@ -1212,7 +1304,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-wshaper
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-wshaper:wshaper
 Menu-Depends: 
 Provides: 
@@ -1230,7 +1322,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-pbx
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-pbx:asterisk18 +PACKAGE_luci-app-pbx:asterisk18-app-authenticate +PACKAGE_luci-app-pbx:asterisk18-app-disa +PACKAGE_luci-app-pbx:asterisk18-app-setcallerid +PACKAGE_luci-app-pbx:asterisk18-app-system +PACKAGE_luci-app-pbx:asterisk18-chan-gtalk +PACKAGE_luci-app-pbx:asterisk18-codec-a-mu +PACKAGE_luci-app-pbx:asterisk18-codec-alaw +PACKAGE_luci-app-pbx:asterisk18-func-cut +PACKAGE_luci-app-pbx:asterisk18-res-clioriginate +PACKAGE_luci-app-pbx:asterisk18-func-channel +PACKAGE_luci-app-pbx:asterisk18-chan-local +PACKAGE_luci-app-pbx:asterisk18-app-record +PACKAGE_luci-app-pbx:asterisk18-app-senddtmf +PACKAGE_luci-app-pbx:asterisk18-res-crypto
 Menu-Depends: 
 Provides: 
@@ -1248,7 +1340,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-pbx-voicemail
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread luci-app-pbx +PACKAGE_luci-app-pbx-voicemail:msmtp +PACKAGE_luci-app-pbx-voicemail:coreutils-base64
 Menu-Depends: 
 Provides: 
@@ -1266,7 +1358,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-ltqtapi
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1284,7 +1376,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-minidlna
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-minidlna:minidlna
 Menu-Depends: 
 Provides: 
@@ -1302,7 +1394,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-transmission
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-transmission:transmission-daemon
 Menu-Depends: 
 Provides: 
@@ -1320,7 +1412,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-app-watchcat
 Submenu: 3. Applications
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +PACKAGE_luci-app-watchcat:watchcat
 Menu-Depends: 
 Provides: 
@@ -1338,7 +1430,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-sgi-cgi
 Submenu: 7. Server Interfaces
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1356,7 +1448,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-sgi-uhttpd
 Submenu: 7. Server Interfaces
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +uhttpd +uhttpd-mod-lua
 Menu-Depends: 
 Provides: 
@@ -1374,7 +1466,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-theme-base
 Submenu: 4. Themes
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1392,7 +1484,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-theme-openwrt
 Submenu: 4. Themes
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-theme-base
 Menu-Depends: 
 Provides: 
@@ -1411,7 +1503,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 Package: luci-theme-bootstrap
 Submenu: 4. Themes
 Default: PACKAGE_luci-lib-core
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-theme-base
 Menu-Depends: 
 Provides: 
@@ -1429,7 +1521,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-theme-freifunk-bno
 Submenu: 4. Themes
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-theme-base
 Menu-Depends: 
 Provides: 
@@ -1447,7 +1539,7 @@ Stefan Pirwitz <stefan-at-freifunk-bno-dot-de>
 
 Package: luci-theme-freifunk-generic
 Submenu: 4. Themes
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci-theme-base
 Menu-Depends: 
 Provides: 
@@ -1465,7 +1557,7 @@ Manuel Munz <freifunk-at-somakoma-dot-de>
 
 Package: luci-i18n-german
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1483,7 +1575,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-english
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1501,7 +1593,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-french
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1519,7 +1611,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-italian
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1537,7 +1629,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-russian
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1555,7 +1647,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-portuguese-brazilian
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1573,7 +1665,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-chinese
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1591,7 +1683,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-japanese
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1609,7 +1701,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-greek
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1627,7 +1719,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-catalan
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1645,7 +1737,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-portuguese
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1663,7 +1755,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-spanish
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1681,7 +1773,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-vietnamese
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1699,7 +1791,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-malay
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1717,7 +1809,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-norwegian
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1735,7 +1827,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-hebrew
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1753,7 +1845,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-romanian
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1771,7 +1863,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-ukrainian
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1789,7 +1881,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-hungarian
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1807,7 +1899,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-i18n-polish
 Submenu: 5. Translations
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -1825,7 +1917,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci
 Submenu: 1. Collections
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +uhttpd +uhttpd-mod-ubus +luci-mod-admin-full +luci-theme-bootstrap +luci-app-firewall +luci-proto-core +luci-proto-ppp +libiwinfo-lua
 Menu-Depends: 
 Provides: 
@@ -1843,8 +1935,8 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-ssl
 Submenu: 1. Collections
-Version: svn-r9934-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci +libustream-cyassl +px5g
+Version: svn-r10274-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +luci +libustream-polarssl +px5g
 Menu-Depends: 
 Provides: 
 Build-Depends: lua/host
@@ -1861,7 +1953,7 @@ LuCI Development Team <luci@lists.subsignal.org>
 
 Package: luci-light
 Submenu: 1. Collections
-Version: svn-r9934-1
+Version: svn-r10274-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +uhttpd +luci-mod-admin-mini +luci-theme-openwrt @BROKEN
 Menu-Depends: 
 Provides: 
@@ -1875,98 +1967,6 @@ Type: ipkg
 Description: Minimum package set using only admin mini and the standard theme
 http://luci.subsignal.org/
 LuCI Development Team <luci@lists.subsignal.org>
-@@
-
-
-Source-Makefile: feeds/luci/contrib/package/freifunk-p2pblock/Makefile
-Package: freifunk-p2pblock
-Submenu: 9. Freifunk
-Version: 3
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +iptables-mod-filter +iptables-mod-ipp2p +l7-protocols +iptables-mod-conntrack-extra
-Menu-Depends: 
-Provides: 
-Section: luci
-Category: LuCI
-Title: Freifunk p2pblock Addon
-Maintainer: 
-Source: 
-Type: ipkg
-Description:   Simple Addon for Freifunk which use iptables layer7-, ipp2p- and recent-modules 
-  to block p2p/filesharing traffic
-
-@@
-
-
-Source-Makefile: feeds/luci/contrib/package/freifunk-gwcheck/Makefile
-Package: freifunk-gwcheck
-Submenu: 9. Freifunk
-Version: 4
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread firewall +ip +iptables-mod-ipopt +olsrd-mod-dyn-gw-plain
-Menu-Depends: 
-Provides: 
-Section: luci
-Category: LuCI
-Title: Freifunk gateway check script
-Maintainer: 
-Source: 
-Type: ipkg
-Description:   This script periodically checks if internet is available via your own gateway. If it detects that it is broken, then the defaultroute is removed from the main table and temporarilly placed in table gw-check until your internet works again. Config file is /etc/config/freifunk-gwcheck.
-
-@@
-
-
-Source-Makefile: feeds/luci/contrib/package/remote-update/Makefile
-Package: remote-update
-Submenu: 9. Freifunk
-Version: 4
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_atheros||@TARGET_ar71xx||@TARGET_brcm_2_4
-Menu-Depends: 
-Provides: 
-Section: luci
-Category: LuCI
-Title: Freifunk remote update utility.
-Maintainer: 
-Source: 
-Type: ipkg
-Description:   The freifunk remote-update utility uses sysupgrade to reflash the currently 
-  running firmware while keeping most of the existing configuratio.
-
-@@
-
-
-Source-Makefile: feeds/luci/contrib/package/community-profiles/Makefile
-Package: community-profiles
-Submenu: 9. Freifunk
-Version: 2
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread freifunk-common
-Menu-Depends: 
-Provides: 
-Section: luci
-Category: LuCI
-Title: Community profiles
-Maintainer: 
-Source: 
-Type: ipkg
-Description:   These community profiles set defaults for various free network/freifunk communities and are used by wizards like ffwizard and meshwizard.
-
-@@
-
-
-Source-Makefile: feeds/luci/contrib/package/freifunk-policyrouting/Makefile
-Package: freifunk-policyrouting
-Submenu: 9. Freifunk
-Version: 6
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +ip
-Menu-Depends: 
-Provides: 
-Section: luci
-Category: LuCI
-Title: Freifunk policy routing addon
-Maintainer: 
-Source: 
-Type: ipkg
-Description:   Allows you to send your own traffic via your own default gateway while sending traffic received from the mesh to a gateway in the mesh.
-
 @@
 
 

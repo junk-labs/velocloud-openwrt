@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/madwimax/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:12.090323Z
+2014-06-17T22:31:59.594136Z
 e1f99934a8560a59719d10f9ac2a94b2
 2011-07-31T12:46:00.929591Z
 27845

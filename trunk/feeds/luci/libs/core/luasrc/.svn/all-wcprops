@@ -1,19 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 42
-/!svn/ver/9800/luci/trunk/libs/core/luasrc
-END
-fs.lua
-K 25
-svn:wc:ra_dav:version-url
-V 49
-/!svn/ver/5134/luci/trunk/libs/core/luasrc/fs.lua
-END
-ip.lua
-K 25
-svn:wc:ra_dav:version-url
-V 49
-/!svn/ver/8142/luci/trunk/libs/core/luasrc/ip.lua
+/!svn/ver/9937/luci/trunk/libs/core/luasrc
 END
 store.lua
 K 25
@@ -56,4 +44,16 @@ K 25
 svn:wc:ra_dav:version-url
 V 52
 /!svn/ver/5113/luci/trunk/libs/core/luasrc/debug.lua
+END
+fs.lua
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/!svn/ver/5134/luci/trunk/libs/core/luasrc/fs.lua
+END
+ip.lua
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/!svn/ver/8142/luci/trunk/libs/core/luasrc/ip.lua
 END

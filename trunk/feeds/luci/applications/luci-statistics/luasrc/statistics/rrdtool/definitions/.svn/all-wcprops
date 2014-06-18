@@ -3,12 +3,6 @@ svn:wc:ra_dav:version-url
 V 92
 /!svn/ver/9812/luci/trunk/applications/luci-statistics/luasrc/statistics/rrdtool/definitions
 END
-interface.lua
-K 25
-svn:wc:ra_dav:version-url
-V 106
-/!svn/ver/8311/luci/trunk/applications/luci-statistics/luasrc/statistics/rrdtool/definitions/interface.lua
-END
 iptables.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -110,4 +104,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 101
 /!svn/ver/8044/luci/trunk/applications/luci-statistics/luasrc/statistics/rrdtool/definitions/ping.lua
+END
+interface.lua
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/8311/luci/trunk/applications/luci-statistics/luasrc/statistics/rrdtool/definitions/interface.lua
 END

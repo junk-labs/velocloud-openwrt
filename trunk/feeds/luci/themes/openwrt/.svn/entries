@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/themes/openwrt
 http://svn.luci.subsignal.org
 
@@ -26,9 +26,6 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-htdocs
-dir
-
 luasrc
 dir
 
@@ -41,7 +38,7 @@ file
 
 
 
-2013-12-02T22:38:38.534324Z
+2014-06-17T22:32:18.814136Z
 ec5666919ab9e4d439fdf0e4944342a7
 2008-05-31T08:04:49.167122Z
 2194
@@ -70,5 +67,8 @@ Cyrus
 59
 
 root
+dir
+
+htdocs
 dir
 

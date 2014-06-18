@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/lang/python-django
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:07.602323Z
+2014-06-17T22:31:56.582137Z
 185dc7dc9df6e251bbddc0cb339b4933
 2011-11-15T01:04:31.950318Z
 29142

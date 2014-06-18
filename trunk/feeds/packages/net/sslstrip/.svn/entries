@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/sslstrip
 svn://svn.openwrt.org/openwrt
 
 
 
-2010-09-04T16:04:39.677106Z
-22892
-florian
+2014-05-01T16:41:49.349870Z
+40633
+hauke
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:08.338323Z
-b3c8ab4b664655aeab4c54668fd6e3ff
-2010-09-04T16:04:39.677106Z
-22892
-florian
+2014-06-17T22:32:00.162136Z
+054443f69bf8cbca79d94c906fbc0407
+2014-05-01T16:41:49.349870Z
+40633
+hauke
 
 
 

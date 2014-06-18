@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/libs/lucid-http
 http://svn.luci.subsignal.org
 
@@ -26,16 +26,13 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-luasrc
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:50.374324Z
+2014-06-17T22:32:29.202136Z
 79d69113c5ab4a81305683f3d9318921
 2009-05-23T17:21:36.581220Z
 4590
@@ -64,5 +61,8 @@ Cyrus
 59
 
 docs
+dir
+
+luasrc
 dir
 

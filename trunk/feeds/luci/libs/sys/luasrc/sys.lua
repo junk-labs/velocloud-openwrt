@@ -5,7 +5,7 @@ Description:
 Utilities for interaction with the Linux system
 
 FileId:
-$Id: sys.lua 9662 2013-01-30 13:36:20Z soma $
+$Id: sys.lua 9975 2014-04-24 21:42:48Z jow $
 
 License:
 Copyright 2008 Steven Barth <steven@midlink.org>
@@ -233,7 +233,8 @@ net = {}
 --			The following fields are defined for arp entry objects:
 --			{ "IP address", "HW address", "HW type", "Flags", "Mask", "Device" }
 function net.arptable(callback)
-	local arp, e, r, v
+	local arp = (not callback) and {} or nil
+	local e, r, v
 	if fs.access("/proc/net/arp") then
 		for e in io.lines("/proc/net/arp") do
 			local r = { }, v

@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (C) 2007-2011 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=polipo
-PKG_VERSION:=1.0.4.1
-PKG_RELEASE:=3
+PKG_VERSION:=1.1.1
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://freehaven.net/~chrisd/polipo/
-PKG_MD5SUM:=bfc5c85289519658280e093a270d6703
+PKG_SOURCE_URL:=http://www.pps.jussieu.fr/~jch/software/files/$(PKG_NAME)/
+PKG_MD5SUM:=86939e331e656f638271f578b6e3f893
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -23,13 +23,13 @@ define Package/polipo
   CATEGORY:=Network
   TITLE:=A caching web proxy
   URL:=http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/
-  MAINTAINER:=Gabriel Kerneis <kerneis@pps.univ-paris-diderot.fr>
+  MAINTAINER:=Gabriel Kerneis <gabriel@kerneis.info>
 endef
 
 define Package/polipo/description
- Polipo is a small and fast caching web proxy (a web cache, an HTTP proxy, 
- a proxy server). While Polipo was designed to be used by one person or a 
- small group of people, there is nothing that prevents it from being used 
+ Polipo is a small and fast caching web proxy (a web cache, an HTTP proxy,
+ a proxy server). While Polipo was designed to be used by one person or a
+ small group of people, there is nothing that prevents it from being used
  by a larger group.
 endef
 

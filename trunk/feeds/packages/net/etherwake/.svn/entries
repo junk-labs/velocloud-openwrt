@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/etherwake
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-11-16T20:02:41.452853Z
-29199
-nico
+2014-03-27T07:03:23.851327Z
+40077
+juhosg
 
 
 
@@ -26,20 +26,17 @@ nico
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:08.522323Z
-64f74e2e77e3f507d57bfa15d6db0452
-2011-11-16T20:02:41.452853Z
-29199
-nico
+2014-06-17T22:31:59.518136Z
+5fb75b8e081e93648a9dd12da6d8c70d
+2014-03-27T07:03:23.851327Z
+40077
+juhosg
 
 
 
@@ -61,8 +58,11 @@ nico
 
 
 
-1616
+1614
 
 files
+dir
+
+patches
 dir
 

@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-coovachilli/root/etc/config
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:39.098324Z
+2014-06-17T22:32:19.026136Z
 166d0060645028d65c17b217b802aaa0
 2008-09-25T13:53:47.682676Z
 3450

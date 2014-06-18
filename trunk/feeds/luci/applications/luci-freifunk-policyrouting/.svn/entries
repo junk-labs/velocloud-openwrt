@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-freifunk-policyrouting
 http://svn.luci.subsignal.org
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:47.966324Z
+2014-06-17T22:32:22.970136Z
 48757b76ccbbc5e6e956f1db54d7baa8
 2011-03-14T19:34:23.287308Z
 6967

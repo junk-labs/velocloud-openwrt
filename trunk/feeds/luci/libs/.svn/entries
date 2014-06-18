@@ -1,15 +1,15 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/libs
 http://svn.luci.subsignal.org
 
 
 
-2013-07-07T12:45:59.912213Z
-9864
-stargieg
+2014-04-24T21:42:48.503871Z
+9975
+jow
 
 
 
@@ -25,6 +25,18 @@ stargieg
 
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+ipkg
+dir
+
+luaneightbl
+dir
+
+lucid
+dir
+
+sgi-wsapi
+dir
 
 json
 dir
@@ -66,17 +78,5 @@ sgi-uhttpd
 dir
 
 core
-dir
-
-ipkg
-dir
-
-luaneightbl
-dir
-
-lucid
-dir
-
-sgi-wsapi
 dir
 

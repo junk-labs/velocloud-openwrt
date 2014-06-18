@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/multimedia/shairport/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-02-22T14:52:38.824309Z
-35746
+2014-05-20T04:51:45.500144Z
+40795
 florian
 
 
@@ -26,16 +26,16 @@ florian
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-001-fix_ipv6_fallback.patch
+001-disable_pulseaudio.patch
 file
 
 
 
 
-2013-12-02T22:38:15.022324Z
-1f9ea08e889c5528ca327e098277ddca
-2013-02-22T14:52:38.824309Z
-35746
+2014-06-17T22:32:02.198136Z
+34ce37e4e0fc4a93d52ef0648f470de8
+2014-05-20T04:51:45.500144Z
+40795
 florian
 
 
@@ -58,5 +58,5 @@ florian
 
 
 
-3519
+394
 

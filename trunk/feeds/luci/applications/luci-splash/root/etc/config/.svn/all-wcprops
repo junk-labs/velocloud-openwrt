@@ -3,15 +3,15 @@ svn:wc:ra_dav:version-url
 V 66
 /!svn/ver/9879/luci/trunk/applications/luci-splash/root/etc/config
 END
-luci_splash_leases
-K 25
-svn:wc:ra_dav:version-url
-V 85
-/!svn/ver/9879/luci/trunk/applications/luci-splash/root/etc/config/luci_splash_leases
-END
 luci_splash
 K 25
 svn:wc:ra_dav:version-url
 V 78
 /!svn/ver/3591/luci/trunk/applications/luci-splash/root/etc/config/luci_splash
+END
+luci_splash_leases
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9879/luci/trunk/applications/luci-splash/root/etc/config/luci_splash_leases
 END

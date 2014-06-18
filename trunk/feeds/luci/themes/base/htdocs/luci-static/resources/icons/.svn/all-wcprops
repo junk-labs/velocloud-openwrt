@@ -3,6 +3,54 @@ svn:wc:ra_dav:version-url
 V 72
 /!svn/ver/9260/luci/trunk/themes/base/htdocs/luci-static/resources/icons
 END
+ethernet_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/6491/luci/trunk/themes/base/htdocs/luci-static/resources/icons/ethernet_disabled.png
+END
+tunnel.png
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/7542/luci/trunk/themes/base/htdocs/luci-static/resources/icons/tunnel.png
+END
+wifi_big_disabled.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/6491/luci/trunk/themes/base/htdocs/luci-static/resources/icons/wifi_big_disabled.png
+END
+signal-none.png
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/5354/luci/trunk/themes/base/htdocs/luci-static/resources/icons/signal-none.png
+END
+signal-0.png
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/5354/luci/trunk/themes/base/htdocs/luci-static/resources/icons/signal-0.png
+END
+port_down.png
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/9260/luci/trunk/themes/base/htdocs/luci-static/resources/icons/port_down.png
+END
+ethernet.png
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/6491/luci/trunk/themes/base/htdocs/luci-static/resources/icons/ethernet.png
+END
+wifi_big.png
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/6491/luci/trunk/themes/base/htdocs/luci-static/resources/icons/wifi_big.png
+END
 encryption_disabled.png
 K 25
 svn:wc:ra_dav:version-url
@@ -104,52 +152,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 90
 /!svn/ver/5354/luci/trunk/themes/base/htdocs/luci-static/resources/icons/signal-75-100.png
-END
-ethernet_disabled.png
-K 25
-svn:wc:ra_dav:version-url
-V 94
-/!svn/ver/6491/luci/trunk/themes/base/htdocs/luci-static/resources/icons/ethernet_disabled.png
-END
-tunnel.png
-K 25
-svn:wc:ra_dav:version-url
-V 83
-/!svn/ver/7542/luci/trunk/themes/base/htdocs/luci-static/resources/icons/tunnel.png
-END
-wifi_big_disabled.png
-K 25
-svn:wc:ra_dav:version-url
-V 94
-/!svn/ver/6491/luci/trunk/themes/base/htdocs/luci-static/resources/icons/wifi_big_disabled.png
-END
-signal-none.png
-K 25
-svn:wc:ra_dav:version-url
-V 88
-/!svn/ver/5354/luci/trunk/themes/base/htdocs/luci-static/resources/icons/signal-none.png
-END
-signal-0.png
-K 25
-svn:wc:ra_dav:version-url
-V 85
-/!svn/ver/5354/luci/trunk/themes/base/htdocs/luci-static/resources/icons/signal-0.png
-END
-port_down.png
-K 25
-svn:wc:ra_dav:version-url
-V 86
-/!svn/ver/9260/luci/trunk/themes/base/htdocs/luci-static/resources/icons/port_down.png
-END
-ethernet.png
-K 25
-svn:wc:ra_dav:version-url
-V 85
-/!svn/ver/6491/luci/trunk/themes/base/htdocs/luci-static/resources/icons/ethernet.png
-END
-wifi_big.png
-K 25
-svn:wc:ra_dav:version-url
-V 85
-/!svn/ver/6491/luci/trunk/themes/base/htdocs/luci-static/resources/icons/wifi_big.png
 END

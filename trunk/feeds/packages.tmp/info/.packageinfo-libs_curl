@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/libs/curl/Makefile
 Package: curl
 Submenu: File Transfer
-Version: 7.33.0-4
+Version: 7.36.0-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libcurl
 Menu-Depends: 
 Provides: 
@@ -9,7 +9,7 @@ Section: net
 Category: Network
 Title: A client-side URL transfer utility
 Maintainer: Imre Kaloz <kaloz@openwrt.org>
-Source: curl-7.33.0.tar.bz2
+Source: curl-7.36.0.tar.bz2
 Type: ipkg
 Description: A client-side URL transfer utility
 http://curl.haxx.se/
@@ -18,7 +18,7 @@ Imre Kaloz <kaloz@openwrt.org>
 
 Package: libcurl
 Menu: 1
-Version: 7.33.0-4
+Version: 7.36.0-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +LIBCURL_POLARSSL:libpolarssl +LIBCURL_CYASSL:libcyassl +LIBCURL_AXTLS:libaxtls +LIBCURL_OPENSSL:libopenssl +LIBCURL_GNUTLS:libgnutls +LIBCURL_ZLIB:zlib +LIBCURL_THREADED_RESOLVER:libpthread
 Menu-Depends: 
 Provides: 
@@ -26,7 +26,7 @@ Section: libs
 Category: Libraries
 Title: A client-side URL transfer library using 
 Maintainer: Imre Kaloz <kaloz@openwrt.org>
-Source: curl-7.33.0.tar.bz2
+Source: curl-7.36.0.tar.bz2
 Type: ipkg
 Description: A client-side URL transfer library using 
 http://curl.haxx.se/

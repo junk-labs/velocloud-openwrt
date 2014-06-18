@@ -103,7 +103,7 @@ openwrt-fix-svn:
 
 OPENWRT_FEED_SCRIPT = $(OPENWRT_ROOT)/scripts/feeds
 
-.PHONY: feeds-all
+.PHONY: openwrt-feeds
 openwrt-feeds: $(OPENWRT_ROOT)/feeds.conf
 	$(OPENWRT_FEED_SCRIPT) update -a
 	$(OPENWRT_FEED_SCRIPT) install -a

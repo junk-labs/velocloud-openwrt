@@ -3,18 +3,6 @@ svn:wc:ra_dav:version-url
 V 85
 /!svn/ver/9634/luci/trunk/themes/freifunk-generic/htdocs/luci-static/freifunk-generic
 END
-bg.jpg
-K 25
-svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/6478/luci/trunk/themes/freifunk-generic/htdocs/luci-static/freifunk-generic/bg.jpg
-END
-header.jpg
-K 25
-svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/6478/luci/trunk/themes/freifunk-generic/htdocs/luci-static/freifunk-generic/header.jpg
-END
 cascade.css
 K 25
 svn:wc:ra_dav:version-url
@@ -44,4 +32,16 @@ K 25
 svn:wc:ra_dav:version-url
 V 101
 /!svn/ver/9626/luci/trunk/themes/freifunk-generic/htdocs/luci-static/freifunk-generic/smallscreen.css
+END
+bg.jpg
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/6478/luci/trunk/themes/freifunk-generic/htdocs/luci-static/freifunk-generic/bg.jpg
+END
+header.jpg
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/6478/luci/trunk/themes/freifunk-generic/htdocs/luci-static/freifunk-generic/header.jpg
 END

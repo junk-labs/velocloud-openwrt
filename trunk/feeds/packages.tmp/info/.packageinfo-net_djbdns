@@ -32,7 +32,7 @@ Source: djbdns-1.05.tar.gz
 Type: ipkg
 Description: 	tinydns is a DNS server.
 	It accepts iterative DNS queries from hosts around the Internet
-       	and responds with locally configured information. 
+	and responds with locally configured information.
 http://cr.yp.to/djbdns.html
 
 @@
@@ -51,9 +51,9 @@ Maintainer:
 Source: djbdns-1.05.tar.gz
 Type: ipkg
 Description: 	dnscache is a DNS cache.
-       	It accepts recursive DNS queries from local clients such as web
-       	browsers and mail transfer agents. It collects responses from
-	remote DNS servers. It caches the responses to save time later. 
+	It accepts recursive DNS queries from local clients such as web
+	browsers and mail transfer agents. It collects responses from
+	remote DNS servers. It caches the responses to save time later.
 http://cr.yp.to/djbdns.html
 
 @@
@@ -73,8 +73,8 @@ Source: djbdns-1.05.tar.gz
 Type: ipkg
 Description: 	axfrdns is a DNS zone-transfer server.
 	It reads a zone-transfer request in DNS-over-TCP format
-       	from its standard input and responds with locally configured
-	information. 
+	from its standard input and responds with locally configured
+	information.
 http://cr.yp.to/djbdns.html
 
 @@
@@ -94,8 +94,8 @@ Source: djbdns-1.05.tar.gz
 Type: ipkg
 Description: 	rbldns is an IP-address-listing DNS server.
 	It accepts iterative DNS queries from hosts around the Internet asking
-       	about various IP addresses. It provides responses showing whether the
-	addresses are on a locally configured list, such as RBL or DUL. 
+	about various IP addresses. It provides responses showing whether the
+	addresses are on a locally configured list, such as RBL or DUL.
 http://cr.yp.to/djbdns.html
 
 @@
@@ -115,8 +115,8 @@ Source: djbdns-1.05.tar.gz
 Type: ipkg
 Description: 	walldns is a reverse DNS wall.
 	It accepts iterative DNS queries for in-addr.arpa domains from hosts
-       	around the Internet and supplies generic responses that avoid
-	revealing local host information. 
+	around the Internet and supplies generic responses that avoid
+	revealing local host information.
 http://cr.yp.to/djbdns.html
 
 @@

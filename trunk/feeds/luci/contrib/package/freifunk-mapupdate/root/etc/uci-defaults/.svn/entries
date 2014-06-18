@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/contrib/package/freifunk-mapupdate/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:50.678324Z
+2014-06-17T22:32:30.534136Z
 887fdd601674b68e7b94b6de94248316
 2011-09-24T20:15:26.401300Z
 7553

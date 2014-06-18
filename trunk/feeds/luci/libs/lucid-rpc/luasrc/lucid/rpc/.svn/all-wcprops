@@ -3,6 +3,12 @@ svn:wc:ra_dav:version-url
 V 57
 /!svn/ver/4839/luci/trunk/libs/lucid-rpc/luasrc/lucid/rpc
 END
+server.lua
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4839/luci/trunk/libs/lucid-rpc/luasrc/lucid/rpc/server.lua
+END
 ruci.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -14,10 +20,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 68
 /!svn/ver/4839/luci/trunk/libs/lucid-rpc/luasrc/lucid/rpc/system.lua
-END
-server.lua
-K 25
-svn:wc:ra_dav:version-url
-V 68
-/!svn/ver/4839/luci/trunk/libs/lucid-rpc/luasrc/lucid/rpc/server.lua
 END

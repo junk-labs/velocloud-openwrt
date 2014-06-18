@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/net/atftp/Makefile
 Package: atftp
 Submenu: File Transfer
-Version: 0.7-1
+Version: 0.7-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libreadline +libncurses
 Menu-Depends: 
 Provides: 
@@ -18,7 +18,7 @@ Description: TFTP client
 
 Package: atftpd
 Submenu: File Transfer
-Version: 0.7-1
+Version: 0.7-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpcre +libpthread
 Menu-Depends: 
 Provides: 

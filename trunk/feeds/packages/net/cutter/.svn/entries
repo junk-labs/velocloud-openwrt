@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/cutter
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-08-24T07:02:29.408434Z
-33268
-blogic
+2014-03-27T07:02:42.202337Z
+40059
+juhosg
 
 
 
@@ -26,17 +26,20 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:11.730323Z
-ad94a095e21ae8b4843a9cb3229f0caa
-2012-08-24T07:02:29.408434Z
-33268
-blogic
+2014-06-17T22:31:57.610137Z
+857f80e511a0c1e8fb0cb2e29d39aa3b
+2014-03-27T07:02:42.202337Z
+40059
+juhosg
 has-props
 
 
@@ -58,5 +61,5 @@ has-props
 
 
 
-1039
+1033
 

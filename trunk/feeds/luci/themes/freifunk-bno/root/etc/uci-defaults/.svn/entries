@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/themes/freifunk-bno/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:35.890324Z
+2014-06-17T22:32:18.462136Z
 46ba7c9b71047d278c7c577e8870268b
 2008-09-29T19:10:51.799707Z
 3464

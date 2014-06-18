@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/dtach
 svn://svn.openwrt.org/openwrt
 
 
 
-2009-04-17T15:22:00.575847Z
-15247
-nico
+2014-03-27T07:03:23.017783Z
+40076
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:05.374323Z
-73545a471028a466dbd982e5a1099e23
-2009-04-17T15:22:00.575847Z
-15247
-nico
+2014-06-17T22:32:03.186136Z
+aeb69cf5f51f817c87f2588fee65b667
+2014-03-27T07:03:23.017783Z
+40076
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1184
+1180
 

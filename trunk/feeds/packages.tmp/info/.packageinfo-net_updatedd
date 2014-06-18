@@ -12,9 +12,9 @@ Title: A tool to update dynamic dns services
 Maintainer: 
 Source: updatedd_2.6.tar.bz2
 Type: ipkg
-Description: Updatedd is a small tool that will update one of many dynamic 
-	dns services on boot. 
-	Please look at the /etc/init.d/ddns script for more info. 
+Description: Updatedd is a small tool that will update one of many dynamic
+	dns services on boot.
+	Please look at the /etc/init.d/ddns script for more info.
 
 http://savannah.nongnu.org/projects/updatedd/
 

@@ -1,6 +1,6 @@
 #
 # Copyright (C) 2010-2011 OpenWrt.org
-# Copyright (C) 2009-2010 Thomas Heil <heil@terminal-consulting.de> 
+# Copyright (C) 2009-2010 Thomas Heil <heil@terminal-consulting.de>
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,12 +9,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=haproxy
-PKG_VERSION:=1.4.24
-PKG_RELEASE:=09
+PKG_VERSION:=1.4.25
+PKG_RELEASE:=01
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://haproxy.1wt.eu/download/1.4/src
-PKG_MD5SUM:=86422620faa9759907563d5e0524b98c
+PKG_MD5SUM:=74b5ec1f0f9b4d148c8083bcfb512ccd
 
 include $(INCLUDE_DIR)/package.mk
 

@@ -10,7 +10,7 @@ Title: A network intrusion detection library
 Maintainer: 
 Source: libnids-1.24.tar.gz
 Type: ipkg
-Description: 	An implementation of an E-component of Network Intrusion Detection 
+Description: 	An implementation of an E-component of Network Intrusion Detection
 	System.
 http://libnids.sourceforge.net/
 

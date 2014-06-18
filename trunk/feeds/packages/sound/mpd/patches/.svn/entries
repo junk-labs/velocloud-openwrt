@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/sound/mpd/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-03-10T16:57:22.240319Z
-26014
-loswillios
+2014-02-08T18:04:03.899089Z
+39540
+hauke
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:12.874323Z
-eba186b8c802f33cb87edcf3ee0ba789
-2011-03-10T16:57:22.240319Z
-26014
-loswillios
+2014-06-17T22:32:00.746136Z
+26426d0567e2c12af4fdf396c2a6ca23
+2014-02-08T18:04:03.899089Z
+39540
+hauke
 
 
 
@@ -58,5 +58,5 @@ loswillios
 
 
 
-945
+587
 

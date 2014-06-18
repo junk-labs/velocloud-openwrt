@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/ifstat/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:10.026323Z
+2014-06-17T22:31:59.890136Z
 e4ea58f5ffeaf0809b3fd507af6a8b24
 2007-09-06T10:27:26.230777Z
 8646

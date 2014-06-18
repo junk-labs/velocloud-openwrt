@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/wdiag
 svn://svn.openwrt.org/openwrt
 
 
 
-2009-04-19T20:37:05.178307Z
-15277
-florian
+2014-03-27T07:05:03.843112Z
+40178
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:10.058323Z
-7c5b9a9c61bf6b6d55302d7deca52b40
-2009-04-19T20:37:05.178307Z
-15277
-florian
+2014-06-17T22:31:57.262137Z
+b826edfd74f0e8d9d1a82ab3c810428b
+2014-03-27T07:05:03.843112Z
+40178
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-973
+972
 

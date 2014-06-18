@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/ndyndns/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:08.326323Z
+2014-06-17T22:31:57.378137Z
 3b43dfa8f32b6f0862c0c8f28491a7ff
 2011-01-29T22:09:11.917529Z
 25246
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T22:38:08.326323Z
+2014-06-17T22:31:57.378137Z
 4a4e0c9e180247f52d972472d7dd7fe9
 2011-01-29T22:09:11.917529Z
 25246

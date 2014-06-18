@@ -9,7 +9,7 @@ You may obtain a copy of the License at
 
 	http://www.apache.org/licenses/LICENSE-2.0
 
-$Id: freifunk.lua 9682 2013-03-16 18:37:24Z soma $
+$Id: freifunk.lua 9974 2014-04-23 12:15:40Z jow $
 ]]--
 
 module("luci.controller.freifunk.freifunk", package.seeall)
@@ -60,7 +60,9 @@ function index()
 		assign({"freifunk", "status", "splash"}, {"splash", "publicstatus"}, _("Splash"), 40)
 	end
 
-	assign({"freifunk", "olsr"}, {"admin", "status", "olsr"}, _("OLSR"), 30)
+	page = assign({"freifunk", "olsr"}, {"admin", "status", "olsr"}, _("OLSR"), 30)
+	page.setuser = false
+	page.setgroup = false
 
 	if nixio.fs.access("/etc/config/luci_statistics") then
 		assign({"freifunk", "graph"}, {"admin", "statistics", "graph"}, _("Statistics"), 40)

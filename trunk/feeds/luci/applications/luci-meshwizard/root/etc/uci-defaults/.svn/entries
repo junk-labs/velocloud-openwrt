@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-meshwizard/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:47.834324Z
+2014-06-17T22:32:22.894136Z
 8e0873bb3a6a713d0f239fa43f1723c4
 2012-09-14T04:54:24.015702Z
 9273

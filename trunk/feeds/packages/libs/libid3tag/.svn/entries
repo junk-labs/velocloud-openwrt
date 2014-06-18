@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/libid3tag
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-02-19T17:21:57.840294Z
-35681
-florian
+2014-03-27T07:04:55.969200Z
+40170
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:13.206324Z
-6704c3cd07839a430983f5183129b8ac
-2013-02-19T17:21:57.840294Z
-35681
-florian
+2014-06-17T22:32:02.066136Z
+c2d46897fe6cde75b9cc36bfac56bb4a
+2014-03-27T07:04:55.969200Z
+40170
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1431
+1430
 

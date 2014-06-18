@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/shorewall-lite/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:10.070323Z
+2014-06-17T22:31:59.894136Z
 f68bd4af3d9ad10b71ca596f2626087f
 2012-10-16T15:55:47.517219Z
 33796
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T22:38:10.070323Z
+2014-06-17T22:31:59.894136Z
 0a4962f48c4a41cb30cb57ffa846a030
 2012-10-16T15:55:47.517219Z
 33796

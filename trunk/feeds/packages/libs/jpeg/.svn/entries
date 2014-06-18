@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/jpeg
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-10-19T15:36:24.699492Z
-33862
-hcg
+2014-03-27T07:02:34.135269Z
+40053
+juhosg
 
 
 
@@ -26,17 +26,20 @@ hcg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:13.074323Z
-21371e179c993b2a026d5b2b6549d587
-2012-10-19T15:36:24.699492Z
-33862
-hcg
+2014-06-17T22:32:00.874136Z
+fcebdbdc85eb8214f9ebd9ca44977717
+2014-03-27T07:02:34.135269Z
+40053
+juhosg
 has-props
 
 
@@ -58,8 +61,5 @@ has-props
 
 
 
-2442
-
-patches
-dir
+2441
 

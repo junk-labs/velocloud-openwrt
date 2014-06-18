@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/nstx
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-02-16T18:08:33.523366Z
-30601
-nbd
+2014-03-27T07:05:14.512352Z
+40189
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:12.286323Z
-d10e29b7829710dc7397103f108be173
-2012-02-16T18:08:33.523366Z
-30601
-nbd
+2014-06-17T22:31:59.710136Z
+a85a1de8a27c242c42c9b5167ddf494e
+2014-03-27T07:05:14.512352Z
+40189
+juhosg
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1374
+1373
 
 patches
 dir

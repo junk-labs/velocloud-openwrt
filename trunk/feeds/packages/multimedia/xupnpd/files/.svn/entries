@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/multimedia/xupnpd/files
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-20T15:58:28.119886Z
-38481
-juhosg
+2014-05-03T11:29:26.076376Z
+40674
+hauke
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:15.098324Z
-6d4b40affc9d29edf9c07f9578f94bb3
-2013-10-20T15:58:28.119886Z
-38481
-juhosg
+2014-06-17T22:32:02.226136Z
+6f2e1fd5f0b5bbddecee0c9aee1157c4
+2014-05-03T11:29:26.076376Z
+40674
+hauke
 
 
 
@@ -58,5 +58,5 @@ juhosg
 
 
 
-302
+266
 

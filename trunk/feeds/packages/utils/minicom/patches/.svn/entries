@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/minicom/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:04.042323Z
+2014-06-17T22:32:03.434136Z
 5799095373b0b1fd10108af6e6994004
 2010-12-15T09:52:20.403188Z
 24600

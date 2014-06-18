@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/tinc
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-05T14:46:18.900177Z
-38653
-zioproto
+2014-03-27T07:05:22.970993Z
+40198
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:09.654323Z
-9e7b1af35b5addea9ef13fec3b900443
-2013-11-05T14:46:18.900177Z
-38653
-zioproto
+2014-06-17T22:31:57.766137Z
+0325ab5cf9f9840a9b7aa943493ee158
+2014-03-27T07:05:22.970993Z
+40198
+juhosg
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1527
+1526
 
 files
 dir

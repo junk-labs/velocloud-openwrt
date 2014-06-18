@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/utils/avrusbboot/Makefile
 Package: avrusbboot
-Version: 2006-06-25-3
+Version: 2006-06-25-4
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libusb-compat +USE_UCLIBCXX:uclibcxx +USE_LIBSTDCXX:libstdcpp
 Menu-Depends: 
 Provides: 

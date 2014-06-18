@@ -3,6 +3,108 @@ svn:wc:ra_dav:version-url
 V 69
 /!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk
 END
+extensions_incoming_context_gtalk.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_incoming_context_gtalk.conf.TEMPLATE
+END
+modules.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/8033/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/modules.conf.TEMPLATE
+END
+extensions_user_context_header.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_user_context_header.conf.TEMPLATE
+END
+extensions_disa-check.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_disa-check.conf.TEMPLATE
+END
+extensions_voicemail_disabled.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/7970/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_voicemail_disabled.conf.TEMPLATE
+END
+extensions_disa-nopin.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_disa-nopin.conf.TEMPLATE
+END
+extensions_outgoing_pattern_sip.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_outgoing_pattern_sip.conf.TEMPLATE
+END
+extensions_callback_header.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_callback_header.conf.TEMPLATE
+END
+asterisk.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/8032/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/asterisk.conf.TEMPLATE
+END
+extensions_disa-check_footer.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_disa-check_footer.conf.TEMPLATE
+END
+sip.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sip.conf.TEMPLATE
+END
+extensions_outgoing_gtalk.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_outgoing_gtalk.conf.TEMPLATE
+END
+extensions_callback_gtalk.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_callback_gtalk.conf.TEMPLATE
+END
+extensions_callback-check_header.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_callback-check_header.conf.TEMPLATE
+END
+extensions_disa.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/7970/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_disa.conf.TEMPLATE
+END
+extensions_voicemail_enabled.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_voicemail_enabled.conf.TEMPLATE
+END
+extensions_incoming_context_sip.conf.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_incoming_context_sip.conf.TEMPLATE
+END
 extensions_default.conf.TEMPLATE
 K 25
 svn:wc:ra_dav:version-url
@@ -164,106 +266,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 96
 /!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/jabber_users.conf.TEMPLATE
-END
-extensions_incoming_context_gtalk.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 117
-/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_incoming_context_gtalk.conf.TEMPLATE
-END
-modules.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 91
-/!svn/ver/8033/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/modules.conf.TEMPLATE
-END
-extensions_user_context_header.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 114
-/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_user_context_header.conf.TEMPLATE
-END
-extensions_disa-check.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 105
-/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_disa-check.conf.TEMPLATE
-END
-extensions_voicemail_disabled.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 113
-/!svn/ver/7970/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_voicemail_disabled.conf.TEMPLATE
-END
-extensions_disa-nopin.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 105
-/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_disa-nopin.conf.TEMPLATE
-END
-extensions_outgoing_pattern_sip.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 115
-/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_outgoing_pattern_sip.conf.TEMPLATE
-END
-extensions_callback_header.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 110
-/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_callback_header.conf.TEMPLATE
-END
-asterisk.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/8032/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/asterisk.conf.TEMPLATE
-END
-extensions_disa-check_footer.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 112
-/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_disa-check_footer.conf.TEMPLATE
-END
-sip.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 87
-/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sip.conf.TEMPLATE
-END
-extensions_outgoing_gtalk.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 109
-/!svn/ver/7809/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_outgoing_gtalk.conf.TEMPLATE
-END
-extensions_callback_gtalk.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 109
-/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_callback_gtalk.conf.TEMPLATE
-END
-extensions_callback-check_header.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 116
-/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_callback-check_header.conf.TEMPLATE
-END
-extensions_disa.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 99
-/!svn/ver/7970/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_disa.conf.TEMPLATE
-END
-extensions_voicemail_enabled.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 112
-/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_voicemail_enabled.conf.TEMPLATE
-END
-extensions_incoming_context_sip.conf.TEMPLATE
-K 25
-svn:wc:ra_dav:version-url
-V 115
-/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/extensions_incoming_context_sip.conf.TEMPLATE
 END

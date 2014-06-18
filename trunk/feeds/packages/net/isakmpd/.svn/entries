@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/isakmpd
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-11-11T18:07:06.624899Z
-28960
-nico
+2014-03-27T07:04:13.665400Z
+40126
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:10.006323Z
-7c5d5a2c98151dbae69e74af28bd7053
-2011-11-11T18:07:06.624899Z
-28960
-nico
+2014-06-17T22:31:59.186136Z
+bcb0c4f6364e9d87404f5531a365b963
+2014-03-27T07:04:13.665400Z
+40126
+juhosg
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1259
+1258
 
 patches
 dir

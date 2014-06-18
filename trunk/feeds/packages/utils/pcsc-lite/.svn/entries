@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/pcsc-lite
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:05.194323Z
+2014-06-17T22:32:03.022136Z
 2e7c098c58b60afb95f17851f4a93a5a
 2012-06-12T01:56:24.669316Z
 32249

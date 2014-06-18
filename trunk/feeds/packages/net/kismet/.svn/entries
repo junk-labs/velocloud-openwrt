@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/kismet
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-08-04T17:02:10.123011Z
-32981
-blogic
+2014-03-27T07:02:59.562317Z
+40066
+juhosg
 
 
 
@@ -26,20 +26,17 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:09.082323Z
-7161393e87d4efae32e919598d94d05e
-2012-08-04T17:02:10.123011Z
-32981
-blogic
+2014-06-17T22:31:59.206136Z
+ae9254d29838528aa846b6878ee3292f
+2014-03-27T07:02:59.562317Z
+40066
+juhosg
 has-props
 
 
@@ -61,8 +58,11 @@ has-props
 
 
 
-3057
+3056
 
 files
+dir
+
+patches
 dir
 

@@ -1,15 +1,15 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/themes/bootstrap
 http://svn.luci.subsignal.org
 
 
 
-2013-01-28T22:49:59.564127Z
-9657
-soma
+2013-12-03T15:51:54.413528Z
+9938
+jow
 
 
 
@@ -26,15 +26,6 @@ soma
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-root
-dir
-
-htdocs
-dir
-
-luasrc
-dir
-
 ipkg
 dir
 
@@ -44,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:38.466324Z
+2014-06-17T22:32:18.698136Z
 ec5666919ab9e4d439fdf0e4944342a7
 2012-02-15T18:08:44.716972Z
 8248
@@ -71,4 +62,13 @@ jow
 
 
 59
+
+root
+dir
+
+htdocs
+dir
+
+luasrc
+dir
 

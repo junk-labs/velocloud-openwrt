@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/bitlbee
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-11-13T22:15:34.124835Z
-29053
-nico
+2014-03-27T07:03:40.623222Z
+40092
+juhosg
 
 
 
@@ -26,17 +26,20 @@ nico
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:10.450323Z
-535962de22e6109f195cb0a691fdd789
-2011-11-13T22:15:34.124835Z
-29053
-nico
+2014-06-17T22:31:59.470136Z
+c7eb672932d098587d4d3e557a142fb0
+2014-03-27T07:03:40.623222Z
+40092
+juhosg
 has-props
 
 
@@ -58,11 +61,8 @@ has-props
 
 
 
-2193
+2191
 
 files
-dir
-
-patches
 dir
 

@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/contrib/package/freifunk-mapupdate
 http://svn.luci.subsignal.org
 
@@ -26,13 +26,22 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+files
+dir
+
+root
+dir
+
+ipkg
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:50.686324Z
+2014-06-17T22:32:30.538136Z
 3ff6e39cc0c811ea9cc1620713aec6bc
 2011-10-23T14:20:51.856269Z
 7771
@@ -59,13 +68,4 @@ jow
 
 
 895
-
-files
-dir
-
-root
-dir
-
-ipkg
-dir
 

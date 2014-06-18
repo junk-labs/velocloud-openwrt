@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/mcabber
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-30T22:04:15.970119Z
-38623
-tripolar
+2014-03-27T07:03:50.076089Z
+40102
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:08.754323Z
-828758a2944559cf1641004d7c305c43
-2013-10-30T22:04:15.970119Z
-38623
-tripolar
+2014-06-17T22:31:57.878137Z
+c4e8da9413117cedaea8ff6804c3ee04
+2014-03-27T07:03:50.076089Z
+40102
+juhosg
 
 
 
@@ -58,5 +58,5 @@ tripolar
 
 
 
-1904
+1900
 

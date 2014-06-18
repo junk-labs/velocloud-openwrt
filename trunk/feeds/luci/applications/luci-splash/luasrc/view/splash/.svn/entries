@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-splash/luasrc/view/splash
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:47.110324Z
+2014-06-17T22:32:22.526136Z
 341a367907fa2d41b14df884950973a0
 2011-11-30T05:50:43.345409Z
 8017
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T22:38:47.110324Z
+2014-06-17T22:32:22.526136Z
 077bbdaec88bd08de2a32355107cf3bc
 2013-08-19T11:48:07.225844Z
 9891

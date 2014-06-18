@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/ptunnel
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-05-29T01:19:54.877425Z
-31970
-jow
+2014-03-27T07:04:19.465921Z
+40132
+juhosg
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2013-12-02T22:38:09.982323Z
-ed37a644b4446a487763afad7158bcd4
-2012-05-29T01:19:54.877425Z
-31970
-jow
+2014-06-17T22:31:59.154136Z
+4764f852fab1fcaf4afdec5c67c51717
+2014-03-27T07:04:19.465921Z
+40132
+juhosg
 has-props
 
 
@@ -61,7 +61,7 @@ has-props
 
 
 
-1666
+1663
 
 files
 dir

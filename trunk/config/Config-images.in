@@ -250,7 +250,7 @@ menu "Target Images"
 	config VELOCLOUD_INSTALLER
 		bool "Build Velocloud installer image"
 		depends on GRUB_IMAGES
-		depends on TARGET_x64
+		depends on TARGET_x86 || TARGET_x64
 		depends on TARGET_ROOTFS_EXT4FS
 		default y if (TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500)
 
@@ -258,7 +258,6 @@ menu "Target Images"
 		bool "Build Velocloud manufacturing installer image"
 		depends on GRUB_IMAGES
 		depends on VELOCLOUD_INSTALLER
-		depends on TARGET_x64
 		depends on TARGET_ROOTFS_EXT4FS
 		default y if TARGET_x64_edge500
 
@@ -274,13 +273,13 @@ menu "Target Images"
 
 	config EC2_IMAGES
 		bool "Build Amazon EC2 image files"
-		default y if TARGET_x86_vc_xen_aws
+		default y if TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
 		depends on GRUB_IMAGES
 		depends on TARGET_ROOTFS_EXT4FS
 
 	config TARGET_ROOTFS_EC2_PARTNAME
 		string "Root partition on EC2 target image"
-		depends on TARGET_x86_vc_xen_aws
+		depends on TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
 		depends on GRUB_IMAGES
 		default "/dev/xvda1"
 

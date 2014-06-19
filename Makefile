@@ -174,6 +174,8 @@ define OpenwrtConfig
 		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
 		-e '/CONFIG_X\(64\|86\)_/d' \
 		-e '/CONFIG_GRUB_/d' \
+		-e '/CONFIG_VMDK_/d' \
+		-e '/CONFIG.*_EC2_/d' \
 		-e '/CONFIG_VELOCLOUD_/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \

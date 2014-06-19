@@ -304,7 +304,7 @@ ifneq ($(CONFIG_EC2_IMAGES),)
 		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/menu.lst \
 		  > $(TARGET_DIR)/boot/grub/menu.lst
 
-	$(STAGING_DIR_HOST)/bin/genext2fs -U -B 4096 -b $(E2SIZE) -N $(CONFIG_TARGET_ROOTFS_MAXINODE) -d $(TARGET_DIR)/ $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img -m $(CONFIG_TARGET_ROOTFS_RESERVED_PCT)
+	$(STAGING_DIR_HOST)/bin/genext2fs -U -B $(CONFIG_TARGET_EXT4_BLOCKSIZE) -b $(E2SIZE) -N $(CONFIG_TARGET_EXT4_MAXINODE) -m $(CONFIG_TARGET_EXT4_RESERVED_PCT) -d $(TARGET_DIR)/ $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
 	$(STAGING_DIR_HOST)/bin/tune2fs -O extents,uninit_bg,dir_index $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
 	$(STAGING_DIR_HOST)/bin/e2fsck -fy $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
   endef

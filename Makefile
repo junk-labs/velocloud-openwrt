@@ -223,6 +223,16 @@ clean:
 dirclean:
 	make -C $(OPENWRT_ROOT) $@
 
+# Clobber is OPENWRT_ARCH-independent, and really cleans the tree
+.PHONY: clobber
+clobber:
+	rm -rf $(OPENWRT_ROOT)/bin \
+	       $(OPENWRT_ROOT)/build_dir \
+	       $(OPENWRT_ROOT)/logs \
+	       $(OPENWRT_ROOT)/staging_dir \
+	       $(OPENWRT_ROOT)/tmp \
+	       $(OPENWRT_ROOT)/.config*
+
 # clean everything, including the downloaded pachages and feeds;
 # careful: this also removes any non-saved config files;
 

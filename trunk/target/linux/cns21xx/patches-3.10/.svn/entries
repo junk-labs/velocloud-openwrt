@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/cns21xx/patches-3.10
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,108 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+104-cns21xx-usb-ehci-support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.026341Z
+6b8d034d3b867e620eca691939a1824b
+2013-09-13T16:39:33.192625Z
+37971
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4189
+
+003-arm-introduce-fa-platform.patch
+file
+
+
+
+
+2014-06-03T20:17:38.022341Z
+342eb4acd6b1e2ca1f2ee81c10e519fe
+2013-09-13T16:39:33.192625Z
+37971
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+913
+
+005-arm-add-fa-gpio-driver.patch
+file
+
+
+
+
+2014-06-03T20:17:38.022341Z
+b2ec39b25ad2c157326b68cdcdb3be94
+2013-09-13T16:39:33.192625Z
+37971
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8414
 
 006-arm-add-fa-watchdog-driver.patch
 file
@@ -94,16 +196,16 @@ juhosg
 
 3774
 
-204-cns21xx-add-gec-device.patch
+103-cns21xx-usb-ohci-support.patch
 file
 
 
 
 
 2014-06-03T20:17:38.026341Z
-56dc29adee05c4af6187727fc74bc4b9
-2013-09-13T16:39:33.192625Z
-37971
+0c4b55a8ea978a971c98dac14255c0c7
+2013-10-23T12:51:05.616409Z
+38506
 juhosg
 
 
@@ -126,7 +228,7 @@ juhosg
 
 
 
-4812
+6567
 
 202-cns21xx-add-watchdog-device.patch
 file
@@ -162,16 +264,16 @@ juhosg
 
 1715
 
-103-cns21xx-usb-ohci-support.patch
+204-cns21xx-add-gec-device.patch
 file
 
 
 
 
 2014-06-03T20:17:38.026341Z
-0c4b55a8ea978a971c98dac14255c0c7
-2013-10-23T12:51:05.616409Z
-38506
+56dc29adee05c4af6187727fc74bc4b9
+2013-09-13T16:39:33.192625Z
+37971
 juhosg
 
 
@@ -194,7 +296,7 @@ juhosg
 
 
 
-6567
+4812
 
 302-cns21xx-mach-nsb3ast.patch
 file
@@ -332,40 +434,6 @@ juhosg
 
 2555
 
-106-cns21xx-gec-driver.patch
-file
-
-
-
-
-2014-06-03T20:17:38.026341Z
-96e23a0947872c8c6b48b707a4153523
-2013-09-13T16:39:33.192625Z
-37971
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-64310
-
 002-arm-debugll-printk.patch
 file
 
@@ -400,14 +468,14 @@ juhosg
 
 695
 
-102-cns21xx-gpiolib-support.patch
+106-cns21xx-gec-driver.patch
 file
 
 
 
 
 2014-06-03T20:17:38.026341Z
-157e6b986231d9ab958ba651b601839c
+96e23a0947872c8c6b48b707a4153523
 2013-09-13T16:39:33.192625Z
 37971
 juhosg
@@ -432,7 +500,7 @@ juhosg
 
 
 
-1968
+64310
 
 201-cns21xx-add-usb-devices.patch
 file
@@ -467,6 +535,40 @@ juhosg
 
 
 2600
+
+102-cns21xx-gpiolib-support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.026341Z
+157e6b986231d9ab958ba651b601839c
+2013-09-13T16:39:33.192625Z
+37971
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1968
 
 301-cns21xx-mach-ns-k330.patch
 file
@@ -535,106 +637,4 @@ juhosg
 
 
 2921
-
-104-cns21xx-usb-ehci-support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.026341Z
-6b8d034d3b867e620eca691939a1824b
-2013-09-13T16:39:33.192625Z
-37971
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4189
-
-003-arm-introduce-fa-platform.patch
-file
-
-
-
-
-2014-06-03T20:17:38.022341Z
-342eb4acd6b1e2ca1f2ee81c10e519fe
-2013-09-13T16:39:33.192625Z
-37971
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-913
-
-005-arm-add-fa-gpio-driver.patch
-file
-
-
-
-
-2014-06-03T20:17:38.022341Z
-b2ec39b25ad2c157326b68cdcdb3be94
-2013-09-13T16:39:33.192625Z
-37971
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-8414
 

@@ -12,7 +12,7 @@ BOARDNAME:=x86
 FEATURES:=squashfs ext4 vdi vmdk pcmcia targz
 SUBTARGETS=generic sb-itc pw-dev vc-vmdk vc-xen-aws
 
-LINUX_VERSION:=3.12.21
+LINUX_VERSION:=3.12.22
 
 KERNELNAME:=bzImage
 

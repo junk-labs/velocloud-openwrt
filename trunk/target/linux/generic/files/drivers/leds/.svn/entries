@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/files/drivers/leds
 svn://svn.openwrt.org/openwrt
 
@@ -25,40 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-ledtrig-usbdev.c
-file
-
-
-
-
-2014-06-03T20:17:38.094341Z
-df511742a4c7f612e1cd048f426936ed
-2010-12-17T17:10:11.569948Z
-24646
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-8086
 
 ledtrig-morse.c
 file
@@ -127,4 +93,38 @@ blogic
 
 
 12279
+
+ledtrig-usbdev.c
+file
+
+
+
+
+2014-06-03T20:17:38.094341Z
+df511742a4c7f612e1cd048f426936ed
+2010-12-17T17:10:11.569948Z
+24646
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8086
 

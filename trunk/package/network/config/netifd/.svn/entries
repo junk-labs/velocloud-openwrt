@@ -1,15 +1,15 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/package/network/config/netifd
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T12:44:51.135426Z
-40937
-blogic
+2014-06-20T17:51:25.032064Z
+41287
+cyrus
 
 
 
@@ -26,16 +26,22 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+files
+dir
+
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2014-06-03T20:21:33.938336Z
-b166af67da330a7f379e3e492bc9145d
-2014-05-22T20:04:43.317239Z
-40821
+2014-06-20T21:11:27.964245Z
+0658fc39976089bb93b29d3828d9a6ab
+2014-06-20T17:51:25.032064Z
+41287
 cyrus
 
 
@@ -59,10 +65,4 @@ cyrus
 
 
 1146
-
-files
-dir
-
-patches
-dir
 

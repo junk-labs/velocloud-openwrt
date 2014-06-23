@@ -1,15 +1,15 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/mvebu/patches-3.10
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-23T10:59:40.436329Z
-39707
-juhosg
+2014-06-17T15:14:02.170951Z
+41234
+kaloz
 
 
 
@@ -25,142 +25,6 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-0190-of-irq-Fix-bug-in-interrupt-parsing-refactor.patch
-file
-
-
-
-
-2014-06-03T20:52:31.478293Z
-7aafa530191bf1c2cc0cab2e2ee197ab
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2058
-
-0129-mtd-nand-pxa3xx-Move-DMA-I-O-enabling.patch
-file
-
-
-
-
-2014-06-03T20:52:31.494293Z
-d72e90716f5e439bd580ef9372118305
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1276
-
-0097-ARM-mvebu-Add-a-2-GHz-fixed-clock-Armada-370-XP.patch
-file
-
-
-
-
-2014-06-03T20:52:31.494293Z
-84ef21dcef1c5175523ee58decbbe94f
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-980
-
-0122-mtd-nand-pxa3xx-Move-cached-registers-to-info-struct.patch
-file
-
-
-
-
-2014-06-03T20:52:31.478293Z
-c3f5449e5ca09dfb7b8e93076537f45b
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3824
 
 0103-mtd-nand-pxa3xx-Use-devm_clk_get.patch
 file
@@ -196,16 +60,16 @@ luka
 
 2641
 
-0027-arm-mvebu-remove-hardcoded-static-I-O-mapping.patch
+0189-of-irq-create-interrupts-extended-property.patch
 file
 
 
 
 
 2014-06-03T20:52:31.494293Z
-2e63482061fc0c825dfae71e1832952b
-2014-02-11T02:07:38.638694Z
-39564
+62f0a2edb52b263398621a02aef3c134
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -228,18 +92,18 @@ luka
 
 
 
-1891
+5362
 
-0017-pci-mvebu-fix-the-emulation-of-the-status-register.patch
+0166-clocksource-armada-370-xp-Use-BIT.patch
 file
 
 
 
 
-2014-06-03T20:52:31.478293Z
-8f1aeef5c6b3961d5273ac479cfd6e3e
-2014-02-11T02:07:38.638694Z
-39564
+2014-06-03T20:52:31.502293Z
+4aceb74eb500e3d6da4d9d03e4076e1d
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -262,7 +126,7 @@ luka
 
 
 
-2993
+1416
 
 0036-PCI-mvebu-Disable-prefetchable-memory-support-in-PCI.patch
 file
@@ -332,16 +196,16 @@ luka
 
 3713
 
-0047-PCI-mvebu-Adapt-to-the-new-device-tree-layout.patch
+0165-ARM-mvebu-make-armada_370_xp_pmsu_init-static.patch
 file
 
 
 
 
-2014-06-03T20:52:31.494293Z
-f60df912ff72f20b53555fb653675338
-2014-02-11T02:07:38.638694Z
-39564
+2014-06-03T20:52:31.502293Z
+24cc80e706c24bf8de6607e309fae033
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -364,7 +228,7 @@ luka
 
 
 
-5882
+1205
 
 0115-mtd-nand-pxa3xx-Handle-ECC-and-DMA-enable-disable-pr.patch
 file
@@ -399,6 +263,74 @@ luka
 
 
 1188
+
+0134-mtd-nand-pxa3xx-read_page-returns-max_bitflips.patch
+file
+
+
+
+
+2014-06-03T20:52:31.498293Z
+9449ab5eaab5aa87288b155795e297ca
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1416
+
+0157-mtd-nand-pxa3xx-Consolidate-ECC-initialization.patch
+file
+
+
+
+
+2014-06-03T20:52:31.498293Z
+0e1d3855590d7a528965c275054f2302
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3205
 
 0093-mtd-get-the-ECC-info-from-the-parameter-page-for-ONF.patch
 file
@@ -502,16 +434,16 @@ luka
 
 2250
 
-0072-PCI-Introduce-new-MSI-chip-infrastructure.patch
+0178-of-clean-up-ifdefs-in-of_irq.h.patch
 file
 
 
 
 
 2014-06-03T20:52:31.498293Z
-baf0bc7c63db34a5be1337a9641d40f1
-2014-02-11T02:07:41.855125Z
-39565
+895f704a6c45c142f70c1bdf99cec30a
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -534,7 +466,7 @@ luka
 
 
 
-3350
+2740
 
 0153-mtd-nand-pxa3xx-Add-ECC-BCH-correctable-errors-detec.patch
 file
@@ -570,16 +502,16 @@ luka
 
 4457
 
-0168-clocksource-armada-370-xp-Introduce-new-compatibles.patch
+0119-mtd-nand-pxa3xx-Add-a-local-loop-variable.patch
 file
 
 
 
 
-2014-06-03T20:52:31.498293Z
-0bbc580f983d226c475486ea75066276
-2014-02-11T02:07:44.817153Z
-39566
+2014-06-03T20:52:31.502293Z
+1c42ec836b2bc7c5188bebfb4153aaad
+2014-02-11T02:07:41.855125Z
+39565
 luka
 
 
@@ -602,7 +534,7 @@ luka
 
 
 
-3294
+1398
 
 0028-arm-mvebu-don-t-hardcode-a-physical-address-in-heads.patch
 file
@@ -638,40 +570,6 @@ luka
 
 2743
 
-0104-mtd-nand-pxa3xx-Use-clk_prepare_enable-and-clk_disab.patch
-file
-
-
-
-
-2014-06-03T20:52:31.482293Z
-6516c116e0a9433f9b65c6c959db772c
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1460
-
 0100-ARM-mvebu-Enable-NAND-controller-in-Armada-XP-GP-boa.patch
 file
 
@@ -705,6 +603,40 @@ luka
 
 
 1100
+
+0104-mtd-nand-pxa3xx-Use-clk_prepare_enable-and-clk_disab.patch
+file
+
+
+
+
+2014-06-03T20:52:31.482293Z
+6516c116e0a9433f9b65c6c959db772c
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1460
 
 0020-net-mvneta-read-MAC-address-from-hardware-when-avail.patch
 file
@@ -774,6 +706,40 @@ luka
 
 1094
 
+0049-bus-mvebu-mbus-Remove-the-no-longer-used-name-based-.patch
+file
+
+
+
+
+2014-06-03T20:52:31.482293Z
+363688576445797ef13642ea1fbd6cad
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2768
+
 0098-ARM-mvebu-Add-the-core-divider-clock-to-Armada-370-X.patch
 file
 
@@ -808,14 +774,14 @@ luka
 
 1102
 
-0049-bus-mvebu-mbus-Remove-the-no-longer-used-name-based-.patch
+0009-pci-PCIe-driver-for-Marvell-Armada-370-XP-systems.patch
 file
 
 
 
 
-2014-06-03T20:52:31.482293Z
-363688576445797ef13642ea1fbd6cad
+2014-06-03T20:52:31.506293Z
+737936422b0a379c3f73120114500393
 2014-02-11T02:07:38.638694Z
 39564
 luka
@@ -840,7 +806,41 @@ luka
 
 
 
-2768
+32716
+
+0057-ARM-mvebu-Add-BootROM-to-Armada-370-XP-device-tree.patch
+file
+
+
+
+
+2014-06-03T20:52:31.498293Z
+c9874610b16686ea057336a1ec052ea4
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3818
 
 0141-mtd-nand-pxa3xx-Use-waitfunc-to-wait-for-the-device-.patch
 file
@@ -876,16 +876,16 @@ luka
 
 1126
 
-0006-of-pci-Add-of_pci_parse_bus_range-function.patch
+0140-mtd-nand-pxa3xx-Use-a-completion-to-signal-device-re.patch
 file
 
 
 
 
 2014-06-03T20:52:31.482293Z
-7287b5dbf7b8364f1b79a272071677a9
-2014-02-11T02:07:38.638694Z
-39564
+6e7ee8fd8fecef9fc3ec798789203a56
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -908,7 +908,7 @@ luka
 
 
 
-1736
+4184
 
 0029-arm-mvebu-don-t-hardcode-the-physical-address-for-mv.patch
 file
@@ -944,16 +944,16 @@ luka
 
 3760
 
-0140-mtd-nand-pxa3xx-Use-a-completion-to-signal-device-re.patch
+0083-clocksource-armada-370-xp-Use-CLOCKSOURCE_OF_DECLARE.patch
 file
 
 
 
 
 2014-06-03T20:52:31.482293Z
-6e7ee8fd8fecef9fc3ec798789203a56
-2014-02-11T02:07:44.817153Z
-39566
+d2ab0ae15415e4a8b4f3dbb702bfcaf7
+2014-02-11T02:07:41.855125Z
+39565
 luka
 
 
@@ -976,41 +976,7 @@ luka
 
 
 
-4184
-
-0033-arm-mvebu-fix-coherency_late_init-for-multiplatform.patch
-file
-
-
-
-
-2014-06-03T20:52:31.498293Z
-244df4434e7188d1648bb1ce7ea5cf21
-2014-02-11T02:07:38.638694Z
-39564
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1699
+2672
 
 0094-mtd-get-the-ECC-info-from-the-Extended-Parameter-Pag.patch
 file
@@ -1046,16 +1012,16 @@ luka
 
 4053
 
-0083-clocksource-armada-370-xp-Use-CLOCKSOURCE_OF_DECLARE.patch
+0199-PCI-mvebu-Convert-to-use-devm_ioremap_resource.patch
 file
 
 
 
 
-2014-06-03T20:52:31.482293Z
-d2ab0ae15415e4a8b4f3dbb702bfcaf7
-2014-02-11T02:07:41.855125Z
-39565
+2014-06-03T20:52:31.498293Z
+3e58d128b5f60644b35376f192e0cb20
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -1078,7 +1044,7 @@ luka
 
 
 
-2672
+1456
 
 0073-of-pci-add-registry-of-MSI-chips.patch
 file
@@ -1216,16 +1182,16 @@ luka
 
 1043
 
-0142-mtd-nand-pxa3xx-Add-bad-block-handling.patch
+0113-mtd-nand-use-dev_get_platdata.patch
 file
 
 
 
 
-2014-06-03T20:52:31.486293Z
-a77cf221f38884e8e708490948d71b27
-2014-02-11T02:07:44.817153Z
-39566
+2014-06-03T20:52:31.478293Z
+941e15c888d2d9ef644b3595ce212191
+2014-02-11T02:07:41.855125Z
+39565
 luka
 
 
@@ -1248,41 +1214,7 @@ luka
 
 
 
-3661
-
-0195-usb-Add-Device-Tree-support-to-XHCI-Platform-driver.patch
-file
-
-
-
-
-2014-06-03T20:52:31.498293Z
-1941d671d2813f050e047048826d7c5e
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1977
+2902
 
 0163-ARM-mvebu-move-ARMADA_XP_MAX_CPUS-to-armada-370-xp.h.patch
 file
@@ -1318,82 +1250,14 @@ luka
 
 1259
 
-0198-of-Add-testcases-for-interrupt-parsing.patch
+0056-ARM-mvebu-Add-MBus-to-Armada-370-XP-device-tree.patch
 file
 
 
 
 
-2014-06-03T20:52:31.486293Z
-d8339479e83f287cfde76dc177aa4802
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2822
-
-0192-of-irq-Fix-interrupt-map-entry-matching.patch
-file
-
-
-
-
-2014-06-03T20:52:31.498293Z
-2cf2822b7bf955700ad448068a1afc23
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-947
-
-0125-mtd-nand-pxa3xx-Allow-devices-with-no-dma-resources.patch
-file
-
-
-
-
-2014-06-03T20:52:31.498293Z
-f7fc01d5b4f5f51b3a9a0e80b1dde3d6
+2014-06-03T20:52:31.494293Z
+1e9772b8ec0d7325230a810756fbb854
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -1418,41 +1282,7 @@ luka
 
 
 
-2576
-
-0151-mtd-nand-pxa3xx-Introduce-multiple-page-I-O-support.patch
-file
-
-
-
-
-2014-06-03T20:52:31.502293Z
-ed58a70b602827477e150b9185773d1e
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10545
+5291
 
 0001-ARM-mvebu-Add-support-for-USB-storage-class-in-mvebu.patch
 file
@@ -1488,6 +1318,40 @@ luka
 
 942
 
+0193-clocksource-armada-370-xp-Fix-device-tree-binding.patch
+file
+
+
+
+
+2014-06-03T20:52:31.478293Z
+f50212f5f6038d6ee934d5159148179a
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2666
+
 0106-mtd-nand-pxa3xx-Move-buffer-release-code-to-its-own-.patch
 file
 
@@ -1522,16 +1386,16 @@ luka
 
 2115
 
-0133-mtd-nand-pxa3xx-Prevent-sub-page-writes.patch
+0065-bus-mvebu-mbus-Add-devicetree-binding.patch
 file
 
 
 
 
-2014-06-03T20:52:31.502293Z
-3c7fc267eb05e7011bef23f16036a3c4
-2014-02-11T02:07:44.817153Z
-39566
+2014-06-03T20:52:31.478293Z
+127f46897958f4d2024d6b2f05ef1d55
+2014-02-11T02:07:41.855125Z
+39565
 luka
 
 
@@ -1554,7 +1418,7 @@ luka
 
 
 
-929
+9367
 
 0167-clocksource-armada-370-xp-Simplify-TIMER_CTRL-regist.patch
 file
@@ -1658,6 +1522,74 @@ luka
 
 1241
 
+0143-mtd-nand-pxa3xx-Add-driver-specific-ECC-BCH-support.patch
+file
+
+
+
+
+2014-06-03T20:52:31.494293Z
+dfee5544ac53cb4cf9ebe3ec41745ae3
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4764
+
+0051-bus-mvebu-mbus-Update-main-description.patch
+file
+
+
+
+
+2014-06-03T20:52:31.502293Z
+e037a4a099cb6e687cd9ac1aacb94a8d
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1599
+
 0034-ARM-mvebu-fix-length-of-ethernet-registers-in-mv7826.patch
 file
 
@@ -1760,6 +1692,40 @@ luka
 
 2309
 
+0062-ARM-kirkwood-Introduce-MBus-DT-node.patch
+file
+
+
+
+
+2014-06-03T20:52:31.494293Z
+eb21f174273de5ce01dd03f64d10a1b3
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1249
+
 0060-ARM-kirkwood-Split-DT-and-legacy-MBus-initialization.patch
 file
 
@@ -1794,14 +1760,14 @@ luka
 
 1715
 
-0121-mtd-nand-pxa3xx-Remove-unneeded-internal-cmdset.patch
+0097-ARM-mvebu-Add-a-2-GHz-fixed-clock-Armada-370-XP.patch
 file
 
 
 
 
-2014-06-03T20:52:31.502293Z
-0355bf63f533e219206b82cb6de6728b
+2014-06-03T20:52:31.494293Z
+84ef21dcef1c5175523ee58decbbe94f
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -1826,75 +1792,7 @@ luka
 
 
 
-5417
-
-0146-mtd-nand-pxa3xx-Remove-READ0-switch-case-falltrough.patch
-file
-
-
-
-
-2014-06-03T20:52:31.502293Z
-f4e9e646e41148130292bef92ad27234
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1216
-
-0182-of-irq-Pass-trigger-type-in-IRQ-resource-flags.patch
-file
-
-
-
-
-2014-06-03T20:52:31.486293Z
-4fe4cb69998000a50a26c7f2cc372c5c
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1358
+980
 
 0164-ARM-mvebu-fix-register-length-for-Armada-XP-PMSU.patch
 file
@@ -1930,40 +1828,6 @@ luka
 
 1294
 
-0188-of-irq-Rework-of_irq_count.patch
-file
-
-
-
-
-2014-06-03T20:52:31.486293Z
-c8f753c1e9eacbd23b041f7bc41cc56c
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1272
-
 0108-mtd-nand-pxa3xx-Use-of_machine_is_compatible.patch
 file
 
@@ -1997,40 +1861,6 @@ luka
 
 
 1239
-
-0166-clocksource-armada-370-xp-Use-BIT.patch
-file
-
-
-
-
-2014-06-03T20:52:31.502293Z
-4aceb74eb500e3d6da4d9d03e4076e1d
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1416
 
 0004-of-pci-Provide-support-for-parsing-PCI-DT-ranges-pro.patch
 file
@@ -2100,40 +1930,6 @@ luka
 
 1293
 
-0165-ARM-mvebu-make-armada_370_xp_pmsu_init-static.patch
-file
-
-
-
-
-2014-06-03T20:52:31.502293Z
-24cc80e706c24bf8de6607e309fae033
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1205
-
 0052-bus-mvebu-mbus-Factorize-Armada-370-XP-data-structur.patch
 file
 
@@ -2167,40 +1963,6 @@ luka
 
 
 1887
-
-0171-clocksource-armada-370-xp-Register-sched_clock-after.patch
-file
-
-
-
-
-2014-06-03T20:52:31.490293Z
-a041383e51820c4c64417697c1a0c558
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2590
 
 0053-ARM-mvebu-Remove-the-harcoded-BootROM-window-allocat.patch
 file
@@ -2236,16 +1998,16 @@ luka
 
 2084
 
-0067-ARM-mvebu-set-aliases-for-ethernet-controllers.patch
+0171-clocksource-armada-370-xp-Register-sched_clock-after.patch
 file
 
 
 
 
-2014-06-03T20:52:31.486293Z
-f9c9534e3dfb8c1753ba1bc03b490e44
-2014-02-11T02:07:41.855125Z
-39565
+2014-06-03T20:52:31.490293Z
+a041383e51820c4c64417697c1a0c558
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -2268,18 +2030,18 @@ luka
 
 
 
-2278
+2590
 
-0127-mtd-nand-pxa3xx-Fix-registered-MTD-name.patch
+0186-of-irq-Refactor-interrupt-map-parsing.patch
 file
 
 
 
 
-2014-06-03T20:52:31.502293Z
-0ba6ad9f95ff125240db78aeccadfa3d
-2014-02-11T02:07:41.855125Z
-39565
+2014-06-03T20:52:31.478293Z
+77380765c8834cfa9b3b7b41bd2e1c8a
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -2302,7 +2064,7 @@ luka
 
 
 
-1775
+10754
 
 0179-of-irq-init-struct-resource-to-0-in-of_irq_to_resour.patch
 file
@@ -2338,40 +2100,6 @@ luka
 
 932
 
-0054-ARM-mvebu-Initialize-MBus-using-the-DT-binding.patch
-file
-
-
-
-
-2014-06-03T20:52:31.490293Z
-5127a7fda1844b2a32fb14d0800447a7
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2227
-
 0131-mtd-nand-remove-deprecated-IRQF_DISABLED.patch
 file
 
@@ -2406,6 +2134,40 @@ luka
 
 1048
 
+0128-mtd-nand-pxa3xx_nand-Remove-redundant-of_match_ptr.patch
+file
+
+
+
+
+2014-06-03T20:52:31.502293Z
+21188222b73fb0fb8423314c3598bbdb
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+936
+
 0172-ARM-mvebu-Fix-the-Armada-370-XP-timer-compatible-str.patch
 file
 
@@ -2439,6 +2201,40 @@ luka
 
 
 1899
+
+0082-net-mvneta-add-support-for-fixed-links.patch
+file
+
+
+
+
+2014-06-03T20:52:31.502293Z
+48316b1fff3a2ebc65d890f005329135
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3174
 
 0032-arm-mvebu-enable-mini-PCIe-connectors-on-Armada-370-.patch
 file
@@ -2508,16 +2304,16 @@ luka
 
 7912
 
-0119-mtd-nand-pxa3xx-Add-a-local-loop-variable.patch
+0168-clocksource-armada-370-xp-Introduce-new-compatibles.patch
 file
 
 
 
 
-2014-06-03T20:52:31.502293Z
-1c42ec836b2bc7c5188bebfb4153aaad
-2014-02-11T02:07:41.855125Z
-39565
+2014-06-03T20:52:31.498293Z
+0bbc580f983d226c475486ea75066276
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -2540,7 +2336,41 @@ luka
 
 
 
-1398
+3294
+
+0022-bus-mvebu-mbus-Use-pr_fmt.patch
+file
+
+
+
+
+2014-06-03T20:52:31.482293Z
+760f79c0a712c478774f3d082f9618f3
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1728
 
 0035-i2c-mv64xxx-Set-bus-frequency-to-100kHz-if-clock-fre.patch
 file
@@ -2576,14 +2406,14 @@ luka
 
 1910
 
-0162-mtd-nand-pxa3xx-Clear-need_wait-flag-when-starting-a.patch
+0150-mtd-nand-pxa3xx-Add-a-read-write-buffers-markers.patch
 file
 
 
 
 
 2014-06-03T20:52:31.490293Z
-9a3a0d79a9acf56c1b43d4bb721d45bd
+e262eef8104d9de067ac28e1ecacb0e2
 2014-02-11T02:07:44.817153Z
 39566
 luka
@@ -2608,7 +2438,7 @@ luka
 
 
 
-1843
+3702
 
 0010-arm-mvebu-PCIe-support-is-now-available-on-mvebu.patch
 file
@@ -2644,14 +2474,14 @@ luka
 
 845
 
-0150-mtd-nand-pxa3xx-Add-a-read-write-buffers-markers.patch
+0162-mtd-nand-pxa3xx-Clear-need_wait-flag-when-starting-a.patch
 file
 
 
 
 
 2014-06-03T20:52:31.490293Z
-e262eef8104d9de067ac28e1ecacb0e2
+9a3a0d79a9acf56c1b43d4bb721d45bd
 2014-02-11T02:07:44.817153Z
 39566
 luka
@@ -2676,109 +2506,7 @@ luka
 
 
 
-3702
-
-0038-bus-mvebu-mbus-Add-new-API-for-window-creation.patch
-file
-
-
-
-
-2014-06-03T20:52:31.490293Z
-6e2502e0a7c30b5a3a0cd2c70bde8271
-2014-02-11T02:07:38.638694Z
-39564
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3311
-
-0009-pci-PCIe-driver-for-Marvell-Armada-370-XP-systems.patch
-file
-
-
-
-
-2014-06-03T20:52:31.506293Z
-737936422b0a379c3f73120114500393
-2014-02-11T02:07:38.638694Z
-39564
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-32716
-
-0161-net-mvneta-Fix-incorrect-DMA-unmapping-size.patch
-file
-
-
-
-
-2014-06-03T20:52:31.506293Z
-72afecb0b95acdb3a9d4281c0d8b8f91
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3628
+1843
 
 0045-bus-mvebu-mbus-Add-static-window-allocation-to-the-D.patch
 file
@@ -2882,6 +2610,74 @@ luka
 
 1166
 
+0088-ARM-mvebu-re-enable-PCIe-on-Armada-370-DB.patch
+file
+
+
+
+
+2014-06-03T20:52:31.482293Z
+a503bc48a46afd530c5ce5769c2b3ff9
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1803
+
+0176-of-irq-create-interrupts-extended-property.patch
+file
+
+
+
+
+2014-06-03T20:52:31.478293Z
+7e365d217c9f5ea881290b22868dfbe5
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4490
+
 0024-arm-mvebu-remove-dependency-of-SMP-init-on-static-I-.patch
 file
 
@@ -2915,6 +2711,40 @@ luka
 
 
 3210
+
+0107-mtd-nand-pxa3xx-Set-info-use_dma-properly.patch
+file
+
+
+
+
+2014-06-03T20:52:31.482293Z
+04f82562940d49dc4d0bb080105387a0
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1772
 
 0194-clocksource-armada-370-xp-Add-detailed-clock-require.patch
 file
@@ -2950,6 +2780,40 @@ luka
 
 2008
 
+0033-arm-mvebu-fix-coherency_late_init-for-multiplatform.patch
+file
+
+
+
+
+2014-06-03T20:52:31.498293Z
+244df4434e7188d1648bb1ce7ea5cf21
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1699
+
 0132-mtd-nand-pxa3xx-Add-documentation-about-the-controll.patch
 file
 
@@ -2983,74 +2847,6 @@ luka
 
 
 1046
-
-0015-pci-mvebu-no-longer-fake-the-slot-location-of-downst.patch
-file
-
-
-
-
-2014-06-03T20:52:31.490293Z
-f031ac71a2226fa293fd220ea7f8f324
-2014-02-11T02:07:38.638694Z
-39564
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3591
-
-0077-ARM-mvebu-the-MPIC-now-provides-MSI-controller-featu.patch
-file
-
-
-
-
-2014-06-03T20:52:31.490293Z
-8bc8beb602bf150df93a80bc65d99c6a
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-960
 
 0118-mtd-nand-pxa3xx-Use-length-override-in-ONFI-paramate.patch
 file
@@ -3086,16 +2882,16 @@ luka
 
 1678
 
-0184-of-irq-Replace-of_irq-with-of_phandle_args.patch
+0077-ARM-mvebu-the-MPIC-now-provides-MSI-controller-featu.patch
 file
 
 
 
 
-2014-06-03T20:52:31.494293Z
-5ceccf55e3af95d41831711f2f19d7e9
-2014-02-11T02:07:44.817153Z
-39566
+2014-06-03T20:52:31.490293Z
+8bc8beb602bf150df93a80bc65d99c6a
+2014-02-11T02:07:41.855125Z
+39565
 luka
 
 
@@ -3118,16 +2914,16 @@ luka
 
 
 
-16934
+960
 
-0011-arm-mvebu-update-defconfig-with-PCI-and-USB-support.patch
+0015-pci-mvebu-no-longer-fake-the-slot-location-of-downst.patch
 file
 
 
 
 
-2014-06-03T20:52:31.478293Z
-b2f91988b392fadc6033002dc7e7d058
+2014-06-03T20:52:31.490293Z
+f031ac71a2226fa293fd220ea7f8f324
 2014-02-11T02:07:38.638694Z
 39564
 luka
@@ -3152,7 +2948,7 @@ luka
 
 
 
-1160
+3591
 
 0183-of-irq-Rename-of_irq_map_-functions-to-of_irq_parse_.patch
 file
@@ -3188,16 +2984,16 @@ juhosg
 
 22493
 
-0113-mtd-nand-use-dev_get_platdata.patch
+0195-usb-Add-Device-Tree-support-to-XHCI-Platform-driver.patch
 file
 
 
 
 
-2014-06-03T20:52:31.478293Z
-941e15c888d2d9ef644b3595ce212191
-2014-02-11T02:07:41.855125Z
-39565
+2014-06-03T20:52:31.498293Z
+1941d671d2813f050e047048826d7c5e
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -3220,7 +3016,7 @@ luka
 
 
 
-2902
+1977
 
 0169-clocksource-armada-370-xp-Replace-WARN_ON-with-BUG_O.patch
 file
@@ -3256,6 +3052,176 @@ luka
 
 1080
 
+0192-of-irq-Fix-interrupt-map-entry-matching.patch
+file
+
+
+
+
+2014-06-03T20:52:31.498293Z
+2cf2822b7bf955700ad448068a1afc23
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+947
+
+0125-mtd-nand-pxa3xx-Allow-devices-with-no-dma-resources.patch
+file
+
+
+
+
+2014-06-03T20:52:31.498293Z
+f7fc01d5b4f5f51b3a9a0e80b1dde3d6
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2576
+
+0063-ARM-kirkwood-Introduce-MBUS_ID.patch
+file
+
+
+
+
+2014-06-03T20:52:31.478293Z
+b7b6b2e2a9950b15f04bb62b6d67b50c
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+849
+
+0151-mtd-nand-pxa3xx-Introduce-multiple-page-I-O-support.patch
+file
+
+
+
+
+2014-06-03T20:52:31.502293Z
+ed58a70b602827477e150b9185773d1e
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10545
+
+0200-PCI-mvebu-move-clock-enable-before-register-access.patch
+file
+
+
+
+
+2014-06-03T20:52:31.478293Z
+d378d0c4aae830b75a38c42b1b618487
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1879
+
 0018-arm-mvebu-fix-length-of-SATA-registers-area-in-.dtsi.patch
 file
 
@@ -3290,14 +3256,14 @@ luka
 
 1164
 
-0193-clocksource-armada-370-xp-Fix-device-tree-binding.patch
+0133-mtd-nand-pxa3xx-Prevent-sub-page-writes.patch
 file
 
 
 
 
-2014-06-03T20:52:31.478293Z
-f50212f5f6038d6ee934d5159148179a
+2014-06-03T20:52:31.502293Z
+3c7fc267eb05e7011bef23f16036a3c4
 2014-02-11T02:07:44.817153Z
 39566
 luka
@@ -3322,41 +3288,7 @@ luka
 
 
 
-2666
-
-0065-bus-mvebu-mbus-Add-devicetree-binding.patch
-file
-
-
-
-
-2014-06-03T20:52:31.478293Z
-127f46897958f4d2024d6b2f05ef1d55
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-9367
+929
 
 0191-of-irq-Fix-potential-buffer-overflow.patch
 file
@@ -3392,40 +3324,6 @@ luka
 
 2083
 
-0084-arm-clocksource-mvebu-Use-the-main-timer-as-clock-so.patch
-file
-
-
-
-
-2014-06-03T20:52:31.494293Z
-38cc37bb7af15942500946602a5d6f54
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1073
-
 0201-PCI-mvebu-increment-nports-only-for-registered-ports.patch
 file
 
@@ -3460,14 +3358,14 @@ luka
 
 1466
 
-0076-ARM-pci-add-add_bus-and-remove_bus-hooks-to-hw_pci.patch
+0084-arm-clocksource-mvebu-Use-the-main-timer-as-clock-so.patch
 file
 
 
 
 
 2014-06-03T20:52:31.494293Z
-d382e32c39d74134262603aedec755a6
+38cc37bb7af15942500946602a5d6f54
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -3492,16 +3390,16 @@ luka
 
 
 
-2776
+1073
 
-0081-net-phy-call-mdiobus_scan-after-adding-a-fixed-PHY.patch
+0121-mtd-nand-pxa3xx-Remove-unneeded-internal-cmdset.patch
 file
 
 
 
 
-2014-06-03T20:52:31.494293Z
-054e7cd0f00336e523b066a53afb2107
+2014-06-03T20:52:31.502293Z
+0355bf63f533e219206b82cb6de6728b
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -3526,7 +3424,41 @@ luka
 
 
 
-1502
+5417
+
+0146-mtd-nand-pxa3xx-Remove-READ0-switch-case-falltrough.patch
+file
+
+
+
+
+2014-06-03T20:52:31.502293Z
+f4e9e646e41148130292bef92ad27234
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1216
 
 0008-clk-mvebu-add-more-PCIe-clocks-for-Armada-XP.patch
 file
@@ -3562,14 +3494,14 @@ luka
 
 1762
 
-0095-mtd-nand-fix-memory-leak-in-ONFI-extended-parameter-.patch
+0058-ARM-mvebu-Relocate-Armada-370-XP-DeviceBus-device-tr.patch
 file
 
 
 
 
 2014-06-03T20:52:31.494293Z
-d8ac2a80eb00d18b35068ab9fe697d9e
+f979fa23ae8ce23e379b9fea5817649a
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -3594,7 +3526,7 @@ luka
 
 
 
-1516
+9136
 
 0092-mtd-add-a-helper-to-get-the-supported-features-for-O.patch
 file
@@ -3630,14 +3562,14 @@ luka
 
 1437
 
-0058-ARM-mvebu-Relocate-Armada-370-XP-DeviceBus-device-tr.patch
+0095-mtd-nand-fix-memory-leak-in-ONFI-extended-parameter-.patch
 file
 
 
 
 
 2014-06-03T20:52:31.494293Z
-f979fa23ae8ce23e379b9fea5817649a
+d8ac2a80eb00d18b35068ab9fe697d9e
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -3662,109 +3594,7 @@ luka
 
 
 
-9136
-
-0189-of-irq-create-interrupts-extended-property.patch
-file
-
-
-
-
-2014-06-03T20:52:31.494293Z
-62f0a2edb52b263398621a02aef3c134
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5362
-
-0002-ARM-mvebu-Use-standard-MMC-binding-for-all-users-of-.patch
-file
-
-
-
-
-2014-06-03T20:52:31.494293Z
-43bd347e2f4a60e14820e9bfd6e8b5e8
-2014-02-11T02:07:38.638694Z
-39564
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3616
-
-0055-ARM-mvebu-Use-the-preprocessor-on-Armada-370-XP-devi.patch
-file
-
-
-
-
-2014-06-03T20:52:31.494293Z
-0a86ae14737f39347ed5927907ca0066
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3524
+1516
 
 0170-clocksource-armada-370-xp-Get-reference-fixed-clock-.patch
 file
@@ -3800,14 +3630,14 @@ luka
 
 1409
 
-0075-irqchip-armada-370-xp-implement-MSI-support.patch
+0055-ARM-mvebu-Use-the-preprocessor-on-Armada-370-XP-devi.patch
 file
 
 
 
 
-2014-06-03T20:52:31.478293Z
-96ebc1ed2cb60684c418ee172231e741
+2014-06-03T20:52:31.494293Z
+0a86ae14737f39347ed5927907ca0066
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -3832,7 +3662,75 @@ luka
 
 
 
-7434
+3524
+
+0002-ARM-mvebu-Use-standard-MMC-binding-for-all-users-of-.patch
+file
+
+
+
+
+2014-06-03T20:52:31.494293Z
+43bd347e2f4a60e14820e9bfd6e8b5e8
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3616
+
+0017-pci-mvebu-fix-the-emulation-of-the-status-register.patch
+file
+
+
+
+
+2014-06-03T20:52:31.478293Z
+8f1aeef5c6b3961d5273ac479cfd6e3e
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2993
 
 0046-bus-mvebu-mbus-Add-new-API-for-the-PCIe-memory-and-I.patch
 file
@@ -3868,16 +3766,16 @@ luka
 
 3469
 
-0110-mtd-nand-pxa3xx-Add-address-support-for-READID-comma.patch
+0160-ARM-mvebu-config-Add-NAND-support.patch
 file
 
 
 
 
-2014-06-03T20:52:31.494293Z
-2b7bc7254c8e791e9ae1d0e8fea4143e
-2014-02-11T02:07:41.855125Z
-39565
+2014-06-03T20:52:31.486293Z
+5e63cabcff3f9db1622b6b98a58e29fb
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -3900,7 +3798,7 @@ luka
 
 
 
-1119
+774
 
 0070-PCI-use-weak-functions-for-MSI-arch-specific-functio.patch
 file
@@ -3936,48 +3834,14 @@ luka
 
 9410
 
-0186-of-irq-Refactor-interrupt-map-parsing.patch
+0110-mtd-nand-pxa3xx-Add-address-support-for-READID-comma.patch
 file
 
 
 
 
-2014-06-03T20:52:31.478293Z
-77380765c8834cfa9b3b7b41bd2e1c8a
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10754
-
-0126-mtd-nand-pxa3xx-Remove-unneeded-ifdef-CONFIG_OF.patch
-file
-
-
-
-
-2014-06-03T20:52:31.482293Z
-77d77def470b2f98cd902bb6d4160795
+2014-06-03T20:52:31.494293Z
+2b7bc7254c8e791e9ae1d0e8fea4143e
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -4002,18 +3866,18 @@ luka
 
 
 
-1171
+1119
 
-0048-PCI-mvebu-Check-valid-base-address-before-port-setup.patch
+0127-mtd-nand-pxa3xx-Fix-registered-MTD-name.patch
 file
 
 
 
 
-2014-06-03T20:52:31.498293Z
-d09ef2df6973386c872e4faab84a8f28
-2014-02-11T02:07:38.638694Z
-39564
+2014-06-03T20:52:31.502293Z
+0ba6ad9f95ff125240db78aeccadfa3d
+2014-02-11T02:07:41.855125Z
+39565
 luka
 
 
@@ -4036,7 +3900,41 @@ luka
 
 
 
-990
+1775
+
+0066-PCI-mvebu-Adapt-to-the-new-device-tree-layout.patch
+file
+
+
+
+
+2014-06-03T20:52:31.486293Z
+e87d7d5754c2ef15a871cfc223f0025a
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+12053
 
 0145-mtd-nand-pxa3xx-Add-helper-function-to-set-page-addr.patch
 file
@@ -4072,184 +3970,14 @@ luka
 
 2149
 
-0157-mtd-nand-pxa3xx-Consolidate-ECC-initialization.patch
+0048-PCI-mvebu-Check-valid-base-address-before-port-setup.patch
 file
 
 
 
 
 2014-06-03T20:52:31.498293Z
-0e1d3855590d7a528965c275054f2302
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3205
-
-0134-mtd-nand-pxa3xx-read_page-returns-max_bitflips.patch
-file
-
-
-
-
-2014-06-03T20:52:31.498293Z
-9449ab5eaab5aa87288b155795e297ca
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1416
-
-0175-ARM-mvebu-Relocate-PCIe-node-in-Armada-370-RD-board.patch
-file
-
-
-
-
-2014-06-03T20:52:31.482293Z
-1a99ce4b5a54e08ff00aa0780c7d22d5
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1548
-
-0178-of-clean-up-ifdefs-in-of_irq.h.patch
-file
-
-
-
-
-2014-06-03T20:52:31.498293Z
-895f704a6c45c142f70c1bdf99cec30a
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2740
-
-0135-mtd-nand-pxa3xx-Early-variant-detection.patch
-file
-
-
-
-
-2014-06-03T20:52:31.482293Z
-5aec2dd607551ffda2cc66d076caecc0
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3186
-
-0022-bus-mvebu-mbus-Use-pr_fmt.patch
-file
-
-
-
-
-2014-06-03T20:52:31.482293Z
-760f79c0a712c478774f3d082f9618f3
+d09ef2df6973386c872e4faab84a8f28
 2014-02-11T02:07:38.638694Z
 39564
 luka
@@ -4274,7 +4002,41 @@ luka
 
 
 
-1728
+990
+
+0185-of-irq-simplify-args-to-irq_create_of_mapping.patch
+file
+
+
+
+
+2014-06-03T20:52:31.490293Z
+2bbd5c52ff22a7409cf187296fb6b00e
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9197
 
 0180-irq-of-Fix-comment-typo-for-irq_of_parse_and_map.patch
 file
@@ -4446,16 +4208,16 @@ luka
 
 2731
 
-0069-ARM-mvebu-use-dts-pre-processor-for-mv78230.patch
+0161-net-mvneta-Fix-incorrect-DMA-unmapping-size.patch
 file
 
 
 
 
-2014-06-03T20:52:31.482293Z
-b71a4ecb97b195d4f7268e60c5dd9f07
-2014-02-11T02:07:41.855125Z
-39565
+2014-06-03T20:52:31.506293Z
+72afecb0b95acdb3a9d4281c0d8b8f91
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -4478,16 +4240,16 @@ luka
 
 
 
-632
+3628
 
-0057-ARM-mvebu-Add-BootROM-to-Armada-370-XP-device-tree.patch
+0120-mtd-nand-pxa3xx-Remove-hardcoded-mtd-name.patch
 file
 
 
 
 
-2014-06-03T20:52:31.498293Z
-c9874610b16686ea057336a1ec052ea4
+2014-06-03T20:52:31.490293Z
+0708cf4bd893887a88bcde083673b390
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -4512,7 +4274,41 @@ luka
 
 
 
-3818
+1575
+
+0102-mtd-nand-pxa3xx-Use-devm_ioremap_resource.patch
+file
+
+
+
+
+2014-06-03T20:52:31.490293Z
+0ccbc5b31fdc47d4822a9c4a36d7fd09
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2468
 
 0026-arm-mvebu-move-cache-and-mvebu-mbus-initialization-l.patch
 file
@@ -4548,16 +4344,16 @@ luka
 
 2078
 
-0088-ARM-mvebu-re-enable-PCIe-on-Armada-370-DB.patch
+0006-of-pci-Add-of_pci_parse_bus_range-function.patch
 file
 
 
 
 
 2014-06-03T20:52:31.482293Z
-a503bc48a46afd530c5ce5769c2b3ff9
-2014-02-11T02:07:41.855125Z
-39565
+7287b5dbf7b8364f1b79a272071677a9
+2014-02-11T02:07:38.638694Z
+39564
 luka
 
 
@@ -4580,7 +4376,7 @@ luka
 
 
 
-1803
+1736
 
 0025-arm-mvebu-avoid-hardcoded-virtual-address-in-coheren.patch
 file
@@ -4616,17 +4412,17 @@ luka
 
 2852
 
-0107-mtd-nand-pxa3xx-Set-info-use_dma-properly.patch
+0300-build_mamba_dts.patch
 file
 
 
 
 
-2014-06-03T20:52:31.482293Z
-04f82562940d49dc4d0bb080105387a0
-2014-02-11T02:07:41.855125Z
-39565
-luka
+2014-06-20T21:11:26.768245Z
+c1478991f8346ad35e84279f45a242a1
+2014-06-17T15:14:02.170951Z
+41234
+kaloz
 
 
 
@@ -4648,7 +4444,7 @@ luka
 
 
 
-1772
+532
 
 0079-ARM-mvebu-link-PCIe-controllers-to-the-MSI-controlle.patch
 file
@@ -4684,48 +4480,14 @@ luka
 
 1790
 
-0199-PCI-mvebu-Convert-to-use-devm_ioremap_resource.patch
+0078-PCI-mvebu-add-support-for-MSI.patch
 file
 
 
 
 
-2014-06-03T20:52:31.498293Z
-3e58d128b5f60644b35376f192e0cb20
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1456
-
-0089-ARM-mvebu-fix-gated-clock-documentation.patch
-file
-
-
-
-
-2014-06-03T20:52:31.482293Z
-a9a0f73ff3915d33f43ca4d7d28296bb
+2014-06-03T20:52:31.490293Z
+8da5c1d8a7041fafa5e92cd2956aaf0c
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -4750,7 +4512,41 @@ luka
 
 
 
-2125
+3577
+
+0011-arm-mvebu-update-defconfig-with-PCI-and-USB-support.patch
+file
+
+
+
+
+2014-06-03T20:52:31.478293Z
+b2f91988b392fadc6033002dc7e7d058
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1160
 
 0050-bus-mvebu-mbus-Remove-name-target-attribute-mapping-.patch
 file
@@ -4786,16 +4582,16 @@ luka
 
 9389
 
-0109-mtd-nand-pxa3xx-Fix-MODULE_DEVICE_TABLE-declaration.patch
+0142-mtd-nand-pxa3xx-Add-bad-block-handling.patch
 file
 
 
 
 
 2014-06-03T20:52:31.486293Z
-def3a44b25203fedef781ef040455827
-2014-02-11T02:07:41.855125Z
-39565
+a77cf221f38884e8e708490948d71b27
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -4818,18 +4614,18 @@ luka
 
 
 
-1141
+3661
 
-0091-mtd-add-data-structures-for-Extended-Parameter-Page.patch
+0198-of-Add-testcases-for-interrupt-parsing.patch
 file
 
 
 
 
 2014-06-03T20:52:31.486293Z
-29a46a1b02f0db5e87800b217773e104
-2014-02-11T02:07:41.855125Z
-39565
+d8339479e83f287cfde76dc177aa4802
+2014-02-11T02:07:44.817153Z
+39566
 luka
 
 
@@ -4852,7 +4648,7 @@ luka
 
 
 
-2910
+2822
 
 0130-mtd-nand-pxa3xx-Allocate-data-buffer-on-detected-fla.patch
 file
@@ -5126,40 +4922,6 @@ luka
 
 2920
 
-0051-bus-mvebu-mbus-Update-main-description.patch
-file
-
-
-
-
-2014-06-03T20:52:31.502293Z
-e037a4a099cb6e687cd9ac1aacb94a8d
-2014-02-11T02:07:38.638694Z
-39564
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1599
-
 0086-irqchip-armada-370-xp-fix-MSI-race-condition.patch
 file
 
@@ -5228,40 +4990,6 @@ luka
 
 2116
 
-0071-PCI-remove-ARCH_SUPPORTS_MSI-kconfig-option.patch
-file
-
-
-
-
-2014-06-03T20:52:31.486293Z
-ab231b6adbd1aff173651b24c698b999
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4752
-
 0123-mtd-nand-pxa3xx-Make-dma-code-dependent-on-dma-capab.patch
 file
 
@@ -5295,6 +5023,74 @@ luka
 
 
 3152
+
+0197-xhci-fix-dma-mask-setup-in-xhci.c.patch
+file
+
+
+
+
+2014-06-03T20:52:31.494293Z
+4e6c25f94913df8a3910e15aa2b82cad
+2014-02-23T10:59:40.436329Z
+39707
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4546
+
+0182-of-irq-Pass-trigger-type-in-IRQ-resource-flags.patch
+file
+
+
+
+
+2014-06-03T20:52:31.486293Z
+4fe4cb69998000a50a26c7f2cc372c5c
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1358
 
 0030-arm-mvebu-add-another-earlyprintk-Kconfig-option.patch
 file
@@ -5330,14 +5126,14 @@ luka
 
 3259
 
-0156-mtd-nand-pxa3xx-Use-extended-cmdfunc-only-if-needed.patch
+0129-mtd-nand-pxa3xx-Move-DMA-I-O-enabling.patch
 file
 
 
 
 
-2014-06-03T20:52:31.486293Z
-bf64cd06564af6b4cd6c3b9c84a8a295
+2014-06-03T20:52:31.494293Z
+d72e90716f5e439bd580ef9372118305
 2014-02-11T02:07:44.817153Z
 39566
 luka
@@ -5362,7 +5158,7 @@ luka
 
 
 
-3195
+1276
 
 0043-bus-mvebu-mbus-Factor-out-initialization-details.patch
 file
@@ -5397,6 +5193,74 @@ luka
 
 
 2599
+
+0027-arm-mvebu-remove-hardcoded-static-I-O-mapping.patch
+file
+
+
+
+
+2014-06-03T20:52:31.494293Z
+2e63482061fc0c825dfae71e1832952b
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1891
+
+0188-of-irq-Rework-of_irq_count.patch
+file
+
+
+
+
+2014-06-03T20:52:31.486293Z
+c8f753c1e9eacbd23b041f7bc41cc56c
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1272
 
 0177-of-irq-Avoid-calling-list_first_entry-for-empty-list.patch
 file
@@ -5466,48 +5330,14 @@ luka
 
 1146
 
-0160-ARM-mvebu-config-Add-NAND-support.patch
+0075-irqchip-armada-370-xp-implement-MSI-support.patch
 file
 
 
 
 
-2014-06-03T20:52:31.486293Z
-5e63cabcff3f9db1622b6b98a58e29fb
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-774
-
-0066-PCI-mvebu-Adapt-to-the-new-device-tree-layout.patch
-file
-
-
-
-
-2014-06-03T20:52:31.486293Z
-e87d7d5754c2ef15a871cfc223f0025a
+2014-06-03T20:52:31.478293Z
+96ebc1ed2cb60684c418ee172231e741
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -5532,7 +5362,109 @@ luka
 
 
 
-12053
+7434
+
+0047-PCI-mvebu-Adapt-to-the-new-device-tree-layout.patch
+file
+
+
+
+
+2014-06-03T20:52:31.494293Z
+f60df912ff72f20b53555fb653675338
+2014-02-11T02:07:38.638694Z
+39564
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5882
+
+0067-ARM-mvebu-set-aliases-for-ethernet-controllers.patch
+file
+
+
+
+
+2014-06-03T20:52:31.486293Z
+f9c9534e3dfb8c1753ba1bc03b490e44
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2278
+
+0054-ARM-mvebu-Initialize-MBus-using-the-DT-binding.patch
+file
+
+
+
+
+2014-06-03T20:52:31.490293Z
+5127a7fda1844b2a32fb14d0800447a7
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2227
 
 0061-ARM-kirkwood-Use-the-preprocessor-on-device-tree-fil.patch
 file
@@ -5636,48 +5568,14 @@ luka
 
 1061
 
-0128-mtd-nand-pxa3xx_nand-Remove-redundant-of_match_ptr.patch
+0126-mtd-nand-pxa3xx-Remove-unneeded-ifdef-CONFIG_OF.patch
 file
 
 
 
 
-2014-06-03T20:52:31.502293Z
-21188222b73fb0fb8423314c3598bbdb
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-936
-
-0082-net-mvneta-add-support-for-fixed-links.patch
-file
-
-
-
-
-2014-06-03T20:52:31.502293Z
-48316b1fff3a2ebc65d890f005329135
+2014-06-03T20:52:31.482293Z
+77d77def470b2f98cd902bb6d4160795
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -5702,18 +5600,18 @@ luka
 
 
 
-3174
+1171
 
-0185-of-irq-simplify-args-to-irq_create_of_mapping.patch
+0072-PCI-Introduce-new-MSI-chip-infrastructure.patch
 file
 
 
 
 
-2014-06-03T20:52:31.490293Z
-2bbd5c52ff22a7409cf187296fb6b00e
-2014-02-11T02:07:44.817153Z
-39566
+2014-06-03T20:52:31.498293Z
+baf0bc7c63db34a5be1337a9641d40f1
+2014-02-11T02:07:41.855125Z
+39565
 luka
 
 
@@ -5736,7 +5634,7 @@ luka
 
 
 
-9197
+3350
 
 0203-ARM-mvebu-fix-second-and-third-PCIe-unit-of-Armada-X.patch
 file
@@ -5806,6 +5704,74 @@ luka
 
 1075
 
+0175-ARM-mvebu-Relocate-PCIe-node-in-Armada-370-RD-board.patch
+file
+
+
+
+
+2014-06-03T20:52:31.482293Z
+1a99ce4b5a54e08ff00aa0780c7d22d5
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1548
+
+0135-mtd-nand-pxa3xx-Early-variant-detection.patch
+file
+
+
+
+
+2014-06-03T20:52:31.482293Z
+5aec2dd607551ffda2cc66d076caecc0
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3186
+
 0117-mtd-nand-pxa3xx-Support-command-buffer-3.patch
 file
 
@@ -5840,16 +5806,16 @@ luka
 
 1997
 
-0120-mtd-nand-pxa3xx-Remove-hardcoded-mtd-name.patch
+0038-bus-mvebu-mbus-Add-new-API-for-window-creation.patch
 file
 
 
 
 
 2014-06-03T20:52:31.490293Z
-0708cf4bd893887a88bcde083673b390
-2014-02-11T02:07:41.855125Z
-39565
+6e2502e0a7c30b5a3a0cd2c70bde8271
+2014-02-11T02:07:38.638694Z
+39564
 luka
 
 
@@ -5872,16 +5838,16 @@ luka
 
 
 
-1575
+3311
 
-0102-mtd-nand-pxa3xx-Use-devm_ioremap_resource.patch
+0069-ARM-mvebu-use-dts-pre-processor-for-mv78230.patch
 file
 
 
 
 
-2014-06-03T20:52:31.490293Z
-0ccbc5b31fdc47d4822a9c4a36d7fd09
+2014-06-03T20:52:31.482293Z
+b71a4ecb97b195d4f7268e60c5dd9f07
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -5906,7 +5872,7 @@ luka
 
 
 
-2468
+632
 
 0158-mtd-nand-Allow-to-build-pxa3xx_nand-on-Orion-platfor.patch
 file
@@ -5976,40 +5942,6 @@ luka
 
 3600
 
-0176-of-irq-create-interrupts-extended-property.patch
-file
-
-
-
-
-2014-06-03T20:52:31.478293Z
-7e365d217c9f5ea881290b22868dfbe5
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4490
-
 0068-ARM-mvebu-use-correct-interrupt-cells-instead-of-int.patch
 file
 
@@ -6078,40 +6010,6 @@ luka
 
 2637
 
-0078-PCI-mvebu-add-support-for-MSI.patch
-file
-
-
-
-
-2014-06-03T20:52:31.490293Z
-8da5c1d8a7041fafa5e92cd2956aaf0c
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3577
-
 0013-drivers-memory-Introduce-Marvell-EBU-Device-Bus-driv.patch
 file
 
@@ -6146,82 +6044,14 @@ luka
 
 17657
 
-0056-ARM-mvebu-Add-MBus-to-Armada-370-XP-device-tree.patch
+0184-of-irq-Replace-of_irq-with-of_phandle_args.patch
 file
 
 
 
 
 2014-06-03T20:52:31.494293Z
-1e9772b8ec0d7325230a810756fbb854
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5291
-
-0063-ARM-kirkwood-Introduce-MBUS_ID.patch
-file
-
-
-
-
-2014-06-03T20:52:31.478293Z
-b7b6b2e2a9950b15f04bb62b6d67b50c
-2014-02-11T02:07:41.855125Z
-39565
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-849
-
-0200-PCI-mvebu-move-clock-enable-before-register-access.patch
-file
-
-
-
-
-2014-06-03T20:52:31.478293Z
-d378d0c4aae830b75a38c42b1b618487
+5ceccf55e3af95d41831711f2f19d7e9
 2014-02-11T02:07:44.817153Z
 39566
 luka
@@ -6246,7 +6076,109 @@ luka
 
 
 
-1879
+16934
+
+0089-ARM-mvebu-fix-gated-clock-documentation.patch
+file
+
+
+
+
+2014-06-03T20:52:31.482293Z
+a9a0f73ff3915d33f43ca4d7d28296bb
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2125
+
+0109-mtd-nand-pxa3xx-Fix-MODULE_DEVICE_TABLE-declaration.patch
+file
+
+
+
+
+2014-06-03T20:52:31.486293Z
+def3a44b25203fedef781ef040455827
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1141
+
+0091-mtd-add-data-structures-for-Extended-Parameter-Page.patch
+file
+
+
+
+
+2014-06-03T20:52:31.486293Z
+29a46a1b02f0db5e87800b217773e104
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2910
 
 0173-ARM-mvebu-Add-the-reference-25-MHz-fixed-clock-to-Ar.patch
 file
@@ -6418,40 +6350,6 @@ luka
 
 2333
 
-0143-mtd-nand-pxa3xx-Add-driver-specific-ECC-BCH-support.patch
-file
-
-
-
-
-2014-06-03T20:52:31.494293Z
-dfee5544ac53cb4cf9ebe3ec41745ae3
-2014-02-11T02:07:44.817153Z
-39566
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4764
-
 0031-arm-mvebu-disable-DEBUG_LL-EARLY_PRINTK-in-defconfig.patch
 file
 
@@ -6520,48 +6418,14 @@ luka
 
 1561
 
-0197-xhci-fix-dma-mask-setup-in-xhci.c.patch
+0071-PCI-remove-ARCH_SUPPORTS_MSI-kconfig-option.patch
 file
 
 
 
 
-2014-06-03T20:52:31.494293Z
-4e6c25f94913df8a3910e15aa2b82cad
-2014-02-23T10:59:40.436329Z
-39707
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4546
-
-0062-ARM-kirkwood-Introduce-MBus-DT-node.patch
-file
-
-
-
-
-2014-06-03T20:52:31.494293Z
-eb21f174273de5ce01dd03f64d10a1b3
+2014-06-03T20:52:31.486293Z
+ab231b6adbd1aff173651b24c698b999
 2014-02-11T02:07:41.855125Z
 39565
 luka
@@ -6586,7 +6450,7 @@ luka
 
 
 
-1249
+4752
 
 0099-ARM-mvebu-Add-support-for-NAND-controller-in-Armada-.patch
 file
@@ -6655,4 +6519,174 @@ luka
 
 
 1103
+
+0081-net-phy-call-mdiobus_scan-after-adding-a-fixed-PHY.patch
+file
+
+
+
+
+2014-06-03T20:52:31.494293Z
+054e7cd0f00336e523b066a53afb2107
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1502
+
+0076-ARM-pci-add-add_bus-and-remove_bus-hooks-to-hw_pci.patch
+file
+
+
+
+
+2014-06-03T20:52:31.494293Z
+d382e32c39d74134262603aedec755a6
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2776
+
+0190-of-irq-Fix-bug-in-interrupt-parsing-refactor.patch
+file
+
+
+
+
+2014-06-03T20:52:31.478293Z
+7aafa530191bf1c2cc0cab2e2ee197ab
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2058
+
+0122-mtd-nand-pxa3xx-Move-cached-registers-to-info-struct.patch
+file
+
+
+
+
+2014-06-03T20:52:31.478293Z
+c3f5449e5ca09dfb7b8e93076537f45b
+2014-02-11T02:07:41.855125Z
+39565
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3824
+
+0156-mtd-nand-pxa3xx-Use-extended-cmdfunc-only-if-needed.patch
+file
+
+
+
+
+2014-06-03T20:52:31.486293Z
+bf64cd06564af6b4cd6c3b9c84a8a295
+2014-02-11T02:07:44.817153Z
+39566
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3195
 

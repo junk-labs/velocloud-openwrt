@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/orion/patches
 svn://svn.openwrt.org/openwrt
 
@@ -25,40 +25,6 @@ kaloz
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-400-fix-section-mismatch-warnings.patch
-file
-
-
-
-
-2014-06-03T20:17:38.290341Z
-085b0edede64770f1054cb3dc84cad55
-2012-04-29T15:20:40.259027Z
-31528
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-896
 
 a01-dt2-fixes-for-3.3.patch
 file
@@ -229,4 +195,38 @@ juhosg
 
 
 326
+
+400-fix-section-mismatch-warnings.patch
+file
+
+
+
+
+2014-06-03T20:17:38.290341Z
+085b0edede64770f1054cb3dc84cad55
+2012-04-29T15:20:40.259027Z
+31528
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+896
 

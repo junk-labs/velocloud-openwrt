@@ -1,15 +1,15 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-03T13:59:43.208274Z
-40995
-nbd
+2014-06-20T20:44:18.832976Z
+41290
+kaloz
 has-props
 
 
@@ -25,40 +25,6 @@ has-props
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-BSDmakefile
-file
-
-
-
-
-2014-06-03T20:17:36.522341Z
-8d08eacab0cd34e9fa61765d2520304d
-2007-02-26T01:05:09.192501Z
-6383
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-179
 
 .gitattributes
 file
@@ -220,11 +186,11 @@ file
 
 
 
-2014-06-03T20:42:07.878307Z
-04590310fe72b00bd3d98f97f138ffa2
-2014-04-19T17:26:11.026328Z
-40530
-nbd
+2014-06-20T21:11:27.980245Z
+76804373950555bb7843d9167dea9bf3
+2014-06-12T15:08:08.242285Z
+41163
+luka
 
 
 
@@ -246,7 +212,7 @@ nbd
 
 
 
-672
+802
 
 README
 file
@@ -319,6 +285,9 @@ has-props
 tools
 dir
 
+config
+dir
+
 .gitignore
 file
 
@@ -331,6 +300,37 @@ file
 39225
 blogic
 
-config
-dir
+BSDmakefile
+file
+
+
+
+
+2014-06-03T20:17:36.522341Z
+8d08eacab0cd34e9fa61765d2520304d
+2007-02-26T01:05:09.192501Z
+6383
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+179
 

@@ -1,14 +1,14 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/ramips/base-files/lib/preinit
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T12:42:52.427623Z
-40908
+2014-06-16T18:57:20.317620Z
+41224
 blogic
 
 
@@ -60,6 +60,40 @@ blogic
 
 1992
 
+04_handle_checksumming
+file
+
+
+
+
+2014-06-20T21:11:26.088245Z
+61b783f1603182bdf66892e3993d3edc
+2014-06-16T18:57:20.317620Z
+41224
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2120
+
 07_set_preinit_iface_ramips
 file
 
@@ -93,40 +127,6 @@ blogic
 
 
 284
-
-04_disable_wnce2001_flash_checksumming
-file
-
-
-
-
-2014-06-03T20:17:38.298341Z
-1e38d513b914007c47d9ee6870c6b0d5
-2013-04-09T14:19:33.087059Z
-36289
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1414
 
 03_preinit_do_ramips.sh
 file

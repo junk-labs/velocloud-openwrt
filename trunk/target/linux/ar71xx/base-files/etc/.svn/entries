@@ -1,14 +1,14 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/ar71xx/base-files/etc
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T14:56:35.265342Z
-40974
+2014-06-18T10:08:08.984259Z
+41255
 blogic
 
 
@@ -25,6 +25,9 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+hotplug.d
+dir
 
 uci-defaults
 dir
@@ -69,10 +72,10 @@ file
 
 
 
-2014-06-03T20:52:08.086293Z
-59f31e37e69e2e01789b285a86840429
-2014-06-02T14:56:35.265342Z
-40974
+2014-06-20T21:11:25.204245Z
+12c1cbcc647b40c78489e6e9d311186e
+2014-06-18T10:08:08.984259Z
+41255
 blogic
 has-props
 
@@ -95,8 +98,5 @@ has-props
 
 
 
-4201
-
-hotplug.d
-dir
+4250
 

@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/omap24xx/patches-3.3
 svn://svn.openwrt.org/openwrt
 
@@ -25,142 +25,6 @@ florian
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-410-hci-h4p-fixes.patch
-file
-
-
-
-
-2014-06-03T20:17:38.290341Z
-6e42a55ffd2ef0d456f4b8de9156b10d
-2012-05-18T20:22:32.268867Z
-31810
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1085
-
-312-no-hwmod-reset.patch
-file
-
-
-
-
-2014-06-03T20:17:38.286341Z
-37d9990ba15d70c1513a64daf91f9f2d
-2012-05-18T20:22:32.268867Z
-31810
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-895
-
-311-omapfb-clock-fixes.patch
-file
-
-
-
-
-2014-06-03T20:17:38.286341Z
-b400fd9b5435038cdd516845e2990499
-2012-05-18T20:22:32.268867Z
-31810
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1087
-
-200-omap-platform.patch
-file
-
-
-
-
-2014-06-03T20:17:38.286341Z
-15c005c98a928222c217f82e0049e007
-2012-05-18T20:22:32.268867Z
-31810
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-22763
 
 350-n8x0-gpioswitch-input.patch
 file
@@ -196,48 +60,14 @@ juhosg
 
 2303
 
-900-n810-battery-management.patch
-file
-
-
-
-
-2014-06-03T20:17:38.290341Z
-5a8a6a0f417cd022c06abe02c5dc578b
-2012-05-18T20:22:32.268867Z
-31810
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-50204
-
-252-cbus-retu-tahvo-ack-fix.patch
+200-omap-platform.patch
 file
 
 
 
 
 2014-06-03T20:17:38.286341Z
-21c0fae7b84d5606beac29e587118319
+15c005c98a928222c217f82e0049e007
 2012-05-18T20:22:32.268867Z
 31810
 juhosg
@@ -262,7 +92,7 @@ juhosg
 
 
 
-3539
+22763
 
 300-cbus-platform.patch
 file
@@ -298,6 +128,74 @@ juhosg
 
 4226
 
+252-cbus-retu-tahvo-ack-fix.patch
+file
+
+
+
+
+2014-06-03T20:17:38.286341Z
+21c0fae7b84d5606beac29e587118319
+2012-05-18T20:22:32.268867Z
+31810
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3539
+
+900-n810-battery-management.patch
+file
+
+
+
+
+2014-06-03T20:17:38.290341Z
+5a8a6a0f417cd022c06abe02c5dc578b
+2012-05-18T20:22:32.268867Z
+31810
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+50204
+
 830-omap2-serial-fixes.patch
 file
 
@@ -332,14 +230,14 @@ juhosg
 
 601
 
-420-hci-h4p-interrupt-workaround.patch
+910-omap-fix-section-mismatch-warnings.patch
 file
 
 
 
 
 2014-06-03T20:17:38.290341Z
-3f35c94d365b281539db557ded8b0608
+189a2d11cd47cac9e0b336b543ee9c0d
 2012-05-18T20:22:32.268867Z
 31810
 juhosg
@@ -364,7 +262,7 @@ juhosg
 
 
 
-958
+4249
 
 400-bluetooth-hci_h4p.patch
 file
@@ -400,14 +298,14 @@ juhosg
 
 50558
 
-910-omap-fix-section-mismatch-warnings.patch
+420-hci-h4p-interrupt-workaround.patch
 file
 
 
 
 
 2014-06-03T20:17:38.290341Z
-189a2d11cd47cac9e0b336b543ee9c0d
+3f35c94d365b281539db557ded8b0608
 2012-05-18T20:22:32.268867Z
 31810
 juhosg
@@ -432,7 +330,7 @@ juhosg
 
 
 
-4249
+958
 
 310-n810-lcd.patch
 file
@@ -841,4 +739,106 @@ juhosg
 
 
 4003
+
+410-hci-h4p-fixes.patch
+file
+
+
+
+
+2014-06-03T20:17:38.290341Z
+6e42a55ffd2ef0d456f4b8de9156b10d
+2012-05-18T20:22:32.268867Z
+31810
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1085
+
+311-omapfb-clock-fixes.patch
+file
+
+
+
+
+2014-06-03T20:17:38.286341Z
+b400fd9b5435038cdd516845e2990499
+2012-05-18T20:22:32.268867Z
+31810
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1087
+
+312-no-hwmod-reset.patch
+file
+
+
+
+
+2014-06-03T20:17:38.286341Z
+37d9990ba15d70c1513a64daf91f9f2d
+2012-05-18T20:22:32.268867Z
+31810
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+895
 

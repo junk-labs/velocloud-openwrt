@@ -1,14 +1,14 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/lantiq/patches-3.10
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T12:45:29.258772Z
-40948
+2014-06-19T14:12:59.646943Z
+41269
 blogic
 
 
@@ -25,6 +25,74 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+0205-lantiq-xrx200-switch.patch
+file
+
+
+
+
+2014-06-03T20:52:06.730293Z
+050c02d5ddd7bd7ab95ddabd62ea620d
+2014-03-30T09:15:50.182720Z
+40313
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+122361
+
+0018-MTD-lantiq-xway-add-missing-write_buf-and-read_buf-t.patch
+file
+
+
+
+
+2014-06-03T20:17:38.250341Z
+b0405bce1e5e34fc8be82f6af2aef702
+2013-09-25T17:13:24.963717Z
+38182
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1658
 
 0105-mips-lantiq-flash-add-jedec-probe.patch
 file
@@ -202,11 +270,11 @@ file
 
 
 
-2014-06-03T20:52:06.730293Z
-1ee0e7f2d3048983b02bae2cc8cf2a9d
-2014-04-12T11:59:07.220884Z
-40467
-juhosg
+2014-06-20T21:11:25.160245Z
+d6e53f6a0adb288f0a799378a2be91d9
+2014-06-19T14:12:59.646943Z
+41269
+blogic
 
 
 
@@ -228,7 +296,7 @@ juhosg
 
 
 
-2449
+2467
 
 0014-MTD-lantiq-handle-NO_XIP-on-cfi0001-flash.patch
 file
@@ -338,11 +406,11 @@ file
 
 
 
-2014-06-03T20:52:06.734293Z
-156b962f9bae0d258b73ec002c47bc07
-2014-01-11T16:06:37.461474Z
-39220
-juhosg
+2014-06-20T21:11:25.160245Z
+bb7638d311fb0866a5d2bb3c33910c49
+2014-06-19T14:12:59.646943Z
+41269
+blogic
 
 
 
@@ -508,10 +576,10 @@ file
 
 
 
-2014-06-03T20:52:06.734293Z
-8852afe17bf3aa7144a4df76f4b35d7e
-2014-06-02T12:45:29.258772Z
-40948
+2014-06-20T21:11:25.160245Z
+4f296419bc6813bf782a01cdf31e2342
+2014-06-19T14:12:59.646943Z
+41269
 blogic
 
 
@@ -534,7 +602,7 @@ blogic
 
 
 
-16194
+16962
 
 0028-pinctrl-lantiq-add-missing-pin-definition-to-falcon-.patch
 file
@@ -570,40 +638,6 @@ juhosg
 
 2345
 
-0024-GPIO-MIPS-lantiq-add-gpio-driver-for-falcon-SoC.patch
-file
-
-
-
-
-2014-06-03T20:17:38.250341Z
-70d033c5db886cb107f52db444a9e5b0
-2013-09-25T17:13:24.963717Z
-38182
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11825
-
 0002-MIPS-lantiq-adds-minimal-dcdc-driver.patch
 file
 
@@ -638,14 +672,14 @@ juhosg
 
 2487
 
-0020-NET-MIPS-lantiq-adds-xrx200-net.patch
+0024-GPIO-MIPS-lantiq-add-gpio-driver-for-falcon-SoC.patch
 file
 
 
 
 
 2014-06-03T20:17:38.250341Z
-1d0dcf0632d0d945f0906e1f8abb05fd
+70d033c5db886cb107f52db444a9e5b0
 2013-09-25T17:13:24.963717Z
 38182
 juhosg
@@ -670,7 +704,7 @@ juhosg
 
 
 
-40238
+11825
 
 0204-lantiq-xrx200-duplex-fix.patch
 file
@@ -706,6 +740,40 @@ blogic
 
 385
 
+0020-NET-MIPS-lantiq-adds-xrx200-net.patch
+file
+
+
+
+
+2014-06-03T20:17:38.250341Z
+1d0dcf0632d0d945f0906e1f8abb05fd
+2013-09-25T17:13:24.963717Z
+38182
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+40238
+
 0025-GPIO-add-gpio_export_with_name.patch
 file
 
@@ -740,40 +808,6 @@ juhosg
 
 9985
 
-0033-SPI-MIPS-lantiq-adds-spi-xway.patch
-file
-
-
-
-
-2014-06-03T20:17:38.250341Z
-aa9e332902bf7f231b26c720c59065dc
-2013-09-25T17:13:24.963717Z
-38182
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-27507
-
 0104-nand.patch
 file
 
@@ -807,6 +841,40 @@ juhosg
 
 
 590
+
+0033-SPI-MIPS-lantiq-adds-spi-xway.patch
+file
+
+
+
+
+2014-06-03T20:17:38.250341Z
+aa9e332902bf7f231b26c720c59065dc
+2013-09-25T17:13:24.963717Z
+38182
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+27507
 
 0016-MTD-lantiq-xway-the-latched-command-should-be-persis.patch
 file
@@ -944,40 +1012,6 @@ juhosg
 
 1138
 
-0007-MIPS-lantiq-handle-vmmc-memory-reservation.patch
-file
-
-
-
-
-2014-06-03T20:17:38.250341Z
-97f67678001c4c7f7a187fb69f146dbd
-2013-11-20T16:56:32.707003Z
-38878
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2396
-
 0205-lantiq-nand-lock.patch
 file
 
@@ -1011,6 +1045,40 @@ juhosg
 
 
 2611
+
+0007-MIPS-lantiq-handle-vmmc-memory-reservation.patch
+file
+
+
+
+
+2014-06-03T20:17:38.250341Z
+97f67678001c4c7f7a187fb69f146dbd
+2013-11-20T16:56:32.707003Z
+38878
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2396
 
 0201-xway-reset-gphys-on-reboot.patch
 file
@@ -1222,10 +1290,10 @@ file
 
 
 
-2014-06-03T20:52:06.730293Z
-fe0c0bf15ce4993e0408a44931b5ba01
-2014-03-30T09:16:35.681230Z
-40324
+2014-06-20T21:11:25.160245Z
+e8abc9f6bd97ce0711ba901338d5c436
+2014-06-19T14:12:59.646943Z
+41269
 blogic
 
 
@@ -1248,7 +1316,7 @@ blogic
 
 
 
-5402
+5420
 
 0013-MTD-lantiq-Add-NAND-support-on-Lantiq-Falcon-SoC.patch
 file
@@ -1589,72 +1657,4 @@ juhosg
 
 
 2331
-
-0205-lantiq-xrx200-switch.patch
-file
-
-
-
-
-2014-06-03T20:52:06.730293Z
-050c02d5ddd7bd7ab95ddabd62ea620d
-2014-03-30T09:15:50.182720Z
-40313
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-122361
-
-0018-MTD-lantiq-xway-add-missing-write_buf-and-read_buf-t.patch
-file
-
-
-
-
-2014-06-03T20:17:38.250341Z
-b0405bce1e5e34fc8be82f6af2aef702
-2013-09-25T17:13:24.963717Z
-38182
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1658
 

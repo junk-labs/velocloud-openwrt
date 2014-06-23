@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/toolchain/gcc/patches/4.8-linaro
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,74 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+870-ppc_no_crtsavres.patch
+file
+
+
+
+
+2014-06-03T20:38:09.258313Z
+95ae41f9b40998a6fcc73365245bf73f
+2014-05-02T21:18:02.730138Z
+40664
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+408
+
+830-arm_unbreak_armv4t.patch
+file
+
+
+
+
+2014-06-03T20:17:38.430341Z
+1f2dca712b13052021623f785b7db32d
+2013-05-23T10:21:59.573061Z
+36693
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+473
 
 210-disable_libsanitizer_off_t_check.patch
 file
@@ -60,40 +128,6 @@ nbd
 
 466
 
-850-use_shared_libgcc.patch
-file
-
-
-
-
-2014-06-03T20:38:09.254313Z
-f21af9f33f0cd395981600a8e4062a6b
-2014-02-24T21:09:37.710351Z
-39749
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1559
-
 900-bad-mips16-crt.patch
 file
 
@@ -127,6 +161,40 @@ nbd
 
 
 293
+
+850-use_shared_libgcc.patch
+file
+
+
+
+
+2014-06-03T20:38:09.254313Z
+f21af9f33f0cd395981600a8e4062a6b
+2014-02-24T21:09:37.710351Z
+39749
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1559
 
 840-armv4_pass_fix-v4bx_to_ld.patch
 file
@@ -298,40 +366,6 @@ nbd
 
 692
 
-860-uclibc_use_eh_frame.patch
-file
-
-
-
-
-2014-06-03T20:38:09.254313Z
-a3c5eb2523c8ed57f951b63183b5ff05
-2014-05-28T22:40:31.795064Z
-40874
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1190
-
 880-no_java_section.patch
 file
 
@@ -366,17 +400,17 @@ nbd
 
 466
 
-920-specs_nonfatal_getenv.patch
+860-uclibc_use_eh_frame.patch
 file
 
 
 
 
 2014-06-03T20:38:09.254313Z
-22917cac32f9ff24f953dcbc2ffd468b
-2014-02-06T10:28:45.437139Z
-39501
-kaloz
+a3c5eb2523c8ed57f951b63183b5ff05
+2014-05-28T22:40:31.795064Z
+40874
+nbd
 
 
 
@@ -398,7 +432,7 @@ kaloz
 
 
 
-446
+1190
 
 200-musl.patch
 file
@@ -433,6 +467,40 @@ nbd
 
 
 11954
+
+920-specs_nonfatal_getenv.patch
+file
+
+
+
+
+2014-06-03T20:38:09.254313Z
+22917cac32f9ff24f953dcbc2ffd468b
+2014-02-06T10:28:45.437139Z
+39501
+kaloz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+446
 
 100-uclibc-conf.patch
 file
@@ -535,72 +603,4 @@ nbd
 
 
 1155
-
-870-ppc_no_crtsavres.patch
-file
-
-
-
-
-2014-06-03T20:38:09.258313Z
-95ae41f9b40998a6fcc73365245bf73f
-2014-05-02T21:18:02.730138Z
-40664
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-408
-
-830-arm_unbreak_armv4t.patch
-file
-
-
-
-
-2014-06-03T20:17:38.430341Z
-1f2dca712b13052021623f785b7db32d
-2013-05-23T10:21:59.573061Z
-36693
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-473
 

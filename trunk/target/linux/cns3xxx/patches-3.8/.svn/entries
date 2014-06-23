@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/cns3xxx/patches-3.8
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,142 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+080-sata_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.038341Z
+c97f970490454c84c0f5342658ca95ce
+2013-03-09T18:51:46.908307Z
+35908
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1269
+
+020-watchdog_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.038341Z
+213b55b3376c680d507fc346f2a35d77
+2013-03-09T18:51:46.908307Z
+35908
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1724
+
+021-cache_force_multi.patch
+file
+
+
+
+
+2014-06-03T20:17:38.038341Z
+da221237ad4715f293d026e5bd070e69
+2013-03-09T18:51:46.908307Z
+35908
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+876
+
+030-pcie_clock.patch
+file
+
+
+
+
+2014-06-03T20:17:38.038341Z
+952ec64bc365578986f121e471a7c18c
+2013-03-09T18:51:46.908307Z
+35908
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+533
 
 045-twd_base.patch
 file
@@ -196,14 +332,14 @@ nbd
 
 2324
 
-065-pcie_early_init.patch
+305-laguna_sdhci_card_detect.patch
 file
 
 
 
 
 2014-06-03T20:17:38.038341Z
-de09801d2f4364a04d092b80f04add30
+451a75c85f7555550266375aa4e55dde
 2013-03-09T18:51:46.908307Z
 35908
 nbd
@@ -228,7 +364,7 @@ nbd
 
 
 
-2219
+594
 
 015-clkdev_support.patch
 file
@@ -264,14 +400,14 @@ juhosg
 
 1390
 
-305-laguna_sdhci_card_detect.patch
+065-pcie_early_init.patch
 file
 
 
 
 
 2014-06-03T20:17:38.038341Z
-451a75c85f7555550266375aa4e55dde
+de09801d2f4364a04d092b80f04add30
 2013-03-09T18:51:46.908307Z
 35908
 nbd
@@ -296,7 +432,7 @@ nbd
 
 
 
-594
+2219
 
 090-timers.patch
 file
@@ -366,40 +502,6 @@ nbd
 
 4248
 
-040-fiq_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.038341Z
-2bdbb538fdca63a4e3baf5a235454dec
-2013-03-09T18:51:46.908307Z
-35908
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2290
-
 010-move_virtual_io_space.patch
 file
 
@@ -433,6 +535,40 @@ juhosg
 
 
 6394
+
+040-fiq_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.038341Z
+2bdbb538fdca63a4e3baf5a235454dec
+2013-03-09T18:51:46.908307Z
+35908
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2290
 
 070-i2c_support.patch
 file
@@ -637,140 +773,4 @@ nbd
 
 
 811
-
-080-sata_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.038341Z
-c97f970490454c84c0f5342658ca95ce
-2013-03-09T18:51:46.908307Z
-35908
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1269
-
-020-watchdog_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.038341Z
-213b55b3376c680d507fc346f2a35d77
-2013-03-09T18:51:46.908307Z
-35908
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1724
-
-021-cache_force_multi.patch
-file
-
-
-
-
-2014-06-03T20:17:38.038341Z
-da221237ad4715f293d026e5bd070e69
-2013-03-09T18:51:46.908307Z
-35908
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-876
-
-030-pcie_clock.patch
-file
-
-
-
-
-2014-06-03T20:17:38.038341Z
-952ec64bc365578986f121e471a7c18c
-2013-03-09T18:51:46.908307Z
-35908
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-533
 

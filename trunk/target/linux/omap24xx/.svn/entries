@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/omap24xx
 svn://svn.openwrt.org/openwrt
 
@@ -25,43 +25,6 @@ kaloz
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-config-3.3
-file
-
-
-
-
-2014-06-03T20:17:38.286341Z
-05d61c6f7acc606600e8e2241327163f
-2013-07-20T07:43:54.569646Z
-37470
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-18731
-
-patches-3.3
-dir
 
 base-files
 dir
@@ -138,5 +101,42 @@ image
 dir
 
 profiles
+dir
+
+config-3.3
+file
+
+
+
+
+2014-06-03T20:17:38.286341Z
+05d61c6f7acc606600e8e2241327163f
+2013-07-20T07:43:54.569646Z
+37470
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+18731
+
+patches-3.3
 dir
 

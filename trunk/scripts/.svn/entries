@@ -1,14 +1,14 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/scripts
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T17:04:38.511380Z
-40980
+2014-06-12T14:35:09.993669Z
+41160
 nbd
 
 
@@ -26,17 +26,17 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-dl_cleanup.py
+clang-gcc-wrapper
 file
 
 
 
 
-2014-06-03T20:17:37.866341Z
-6ded2893e5b65acbc42ac55822489771
-2013-05-26T17:28:11.290460Z
-36729
-jow
+2014-06-03T20:17:37.858341Z
+961e70a241d84aac2497bd1bcbb15523
+2013-10-28T15:15:09.216760Z
+38560
+nbd
 has-props
 
 
@@ -58,7 +58,41 @@ has-props
 
 
 
-5942
+272
+
+ubinize-image.sh
+file
+
+
+
+
+2014-06-20T21:11:26.812245Z
+60441f1f16c8373ef7ac98a1b5873ca4
+2014-06-11T12:59:19.135708Z
+41121
+blogic
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2007
 
 mkits.sh
 file
@@ -94,16 +128,16 @@ has-props
 
 3072
 
-relink-lib.sh
+strip-kmod.sh
 file
 
 
 
 
 2014-06-03T20:17:37.870341Z
-2454dfd91f6d660027e47814a33f034d
-2011-03-01T05:40:38.127510Z
-25800
+a2f0c6690a2390fc11b212561b9c4f31
+2012-03-19T21:09:47.100582Z
+31031
 nbd
 has-props
 
@@ -126,7 +160,7 @@ has-props
 
 
 
-403
+841
 
 abs2rel.pl
 file
@@ -162,8 +196,76 @@ has-props
 
 330
 
+getver.sh
+file
+
+
+
+
+2014-06-03T20:17:37.866341Z
+78283f0057f021f677b42a0bd9078ec3
+2011-10-26T14:54:57.903911Z
+28604
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+686
+
 config
 dir
+
+pad_image
+file
+
+
+
+
+2014-06-03T20:17:37.870341Z
+fb2ca733bc45992e580986408cfdaf23
+2010-03-18T23:35:21.174408Z
+20294
+florian
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2436
 
 arm-magic.sh
 file
@@ -199,16 +301,16 @@ has-props
 
 2015
 
-gen-dependencies.sh
+diffconfig.sh
 file
 
 
 
 
 2014-06-03T20:17:37.866341Z
-0babfca54cd4bc01789107589f7546b8
-2013-11-19T00:03:34.982630Z
-38860
+059008427036179198ec11c586ea5f0a
+2013-04-18T12:05:16.166937Z
+36361
 nbd
 has-props
 
@@ -231,54 +333,19 @@ has-props
 
 
 
-969
+678
 
-checkpatch.pl
-file
-
-
-
-
-2014-06-03T20:17:37.858341Z
-0fe467b3d0ef6c3e4745d4456e7eae8b
-2013-08-31T11:16:49.039610Z
-37864
-acinonyx
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-95651
-
-combined-ext-image.sh
+combined-image.sh
 file
 
 
 
 
 2014-06-03T20:17:37.862341Z
-d8a79b0d4e0968b6167609a21bab1103
-2011-11-30T07:43:58.697431Z
-29358
-nico
-has-props
+03bfdbb4c402220ccf11b1eed830f3b9
+2009-12-24T10:34:37.785565Z
+18920
+nbd
 
 
 
@@ -299,7 +366,8 @@ has-props
 
 
 
-1885
+
+1020
 
 md5sum
 file
@@ -403,6 +471,40 @@ has-props
 
 5541
 
+download.pl
+file
+
+
+
+
+2014-06-03T20:52:31.526293Z
+fc430bf79d639ef3add8228ec473e559
+2013-12-13T16:43:07.242211Z
+39045
+nbd
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5468
+
 config.rpath
 file
 
@@ -436,74 +538,6 @@ has-props
 
 
 18343
-
-cleanfile
-file
-
-
-
-
-2014-06-03T20:17:37.862341Z
-bc5d1612e4f4a6f85427ecf28cc7a660
-2013-08-31T11:16:44.757551Z
-37863
-acinonyx
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3492
-
-update-package-md5sum
-file
-
-
-
-
-2014-06-03T20:17:37.870341Z
-6159b3717de6804a4e72c92e4b05e5b2
-2010-01-03T17:06:06.812530Z
-19019
-lars
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1193
 
 clean-package.sh
 file
@@ -539,17 +573,17 @@ has-props
 
 416
 
-env
+feeds
 file
 
 
 
 
 2014-06-03T20:17:37.866341Z
-7397f07e13e0e242cfb4ba411fe9f65c
-2012-02-16T19:24:34.867738Z
-30602
-florian
+e26d6775c962d75acfadf23131b9cfc3
+2013-09-25T13:02:55.421028Z
+38172
+luka
 has-props
 
 
@@ -571,53 +605,19 @@ has-props
 
 
 
-4727
+15445
 
-metadata.pl
-file
-
-
-
-
-2014-06-03T20:52:31.526293Z
-b2f9a26ea093f94c365edbe6872dd98d
-2014-06-02T17:04:38.511380Z
-40980
-nbd
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-21437
-
-make-ipkg-dir.sh
+patch-kernel.sh
 file
 
 
 
 
 2014-06-03T20:17:37.870341Z
-fd5ca6eb94e6dac671e81f1a64417f67
-2009-04-17T14:32:29.989894Z
-15245
-nico
+3a1b737e5f9ff6503ea4af754b9738bd
+2010-10-08T09:21:01.250670Z
+23314
+jow
 has-props
 
 
@@ -639,41 +639,7 @@ has-props
 
 
 
-747
-
-kconfig.pl
-file
-
-
-
-
-2014-06-03T20:52:31.526293Z
-876b3412be93e5fef7daf81c65882237
-2014-01-19T17:27:04.438012Z
-39327
-blogic
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3731
+1391
 
 config.guess
 file
@@ -709,17 +675,52 @@ has-props
 
 44973
 
-metadata.pm
+kconfig.pl
+file
+
+
+
+
+2014-06-03T20:52:31.526293Z
+876b3412be93e5fef7daf81c65882237
+2014-01-19T17:27:04.438012Z
+39327
+blogic
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3731
+
+make-ipkg-dir.sh
 file
 
 
 
 
 2014-06-03T20:17:37.870341Z
-78a6357a5148f28dbb0763cf4e36604f
-2013-07-18T13:11:46.932565Z
-37397
-jow
+fd5ca6eb94e6dac671e81f1a64417f67
+2009-04-17T14:32:29.989894Z
+15245
+nico
+has-props
 
 
 
@@ -740,19 +741,18 @@ jow
 
 
 
-
-4493
+747
 
-clang-gcc-wrapper
+bundle-libraries.sh
 file
 
 
 
 
-2014-06-03T20:17:37.858341Z
-961e70a241d84aac2497bd1bcbb15523
-2013-10-28T15:15:09.216760Z
-38560
+2014-06-03T20:52:31.530293Z
+d362f04c75ac577a250b9f88e40fbb5d
+2014-06-02T13:27:23.626437Z
+40967
 nbd
 has-props
 
@@ -775,19 +775,19 @@ has-props
 
 
 
-272
+2649
 
-config.sub
+rstrip.sh
 file
 
 
 
 
-2014-06-03T20:17:37.862341Z
-f0a763ce74af75e92121dbb745036cfa
-2012-11-30T10:53:55.517290Z
-34432
-florian
+2014-06-03T20:17:37.870341Z
+893599511bba25fa3766ae3501ee4c3b
+2012-02-20T17:38:26.597822Z
+30662
+nbd
 has-props
 
 
@@ -809,7 +809,41 @@ has-props
 
 
 
-34901
+800
+
+symlink-tree.sh
+file
+
+
+
+
+2014-06-03T20:17:37.870341Z
+6f9cd1ec9a388954e57ba7bf5cfc6a5f
+2013-02-21T11:45:27.104308Z
+35718
+jogo
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+707
 
 om-fwupgradecfg-gen.sh
 file
@@ -845,6 +879,74 @@ has-props
 
 1812
 
+config.sub
+file
+
+
+
+
+2014-06-03T20:17:37.862341Z
+f0a763ce74af75e92121dbb745036cfa
+2012-11-30T10:53:55.517290Z
+34432
+florian
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+34901
+
+dl_cleanup.py
+file
+
+
+
+
+2014-06-03T20:17:37.866341Z
+6ded2893e5b65acbc42ac55822489771
+2013-05-26T17:28:11.290460Z
+36729
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5942
+
 brcmImage.pl
 file
 
@@ -879,16 +981,16 @@ has-props
 
 3843
 
-strip-kmod.sh
+relink-lib.sh
 file
 
 
 
 
 2014-06-03T20:17:37.870341Z
-a2f0c6690a2390fc11b212561b9c4f31
-2012-03-19T21:09:47.100582Z
-31031
+2454dfd91f6d660027e47814a33f034d
+2011-03-01T05:40:38.127510Z
+25800
 nbd
 has-props
 
@@ -911,7 +1013,7 @@ has-props
 
 
 
-841
+403
 
 cleanpatch
 file
@@ -981,84 +1083,16 @@ nbd
 
 507
 
-getver.sh
+gen-dependencies.sh
 file
 
 
 
 
 2014-06-03T20:17:37.866341Z
-78283f0057f021f677b42a0bd9078ec3
-2011-10-26T14:54:57.903911Z
-28604
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-686
-
-pad_image
-file
-
-
-
-
-2014-06-03T20:17:37.870341Z
-fb2ca733bc45992e580986408cfdaf23
-2010-03-18T23:35:21.174408Z
-20294
-florian
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2436
-
-diffconfig.sh
-file
-
-
-
-
-2014-06-03T20:17:37.866341Z
-059008427036179198ec11c586ea5f0a
-2013-04-18T12:05:16.166937Z
-36361
+0babfca54cd4bc01789107589f7546b8
+2013-11-19T00:03:34.982630Z
+38860
 nbd
 has-props
 
@@ -1081,53 +1115,53 @@ has-props
 
 
 
-678
+969
 
-combined-image.sh
+checkpatch.pl
+file
+
+
+
+
+2014-06-03T20:17:37.858341Z
+0fe467b3d0ef6c3e4745d4456e7eae8b
+2013-08-31T11:16:49.039610Z
+37864
+acinonyx
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+95651
+
+combined-ext-image.sh
 file
 
 
 
 
 2014-06-03T20:17:37.862341Z
-03bfdbb4c402220ccf11b1eed830f3b9
-2009-12-24T10:34:37.785565Z
-18920
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1020
-
-download.pl
-file
-
-
-
-
-2014-06-03T20:52:31.526293Z
-fc430bf79d639ef3add8228ec473e559
-2013-12-13T16:43:07.242211Z
-39045
-nbd
+d8a79b0d4e0968b6167609a21bab1103
+2011-11-30T07:43:58.697431Z
+29358
+nico
 has-props
 
 
@@ -1149,7 +1183,75 @@ has-props
 
 
 
-5468
+1885
+
+cleanfile
+file
+
+
+
+
+2014-06-03T20:17:37.862341Z
+bc5d1612e4f4a6f85427ecf28cc7a660
+2013-08-31T11:16:44.757551Z
+37863
+acinonyx
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3492
+
+update-package-md5sum
+file
+
+
+
+
+2014-06-03T20:17:37.870341Z
+6159b3717de6804a4e72c92e4b05e5b2
+2010-01-03T17:06:06.812530Z
+19019
+lars
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1193
 
 patch-specs.sh
 file
@@ -1287,74 +1389,6 @@ has-props
 
 1684
 
-feeds
-file
-
-
-
-
-2014-06-03T20:17:37.866341Z
-e26d6775c962d75acfadf23131b9cfc3
-2013-09-25T13:02:55.421028Z
-38172
-luka
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-15445
-
-patch-kernel.sh
-file
-
-
-
-
-2014-06-03T20:17:37.870341Z
-3a1b737e5f9ff6503ea4af754b9738bd
-2010-10-08T09:21:01.250670Z
-23314
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1391
-
 slugimage.pl
 file
 
@@ -1423,6 +1457,74 @@ has-props
 
 14590
 
+env
+file
+
+
+
+
+2014-06-03T20:17:37.866341Z
+7397f07e13e0e242cfb4ba411fe9f65c
+2012-02-16T19:24:34.867738Z
+30602
+florian
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4727
+
+metadata.pl
+file
+
+
+
+
+2014-06-20T21:11:26.812245Z
+92fcf5ff12c8101770a2d50180ba60bc
+2014-06-12T14:35:09.993669Z
+41160
+nbd
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+21523
+
 ipkg
 file
 
@@ -1457,108 +1559,40 @@ has-props
 
 28383
 
+metadata.pm
+file
+
+
+
+
+2014-06-03T20:17:37.870341Z
+78a6357a5148f28dbb0763cf4e36604f
+2013-07-18T13:11:46.932565Z
+37397
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4493
+
 flashing
 dir
-
-bundle-libraries.sh
-file
-
-
-
-
-2014-06-03T20:52:31.530293Z
-d362f04c75ac577a250b9f88e40fbb5d
-2014-06-02T13:27:23.626437Z
-40967
-nbd
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2649
-
-rstrip.sh
-file
-
-
-
-
-2014-06-03T20:17:37.870341Z
-893599511bba25fa3766ae3501ee4c3b
-2012-02-20T17:38:26.597822Z
-30662
-nbd
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-800
-
-symlink-tree.sh
-file
-
-
-
-
-2014-06-03T20:17:37.870341Z
-6f9cd1ec9a388954e57ba7bf5cfc6a5f
-2013-02-21T11:45:27.104308Z
-35718
-jogo
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-707
 

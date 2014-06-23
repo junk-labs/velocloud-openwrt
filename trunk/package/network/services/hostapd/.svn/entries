@@ -1,15 +1,15 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/package/network/services/hostapd
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T12:44:40.831340Z
-40934
-blogic
+2014-06-05T21:14:02.384814Z
+41023
+nbd
 
 
 
@@ -25,6 +25,9 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+patches
+dir
 
 Config.in
 file
@@ -66,10 +69,10 @@ file
 
 
 
-2014-06-03T20:21:33.910336Z
-aa83c48798b55d9dd76b847602dbcfc6
-2014-05-19T21:58:48.258419Z
-40782
+2014-06-20T21:11:27.536245Z
+7ff31307103f2bf420edf22e0679c741
+2014-06-05T15:58:01.092765Z
+41022
 nbd
 has-props
 
@@ -98,8 +101,5 @@ madwifi
 dir
 
 files
-dir
-
-patches
 dir
 

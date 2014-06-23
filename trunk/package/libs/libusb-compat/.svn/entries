@@ -1,15 +1,15 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/package/libs/libusb-compat
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-03-20T23:16:06.472371Z
-39975
-florian
+2014-06-04T07:20:02.731112Z
+40998
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-03T20:19:30.510339Z
-2321a615b1eb5bc184cf0a9d3c47a208
-2014-03-20T23:16:06.472371Z
-39975
-florian
+2014-06-20T21:11:27.440245Z
+d830f3d63daa0375c62e30bcb3eae861
+2014-06-04T07:20:02.731112Z
+40998
+blogic
 
 
 
@@ -58,5 +58,5 @@ florian
 
 
 
-1174
+1215
 

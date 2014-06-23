@@ -26,61 +26,16 @@ florian
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-faad2
-dir
-
-nacl
-dir
-
-libgssapi
-dir
-
-libmodbus
-dir
-
-libplist
-dir
-
-sqlite2
-dir
-
-sqlite3
-dir
-
-librsync
-dir
-
-boost
-dir
-
-wxbase
-dir
-
-cgilib
-dir
-
-wt
-dir
-
-libdaq
-dir
-
-gpgme
-dir
-
-protobuf
+libpam
 dir
 
 libmicrohttpd
 dir
 
-libpam
+mysql
 dir
 
 libdlna
-dir
-
-mysql
 dir
 
 glibmm
@@ -89,16 +44,16 @@ dir
 aalib
 dir
 
-libtheora
-dir
-
 credis
 dir
 
-gupnp-vala
+libtheora
 dir
 
 libugpio
+dir
+
+gupnp-vala
 dir
 
 clearsilver
@@ -107,16 +62,16 @@ dir
 gnutls
 dir
 
-libsrtp
-dir
-
 file
 dir
 
-gssdp
+libsrtp
 dir
 
 ftplib
+dir
+
+gssdp
 dir
 
 libIDL2
@@ -215,40 +170,40 @@ dir
 libxslt
 dir
 
-alsa-lib
+google-authenticator
 dir
 
-google-authenticator
+alsa-lib
 dir
 
 gsl
 dir
 
-gsm
-dir
-
 matrixssl
 dir
 
-elfutils
-dir
-
-uclibc++
+gsm
 dir
 
 libgee
 dir
 
+uclibc++
+dir
+
+elfutils
+dir
+
 libmad
 dir
 
-axtls
+libgpg-error
 dir
 
 libotr
 dir
 
-libgpg-error
+axtls
 dir
 
 ossp-js
@@ -260,34 +215,34 @@ dir
 poco
 dir
 
-libid3tag
-dir
-
 libsigc++
 dir
 
-liboping
-dir
-
-clinkc
+libid3tag
 dir
 
 postgresql
 dir
 
-libvncserver
+clinkc
 dir
 
-cyrus-sasl
+liboping
+dir
+
+libvncserver
 dir
 
 gupnp-dlna
 dir
 
-bluez-libs
+cyrus-sasl
 dir
 
 libtwin
+dir
+
+bluez-libs
 dir
 
 libdirectfb
@@ -299,16 +254,16 @@ dir
 libnet-1.0.x
 dir
 
-argtable
-dir
-
 libassuan
 dir
 
-apr
+argtable
 dir
 
 libsml
+dir
+
+apr
 dir
 
 librpcsecgss
@@ -335,43 +290,43 @@ dir
 gupnp-av
 dir
 
-libfreecwmp
-dir
-
 glib2
 dir
 
-nmeap
-dir
-
-libdvdread
-dir
-
-libspe2
+libfreecwmp
 dir
 
 ldns
 dir
 
-intltool
+libspe2
 dir
 
-libmcrypt
+libdvdread
+dir
+
+nmeap
+dir
+
+intltool
 dir
 
 flac
 dir
 
+libmcrypt
+dir
+
 libxml2
 dir
 
-libart
+libsoup
 dir
 
 libtasn1
 dir
 
-libsoup
+libart
 dir
 
 libusbmuxd
@@ -380,25 +335,25 @@ dir
 libvorbisidec
 dir
 
-libsdl_sound
+libdnet
 dir
 
-libdnet
+libsdl_sound
 dir
 
 libmpcdec
 dir
 
-gmp
-dir
-
-libosip2
+opencdk
 dir
 
 freetype
 dir
 
-opencdk
+libosip2
+dir
+
+gmp
 dir
 
 jpeg
@@ -604,6 +559,10 @@ dir
 
 curl
 dir
+
+
+
+delete
 
 id3lib
 dir
@@ -687,5 +646,50 @@ fribidi
 dir
 
 gdbm
+dir
+
+faad2
+dir
+
+nacl
+dir
+
+libgssapi
+dir
+
+libmodbus
+dir
+
+libplist
+dir
+
+sqlite2
+dir
+
+sqlite3
+dir
+
+librsync
+dir
+
+boost
+dir
+
+wxbase
+dir
+
+cgilib
+dir
+
+wt
+dir
+
+libdaq
+dir
+
+gpgme
+dir
+
+protobuf
 dir
 

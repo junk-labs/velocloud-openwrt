@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/package/utils/usbmode/files
 svn://svn.openwrt.org/openwrt
 
@@ -25,40 +25,6 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-usbmode.hotplug
-file
-
-
-
-
-2014-06-03T20:17:37.854341Z
-4936601592be12677c153eeca15b5266
-2013-12-13T16:43:15.082714Z
-39047
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-26
 
 usbmode.init
 file
@@ -93,4 +59,38 @@ has-props
 
 
 188
+
+usbmode.hotplug
+file
+
+
+
+
+2014-06-03T20:17:37.854341Z
+4936601592be12677c153eeca15b5266
+2013-12-13T16:43:15.082714Z
+39047
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+26
 

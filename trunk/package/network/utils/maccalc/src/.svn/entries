@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/package/network/utils/maccalc/src
 svn://svn.openwrt.org/openwrt
 
@@ -25,40 +25,6 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-Makefile
-file
-
-
-
-
-2014-06-03T20:17:37.786341Z
-4f4d09f95e66e7695ff4b2b2f414fd03
-2011-08-15T18:55:51.371841Z
-28004
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-157
 
 main.c
 file
@@ -93,4 +59,38 @@ has-props
 
 
 4581
+
+Makefile
+file
+
+
+
+
+2014-06-03T20:17:37.786341Z
+4f4d09f95e66e7695ff4b2b2f414fd03
+2011-08-15T18:55:51.371841Z
+28004
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+157
 

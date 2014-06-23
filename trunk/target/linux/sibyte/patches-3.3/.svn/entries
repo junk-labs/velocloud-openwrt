@@ -1,7 +1,7 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux/sibyte/patches-3.3
 svn://svn.openwrt.org/openwrt
 
@@ -25,40 +25,6 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-103-m41t80_smbus.patch
-file
-
-
-
-
-2014-06-03T20:17:38.330341Z
-1092d94e2f4c2b8a0dc6cccca0f72b24
-2012-05-12T10:49:26.997951Z
-31680
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-9929
 
 106-no_module_reloc.patch
 file
@@ -195,4 +161,38 @@ has-props
 
 
 1652
+
+103-m41t80_smbus.patch
+file
+
+
+
+
+2014-06-03T20:17:38.330341Z
+1092d94e2f4c2b8a0dc6cccca0f72b24
+2012-05-12T10:49:26.997951Z
+31680
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9929
 

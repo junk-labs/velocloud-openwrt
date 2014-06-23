@@ -1,15 +1,15 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/config
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T17:04:41.828782Z
-40981
-nbd
+2014-06-12T11:34:44.782100Z
+41153
+cyrus
 
 
 
@@ -25,40 +25,6 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-Config-kernel.in
-file
-
-
-
-
-2014-06-03T20:38:07.978313Z
-02a2bd5dace997fcf5b279cb03cee202
-2014-05-25T22:39:54.673638Z
-40858
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-13530
 
 Config-images.in
 file
@@ -161,4 +127,38 @@ blogic
 
 
 3025
+
+Config-kernel.in
+file
+
+
+
+
+2014-06-20T21:11:22.276245Z
+9a6dffbdf74a611b84f578adbd1ca72d
+2014-06-12T11:34:44.782100Z
+41153
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+13503
 

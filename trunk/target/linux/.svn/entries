@@ -1,15 +1,15 @@
 10
 
 dir
-40995
+41290
 svn://svn.openwrt.org/openwrt/trunk/target/linux
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T21:23:36.845640Z
-40991
-luka
+2014-06-20T19:13:01.848977Z
+41288
+kaloz
 
 
 
@@ -25,6 +25,21 @@ luka
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+realview
+dir
+
+brcm47xx
+dir
+
+cns3xxx
+dir
+
+imx6
+dir
+
+amazon
+dir
 
 orion
 dir
@@ -71,19 +86,19 @@ dir
 ep93xx
 dir
 
-sunxi
+cns21xx
 dir
 
-cns21xx
+sunxi
 dir
 
 mxs
 dir
 
-sparc
+gemini
 dir
 
-gemini
+sparc
 dir
 
 adm5120
@@ -95,19 +110,19 @@ dir
 mpc85xx
 dir
 
-mvebu
+ppc40x
 dir
 
 at91
 dir
 
-ppc40x
-dir
-
-omap24xx
+mvebu
 dir
 
 ppc44x
+dir
+
+omap24xx
 dir
 
 iop32x
@@ -188,19 +203,4 @@ has-props
 
 
 373
-
-realview
-dir
-
-brcm47xx
-dir
-
-cns3xxx
-dir
-
-imx6
-dir
-
-amazon
-dir
 

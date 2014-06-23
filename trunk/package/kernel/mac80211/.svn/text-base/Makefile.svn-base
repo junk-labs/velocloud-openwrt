@@ -1070,13 +1070,32 @@ define KernelPackage/b43
   URL:=http://linuxwireless.org/en/users/Drivers/b43
   KCONFIG:= \
   	CONFIG_HW_RANDOM=y
-  DEPENDS+= +kmod-mac80211 +!(TARGET_brcm47xx||TARGET_brcm63xx):kmod-ssb
+  # Depend on PCI_SUPPORT to make sure we can select kmod-bcma or kmod-ssb
+  DEPENDS += \
+	@PCI_SUPPORT +kmod-mac80211 \
+	$(if $(CONFIG_PACKAGE_B43_USE_SSB),+kmod-ssb) \
+	$(if $(CONFIG_PACKAGE_B43_USE_BCMA),+kmod-bcma)
   FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/b43/b43.ko
   AUTOLOAD:=$(call AutoProbe,b43)
   MENU:=1
 endef
 
 define KernelPackage/b43/config
+
+config PACKAGE_B43_USE_SSB
+	select PACKAGE_kmod-ssb
+	tristate
+	depends on !TARGET_brcm47xx && !TARGET_brcm63xx
+	default PACKAGE_kmod-b43 if PACKAGE_B43_BUSES_BCMA_AND_SSB
+	default PACKAGE_kmod-b43 if PACKAGE_B43_BUSES_SSB
+
+config PACKAGE_B43_USE_BCMA
+	select PACKAGE_kmod-bcma
+	tristate
+	depends on !TARGET_brcm47xx
+	default PACKAGE_kmod-b43 if PACKAGE_B43_BUSES_BCMA_AND_SSB
+	default PACKAGE_kmod-b43 if PACKAGE_B43_BUSES_BCMA
+
   if PACKAGE_kmod-b43
 
 	choice
@@ -1148,6 +1167,7 @@ define KernelPackage/b43/config
 	config B43_FW_SQUASH_COREREVS
 		string "Core revisions to include"
 		depends on B43_FW_SQUASH
+		default "5,6,7,8,9,10,11,13,15" if TARGET_brcm47xx_legacy
 		default "5,6,7,8,9,10,11,13,15,16,29"
 		help
 		  This is a comma seperated list of core revision numbers.
@@ -1161,6 +1181,7 @@ define KernelPackage/b43/config
 	config B43_FW_SQUASH_PHYTYPES
 		string "PHY types to include"
 		depends on B43_FW_SQUASH
+		default "G,LP" if TARGET_brcm47xx_legacy
 		default "G,LP,N,HT"
 		help
 		  This is a comma seperated list of PHY types:
@@ -1178,10 +1199,24 @@ define KernelPackage/b43/config
 		  Example (keep files for G-PHY and N-PHY):
 		    G,N
 
+	choice
+		prompt "Supported buses"
+		default PACKAGE_B43_BUSES_BCMA_AND_SSB
+		help
+		  This allows choosing buses that b43 should support.
+
+	config PACKAGE_B43_BUSES_BCMA_AND_SSB
+		depends on !TARGET_brcm47xx_legacy
+		bool "BCMA and SSB"
+
 	config PACKAGE_B43_BUSES_BCMA
-		bool "Support for BCMA bus"
-		select PACKAGE_kmod-bcma if !TARGET_brcm47xx
-		default y
+		depends on !TARGET_brcm47xx_legacy
+		bool "BCMA only"
+
+	config PACKAGE_B43_BUSES_SSB
+		bool "SSB only"
+
+	endchoice
 
 	config PACKAGE_B43_DEBUG
 		bool "Enable debug output and debugfs for b43"
@@ -1203,6 +1238,7 @@ define KernelPackage/b43/config
 
 	config PACKAGE_B43_PHY_N
 		bool "Enable support for N-PHYs"
+		default n if TARGET_brcm47xx_legacy
 		default y
 		help
 		  Enable support for N-PHY. This includes support for the following devices:
@@ -1225,6 +1261,7 @@ define KernelPackage/b43/config
 
 	config PACKAGE_B43_PHY_HT
 		bool "Enable support for HT-PHYs"
+		default n if TARGET_brcm47xx_legacy
 		default y
 		help
 		  Enable support for HT-PHY. This includes support for the following devices:
@@ -1433,11 +1470,9 @@ endif
 config-$(call config_package,carl9170) += CARL9170
 
 config-$(call config_package,b43) += B43
-ifeq ($(CONFIG_PACKAGE_B43_BUSES_BCMA),y)
-config-y += B43_BUSES_BCMA_AND_SSB
-else
-config-y += B43_BUSES_SSB
-endif
+config-$(CONFIG_PACKAGE_B43_BUSES_BCMA_AND_SSB) += B43_BUSES_BCMA_AND_SSB
+config-$(CONFIG_PACKAGE_B43_BUSES_BCMA) += B43_BUSES_BCMA
+config-$(CONFIG_PACKAGE_B43_BUSES_SSB) += B43_BUSES_SSB
 config-$(CONFIG_PACKAGE_B43_PHY_N) += B43_PHY_N
 config-$(CONFIG_PACKAGE_B43_PHY_LP) += B43_PHY_LP
 config-$(CONFIG_PACKAGE_B43_PHY_HT) += B43_PHY_HT

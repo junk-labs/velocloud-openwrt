@@ -58,7 +58,7 @@ GRUB_TIMEOUT:=$(call qstrip,$(CONFIG_GRUB_TIMEOUT))
 
 ifneq ($(CONFIG_GRUB_IMAGES),)
 
-  BOOTOPTS:=$(call qstrip,$(CONFIG_GRUB_BOOTOPTS))
+  BOOTOPTS:=$(call qstrip,$(CONFIG_GRUB_BOOTOPTS)) panic_timeout=5
 
   define Image/cmdline/ext4
     root=$(ROOTPART) rootfstype=ext4 rootwait

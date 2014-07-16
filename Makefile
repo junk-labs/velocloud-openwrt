@@ -173,6 +173,7 @@ define OpenwrtConfig
 		-e '/CONFIG_TARGET_BOARD/d' \
 		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
 		-e '/CONFIG_X\(64\|86\)_/d' \
+		-e '/CONFIG_KEXEC_TOOLS_TARGET_NAME/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)_$(call target_conf,$(1))=y' \

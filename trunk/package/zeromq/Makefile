@@ -10,10 +10,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zeromq
-PKG_VERSION:=3.2.3
+PKG_VERSION:=4.0.4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://download.zeromq.org/
+PKG_MD5SUM=f3c3defbb5ef6cc000ca65e529fdab3b
 
 PKG_INSTALL:=1
 

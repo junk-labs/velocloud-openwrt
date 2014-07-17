@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bind
-PKG_VERSION:=9.9.4
+PKG_VERSION:=9.9.5-P1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:= \
 	ftp://ftp.isc.org/isc/bind9/$(PKG_VERSION) \
 	http://www.mirrorservice.org/sites/ftp.isc.org/isc/bind9/$(PKG_VERSION)
-PKG_MD5SUM:=f69757adc86776daed8e5acb0ee7c0ca
+PKG_MD5SUM:=3408af8c6d27d6cb8a05287f2ee32ad0
 
 PKG_FIXUP:=autoreconf
 PKG_REMOVE_FILES:=aclocal.m4 libtool.m4
@@ -79,6 +79,11 @@ endef
 define Package/bind-dig
   $(call Package/bind/Default)
   TITLE+= DNS excavation tool
+endef
+
+define Package/bind-nslookup
+  $(call Package/bind/Default)
+  TITLE+= classic DNS lookup tool
 endef
 
 export BUILD_CC="$(TARGET_CC)"
@@ -188,6 +193,11 @@ define Package/bind-dig/install
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/dig $(1)/usr/bin/
 endef
 
+define Package/bind-nslookup/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/nslookup $(1)/usr/bin/
+endef
+
 $(eval $(call BuildPackage,bind-libs))
 $(eval $(call BuildPackage,bind-server))
 $(eval $(call BuildPackage,bind-client))
@@ -197,3 +207,4 @@ $(eval $(call BuildPackage,bind-check))
 $(eval $(call BuildPackage,bind-dnssec))
 $(eval $(call BuildPackage,bind-host))
 $(eval $(call BuildPackage,bind-dig))
+$(eval $(call BuildPackage,bind-nslookup))

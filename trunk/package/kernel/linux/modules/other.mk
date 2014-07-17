@@ -863,3 +863,20 @@ define KernelPackage/thermal-kirkwood/description
 endef
 
 $(eval $(call KernelPackage,thermal-kirkwood))
+
+
+define KernelPackage/thermal-x86-pkg-temp
+  SUBMENU:=$(OTHER_MENU)
+  TITLE:=Temperature sensor on X86 Packaging
+  DEPENDS:=@TARGET_x86||TARGET_x64 +kmod-thermal
+  KCONFIG:=CONFIG_X86_PKG_TEMP_THERMAL
+  FILES:=$(LINUX_DIR)/drivers/thermal/x86_pkg_temp_thermal.ko
+  AUTOLOAD:=$(call AutoProbe,x86_pkg_temp_thermal)
+endef
+
+define KernelPackage/thermal-x86-pkg-temp/description
+ Support for the X86 package temperature thermal sensor driver into
+ the Linux thermal framework.
+endef
+
+$(eval $(call KernelPackage,thermal-x86-pkg-temp))

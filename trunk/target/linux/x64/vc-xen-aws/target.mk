@@ -3,6 +3,12 @@ BOARDNAME:=Xen/AWS-EC2
 FEATURES:=ext4 pci usb display
 # Common packages:
 DEFAULT_PACKAGES += \
+	bridge \
+	ip \
+	net-tools-arp \
+	net-tools-ifconfig \
+	net-tools-netstat \
+	net-tools-route \
 	openssh-server \
 	openssh-client \
 	openssl-util \

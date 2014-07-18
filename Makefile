@@ -177,6 +177,7 @@ define OpenwrtConfig
 		-e '/CONFIG_VMDK_/d' \
 		-e '/CONFIG.*_EC2_/d' \
 		-e '/CONFIG_VELOCLOUD_/d' \
+		-e '/CONFIG_KEXEC_TOOLS_TARGET_NAME/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)_$(call target_conf,$(1))=y' \

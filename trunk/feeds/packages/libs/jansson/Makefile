@@ -9,12 +9,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=jansson
-PKG_VERSION:=2.2.1
+PKG_VERSION:=2.6
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://www.digip.org/jansson/releases/
-PKG_MD5SUM:=ebf4ebc7af47de27f7b9d79ad5853176
+PKG_MD5SUM:=00dd7b55c01c74cac59df398208b92ed
 
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1

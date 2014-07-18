@@ -44,6 +44,21 @@ endef
 $(eval $(call KernelPackage,hwmon-vid))
 
 
+define KernelPackage/hwmon-coretemp
+  TITLE:=Intel Core temperature monitoring support
+  KCONFIG:=CONFIG_SENSORS_CORETEMP
+  FILES:=$(LINUX_DIR)/drivers/hwmon/coretemp.ko
+  AUTOLOAD:=$(call AutoLoad,50,coretemp)
+  $(call AddDepends/hwmon,@TARGET_x86||TARGET_x64 +kmod-hwmon-vid)
+endef
+
+define KernelPacakge/hwmon-coretemp/description
+  Kernel module for the Intel Core temperature sensor
+endef
+
+$(eval $(call KernelPackage,hwmon-coretemp))
+
+
 define KernelPackage/hwmon-adt7410
   TITLE:=ADT7410 monitoring support
 ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),ge,3.10.0)),1)

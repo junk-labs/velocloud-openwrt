@@ -12,7 +12,7 @@ BOARDNAME:=x64
 FEATURES:=squashfs ext4 vdi vmdk pcmcia targz
 SUBTARGETS=generic edge500 pw-dev vc-vmdk vc-xen-aws vc-kvm-guest
 
-LINUX_VERSION:=3.12.22
+LINUX_VERSION:=3.12.24
 
 KERNELNAME:=bzImage
 

@@ -339,6 +339,11 @@ hostapd_setup_vif() {
 	config_get device "$vif" device
 	config_get channel "$device" channel
 	config_get hwmode "$device" hwmode
+	config_get nice "$device" nice 0
+	config_get disable_olbc "$device" disable_olbc 0
+	if [ 0$disable_olbc -gt 0 ]; then
+		DISABLE_OLBC="-H no-olbc"
+	fi
 
 	hostapd_set_log_options hostapd_cfg "$device"
 	hostapd_set_bss_options hostapd_cfg "$vif"
@@ -356,6 +361,6 @@ ${hwmode:+hw_mode=${hwmode#11}}
 ${channel:+channel=$channel}
 $hostapd_cfg
 EOF
-	hostapd -P /var/run/wifi-$ifname.pid -B /var/run/hostapd-$ifname.conf -H no-olbc
+	nice -n $nice hostapd -P /var/run/wifi-$ifname.pid -B /var/run/hostapd-$ifname.conf $DISABLE_OLBC
 }
 

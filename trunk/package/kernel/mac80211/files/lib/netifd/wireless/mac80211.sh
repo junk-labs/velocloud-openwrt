@@ -650,7 +650,14 @@ drv_mac80211_setup() {
 	for_each_interface "ap" mac80211_prepare_vif
 
 	[ -n "$hostapd_ctrl" ] && {
-		/usr/sbin/hostapd -P /var/run/wifi-$phy.pid -B "$hostapd_conf_file" -H no-olbc
+		#config_get nice "$device" nice 0
+		#config_get disable_olbc "$device" disable_olbc 0
+		#if [ 0$disable_olbc -gt 0 ]; then
+		#	DISABLE_OLBC="-H no-olbc"
+		#fi
+		nice="-15"
+		DISABLE_OLBC="-H no-olbc"
+		nice -n $nice /usr/sbin/hostapd -P /var/run/wifi-$phy.pid -B "$hostapd_conf_file" $DISABLE_OLBC
 		ret="$?"
 		wireless_add_process "$(cat /var/run/wifi-$phy.pid)" "/usr/sbin/hostapd" 1
 		[ "$ret" != 0 ] && {

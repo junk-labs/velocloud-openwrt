@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/toolchain/gcc/patches/4.4.7
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/toolchain/gcc/patches/4.4.7
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,74 +25,6 @@ florian
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-810-arm-softfloat-libgcc.patch
-file
-
-
-
-
-2014-06-03T20:17:38.422341Z
-4f1385eee2d14845899f87be894f1601
-2010-05-28T13:50:47.847179Z
-21600
-nico
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-913
-
-820-libgcc_pic.patch
-file
-
-
-
-
-2014-06-03T20:17:38.426341Z
-4d76e03bd88993dd27c64bf8de840322
-2009-10-20T06:48:29.715134Z
-18087
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1153
 
 910-mbsd_multi.patch
 file
@@ -501,4 +433,72 @@ kaloz
 
 
 757948
+
+810-arm-softfloat-libgcc.patch
+file
+
+
+
+
+2014-06-03T20:17:38.422341Z
+4f1385eee2d14845899f87be894f1601
+2010-05-28T13:50:47.847179Z
+21600
+nico
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+913
+
+820-libgcc_pic.patch
+file
+
+
+
+
+2014-06-03T20:17:38.426341Z
+4d76e03bd88993dd27c64bf8de840322
+2009-10-20T06:48:29.715134Z
+18087
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1153
 

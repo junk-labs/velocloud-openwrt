@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm47xx/legacy
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm47xx/legacy
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-08T09:51:38.219122Z
-41053
-nbd
+2014-07-10T19:16:15.296438Z
+41560
+blogic
 
 
 
@@ -69,11 +69,11 @@ file
 
 
 
-2014-06-20T21:11:24.700245Z
-65a70106f5df1eafee3d0dc3775f44e0
-2014-06-07T15:19:40.421851Z
-41041
-nbd
+2014-08-06T22:38:49.577837Z
+b3033f87e542f5b8d8a6518e2acb71dc
+2014-07-02T22:07:46.845062Z
+41488
+hauke
 
 
 
@@ -95,5 +95,5 @@ nbd
 
 
 
-241
+213
 

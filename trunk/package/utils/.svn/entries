@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/utils
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-19T15:30:59.622252Z
-41280
-jow
+2014-08-03T11:15:57.679014Z
+41981
+blogic
 
 
 
@@ -25,6 +25,39 @@ jow
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+px5g-standalone
+dir
+
+util-linux
+dir
+
+usbutils
+dir
+
+e2fsprogs
+dir
+
+xfsprogs
+dir
+
+ubi-utils
+dir
+
+ugps
+dir
+
+jsonfilter
+dir
+
+lua
+dir
+
+robocfg
+dir
+
+mdadm
+dir
 
 px5g
 dir
@@ -57,35 +90,5 @@ admswconfig
 dir
 
 fuse
-dir
-
-px5g-standalone
-dir
-
-e2fsprogs
-dir
-
-usbutils
-dir
-
-util-linux
-dir
-
-xfsprogs
-dir
-
-ubi-utils
-dir
-
-jsonfilter
-dir
-
-robocfg
-dir
-
-lua
-dir
-
-mdadm
 dir
 

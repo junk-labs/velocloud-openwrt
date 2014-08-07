@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/files/crypto/ocf
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic/files/crypto/ocf
 svn://svn.openwrt.org/openwrt
 
 
@@ -27,6 +27,9 @@ jogo
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
 ubsec_ssb
+dir
+
+cryptocteon
 dir
 
 rndtest.h
@@ -62,9 +65,6 @@ nbd
 
 
 2363
-
-cryptocteon
-dir
 
 Config.in
 file
@@ -134,12 +134,6 @@ luka
 
 4350
 
-safe
-dir
-
-pasemi
-dir
-
 ocf-compat.h
 file
 
@@ -173,6 +167,12 @@ florian
 
 
 10010
+
+pasemi
+dir
+
+safe
+dir
 
 talitos
 dir

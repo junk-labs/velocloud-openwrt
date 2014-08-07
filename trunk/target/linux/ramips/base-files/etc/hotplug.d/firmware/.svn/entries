@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ramips/base-files/etc/hotplug.d/firmware
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ramips/base-files/etc/hotplug.d/firmware
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-13T09:16:15.876334Z
-41177
+2014-07-17T10:55:31.049676Z
+41680
 blogic
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2014-06-20T21:11:25.620245Z
-6162441fb8757da1818c2101d1b35255
-2014-06-13T09:16:15.876334Z
-41177
+2014-08-06T22:40:51.681834Z
+4a546269118ab3c21b99c8f401879b36
+2014-07-17T10:55:31.049676Z
+41680
 blogic
 
 
@@ -58,5 +58,5 @@ blogic
 
 
 
-2276
+871
 

@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/broadcom-wl/files/lib/wifi
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/broadcom-wl/files/lib/wifi
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-11T05:00:57.834548Z
-40749
-nbd
+2014-07-05T23:24:41.534968Z
+41519
+hauke
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-03T20:36:27.742315Z
-fc14439060551999507005287ef59087
-2014-05-11T05:00:57.834548Z
-40749
-nbd
+2014-08-06T22:46:28.881826Z
+fd46f250f95d6e2f312ad82ab94ddd0e
+2014-07-05T23:24:41.534968Z
+41519
+hauke
 
 
 
@@ -58,5 +58,5 @@ nbd
 
 
 
-10606
+10729
 

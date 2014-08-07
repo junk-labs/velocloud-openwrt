@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/au1000/au1500/profiles
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/au1000/au1500/profiles
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-07-17T16:39:52.203736Z
-32767
-florian
+2014-07-10T19:16:15.296438Z
+41560
+blogic
 has-props
 
 
@@ -100,11 +100,11 @@ file
 
 
 
-2014-06-03T20:17:37.966341Z
-087db27a551ab91e9df2907811a9efbd
-2012-07-17T16:39:52.203736Z
-32767
-florian
+2014-08-06T22:38:47.693837Z
+753c1cc2346d504fe05c2e9072e73a82
+2014-07-10T19:16:15.296438Z
+41560
+blogic
 
 
 

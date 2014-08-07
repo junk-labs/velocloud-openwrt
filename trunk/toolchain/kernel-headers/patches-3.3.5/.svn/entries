@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/toolchain/kernel-headers/patches-3.3.5
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/toolchain/kernel-headers/patches-3.3.5
 svn://svn.openwrt.org/openwrt
 
 

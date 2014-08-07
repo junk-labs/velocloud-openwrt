@@ -14,6 +14,7 @@ include $(INCLUDE_DIR)/host.mk
 override MAKEFLAGS=
 override MAKE:=$(SUBMAKE)
 KDIR=$(KERNEL_BUILD_DIR)
+DTS_DIR:=$(LINUX_DIR)/arch/$(ARCH)/boot/dts/
 
 IMG_PREFIX?=openwrt-$(BOARD)$(if $(SUBTARGET),-$(SUBTARGET))
 
@@ -76,15 +77,10 @@ define prepare_generic_squashfs
 	$(STAGING_DIR_HOST)/bin/padjffs2 $(1) 4 8 16 64 128 256
 endef
 
-ifneq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),)
-  define Image/BuildKernel/Initramfs
+define Image/BuildKernel/Initramfs
 	cp $(KDIR)/vmlinux-initramfs.elf $(BIN_DIR)/$(IMG_PREFIX)-vmlinux-initramfs.elf
 	$(call Image/Build/Initramfs)
-  endef
-else
-  define Image/BuildKernel/Initramfs
-  endef
-endif
+endef
 
 define Image/BuildKernel/MkuImage
 	mkimage -A $(ARCH) -O linux -T kernel -C $(1) -a $(2) -e $(3) \
@@ -130,17 +126,28 @@ ifneq ($(CONFIG_TARGET_ROOTFS_SQUASHFS),)
 endif
 
 # $(1): board name
-# $(2): kernel image
-# $(3): rootfs image
+# $(2): rootfs type
+# $(3): kernel image
 ifneq ($(CONFIG_NAND_SUPPORT),)
    define Image/Build/SysupgradeNAND
-	mkdir -p $(KDIR_TMP)/sysupgrade-$(1)/
-	echo "BOARD=$(1)" > $(KDIR_TMP)/sysupgrade-$(1)/CONTROL
-	[ -z "$(2)" ] || $(CP) $(2) $(KDIR_TMP)/sysupgrade-$(1)/kernel
-	[ -z "$(3)" ] || $(CP) $(3) $(KDIR_TMP)/sysupgrade-$(1)/root
-	(cd $(KDIR_TMP); $(TAR) cvf \
-		$(BIN_DIR)/$(IMG_PREFIX)-$(1)-ubi-sysupgrade.tar sysupgrade-$(1))
+	mkdir -p "$(KDIR_TMP)/sysupgrade-$(1)/"
+	echo "BOARD=$(1)" > "$(KDIR_TMP)/sysupgrade-$(1)/CONTROL"
+	[ -z "$(2)" ] || $(CP) "$(KDIR)/root.$(2)" "$(KDIR_TMP)/sysupgrade-$(1)/root"
+	[ -z "$(3)" ] || $(CP) "$(3)" "$(KDIR_TMP)/sysupgrade-$(1)/kernel"
+	(cd "$(KDIR_TMP)"; $(TAR) cvf \
+		"$(BIN_DIR)/$(IMG_PREFIX)-$(1)-$(2)-sysupgrade.tar" sysupgrade-$(1))
    endef
+# $(1) board name
+# $(2) ubinize-image options (e.g. --uboot-env and/or --kernel kernelimage)
+# $(3) rootfstype (e.g. squashfs or ubifs)
+# $(4) options to pass-through to ubinize (i.e. $($(PROFILE)_UBI_OPTS)))
+   define Image/Build/UbinizeImage
+	sh $(TOPDIR)/scripts/ubinize-image.sh $(2) \
+		"$(KDIR)/root.$(3)" \
+		"$(BIN_DIR)/$(IMG_PREFIX)-$(1)-$(3)-ubinized.bin" \
+		$(4)
+   endef
+
 endif
 
 ifneq ($(CONFIG_TARGET_ROOTFS_UBIFS),)
@@ -257,7 +264,7 @@ define BuildImage
 		$(call Image/Prepare)
 		$(call Image/mkfs/prepare)
 		$(call Image/BuildKernel)
-		$(call Image/BuildKernel/Initramfs)
+		$(if $(CONFIG_TARGET_ROOTFS_INITRAMFS),$(call Image/BuildKernel/Initramfs))
 		$(call Image/InstallKernel)
 		$(call Image/mkfs/cpiogz)
 		$(call Image/mkfs/targz)
@@ -271,7 +278,7 @@ define BuildImage
   else
     install: compile install-targets
 		$(call Image/BuildKernel)
-		$(call Image/BuildKernel/Initramfs)
+		$(if $(CONFIG_TARGET_ROOTFS_INITRAMFS),$(call Image/BuildKernel/Initramfs))
 		$(call Image/InstallKernel)
 		$(call Image/mkfs/cpiogz)
 		$(call Image/mkfs/targz)

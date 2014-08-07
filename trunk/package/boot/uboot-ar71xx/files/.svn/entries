@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/boot/uboot-ar71xx/files
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/boot/uboot-ar71xx/files
 svn://svn.openwrt.org/openwrt
 
 
@@ -26,9 +26,6 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-drivers
-dir
-
 include
 dir
 
@@ -36,5 +33,8 @@ board
 dir
 
 cpu
+dir
+
+drivers
 dir
 

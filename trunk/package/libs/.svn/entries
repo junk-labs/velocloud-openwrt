@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/libs
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-18T17:06:30.102510Z
-41263
-cyrus
+2014-07-18T14:42:15.814574Z
+41734
+nbd
 
 
 
@@ -26,70 +26,52 @@ cyrus
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-uclibc++
-dir
-
-sysfsutils
-dir
-
-nettle
-dir
-
-libconfig
-dir
-
 libbsd
 dir
 
 polarssl
 dir
 
+libnl
+dir
+
 zlib
 dir
 
-libusb-compat
+uclient
 dir
 
 libnetfilter-conntrack
 dir
 
-libubox
+libtool
 dir
 
-lzo
+libreadline
 dir
 
-libiconv-full
-dir
-
-libpcap
+ustream-ssl
 dir
 
 libnfnetlink
 dir
 
-libjson-c
+toolchain
 dir
 
 libusb
 dir
 
-openssl
-dir
-
-gmp
+ncurses
 dir
 
 gettext-full
 dir
 
-gettext
-dir
-
 libroxml
 dir
 
-libevent2
+libconfig
 dir
 
 cyassl
@@ -98,19 +80,22 @@ dir
 ocf-crypto-headers
 dir
 
-libnl
+libusb-compat
 dir
 
-uclient
+libubox
 dir
 
-libtool
+lzo
 dir
 
 libiconv
 dir
 
-libreadline
+libiconv-full
+dir
+
+libpcap
 dir
 
 librpc
@@ -119,10 +104,7 @@ dir
 libmnl
 dir
 
-ustream-ssl
-dir
-
-toolchain
+libjson-c
 dir
 
 libnl-tiny
@@ -131,6 +113,24 @@ dir
 popt
 dir
 
-ncurses
+gmp
+dir
+
+openssl
+dir
+
+gettext
+dir
+
+uclibc++
+dir
+
+sysfsutils
+dir
+
+libevent2
+dir
+
+nettle
 dir
 

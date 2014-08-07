@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/lantiq/xway
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/lantiq/xway
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-11T13:00:17.708347Z
-41134
+2014-07-28T08:06:40.813203Z
+41854
 blogic
 
 
@@ -26,16 +26,19 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+profiles
+dir
+
 config-default
 file
 
 
 
 
-2014-06-20T21:11:25.164245Z
-f64240f613b3e2d9eab91cd28b393b02
-2014-06-11T13:00:17.708347Z
-41134
+2014-08-06T22:40:51.417834Z
+3078db4fb6e835f53f9f8da31cf83d91
+2014-07-10T19:16:35.047523Z
+41565
 blogic
 
 
@@ -66,10 +69,10 @@ file
 
 
 
-2014-06-20T21:11:25.164245Z
-acfbb0b313da192bca6d37e0fac7b1ea
-2014-06-11T12:59:22.849641Z
-41122
+2014-08-06T22:40:51.413834Z
+f6a35cd56390fa258dfaf474d427c791
+2014-06-24T18:12:52.109530Z
+41312
 blogic
 
 
@@ -92,8 +95,5 @@ blogic
 
 
 
-240
-
-profiles
-dir
+229
 

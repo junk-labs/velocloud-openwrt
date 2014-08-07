@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/tools/mkimage/patches
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/mkimage/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,6 +25,74 @@ luka
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+060-remove_kernel_includes.patch
+file
+
+
+
+
+2014-06-03T20:52:31.662293Z
+3372971f37252d376f64826fd5f3b130
+2014-05-21T09:42:33.431849Z
+40807
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+765
+
+020-openbsd_fixes.patch
+file
+
+
+
+
+2014-06-03T20:52:31.662293Z
+f27287546a30b2a4d8833ae3b3cebc7d
+2014-05-21T09:42:33.431849Z
+40807
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+460
 
 030-allow-to-use-different-magic.patch
 file
@@ -161,72 +229,4 @@ luka
 
 
 377
-
-060-remove_kernel_includes.patch
-file
-
-
-
-
-2014-06-03T20:52:31.662293Z
-3372971f37252d376f64826fd5f3b130
-2014-05-21T09:42:33.431849Z
-40807
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-765
-
-020-openbsd_fixes.patch
-file
-
-
-
-
-2014-06-03T20:52:31.662293Z
-f27287546a30b2a4d8833ae3b3cebc7d
-2014-05-21T09:42:33.431849Z
-40807
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-460
 

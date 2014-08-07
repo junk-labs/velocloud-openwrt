@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/devel/trace-cmd
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/devel/trace-cmd
 svn://svn.openwrt.org/openwrt
 
 

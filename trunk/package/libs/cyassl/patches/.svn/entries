@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/libs/cyassl/patches
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/cyassl/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,40 +25,6 @@ hauke
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-200-SSL_accept-handle-hello-garbage.patch
-file
-
-
-
-
-2014-06-03T20:19:30.506339Z
-77ac54e1a6b1ba29bc089d46867d8259
-2014-05-01T14:04:15.716140Z
-40621
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-581
 
 100-respect_cflags.patch
 file
@@ -93,4 +59,38 @@ hauke
 
 
 344
+
+200-SSL_accept-handle-hello-garbage.patch
+file
+
+
+
+
+2014-06-03T20:19:30.506339Z
+77ac54e1a6b1ba29bc089d46867d8259
+2014-05-01T14:04:15.716140Z
+40621
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+581
 

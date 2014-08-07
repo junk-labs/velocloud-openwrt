@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-20T19:13:01.848977Z
-41288
-kaloz
+2014-08-06T22:01:13.613203Z
+42020
+hauke
 
 
 
@@ -25,46 +25,6 @@ kaloz
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-sdk
-dir
-
-imagebuilder
-dir
-
-Config.in
-file
-
-
-
-
-2014-06-20T21:11:26.804245Z
-526fa39dc351f4f124a52242504f02f8
-2014-06-11T12:59:22.849641Z
-41122
-blogic
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2237
 
 Makefile
 file
@@ -105,4 +65,44 @@ dir
 
 toolchain
 dir
+
+sdk
+dir
+
+imagebuilder
+dir
+
+Config.in
+file
+
+
+
+
+2014-06-20T21:11:26.804245Z
+526fa39dc351f4f124a52242504f02f8
+2014-06-11T12:59:22.849641Z
+41122
+blogic
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2237
 

@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ramips/patches-3.10
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ramips/patches-3.10
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-16T18:57:20.317620Z
-41224
+2014-07-14T17:05:40.275613Z
+41653
 blogic
 
 
@@ -25,244 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-0124-serial-of-allow-au1x00-and-rt288x-to-load-from-OF.patch
-file
-
-
-
-
-2014-06-03T20:52:25.326293Z
-c11203a1bd5a03227f3634f6c80579c0
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-934
-
-0105-MIPS-ralink-add-missing-clk_set_rate-to-clk.c.patch
-file
-
-
-
-
-2014-06-03T20:52:25.326293Z
-a221815034792982dccfcb263438808c
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-673
-
-0300-MIPS-OWRTDTB.patch
-file
-
-
-
-
-2014-06-03T20:52:25.310293Z
-8c0fa694f4b1b082f0fe833f65333050
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1454
-
-0217-pinmux-rt2880.patch
-file
-
-
-
-
-2014-06-03T20:52:25.326293Z
-12ba3eb106af259a716603a834d84644
-2014-04-12T21:21:56.656032Z
-40492
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2543
-
-0020-MIPS-ralink-update-dts-files.patch
-file
-
-
-
-
-2014-06-03T20:17:38.322341Z
-df0329053cbda0b51d7cd35571e96cff
-2013-08-14T18:15:15.962376Z
-37778
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-12791
-
-0126-spi-introduce-macros-to-set-bits_per_word_mask.patch
-file
-
-
-
-
-2014-06-03T20:52:25.322293Z
-8ad96b92a955038f6b45275fcb5b521c
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1063
-
-0207-MIPS-ralink-add-MT7621-defconfig.patch
-file
-
-
-
-
-2014-06-03T20:52:25.310293Z
-d6f998ff8b6e38d5568ac4ab40a34c0e
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6103
 
 0205-MIPS-GIC-Send-IPIs-using-the-GIC.patch
 file
@@ -536,6 +298,40 @@ blogic
 
 385
 
+0125-i2c-MIPS-adds-ralink-I2C-driver.patch
+file
+
+
+
+
+2014-08-06T22:40:51.665834Z
+c2bcbdd7faefa001dae507e60f3253fd
+2014-06-26T13:47:50.666309Z
+41353
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8553
+
 0014-MIPS-ralink-mt7620-add-spi-clock-definition.patch
 file
 
@@ -569,40 +365,6 @@ blogic
 
 
 729
-
-0125-i2c-MIPS-adds-ralink-I2C-driver.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-9179f9e7f317ebdbc1b3a058cf18faa3
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-8553
 
 0006-GPIO-MIPS-ralink-add-gpio-driver-for-ralink-SoC.patch
 file
@@ -740,40 +502,6 @@ juhosg
 
 3138
 
-0003-DT-Add-documentation-for-rt2880-wdt.patch
-file
-
-
-
-
-2014-06-03T20:17:38.318341Z
-e1636c952b857bc496be6f65d13666b5
-2013-08-14T18:15:15.962376Z
-37778
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1191
-
 0206-MIPS-ralink-add-MT7621-support.patch
 file
 
@@ -807,6 +535,40 @@ blogic
 
 
 19874
+
+0003-DT-Add-documentation-for-rt2880-wdt.patch
+file
+
+
+
+
+2014-06-03T20:17:38.318341Z
+e1636c952b857bc496be6f65d13666b5
+2013-08-14T18:15:15.962376Z
+37778
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1191
 
 0004-watchdog-MIPS-add-ralink-watchdog-driver.patch
 file
@@ -910,40 +672,6 @@ blogic
 
 2488
 
-0100-MIPS-use-set_mode-to-enable-disable-the-cevt-r4k-irq.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-d90eb9b32f6828d5b978794b0fbc4994
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1811
-
 0101-MIPS-ralink-add-verbose-pmu-info.patch
 file
 
@@ -977,6 +705,40 @@ blogic
 
 
 1554
+
+0100-MIPS-use-set_mode-to-enable-disable-the-cevt-r4k-irq.patch
+file
+
+
+
+
+2014-06-03T20:52:25.318293Z
+d90eb9b32f6828d5b978794b0fbc4994
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1811
 
 0201-MIPS-GIC-Fix-gic_set_affinity-infinite-loop.patch
 file
@@ -1012,40 +774,6 @@ blogic
 
 1537
 
-0117-NET-add-of_get_mac_address_mtd.patch
-file
-
-
-
-
-2014-06-03T20:52:25.330293Z
-c92aa39f44899c1e1e10178a02fa9e79
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2202
-
 0215-SPI-ralink-add-mt7621-support.patch
 file
 
@@ -1079,6 +807,40 @@ blogic
 
 
 8632
+
+0117-NET-add-of_get_mac_address_mtd.patch
+file
+
+
+
+
+2014-06-03T20:52:25.330293Z
+c92aa39f44899c1e1e10178a02fa9e79
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2202
 
 0111-DMA-ralink-add-rt2880-dma-engine.patch
 file
@@ -1256,10 +1018,10 @@ file
 
 
 
-2014-06-03T20:52:25.314293Z
-c7064a2bbe957c5832f9051bea95dc0f
-2014-04-12T21:21:53.106305Z
-40491
+2014-08-06T22:40:51.665834Z
+2a4860e5bc1a9c29620a0e301f24540e
+2014-06-26T13:47:50.666309Z
+41353
 blogic
 
 
@@ -1282,7 +1044,7 @@ blogic
 
 
 
-780
+636
 
 0104-MIPS-ralink-workaround-DTB-memory-issue.patch
 file
@@ -1318,6 +1080,40 @@ blogic
 
 758
 
+0135-mtd-add-rtn56u-support.patch
+file
+
+
+
+
+2014-08-06T22:40:51.665834Z
+7ed4dc5b8cf3c18df847b004cd8b0aea
+2014-06-26T13:47:50.666309Z
+41353
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+698
+
 0116-NET-multi-phy-support.patch
 file
 
@@ -1351,40 +1147,6 @@ blogic
 
 
 1661
-
-0135-mtd-add-rtn56u-support.patch
-file
-
-
-
-
-2014-06-20T21:11:25.612245Z
-3c115e810a28e7efbcd552e6083cd24e
-2014-06-16T18:57:20.317620Z
-41224
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-688
 
 0011-MIPS-ralink-add-support-for-systick-timer-found-on-n.patch
 file
@@ -1420,40 +1182,6 @@ juhosg
 
 5269
 
-0130-mtd-ralink-add-mt7620-nand-driver.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-faf1b56484520e5b10920bad564dee4a
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-62815
-
 0209-MIPS-ralink-add-MT7621-early_printk-support.patch
 file
 
@@ -1487,6 +1215,40 @@ blogic
 
 
 1051
+
+0130-mtd-ralink-add-mt7620-nand-driver.patch
+file
+
+
+
+
+2014-06-03T20:52:25.318293Z
+faf1b56484520e5b10920bad564dee4a
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+62815
 
 0211-watchdog-add-MT7621-support.patch
 file
@@ -1556,16 +1318,16 @@ nbd
 
 139144
 
-0128-mtd-fix-cfi-cmdset-0002-erase-status-check.patch
+0005-DT-Add-documentation-for-gpio-ralink.patch
 file
 
 
 
 
-2014-06-03T20:52:25.310293Z
-556c57f5cd4e7f27aabc1cdcc93ce994
-2014-03-18T19:21:56.733429Z
-39949
+2014-06-03T20:17:38.318341Z
+e36269d0928da0ad3def016b5ceb4aa4
+2013-08-14T18:15:15.962376Z
+37778
 blogic
 
 
@@ -1588,7 +1350,7 @@ blogic
 
 
 
-860
+1848
 
 0108-MIPS-ralink-add-rt_sysc_m32-helper.patch
 file
@@ -1624,16 +1386,16 @@ blogic
 
 844
 
-0005-DT-Add-documentation-for-gpio-ralink.patch
+0128-mtd-fix-cfi-cmdset-0002-erase-status-check.patch
 file
 
 
 
 
-2014-06-03T20:17:38.318341Z
-e36269d0928da0ad3def016b5ceb4aa4
-2013-08-14T18:15:15.962376Z
-37778
+2014-06-03T20:52:25.310293Z
+556c57f5cd4e7f27aabc1cdcc93ce994
+2014-03-18T19:21:56.733429Z
+39949
 blogic
 
 
@@ -1656,7 +1418,7 @@ blogic
 
 
 
-1848
+860
 
 0107-MIPS-ralink-allow-manual-memory-override.patch
 file
@@ -1692,40 +1454,6 @@ blogic
 
 1398
 
-0131-mtd-add-chunked-read-io-to-m25p80.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-858b3aa8af7fa40707e62e181a485c79
-2014-04-12T11:59:07.220884Z
-40467
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3981
-
 0122-serial-ralink-adds-mt7620-serial.patch
 file
 
@@ -1759,6 +1487,40 @@ blogic
 
 
 941
+
+0131-mtd-add-chunked-read-io-to-m25p80.patch
+file
+
+
+
+
+2014-08-06T22:40:51.665834Z
+55df7aa34c45f65dda9182a4f5ef8593
+2014-06-26T13:47:50.666309Z
+41353
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3981
 
 0129-mtd-cfi-cmdset-0002-force-word-write.patch
 file
@@ -2004,10 +1766,10 @@ file
 
 
 
-2014-06-03T20:52:25.310293Z
-9fc6de791f982396294182b74817437a
-2014-04-13T18:01:08.855287Z
-40504
+2014-08-06T22:40:51.665834Z
+a5ba210aacf7cf653bac900cea39a84b
+2014-07-01T13:18:27.323494Z
+41448
 blogic
 
 
@@ -2030,7 +1792,41 @@ blogic
 
 
 
-138553
+141162
+
+0220-NET-ralink-squelch_mdio_access.patch
+file
+
+
+
+
+2014-08-06T22:40:51.665834Z
+1f3ee38f291a52a7cbf541a883a23d7a
+2014-07-14T17:05:40.275613Z
+41653
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+873
 
 0200-MIPS-Fix-TLBR-use-hazards-for-R2-cores-in-the-TLB-re.patch
 file
@@ -2106,44 +1902,10 @@ file
 
 
 
-2014-06-03T20:52:25.322293Z
-c9e9ca4681f3a977d032d72f471345f4
-2014-01-11T16:06:37.461474Z
-39220
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1296
-
-0123-serial-ralink-the-core-has-a-size-of-0x100-and-not-0.patch
-file
-
-
-
-
-2014-06-03T20:52:25.330293Z
-00b356adc2e26d0d7cb4b39c3573e548
-2014-03-18T19:21:56.733429Z
-39949
+2014-08-06T22:40:51.665834Z
+da4c30fd7ca1a4e957469b700fdc402f
+2014-06-26T13:47:50.666309Z
+41353
 blogic
 
 
@@ -2166,7 +1928,7 @@ blogic
 
 
 
-736
+1296
 
 0109-MIPS-ralink-add-pseudo-pwm-led-trigger-based-on-time.patch
 file
@@ -2202,6 +1964,40 @@ blogic
 
 8093
 
+0123-serial-ralink-the-core-has-a-size-of-0x100-and-not-0.patch
+file
+
+
+
+
+2014-06-03T20:52:25.330293Z
+00b356adc2e26d0d7cb4b39c3573e548
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+736
+
 0010-MIPS-ralink-add-support-for-periodic-timer-irq.patch
 file
 
@@ -2236,40 +2032,6 @@ blogic
 
 5361
 
-0103-MIPS-ralink-add-illegal-access-driver.patch
-file
-
-
-
-
-2014-06-03T20:52:25.322293Z
-5b8592afa25aa6df8913fe268a610ae5
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3103
-
 0017-MIPS-ralink-mt7620-this-SoC-has-ehci-and-ohci-hosts.patch
 file
 
@@ -2303,6 +2065,40 @@ blogic
 
 
 587
+
+0103-MIPS-ralink-add-illegal-access-driver.patch
+file
+
+
+
+
+2014-06-03T20:52:25.322293Z
+5b8592afa25aa6df8913fe268a610ae5
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3103
 
 0119-USB-phy-add-ralink-SoC-driver.patch
 file
@@ -2508,16 +2304,16 @@ blogic
 
 1084
 
-0214-usb-add-mt7621-xhci-support.patch
+0401-mt7620n-add-wmac-clock.patch
 file
 
 
 
 
-2014-06-03T20:52:25.314293Z
-793e59461ed8ca4021a8d458c596aaaa
-2014-03-18T19:21:56.733429Z
-39949
+2014-08-06T22:40:51.665834Z
+1a1a545e695346f426278e5520488895
+2014-07-01T10:26:25.987712Z
+41443
 blogic
 
 
@@ -2540,7 +2336,41 @@ blogic
 
 
 
-219664
+956
+
+0214-usb-add-mt7621-xhci-support.patch
+file
+
+
+
+
+2014-08-06T22:40:51.669834Z
+fb0a52f5aaf260da4611c8b6fb3259c0
+2014-07-02T14:32:43.208231Z
+41471
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+222435
 
 0114-PCI-MIPS-adds-rt2880-pci-support.patch
 file
@@ -2643,4 +2473,242 @@ blogic
 
 
 775
+
+0124-serial-of-allow-au1x00-and-rt288x-to-load-from-OF.patch
+file
+
+
+
+
+2014-06-03T20:52:25.326293Z
+c11203a1bd5a03227f3634f6c80579c0
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+934
+
+0300-MIPS-OWRTDTB.patch
+file
+
+
+
+
+2014-06-03T20:52:25.310293Z
+8c0fa694f4b1b082f0fe833f65333050
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1454
+
+0105-MIPS-ralink-add-missing-clk_set_rate-to-clk.c.patch
+file
+
+
+
+
+2014-06-03T20:52:25.326293Z
+a221815034792982dccfcb263438808c
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+673
+
+0217-pinmux-rt2880.patch
+file
+
+
+
+
+2014-06-03T20:52:25.326293Z
+12ba3eb106af259a716603a834d84644
+2014-04-12T21:21:56.656032Z
+40492
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2543
+
+0020-MIPS-ralink-update-dts-files.patch
+file
+
+
+
+
+2014-06-03T20:17:38.322341Z
+df0329053cbda0b51d7cd35571e96cff
+2013-08-14T18:15:15.962376Z
+37778
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+12791
+
+0126-spi-introduce-macros-to-set-bits_per_word_mask.patch
+file
+
+
+
+
+2014-06-03T20:52:25.322293Z
+8ad96b92a955038f6b45275fcb5b521c
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1063
+
+0207-MIPS-ralink-add-MT7621-defconfig.patch
+file
+
+
+
+
+2014-06-03T20:52:25.310293Z
+d6f998ff8b6e38d5568ac4ab40a34c0e
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6103
 

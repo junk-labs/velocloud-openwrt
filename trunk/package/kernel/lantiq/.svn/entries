@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/lantiq
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/lantiq
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-18T21:12:55.542781Z
-40775
-nbd
+2014-07-02T16:33:20.809122Z
+41473
+blogic
 
 
 
@@ -25,6 +25,21 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+ltq-adsl-mei
+dir
+
+ltq-adsl-fw
+dir
+
+ltq-deu
+dir
+
+ltq-tapi
+dir
+
+ltq-hcd
+dir
 
 ltq-ptm
 dir
@@ -48,20 +63,5 @@ ltq-ifxos
 dir
 
 ltq-vdsl
-dir
-
-ltq-adsl-mei
-dir
-
-ltq-adsl-fw
-dir
-
-ltq-deu
-dir
-
-ltq-tapi
-dir
-
-ltq-hcd
 dir
 

@@ -73,6 +73,9 @@ get_status_led() {
 	m4)
 		status_led="m4:blue:status"
 		;;
+	mlw221)
+		status_led="kingston:blue:status"
+		;;
 	mofi3500-3gn)
 		status_led="mofi3500-3gn:green:status"
 		;;
@@ -152,6 +155,9 @@ get_status_led() {
 	wr512-3gn)
 		status_led="wr512:green:wps"
 		;;
+	wr8305rt)
+		status_led="wr8305rt:sys"
+		;;
 	wnce2001)
 		status_led="netgear:green:power"
 		;;
@@ -178,6 +184,10 @@ get_status_led() {
 		;;
 	na930)
 		status_led="na930:blue:power"
+		;;
+	y1 | \
+	y1s)
+		status_led="lenovo:blue:power"
 		;;
 	esac
 }

@@ -15,7 +15,7 @@ DEFAULT_PACKAGES += \
 
 # edge500-specific packages:
 DEFAULT_PACKAGES += \
-	kmod-intel-igb \
+	kmod-igb \
 	igb-eeprom \
 	kmod-dsa-velocloud \
 

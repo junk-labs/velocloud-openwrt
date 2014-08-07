@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/iputils
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/iputils
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-13T22:51:33.799133Z
-38389
-hauke
+2014-08-03T11:15:56.175042Z
+41980
+blogic
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2014-06-03T20:17:37.778341Z
-00d0a3a8f0598d623340534ec37cbcd5
-2013-10-13T22:51:33.799133Z
-38389
-hauke
+2014-08-06T22:46:59.417825Z
+6376ff0a1527519812d8541bd78d6ba0
+2014-08-03T11:15:56.175042Z
+41980
+blogic
 
 
 
@@ -61,5 +61,5 @@ hauke
 
 
 
-4174
+4276
 

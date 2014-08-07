@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/iw/patches
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/iw/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-20T09:38:14.696656Z
-40801
+2014-06-22T11:42:28.374012Z
+41299
 nbd
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-03T20:21:34.030336Z
-a0f7785bde456d5105b5875cc140ae5f
-2014-02-05T20:52:34.704067Z
-39486
-hauke
+2014-08-06T22:46:29.009826Z
+8c59cdf89ad0e29b7483ce70d163c0f4
+2014-06-22T11:42:28.374012Z
+41299
+nbd
 
 
 
@@ -66,10 +66,10 @@ file
 
 
 
-2014-06-03T20:21:34.030336Z
-2db15ce85e0e3803a1fc350a26d0ae0d
-2014-05-20T09:38:14.696656Z
-40801
+2014-08-06T22:46:29.009826Z
+4c93417d78c9550efc48fc3c1cc6ad0a
+2014-06-22T11:42:28.374012Z
+41299
 nbd
 
 
@@ -100,10 +100,10 @@ file
 
 
 
-2014-06-03T20:21:34.030336Z
-ba7c8ace2d83dc4a530fb757f7e3abc7
-2014-05-20T09:38:14.696656Z
-40801
+2014-08-06T22:46:29.009826Z
+fa3e75ba65a9e2a7a1b6b0968e9825a7
+2014-06-22T11:42:28.374012Z
+41299
 nbd
 
 
@@ -126,5 +126,5 @@ nbd
 
 
 
-15417
+7991
 

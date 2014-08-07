@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-20T19:13:01.848977Z
-41288
-kaloz
+2014-08-06T22:01:13.613203Z
+42020
+hauke
 
 
 
@@ -26,115 +26,10 @@ kaloz
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-realview
-dir
-
-brcm47xx
-dir
-
-cns3xxx
-dir
-
-imx6
-dir
-
-amazon
-dir
-
-orion
-dir
-
-xburst
-dir
-
-lantiq
-dir
-
-pxa
-dir
-
-ar7
-dir
-
-bcm53xx
-dir
-
-ar71xx
-dir
-
-ramips
-dir
-
-omap
-dir
-
-adm8668
-dir
-
 avr32
 dir
 
 rb532
-dir
-
-x86_64
-dir
-
-sibyte
-dir
-
-ep93xx
-dir
-
-cns21xx
-dir
-
-sunxi
-dir
-
-mxs
-dir
-
-gemini
-dir
-
-sparc
-dir
-
-adm5120
-dir
-
-mpc83xx
-dir
-
-mpc85xx
-dir
-
-ppc40x
-dir
-
-at91
-dir
-
-mvebu
-dir
-
-ppc44x
-dir
-
-omap24xx
-dir
-
-iop32x
-dir
-
-x86
-dir
-
-octeon
-dir
-
-kirkwood
 dir
 
 uml
@@ -146,28 +41,25 @@ dir
 ixp4xx
 dir
 
-cobalt
-dir
-
 brcm2708
 dir
 
 atheros
 dir
 
+cns21xx
+dir
+
 au1000
 dir
 
-mpc52xx
-dir
-
-mcs814x
+generic
 dir
 
 brcm63xx
 dir
 
-generic
+mpc85xx
 dir
 
 Makefile
@@ -203,4 +95,49 @@ has-props
 
 
 373
+
+cns3xxx
+dir
+
+brcm47xx
+dir
+
+realview
+dir
+
+at91
+dir
+
+ppc40x
+dir
+
+imx6
+dir
+
+x86
+dir
+
+orion
+dir
+
+xburst
+dir
+
+octeon
+dir
+
+lantiq
+dir
+
+ar7
+dir
+
+kirkwood
+dir
+
+ar71xx
+dir
+
+ramips
+dir
 

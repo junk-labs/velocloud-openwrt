@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/hostapd/patches
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/hostapd/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-05T21:14:02.384814Z
-41023
+2014-07-28T22:52:39.502599Z
+41863
 nbd
 
 
@@ -26,14 +26,14 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-502-wpa_s-support-htmode-param.patch
+310-rescan_immediately.patch
 file
 
 
 
 
 2014-06-20T21:11:27.528245Z
-97aee2a3dc9e81a5f1c0d0da9758d9c0
+b63201c36a1ff88047d9110266e2a715
 2014-06-05T21:14:02.384814Z
 41023
 nbd
@@ -58,7 +58,75 @@ nbd
 
 
 
-4030
+353
+
+110-bool_fix.patch
+file
+
+
+
+
+2014-06-03T20:19:38.402338Z
+db5f1fc82d62362d7bc08d819d6ed721
+2014-04-06T12:13:55.119216Z
+40394
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+296
+
+130-no_eapol_fix.patch
+file
+
+
+
+
+2014-06-20T21:11:27.528245Z
+3cdbe06f50b7ebe7576b7a97083625aa
+2014-06-05T21:14:02.384814Z
+41023
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+430
 
 460-indicate-features.patch
 file
@@ -94,14 +162,14 @@ nbd
 
 1931
 
-130-no_eapol_fix.patch
+502-wpa_s-support-htmode-param.patch
 file
 
 
 
 
 2014-06-20T21:11:27.528245Z
-3cdbe06f50b7ebe7576b7a97083625aa
+97aee2a3dc9e81a5f1c0d0da9758d9c0
 2014-06-05T21:14:02.384814Z
 41023
 nbd
@@ -126,7 +194,7 @@ nbd
 
 
 
-430
+4030
 
 330-nl80211_fix_set_freq.patch
 file
@@ -230,40 +298,6 @@ nbd
 
 245
 
-370-ap_sta_support.patch
-file
-
-
-
-
-2014-06-20T21:11:27.528245Z
-1b53826fcdfa80e6dc847c3bd81351f4
-2014-06-05T21:14:02.384814Z
-41023
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-7003
-
 410-bring_down_interface.patch
 file
 
@@ -298,16 +332,16 @@ nbd
 
 712
 
-480-max_num_sta_probe.patch
+370-ap_sta_support.patch
 file
 
 
 
 
-2014-06-03T20:19:38.406338Z
-1bf3272866e56834c4658e2ba9b1a2f9
-2014-04-26T19:48:06.940048Z
-40571
+2014-06-20T21:11:27.528245Z
+1b53826fcdfa80e6dc847c3bd81351f4
+2014-06-05T21:14:02.384814Z
+41023
 nbd
 
 
@@ -330,7 +364,7 @@ nbd
 
 
 
-430
+7003
 
 390-wpa_ie_cap_workaround.patch
 file
@@ -366,6 +400,40 @@ nbd
 
 1453
 
+480-max_num_sta_probe.patch
+file
+
+
+
+
+2014-06-03T20:19:38.406338Z
+1bf3272866e56834c4658e2ba9b1a2f9
+2014-04-26T19:48:06.940048Z
+40571
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+430
+
 350-nl80211_del_beacon_bss.patch
 file
 
@@ -399,6 +467,40 @@ nbd
 
 
 1364
+
+380-disable_ctrl_iface_mib.patch
+file
+
+
+
+
+2014-08-06T22:47:47.293824Z
+58d7f6e0dd116f2afff6d995a5e1a4b6
+2014-07-28T22:52:39.502599Z
+41863
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5423
 
 600-ubus_support.patch
 file
@@ -434,16 +536,16 @@ nbd
 
 18059
 
-380-disable_ctrl_iface_mib.patch
+120-daemonize_fix.patch
 file
 
 
 
 
-2014-06-20T21:11:27.532245Z
-938f51b44feb4d137a258b6ceff27b9e
-2014-06-05T15:58:01.092765Z
-41022
+2014-06-03T20:19:38.402338Z
+0b3e3de0a97a2f9c4a0ecc49584255f7
+2013-12-02T13:08:08.038111Z
+38984
 nbd
 
 
@@ -466,7 +568,7 @@ nbd
 
 
 
-4530
+1821
 
 450-limit_debug_messages.patch
 file
@@ -502,50 +604,16 @@ nbd
 
 6690
 
-120-daemonize_fix.patch
-file
-
-
-
-
-2014-06-03T20:19:38.402338Z
-0b3e3de0a97a2f9c4a0ecc49584255f7
-2013-12-02T13:08:08.038111Z
-38984
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1821
-
 300-noscan.patch
 file
 
 
 
 
-2014-06-20T21:11:27.532245Z
-f45cbff8662a39f44bf03af50463f61d
-2014-06-05T15:58:01.092765Z
-41022
+2014-08-06T22:47:47.293824Z
+bda349cd9c4467dbb843a8fb0bdc562e
+2014-07-25T14:29:58.514511Z
+41828
 nbd
 
 
@@ -568,7 +636,7 @@ nbd
 
 
 
-951
+1558
 
 490-scan_wait.patch
 file
@@ -909,72 +977,4 @@ nbd
 
 
 2010
-
-310-rescan_immediately.patch
-file
-
-
-
-
-2014-06-20T21:11:27.528245Z
-b63201c36a1ff88047d9110266e2a715
-2014-06-05T21:14:02.384814Z
-41023
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-353
-
-110-bool_fix.patch
-file
-
-
-
-
-2014-06-03T20:19:38.402338Z
-db5f1fc82d62362d7bc08d819d6ed721
-2014-04-06T12:13:55.119216Z
-40394
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-296
 

@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/iwinfo
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/iwinfo
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T13:10:53.110114Z
-40954
-blogic
+2014-08-06T17:07:35.923311Z
+42015
+nbd
 
 
 
@@ -26,20 +26,17 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-src
-dir
-
 Makefile
 file
 
 
 
 
-2014-06-03T20:21:37.038336Z
-1f8d35f6f7ff16db41379e6030dbfc1f
-2014-05-21T12:33:58.714473Z
-40814
-nbd
+2014-08-06T22:46:59.557825Z
+23e2b0b42b4872b4f8b1a5e5b57a6955
+2014-07-25T14:11:50.761380Z
+41826
+jow
 
 
 
@@ -62,4 +59,7 @@ nbd
 
 
 3192
+
+src
+dir
 

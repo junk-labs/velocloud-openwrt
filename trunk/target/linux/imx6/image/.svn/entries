@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/imx6/image
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/imx6/image
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-18T22:23:42.258041Z
-38858
-luka
+2014-07-21T18:42:06.245379Z
+41791
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-03T20:17:38.214341Z
-f9aac00d383f30a87811cf30c422ec79
-2013-11-18T22:23:42.258041Z
-38858
-luka
+2014-08-06T22:38:50.049837Z
+fa343c08eaf4a83452f2e58f93f63eb4
+2014-07-21T18:42:06.245379Z
+41791
+blogic
 
 
 
@@ -58,7 +58,7 @@ luka
 
 
 
-4854
+4921
 
 ubinize.cfg
 file

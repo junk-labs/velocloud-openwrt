@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm2708
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm2708
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-04-12T11:59:07.220884Z
-40467
-juhosg
+2014-07-20T17:31:11.270376Z
+41776
+blogic
 
 
 
@@ -26,6 +26,9 @@ juhosg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches-3.10
+dir
+
 base-files
 dir
 
@@ -35,11 +38,11 @@ file
 
 
 
-2014-06-03T20:49:34.250297Z
-0195b2a4163f9c493ca994fe0e161c88
-2014-04-12T11:59:07.220884Z
-40467
-juhosg
+2014-08-06T22:40:51.977834Z
+576af552c15a7081d047303611f9a5c7
+2014-07-20T17:31:11.270376Z
+41776
+blogic
 
 
 
@@ -136,7 +139,4 @@ florian
 
 
 6682
-
-patches-3.10
-dir
 

@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/generic
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-19T14:13:12.147112Z
-41272
-blogic
+2014-08-06T22:01:13.613203Z
+42020
+hauke
 
 
 
@@ -25,157 +25,18 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+
+
+
+
+
+
+
+()
 
-patches-3.10
+files
 dir
-
-config-3.3
-file
-
-
-
-
-2014-06-03T20:51:21.114294Z
-baeaee84b35d12417b1c2961e78bb1a8
-2014-05-02T21:08:22.188446Z
-40661
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-114756
-
-patches-3.12
-dir
-
-config-3.6
-file
-
-
-
-
-2014-06-03T20:51:21.114294Z
-2e838c3936129368e63d2ca31f7a0a84
-2014-05-02T21:08:22.188446Z
-40661
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-120104
-
-patches-3.13
-dir
-
-base-files
-dir
-
-patches-3.14
-dir
-
-config-3.8
-file
-
-
-
-
-2014-06-03T20:51:21.114294Z
-f256c618e1754c2226e80d2937a6c3cd
-2014-05-02T21:08:22.188446Z
-40661
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-126634
-
-config-3.9
-file
-
-
-
-
-2014-06-03T20:51:21.114294Z
-c6b8793e10a932459f64452d4aa358a9
-2014-05-02T21:08:22.188446Z
-40661
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-128545
 
 image
 dir
@@ -186,10 +47,10 @@ file
 
 
 
-2014-06-03T20:51:21.114294Z
-4d7257feddbc4a8184eb380ba16ae31e
-2014-05-02T21:08:22.188446Z
-40661
+2014-08-06T22:38:49.529837Z
+81e342fbee467d1475bbe5dc2db40455
+2014-07-16T20:45:20.026500Z
+41678
 hauke
 
 
@@ -212,31 +73,22 @@ hauke
 
 
 
-131588
+131782
+
+patches-3.10
+dir
 
 config-3.12
 file
+41290
 
 
-
-
+add
 
 7594fee55242ad8c61b2e46c13da6796
 2014-05-02T21:08:22.188446Z
 40661
 hauke
-
-config-3.13
-file
-
-
-
-
-2014-06-03T20:51:21.114294Z
-6036786486eab81ecd7f888f0f10fd74
-2014-05-02T21:08:22.188446Z
-40661
-hauke
 
 
 
@@ -245,20 +97,9 @@ hauke
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-139211
+copied
+svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/config-3.12
+41290
 
 PATCHES
 file
@@ -294,52 +135,29 @@ florian
 
 772
 
-config-3.14
-file
-
-
-
-
-2014-06-03T20:51:21.114294Z
-4df765a15668b7487efd1afea1894e9e
-2014-06-02T19:48:22.122667Z
-40986
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-140529
-
-patches-3.3
+patches-3.12
 dir
+
+
+
+add
+
+
+
+
+
+
+
+
+
+
+
+
+
+copied
+svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/patches-3.12
+41290
 
-patches-3.6
-dir
-
-patches-3.8
-dir
-
-patches-3.9
-dir
-
-files
+base-files
 dir
 

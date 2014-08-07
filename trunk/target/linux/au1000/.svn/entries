@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/au1000
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/au1000
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T12:43:22.188606Z
-40915
+2014-08-01T10:36:16.794543Z
+41931
 blogic
 
 
@@ -26,47 +26,10 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-config-3.6
-file
-
-
-
-
-2014-06-03T20:17:37.966341Z
-057b87a608944b942e57dfc18d37cb5b
-2012-11-29T15:21:41.404794Z
-34404
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3768
-
 base-files
 dir
 
 au1500
-dir
-
-patches-3.6
 dir
 
 Makefile
@@ -75,11 +38,11 @@ file
 
 
 
-2014-06-03T20:17:37.966341Z
-a33323f8b6c82a13e60b9e293f4d9bcb
-2013-06-05T20:58:59.479542Z
-36863
-jogo
+2014-08-06T22:38:47.701837Z
+3d2b4219307cb2f0b0509af477204f71
+2014-07-20T17:31:11.270376Z
+41776
+blogic
 has-props
 
 
@@ -101,7 +64,7 @@ has-props
 
 
 
-860
+861
 
 modules.mk
 file
@@ -141,5 +104,42 @@ au1550
 dir
 
 image
+dir
+
+config-3.10
+file
+
+
+
+
+2014-08-06T22:38:47.701837Z
+25d0a7c4eb885de05b82fbb4b3e55648
+2014-07-06T22:34:24.619551Z
+41539
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3796
+
+patches-3.10
 dir
 

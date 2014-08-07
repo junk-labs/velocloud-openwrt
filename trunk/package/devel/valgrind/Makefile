@@ -77,19 +77,20 @@ define Package/valgrind/description
 	to speed up and reduce memory use of your programs.
 endef
 
-ifeq ($(LINUX_KARCH),x86_64)
-BITS=64bit
-CPU := amd64
-else
-BITS=32bit
-CPU := $(patsubst x86,i386,$(LINUX_KARCH))
-endif
+CPU := $(patsubst x86_64,amd64,$(patsubst x86,i386,$(LINUX_KARCH)))
 
 CONFIGURE_VARS += \
 	UNAME_R=$(LINUX_VERSION)
 
+ifeq ($(ARCH),x86_64)
+	BITS := 64bit
+else
+	CONFIGURE_ARGS += \
+		--enable-only32bit
+	BITS := 32bit
+endif
+
 CONFIGURE_ARGS += \
-	--enable-only$(BITS) \
 	--enable-tls \
 	--without-x \
 	--without-uiout \

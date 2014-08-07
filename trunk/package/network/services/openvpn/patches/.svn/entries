@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/openvpn/patches
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/openvpn/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-03-14T15:05:46.606916Z
-39930
+2014-06-30T15:34:03.807405Z
+41425
 nbd
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2014-06-03T20:19:30.686339Z
-d42861af91e704e422128d706518d4ff
-2014-03-14T15:05:46.606916Z
-39930
+2014-08-06T22:47:47.249824Z
+97b4a262eec3b45d7314c03e7c3c1799
+2014-06-30T12:43:03.341202Z
+41416
 nbd
 
 
@@ -58,5 +58,39 @@ nbd
 
 
 
-6840
+7461
+
+110-musl_compat.patch
+file
+
+
+
+
+2014-08-06T22:47:47.249824Z
+3ec4dbdf523a0ce74bdce33189c526a5
+2014-06-30T15:34:03.807405Z
+41425
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+244
 

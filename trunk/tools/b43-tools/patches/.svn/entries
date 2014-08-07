@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/tools/b43-tools/patches
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/b43-tools/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-02-28T10:43:02.730422Z
-35830
+2014-07-02T20:52:50.389689Z
+41484
 hauke
 
 
@@ -25,6 +25,40 @@ hauke
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+001-fw-dirname.patch
+file
+
+
+
+
+2014-08-06T22:38:46.293837Z
+4ed5bf11fba0564ff4c3fa14a3999370
+2014-07-02T20:52:50.389689Z
+41484
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+352
 
 002-no_libfl.patch
 file
@@ -59,72 +93,4 @@ nbd
 
 
 219
-
-100-b43-asm-fix-compile-error-undefined-reference-to-yyd.patch
-file
-
-
-
-
-2014-06-03T20:17:38.442341Z
-e4f61db6959bd82fb13ea3a9ec0c22ba
-2013-02-28T10:43:02.730422Z
-35830
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-778
-
-001-fw-dirname.patch
-file
-
-
-
-
-2014-06-03T20:17:38.442341Z
-9d956bcfa5498419bfb7c08e27f69821
-2012-10-08T20:15:42.151953Z
-33668
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-352
 

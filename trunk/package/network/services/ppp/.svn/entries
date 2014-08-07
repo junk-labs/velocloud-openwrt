@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/ppp
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/ppp
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-15T20:55:17.573110Z
-41193
-cyrus
+2014-08-03T11:15:36.465312Z
+41966
+blogic
 
 
 
@@ -26,17 +26,20 @@ cyrus
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2014-06-20T21:11:27.504245Z
-939e98fb5161dfacde22dbc63b5a56cc
-2014-06-15T20:55:17.573110Z
-41193
-cyrus
+2014-08-06T22:47:47.277824Z
+f55a49ed635886de29965c4d74314526
+2014-06-29T22:26:08.994393Z
+41404
+nbd
 has-props
 
 
@@ -58,14 +61,11 @@ has-props
 
 
 
-7011
+7068
 
 utils
 dir
 
 files
-dir
-
-patches
 dir
 

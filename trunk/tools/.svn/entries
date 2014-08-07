@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/tools
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-17T15:38:54.138253Z
-41236
+2014-08-03T11:16:02.557331Z
+41984
 blogic
 
 
@@ -26,16 +26,67 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+padjffs2
+dir
+
+dosfstools
+dir
+
+upslug2
+dir
+
+findutils
+dir
+
+xz
+dir
+
+cloog
+dir
+
+libtool
+dir
+
+automake
+dir
+
+qemu
+dir
+
+mkimage
+dir
+
+firmware-utils
+dir
+
+mpc
+dir
+
+m4
+dir
+
+cmake
+dir
+
+squashfs4
+dir
+
 mtd-utils
 dir
 
-sstrip
+pkg-config
+dir
+
+bc
 dir
 
 scons
 dir
 
-ipkg-utils
+yaffs2
+dir
+
+missing-macros
 dir
 
 ppl
@@ -44,10 +95,10 @@ dir
 mm-macros
 dir
 
-libelf
+squashfs
 dir
 
-sparse
+flex
 dir
 
 quilt
@@ -59,109 +110,34 @@ dir
 patch
 dir
 
-padjffs2
-dir
-
-dosfstools
-dir
-
 xorg-macros
 dir
 
-xz
+lzma
+dir
+
+mpfr
 dir
 
 genext2fs
 dir
 
-automake
+ccache
 dir
 
 xfce-macros
 dir
 
-qemu
-dir
-
-bison
-dir
-
 e2fsprogs
 dir
 
-firmware-utils
+bison
 dir
 
 sed
 dir
 
 upx
-dir
-
-wrt350nv2-builder
-dir
-
-patch-image
-dir
-
-m4
-dir
-
-gmp
-dir
-
-include
-dir
-
-bc
-dir
-
-pkg-config
-dir
-
-b43-tools
-dir
-
-yaffs2
-dir
-
-missing-macros
-dir
-
-squashfs
-dir
-
-flex
-dir
-
-flock
-dir
-
-findutils
-dir
-
-upslug2
-dir
-
-lzma
-dir
-
-cloog
-dir
-
-mpfr
-dir
-
-libtool
-dir
-
-ccache
-dir
-
-mkimage
-dir
-
-mtools
 dir
 
 Makefile
@@ -177,21 +153,45 @@ file
 blogic
 has-props
 
+mtools
+dir
+
 autoconf
+dir
+
+wrt350nv2-builder
 dir
 
 lzma-old
 dir
 
-mpc
-dir
-
-cmake
+patch-image
 dir
 
 mklibs
 dir
 
-squashfs4
+include
+dir
+
+gmp
+dir
+
+sstrip
+dir
+
+b43-tools
+dir
+
+ipkg-utils
+dir
+
+libelf
+dir
+
+sparse
+dir
+
+flock
 dir
 

@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm63xx/generic
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm63xx/generic
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-22T11:16:35.711883Z
-39673
+2014-07-12T12:31:43.522418Z
+41589
 jogo
 
 
@@ -25,9 +25,6 @@ jogo
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-profiles
-dir
 
 target.mk
 file
@@ -62,4 +59,7 @@ jogo
 
 
 117
+
+profiles
+dir
 

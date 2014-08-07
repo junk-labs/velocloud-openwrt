@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/libs/libubox
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/libubox
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-11T12:59:26.864448Z
-41123
-blogic
+2014-07-16T18:35:25.318515Z
+41674
+nbd
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-20T21:11:27.440245Z
-6bfcc3e0a4e056e8c45c59916a0fc09c
-2014-06-11T12:59:26.864448Z
-41123
-blogic
+2014-08-06T22:46:28.993826Z
+e27ef83c60b5e7632359342a2f123874
+2014-07-16T18:35:25.318515Z
+41674
+nbd
 
 
 

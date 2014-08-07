@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/toolchain/gcc/patches/4.8-linaro
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/toolchain/gcc/patches/4.8-linaro
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-28T22:40:31.795064Z
-40874
+2014-07-10T19:28:40.850608Z
+41569
 nbd
 
 
@@ -25,40 +25,6 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-870-ppc_no_crtsavres.patch
-file
-
-
-
-
-2014-06-03T20:38:09.258313Z
-95ae41f9b40998a6fcc73365245bf73f
-2014-05-02T21:18:02.730138Z
-40664
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-408
 
 830-arm_unbreak_armv4t.patch
 file
@@ -128,40 +94,6 @@ nbd
 
 466
 
-900-bad-mips16-crt.patch
-file
-
-
-
-
-2014-06-03T20:17:38.430341Z
-5b546db36d11c1d2e6c6c3a7d262fa3b
-2013-05-23T10:21:59.573061Z
-36693
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-293
-
 850-use_shared_libgcc.patch
 file
 
@@ -195,6 +127,40 @@ nbd
 
 
 1559
+
+900-bad-mips16-crt.patch
+file
+
+
+
+
+2014-06-03T20:17:38.430341Z
+5b546db36d11c1d2e6c6c3a7d262fa3b
+2013-05-23T10:21:59.573061Z
+36693
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+293
 
 840-armv4_pass_fix-v4bx_to_ld.patch
 file
@@ -570,6 +536,40 @@ nbd
 
 425
 
+002-weak_data_fix.patch
+file
+
+
+
+
+2014-08-06T22:38:46.509837Z
+81bbad65ef2a6c01bc12145c5068c605
+2014-07-10T19:28:40.850608Z
+41569
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1345
+
 820-libgcc_pic.patch
 file
 
@@ -603,4 +603,38 @@ nbd
 
 
 1155
+
+870-ppc_no_crtsavres.patch
+file
+
+
+
+
+2014-06-03T20:38:09.258313Z
+95ae41f9b40998a6fcc73365245bf73f
+2014-05-02T21:18:02.730138Z
+40664
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+408
 

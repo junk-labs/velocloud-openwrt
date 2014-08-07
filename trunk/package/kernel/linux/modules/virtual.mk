@@ -162,7 +162,7 @@ define KernelPackage/xen-kbddev
   DEPENDS:=@TARGET_x86_xen_domu||TARGET_x86_vc_xen_aws||TARGET_x64_vc_xen_aws
   DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:=CONFIG_XEN_KBDDEV_FRONTEND
-  FILES:=$(LINUX_DIR)/drivers/input/xen-kbdfront.ko
+  FILES:=$(LINUX_DIR)/drivers/input/misc/xen-kbdfront.ko
   AUTOLOAD:=$(call AutoLoad,08,xen-kbdfront)
 endef
 

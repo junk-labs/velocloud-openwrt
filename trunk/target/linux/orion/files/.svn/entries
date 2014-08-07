@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/orion/files
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/orion/files
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-07-11T20:35:16.929985Z
-27592
-kaloz
+2014-07-20T09:42:14.266575Z
+41765
+hauke
 
 
 

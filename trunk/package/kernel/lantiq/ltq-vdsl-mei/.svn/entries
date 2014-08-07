@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/lantiq/ltq-vdsl-mei
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/lantiq/ltq-vdsl-mei
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-06T17:26:27.712157Z
-40712
-nbd
+2014-07-01T18:05:09.734640Z
+41451
+blogic
 
 
 
@@ -26,17 +26,20 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2014-06-03T20:26:58.450328Z
-6afe3470a954dee79e5a4938ca79ef80
-2014-05-06T17:26:27.712157Z
-40712
-nbd
+2014-08-06T22:43:07.289831Z
+cd6ab38492c8380f70648d96aff90d0e
+2014-07-01T18:05:09.734640Z
+41451
+blogic
 
 
 
@@ -58,8 +61,5 @@ nbd
 
 
 
-2042
-
-patches
-dir
+2071
 

@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/files/crypto/ocf/kirkwood/mvHal
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic/files/crypto/ocf/kirkwood/mvHal
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,6 +25,40 @@ luka
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+mvSysHwConfig.h
+file
+
+
+
+
+2014-06-03T20:17:38.074341Z
+73c65d67b9fe84de19c989b539881d7d
+2010-06-26T20:42:58.993070Z
+21952
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11858
 
 dbg-trace.h
 file
@@ -105,38 +139,4 @@ nbd
 
 
 3037
-
-mvSysHwConfig.h
-file
-
-
-
-
-2014-06-03T20:17:38.074341Z
-73c65d67b9fe84de19c989b539881d7d
-2010-06-26T20:42:58.993070Z
-21952
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11858
 

@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/system/ubox
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/system/ubox
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-28T21:28:14.522664Z
-40869
-nbd
+2014-07-02T12:56:20.380826Z
+41467
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-03T20:36:39.082315Z
-5af2f910189dba9006d456ec9547282b
-2014-05-28T21:28:14.522664Z
-40869
-nbd
+2014-08-06T22:46:28.977826Z
+01247690d68cbbf23db9b81a25121ad5
+2014-06-30T09:57:25.016610Z
+41413
+blogic
 
 
 
@@ -58,7 +58,7 @@ nbd
 
 
 
-1317
+1355
 
 files
 dir

@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/dnsmasq/patches
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/dnsmasq/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,40 +25,6 @@ cyrus
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-100-fix-dhcp-no-address-warning.patch
-file
-
-
-
-
-2014-06-20T21:11:27.936245Z
-f110ca535a26a6b4750276dbf2e56fe6
-2014-06-18T10:04:34.224357Z
-41246
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1734
 
 001-Build-config-add-DNO_GMP-for-use-with-nettle-mini-gm.patch
 file
@@ -127,4 +93,38 @@ cyrus
 
 
 2991
+
+100-fix-dhcp-no-address-warning.patch
+file
+
+
+
+
+2014-06-20T21:11:27.936245Z
+f110ca535a26a6b4750276dbf2e56fe6
+2014-06-18T10:04:34.224357Z
+41246
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1734
 

@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/om-watchdog
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/om-watchdog
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T13:21:43.050512Z
-40964
+2014-07-20T17:30:56.909962Z
+41773
 blogic
 
 
@@ -25,9 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-files
-dir
 
 Makefile
 file
@@ -62,4 +59,7 @@ has-props
 
 
 868
+
+files
+dir
 

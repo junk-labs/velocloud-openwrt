@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/firmware/am33x-cm3
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/firmware/am33x-cm3
 svn://svn.openwrt.org/openwrt
 
 

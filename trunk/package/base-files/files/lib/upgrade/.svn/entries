@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/base-files/files/lib/upgrade
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/base-files/files/lib/upgrade
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-20T13:41:08.913845Z
-41284
+2014-07-10T19:16:27.403116Z
+41563
 blogic
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2014-06-20T21:11:27.968245Z
-e2124ffdb847f1fed8b0bef0b0f87f6a
-2014-06-20T13:41:08.913845Z
-41284
+2014-08-06T22:47:47.337824Z
+92cfd7719f2a96471d2e58d1b98a069c
+2014-07-10T19:16:27.403116Z
+41563
 blogic
 
 
@@ -58,7 +58,7 @@ blogic
 
 
 
-5387
+5816
 
 keep.d
 dir

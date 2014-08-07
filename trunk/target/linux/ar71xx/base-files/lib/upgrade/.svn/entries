@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ar71xx/base-files/lib/upgrade
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ar71xx/base-files/lib/upgrade
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-16T18:55:14.439391Z
-41222
-blogic
+2014-07-23T12:47:25.602409Z
+41814
+kaloz
 
 
 
@@ -66,10 +66,10 @@ file
 
 
 
-2014-06-03T20:52:08.050293Z
-28c98e4d1b420095620960643cf74465
-2014-06-02T13:21:38.227812Z
-40963
+2014-08-06T22:40:51.537834Z
+daf9d47cb43b71986dbb3f4a98fceed9
+2014-07-20T17:30:52.821738Z
+41772
 blogic
 has-props
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-6509
+6698
 
 allnet.sh
 file
@@ -134,11 +134,11 @@ file
 
 
 
-2014-06-20T21:11:25.192245Z
-4657dce4bbe2de01622e23defc316939
-2014-06-16T18:55:14.439391Z
-41222
-blogic
+2014-08-06T22:40:51.537834Z
+3afb130f41c3757654d564425ae2c750
+2014-07-23T12:47:25.602409Z
+41814
+kaloz
 has-props
 
 
@@ -160,5 +160,5 @@ has-props
 
 
 
-8087
+8841
 

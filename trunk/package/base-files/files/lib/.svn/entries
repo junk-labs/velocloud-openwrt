@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/base-files/files/lib
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/base-files/files/lib
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-20T13:41:08.913845Z
-41284
-blogic
+2014-07-14T10:25:49.678115Z
+41639
+juhosg
 
 
 
@@ -26,26 +26,17 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-upgrade
-dir
-
-functions
-dir
-
-preinit
-dir
-
 functions.sh
 file
 
 
 
 
-2014-06-03T20:21:37.094336Z
-46bbe4b60161a29daae52572744e83c5
-2014-04-08T21:17:49.346900Z
-40426
-nbd
+2014-08-06T22:47:47.341824Z
+163c8ae6099c2d26a5a315e3411e6eb0
+2014-06-29T23:05:05.638332Z
+41405
+luka
 has-props
 
 
@@ -67,5 +58,14 @@ has-props
 
 
 
-4718
+4725
+
+upgrade
+dir
+
+functions
+dir
+
+preinit
+dir
 

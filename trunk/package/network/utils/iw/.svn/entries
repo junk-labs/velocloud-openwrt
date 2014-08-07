@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/iw
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/iw
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-20T09:38:14.696656Z
-40801
+2014-06-22T11:42:28.374012Z
+41299
 nbd
 
 
@@ -26,20 +26,17 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2014-06-03T20:21:34.034336Z
-d40eb7b9e2efb97550f4b616a674dde7
-2014-02-05T20:52:34.704067Z
-39486
-hauke
+2014-08-06T22:46:29.013826Z
+69136d5c17d138315122a52ceecb7b47
+2014-06-22T11:42:28.374012Z
+41299
+nbd
 has-props
 
 
@@ -62,4 +59,7 @@ has-props
 
 
 1409
+
+patches
+dir
 

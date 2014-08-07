@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/kirkwood
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/kirkwood
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-11T13:00:17.708347Z
-41134
-blogic
+2014-07-29T10:25:43.822956Z
+41877
+nbd
 
 
 
@@ -26,47 +26,7 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches-3.10
-dir
-
-config-3.14
-file
-
-
-
-
-2014-06-20T21:11:26.804245Z
-a59e06a4e2846eb5fc9ded0d88e1ffd8
-2014-06-11T13:00:17.708347Z
-41134
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-8149
-
 base-files
-dir
-
-patches-3.14
 dir
 
 Makefile
@@ -75,10 +35,10 @@ file
 
 
 
-2014-06-20T21:11:26.800245Z
-af2c7a6461092687bc5477ebb290252b
-2014-06-11T12:59:22.849641Z
-41122
+2014-08-06T22:40:51.465834Z
+a8c8b43dff2139af2125f4ab764722cc
+2014-07-20T17:31:11.270376Z
+41776
 blogic
 
 
@@ -149,11 +109,11 @@ file
 
 
 
-2014-06-20T21:11:26.804245Z
-0a7d6c133d95291b207531e6f0a3973a
-2014-06-11T13:00:17.708347Z
-41134
-blogic
+2014-08-06T22:40:51.465834Z
+657c9e811dd77d351fea2814094e5e39
+2014-07-13T16:25:54.275220Z
+41614
+juhosg
 
 
 
@@ -176,4 +136,7 @@ blogic
 
 
 7697
+
+patches-3.10
+dir
 

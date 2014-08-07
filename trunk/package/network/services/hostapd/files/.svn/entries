@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/hostapd/files
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/hostapd/files
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-05T11:55:36.097486Z
-41012
-nbd
+2014-08-03T11:15:32.200134Z
+41963
+blogic
 
 
 
@@ -25,40 +25,6 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-wpa_supplicant-full.config
-file
-
-
-
-
-2014-06-03T20:17:37.754341Z
-7072aa6845a33188a994ac18fdca00d5
-2013-11-18T13:54:26.815739Z
-38852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-14418
 
 hostapd-mini.config
 file
@@ -147,11 +113,11 @@ file
 
 
 
-2014-06-20T21:11:27.536245Z
-58feb233fba70ab2e7e203d1e9a7d19f
-2014-06-05T11:55:36.097486Z
-41012
-nbd
+2014-08-06T22:47:47.289824Z
+38663c789e7add6b8ffe9de923f1f10e
+2014-08-03T11:15:32.200134Z
+41963
+blogic
 
 
 
@@ -173,7 +139,7 @@ nbd
 
 
 
-15032
+15635
 
 hostapd-full.config
 file
@@ -302,4 +268,38 @@ nbd
 
 
 14444
+
+wpa_supplicant-full.config
+file
+
+
+
+
+2014-06-03T20:17:37.754341Z
+7072aa6845a33188a994ac18fdca00d5
+2013-11-18T13:54:26.815739Z
+38852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+14418
 

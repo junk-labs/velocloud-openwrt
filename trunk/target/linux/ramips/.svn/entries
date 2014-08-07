@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ramips
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ramips
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-19T14:13:07.960007Z
-41271
+2014-08-03T14:32:47.104094Z
+41988
 blogic
 
 
@@ -26,18 +26,6 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-rt305x
-dir
-
-patches-3.10
-dir
-
-base-files
-dir
-
-dts
-dir
-
 rt3883
 dir
 
@@ -50,11 +38,11 @@ file
 
 
 
-2014-06-20T21:11:26.132245Z
-c7f4212032e8fcdbead17927ed824310
-2014-06-11T17:01:19.226654Z
-41145
-nbd
+2014-08-06T22:40:51.849834Z
+4c54312055b7e41ec0108b985208717c
+2014-07-29T10:57:18.456408Z
+41880
+blogic
 
 
 
@@ -76,7 +64,7 @@ nbd
 
 
 
-587
+580
 
 modules.mk
 file
@@ -159,5 +147,17 @@ image
 dir
 
 files
+dir
+
+rt305x
+dir
+
+patches-3.10
+dir
+
+base-files
+dir
+
+dts
 dir
 

@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/kernel
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-20T20:44:18.832976Z
-41290
-kaloz
+2014-08-06T22:02:14.576784Z
+42021
+hauke
 
 
 
@@ -25,33 +25,6 @@ kaloz
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-om-watchdog
-dir
-
-i2c-gpio-custom
-dir
-
-wrt55agv2-spidevs
-dir
-
-rotary-gpio-custom
-dir
-
-mmc_over_gpio
-dir
-
-hostap-driver
-dir
-
-gpio-button-hotplug
-dir
-
-lantiq
-dir
-
-avila-wdt
-dir
 
 w1-gpio-custom
 dir
@@ -90,5 +63,32 @@ rtc-rv5c386a
 dir
 
 ar7-atm
+dir
+
+om-watchdog
+dir
+
+i2c-gpio-custom
+dir
+
+wrt55agv2-spidevs
+dir
+
+rotary-gpio-custom
+dir
+
+mmc_over_gpio
+dir
+
+hostap-driver
+dir
+
+gpio-button-hotplug
+dir
+
+lantiq
+dir
+
+avila-wdt
 dir
 

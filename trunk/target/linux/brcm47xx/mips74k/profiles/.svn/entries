@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm47xx/mips74k/profiles
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm47xx/mips74k/profiles
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-05T21:25:03.064341Z
-41025
+2014-07-15T21:57:13.465864Z
+41667
 hauke
 
 
@@ -26,50 +26,16 @@ hauke
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-101-Broadcom-brcsmac.mk
-file
-
-
-
-
-2014-06-20T21:11:24.684245Z
-3bc5838d35187aad3e302968a05a7d0d
-2014-06-05T21:25:03.064341Z
-41025
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-478
-
 103-Broadcom-none.mk
 file
 
 
 
 
-2014-06-20T21:11:24.684245Z
-0662aa804000cb780af51e7e2dcb8320
-2014-06-05T21:25:03.064341Z
-41025
+2014-08-06T22:38:49.573837Z
+b920cf8651141bcf213d8322c7c955b5
+2014-07-15T21:57:13.465864Z
+41667
 hauke
 
 
@@ -92,7 +58,7 @@ hauke
 
 
 
-404
+393
 
 102-Broadcom-wl.mk
 file
@@ -100,10 +66,10 @@ file
 
 
 
-2014-06-20T21:11:24.684245Z
-6ced25828bfa95e856e2273350c7b8b2
-2014-06-05T21:25:03.064341Z
-41025
+2014-08-06T22:38:49.569837Z
+6db3de50c37e54f950897274f470f499
+2014-07-15T21:57:13.465864Z
+41667
 hauke
 
 
@@ -126,7 +92,7 @@ hauke
 
 
 
-499
+488
 
 100-Broadcom-b43.mk
 file
@@ -134,10 +100,10 @@ file
 
 
 
-2014-06-20T21:11:24.684245Z
-72471b58795648e1e94b0bbe7382fed1
-2014-06-05T21:25:03.064341Z
-41025
+2014-08-06T22:38:49.569837Z
+01025eaac6ecab027b3ef601a758e7e4
+2014-07-15T21:57:13.465864Z
+41667
 hauke
 
 
@@ -160,5 +126,39 @@ hauke
 
 
 
-448
+437
+
+101-Broadcom-brcsmac.mk
+file
+
+
+
+
+2014-08-06T22:38:49.569837Z
+2ae8e7e917108d006a6e030e1498a1da
+2014-07-15T21:57:13.465864Z
+41667
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+467
 

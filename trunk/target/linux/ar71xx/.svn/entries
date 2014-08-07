@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ar71xx
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ar71xx
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-18T10:08:08.984259Z
-41255
-blogic
+2014-08-06T10:30:21.517441Z
+42013
+nbd
 
 
 
@@ -26,17 +26,20 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+generic
+dir
+
 Makefile
 file
 
 
 
 
-2014-06-03T20:52:08.674293Z
-a29b5aecedde9326ed0b943e0c11cf7a
-2014-04-12T11:59:07.220884Z
-40467
-juhosg
+2014-08-06T22:40:51.633834Z
+d35f9d46b608c4ad2d60aa16cd2c289c
+2014-07-20T17:31:11.270376Z
+41776
+blogic
 has-props
 
 
@@ -143,10 +146,10 @@ file
 
 
 
-2014-06-03T20:52:08.674293Z
-43e75178475b241363643794c7b6aef1
-2014-06-02T14:56:24.846965Z
-40973
+2014-08-06T22:40:51.633834Z
+90311584633f6fd7219db36af2315c06
+2014-07-20T17:30:32.849680Z
+41769
 blogic
 
 
@@ -169,7 +172,7 @@ blogic
 
 
 
-7912
+8207
 
 patches-3.10
 dir
@@ -178,8 +181,5 @@ mikrotik
 dir
 
 base-files
-dir
-
-generic
 dir
 

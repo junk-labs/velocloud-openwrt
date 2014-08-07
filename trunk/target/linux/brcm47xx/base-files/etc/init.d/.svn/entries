@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm47xx/base-files/etc/init.d
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm47xx/base-files/etc/init.d
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-07T15:41:41.544918Z
-41042
+2014-07-26T12:33:48.854619Z
+41835
 hauke
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2014-06-20T21:11:24.716245Z
-b998ad452000ffc4155e6535ae57497f
-2014-06-07T15:41:41.544918Z
-41042
+2014-08-06T22:38:49.557837Z
+4dc58236f3f2d5a97e9def016fd25724
+2014-07-26T12:33:48.854619Z
+41835
 hauke
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-7119
+6771
 
 wmacfixup
 file

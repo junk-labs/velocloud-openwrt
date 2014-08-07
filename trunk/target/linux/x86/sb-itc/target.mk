@@ -16,7 +16,7 @@ DEFAULT_PACKAGES += \
 
 # SB-ITC-specific packages:
 DEFAULT_PACKAGES += \
-	kmod-intel-igb \
+	kmod-igb \
 	igb-eeprom \
 	kmod-r8169 \
 	kmod-dsa-velocloud \

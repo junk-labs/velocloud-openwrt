@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/igmpproxy/files
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/igmpproxy/files
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-06T09:34:38.926223Z
-41032
-blogic
+2014-07-02T19:18:23.994613Z
+41483
+nbd
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-20T21:11:27.468245Z
-a590241cac069fd03fc7f42eb0b29c49
-2014-06-06T09:34:38.926223Z
-41032
-blogic
+2014-08-06T22:47:47.261824Z
+6b3e5a9aaf5b3caec5801d8f2c1919a0
+2014-07-02T19:18:23.994613Z
+41483
+nbd
 
 
 
@@ -58,7 +58,7 @@ blogic
 
 
 
-2213
+3179
 
 igmpproxy.config
 file

@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/x86/thincan
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/x86/thincan
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-04-11T13:22:24.273733Z
-40454
-nbd
+2014-07-10T19:16:15.296438Z
+41560
+blogic
 
 
 
@@ -26,20 +26,17 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-base-files
-dir
-
 target.mk
 file
 
 
 
 
-2014-06-03T20:44:00.790305Z
-a33fc72a5850b1b906df9fce32d64b3d
-2014-04-11T13:22:24.273733Z
-40454
-nbd
+2014-08-06T22:40:51.349834Z
+08adf31c63ff9bdfc370315ac316b76b
+2014-07-10T19:16:15.296438Z
+41560
+blogic
 
 
 
@@ -61,7 +58,7 @@ nbd
 
 
 
-623
+591
 
 profiles
 dir
@@ -99,4 +96,7 @@ juhosg
 
 
 378
+
+base-files
+dir
 

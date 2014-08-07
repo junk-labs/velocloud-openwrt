@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/cns3xxx/files/arch/arm
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/cns3xxx/files/arch/arm
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-03-12T13:40:13.324822Z
-39894
-kaloz
+2014-07-31T23:41:26.950957Z
+41921
+nbd
 
 
 

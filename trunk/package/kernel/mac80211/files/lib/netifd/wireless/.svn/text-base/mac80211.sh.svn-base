@@ -53,7 +53,7 @@ drv_mac80211_init_iface_config() {
 	config_add_boolean wds powersave
 	config_add_int maxassoc
 	config_add_int max_listen_int
-	config_add_int dtim_interval
+	config_add_int dtim_period
 
 	# mesh
 	config_add_string mesh_id
@@ -127,7 +127,7 @@ mac80211_hostapd_setup_base() {
 
 		json_get_vars \
 			ldpc:1 \
-			greenfield:1 \
+			greenfield:0 \
 			short_gi_20:1 \
 			short_gi_40:1 \
 			tx_stbc:1 \
@@ -364,9 +364,13 @@ mac80211_generate_mac() {
 
 find_phy() {
 	[ -n "$phy" -a -d /sys/class/ieee80211/$phy ] && return 0
-	[ -n "$path" -a -d "/sys/devices/$path/ieee80211" ] && {
-		phy="$(ls /sys/devices/$path/ieee80211 | grep -m 1 phy)"
-		[ -n "$phy" ] && return 0
+	[ -n "$path" ] && {
+		for phy in /sys/devices/$path/ieee80211/phy*; do
+			[ -e "$phy" ] && {
+				phy="${phy##*/}"
+				return 0
+			}
+		done
 	}
 	[ -n "$macaddr" ] && {
 		for phy in $(ls /sys/class/ieee80211 2>/dev/null); do

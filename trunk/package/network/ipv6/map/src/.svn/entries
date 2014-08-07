@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/ipv6/map/src
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/ipv6/map/src
 svn://svn.openwrt.org/openwrt
 
 

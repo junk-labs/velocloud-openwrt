@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/imx6/base-files/etc/uci-defaults
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/imx6/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-19T14:13:34.266278Z
-41276
-blogic
+2014-06-26T10:14:13.567703Z
+41339
+luka
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-20T21:11:25.128245Z
-1d356aaeef8d2e15909bb8bd44683d3b
-2014-06-19T14:13:34.266278Z
-41276
-blogic
+2014-08-06T22:38:50.045837Z
+6c721cec13f0813496fe60cf88b01a3d
+2014-06-26T10:14:13.567703Z
+41339
+luka
 
 
 
@@ -58,5 +58,5 @@ blogic
 
 
 
-459
+449
 

@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/dante/patches
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/dante/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,6 +25,40 @@ jow
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+200-fix-RTLD_NEXT.patch
+file
+
+
+
+
+2014-06-03T20:17:37.774341Z
+94c9b00be80af04177dacdacb48f7d90
+2011-02-27T23:22:38.253882Z
+25780
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+790
 
 100-do-not-use-defdname.patch
 file
@@ -93,38 +127,4 @@ jow
 
 
 11832
-
-200-fix-RTLD_NEXT.patch
-file
-
-
-
-
-2014-06-03T20:17:37.774341Z
-94c9b00be80af04177dacdacb48f7d90
-2011-02-27T23:22:38.253882Z
-25780
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-790
 

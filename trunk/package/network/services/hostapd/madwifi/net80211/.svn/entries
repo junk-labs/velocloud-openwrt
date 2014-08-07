@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/hostapd/madwifi/net80211
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/hostapd/madwifi/net80211
 svn://svn.openwrt.org/openwrt
 
 

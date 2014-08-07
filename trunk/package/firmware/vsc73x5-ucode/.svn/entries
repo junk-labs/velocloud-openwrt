@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/firmware/vsc73x5-ucode
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/firmware/vsc73x5-ucode
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,9 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-files
-dir
 
 Makefile
 file
@@ -62,4 +59,7 @@ blogic
 
 
 2686
+
+files
+dir
 

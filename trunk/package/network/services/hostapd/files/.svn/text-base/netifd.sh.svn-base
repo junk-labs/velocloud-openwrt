@@ -52,6 +52,7 @@ hostapd_common_add_device_config() {
 
 	config_add_string country
 	config_add_boolean country_ie doth
+	config_add_string require_mode
 
 	hostapd_add_log_config
 }
@@ -63,7 +64,7 @@ hostapd_prepare_device_config() {
 	local base="${config%%.conf}"
 	local base_cfg=
 
-	json_get_vars country country_ie beacon_int doth
+	json_get_vars country country_ie beacon_int doth require_mode
 
 	hostapd_set_log_options base_cfg
 
@@ -83,6 +84,11 @@ hostapd_prepare_device_config() {
 	for br in $basic_rate_list; do
 		hostapd_add_basic_rate brlist "$br"
 	done
+	case "$require_mode" in
+		g) brlist="60 120 240" ;;
+		n) append base_cfg "require_ht=1" "$N";;
+		ac) append base_cfg "require_vht=1" "$N";;
+	esac
 	[ -n "$brlist" ] && append base_cfg "basic_rates=$brlist" "$N"
 	[ -n "$beacon_int" ] && append base_cfg "beacon_int=$beacon_int" "$N"
 
@@ -122,6 +128,9 @@ hostapd_common_add_bss_config() {
 	config_add_string ownip
 	config_add_string iapp_interface
 	config_add_string eap_type ca_cert client_cert identity auth priv_key priv_key_pwd
+
+	config_add_int dynamic_vlan vlan_naming
+	config_add_string vlan_tagged_interface
 
 	config_add_string 'key1:wepkey' 'key2:wepkey' 'key3:wepkey' 'key4:wepkey' 'password:wpakey'
 
@@ -209,7 +218,8 @@ hostapd_set_bss_options() {
 				acct_server acct_secret acct_port \
 				dae_client dae_secret dae_port \
 				nasid iapp_interface ownip \
-				eap_reauth_period
+				eap_reauth_period dynamic_vlan \
+				vlan_tagged_interface
 
 			# legacy compatibility
 			[ -n "$auth_server" ] || json_get_var auth_server server
@@ -219,6 +229,8 @@ hostapd_set_bss_options() {
 			set_default auth_port 1812
 			set_default acct_port 1813
 			set_default dae_port 3799
+
+			set_default vlan_naming 1
 
 			append bss_conf "auth_server_addr=$auth_server" "$N"
 			append bss_conf "auth_server_port=$auth_port" "$N"
@@ -243,6 +255,13 @@ hostapd_set_bss_options() {
 			append bss_conf "eapol_key_index_workaround=1" "$N"
 			append bss_conf "ieee8021x=1" "$N"
 			append bss_conf "wpa_key_mgmt=WPA-EAP" "$N"
+
+			[ -n "$dynamic_vlan" ] && {
+				append bss_conf "dynamic_vlan=$dynamic_vlan" "$N"
+				append bss_conf "vlan_naming=$vlan_naming" "$N"
+				[ -n "$vlan_tagged_interface" ] && \
+					append bss_conf "vlan_tagged_interface=$vlan_tagged_interface" "$N"
+			}
 		;;
 		wep)
 			local wep_keyidx=0

@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/boot/uboot-lantiq
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/boot/uboot-lantiq
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-02T12:43:31.662792Z
-40918
+2014-07-16T10:43:44.565839Z
+41671
 blogic
 
 

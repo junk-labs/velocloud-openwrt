@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/broadcom-wl/src/glue
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/broadcom-wl/src/glue
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,6 +25,40 @@ hauke
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+wl_glue.h
+file
+
+
+
+
+2014-06-03T20:17:37.614341Z
+ab40e0de5286fbcad02c28caccd3f9c3
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+639
 
 Makefile
 file
@@ -93,38 +127,4 @@ hauke
 
 
 6177
-
-wl_glue.h
-file
-
-
-
-
-2014-06-03T20:17:37.614341Z
-ab40e0de5286fbcad02c28caccd3f9c3
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-639
 

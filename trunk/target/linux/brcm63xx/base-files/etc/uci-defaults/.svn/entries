@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm63xx/base-files/etc/uci-defaults
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm63xx/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-22T11:16:48.252245Z
-39679
+2014-07-27T17:44:59.231020Z
+41852
 jogo
 
 
@@ -26,16 +26,16 @@ jogo
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-02_network
+09_fix_crc
 file
 
 
 
 
-2014-06-03T20:51:21.142294Z
-a92fbc1988f31d0bed444df879e80a3b
-2014-02-22T11:16:48.252245Z
-39679
+2014-08-06T22:38:48.501837Z
+3a52948f310fe5e872f97f05578029c7
+2014-07-27T17:44:59.231020Z
+41852
 jogo
 has-props
 
@@ -58,41 +58,7 @@ has-props
 
 
 
-2229
-
-09_fix_crc
-file
-
-
-
-
-2014-06-03T20:17:38.006341Z
-c045bbc604072760a78565217a1564c4
-2013-02-05T14:57:43.579800Z
-35501
-mirko
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-370
+454
 
 01_leds
 file
@@ -100,10 +66,10 @@ file
 
 
 
-2014-06-03T20:51:21.142294Z
-e36d39a957a6454225cc90d16e65b94d
-2014-02-22T11:16:33.210852Z
-39672
+2014-08-06T22:38:48.501837Z
+89051e0fdbfdf3939a496904b95924a2
+2014-07-27T17:44:59.231020Z
+41852
 jogo
 
 
@@ -126,5 +92,39 @@ jogo
 
 
 
-413
+777
+
+02_network
+file
+
+
+
+
+2014-08-06T22:38:48.501837Z
+17d4242fe56671f56d2001c596494f84
+2014-07-27T17:44:59.231020Z
+41852
+jogo
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2498
 

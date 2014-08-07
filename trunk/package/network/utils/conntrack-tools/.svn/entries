@@ -1,15 +1,15 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/conntrack-tools
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/conntrack-tools
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-10-10T13:19:43.677179Z
-33701
-jow
+2014-06-29T11:33:03.440293Z
+41377
+nbd
 
 
 
@@ -32,31 +32,12 @@ file
 
 
 
-2013-12-02T20:28:45.762164Z
-3f396c540bc0758317bd7fe17a4c39a7
-2012-10-10T13:19:43.677179Z
-33701
-jow
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1688
+f7f01835e4109337a8a4b4a914fc60f9
+2014-06-29T11:33:00.022795Z
+41376
+nbd
+
+patches
+dir
 

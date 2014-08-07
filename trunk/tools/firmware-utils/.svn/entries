@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/tools/firmware-utils
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/firmware-utils
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-17T15:38:54.138253Z
-41236
+2014-08-03T11:16:02.557331Z
+41984
 blogic
 
 
@@ -26,16 +26,19 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+src
+dir
+
 Makefile
 file
 
 
 
 
-2014-06-20T21:11:22.272245Z
-30181e244fc8ea18bdb77cce3db8e3d1
-2014-06-17T15:38:54.138253Z
-41236
+2014-08-06T22:38:46.117837Z
+cfd21277da08b7a39bc3384e03e42e6f
+2014-08-03T11:16:02.557331Z
+41984
 blogic
 has-props
 
@@ -58,8 +61,5 @@ has-props
 
 
 
-1984
-
-src
-dir
+2002
 

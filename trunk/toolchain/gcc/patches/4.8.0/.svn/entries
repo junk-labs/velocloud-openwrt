@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/toolchain/gcc/patches/4.8.0
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/toolchain/gcc/patches/4.8.0
 svn://svn.openwrt.org/openwrt
 
 
@@ -162,40 +162,6 @@ nbd
 
 473
 
-850-use_shared_libgcc.patch
-file
-
-
-
-
-2014-06-03T20:38:09.258313Z
-022399fa667560ae66e631ace467005c
-2014-02-24T21:09:37.710351Z
-39749
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1559
-
 900-bad-mips16-crt.patch
 file
 
@@ -229,6 +195,40 @@ nbd
 
 
 293
+
+850-use_shared_libgcc.patch
+file
+
+
+
+
+2014-06-03T20:38:09.258313Z
+022399fa667560ae66e631ace467005c
+2014-02-24T21:09:37.710351Z
+39749
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1559
 
 840-armv4_pass_fix-v4bx_to_ld.patch
 file
@@ -366,40 +366,6 @@ florian
 
 692
 
-860-uclibc_use_eh_frame.patch
-file
-
-
-
-
-2014-06-03T20:17:38.430341Z
-155f6c9265074b8da716569fb55d2607
-2013-05-23T10:21:59.573061Z
-36693
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1150
-
 880-no_java_section.patch
 file
 
@@ -434,17 +400,17 @@ nbd
 
 466
 
-200-musl.patch
+860-uclibc_use_eh_frame.patch
 file
 
 
 
 
 2014-06-03T20:17:38.430341Z
-614321fd09dcd5e13d1c4f441cfe8dd2
-2013-09-11T12:08:27.415964Z
-37938
-florian
+155f6c9265074b8da716569fb55d2607
+2013-05-23T10:21:59.573061Z
+36693
+nbd
 
 
 
@@ -466,7 +432,7 @@ florian
 
 
 
-11981
+1150
 
 920-specs_nonfatal_getenv.patch
 file
@@ -501,6 +467,40 @@ jow
 
 
 446
+
+200-musl.patch
+file
+
+
+
+
+2014-06-03T20:17:38.430341Z
+614321fd09dcd5e13d1c4f441cfe8dd2
+2013-09-11T12:08:27.415964Z
+37938
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11981
 
 100-uclibc-conf.patch
 file

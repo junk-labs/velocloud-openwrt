@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/config/netifd
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/config/netifd
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-20T17:51:25.032064Z
-41287
+2014-08-05T10:03:48.783755Z
+42001
 cyrus
 
 
@@ -26,22 +26,16 @@ cyrus
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2014-06-20T21:11:27.964245Z
-0658fc39976089bb93b29d3828d9a6ab
-2014-06-20T17:51:25.032064Z
-41287
+2014-08-06T22:46:59.401825Z
+1782d1eadbd70aec706538879c1b37fb
+2014-08-05T10:03:48.783755Z
+42001
 cyrus
 
 
@@ -65,4 +59,10 @@ cyrus
 
 
 1146
+
+files
+dir
+
+patches
+dir
 

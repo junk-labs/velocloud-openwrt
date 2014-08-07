@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ixp4xx/patches-3.10
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ixp4xx/patches-3.10
 svn://svn.openwrt.org/openwrt
 
 
@@ -26,14 +26,14 @@ juhosg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-111-pronghorn_swap_uarts.patch
+002-ixp4xx_eth-use-parent-device-for-dma-allocations.patch
 file
 
 
 
 
 2014-06-03T20:17:38.226341Z
-98e00986a84daf83f7b453214c7ae185
+e9f5a8b778f9125e63d7481170ce819d
 2013-07-01T18:42:49.672239Z
 37124
 jogo
@@ -58,7 +58,347 @@ jogo
 
 
 
-1403
+3611
+
+132-wrt300nv2_mac_fix.patch
+file
+
+
+
+
+2014-06-03T20:17:38.226341Z
+df742fddb4f740bc55a48e6512db68b5
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2062
+
+150-lanready_ap1000_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.226341Z
+456e88775ab56b92833d8e01ffcbaa6d
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5516
+
+110-pronghorn_series_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.226341Z
+81fd05da3e316a991e5ce9d448bb854b
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10557
+
+500-usr8200_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.230341Z
+9dc8dea84592737678fe4ac5d6c42e4c
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9088
+
+900-ixp4xx-crypto-include-module.h.patch
+file
+
+
+
+
+2014-06-03T20:17:38.230341Z
+64a2856611935f1638641365121c3a81
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+290
+
+312-ixp4xx_pata_optimization.patch
+file
+
+
+
+
+2014-06-03T20:17:38.230341Z
+e3c28a1de8181d01bbf8f3d0d57a62b2
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3434
+
+130-wrt300nv2_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.226341Z
+bfb449647a13de14d23f94d2b6f26f4d
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6293
+
+170-ixdpg425_mac_plat_info.patch
+file
+
+
+
+
+2014-06-03T20:17:38.226341Z
+b56b5214f25b52f30d075d96f3d10a78
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1303
+
+120-compex_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.226341Z
+ad15376d185aa7c074d580793292839f
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5406
+
+203-npe_driver_mask_phy_features.patch
+file
+
+
+
+
+2014-06-03T20:17:38.230341Z
+365796ed8a8e9a83c4a26e43ca6b8bc7
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+403
 
 300-avila_support.patch
 file
@@ -128,14 +468,14 @@ jogo
 
 1111
 
-090-increase_entropy_pools.patch
+311-gtwx5717_mac_plat_info.patch
 file
 
 
 
 
-2014-06-03T20:17:38.226341Z
-8c650d6bf19344a71e8007e70d992b16
+2014-06-03T20:17:38.230341Z
+a3445cfec6c64e8f0f2db250f40b5158
 2013-07-01T18:42:49.672239Z
 37124
 jogo
@@ -160,7 +500,41 @@ jogo
 
 
 
-393
+1330
+
+115-sidewinder_support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.226341Z
+e6e7646b765401079523591e99180679
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7553
 
 910-ixp4xx-nr_irq_lines.patch
 file
@@ -298,14 +672,14 @@ jogo
 
 9695
 
-310-gtwx5717_spi_bus.patch
+520-tw2662_support.patch
 file
 
 
 
 
 2014-06-03T20:17:38.230341Z
-77fb2d869afed51d0de7cb97ab81faca
+2427df88901e13007f96a3fc9eaeb018
 2013-07-01T18:42:49.672239Z
 37124
 jogo
@@ -330,16 +704,16 @@ jogo
 
 
 
-1340
+9159
 
-001-arm-ixp4xx-set-cohorent_dma_mask-for-ethernet-platfo.patch
+180-tw5334_support.patch
 file
 
 
 
 
 2014-06-03T20:17:38.226341Z
-9906a462ac6bb40a001febda30e490be
+6776b7d47ca06d82c5626c0493cfaaf5
 2013-07-01T18:42:49.672239Z
 37124
 jogo
@@ -364,75 +738,7 @@ jogo
 
 
 
-4059
-
-295-latch_led_driver.patch
-file
-
-
-
-
-2014-06-03T20:17:38.230341Z
-31027826766bf19be7d3934b7c233a57
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4854
-
-002-ixp4xx_eth-use-parent-device-for-dma-allocations.patch
-file
-
-
-
-
-2014-06-03T20:17:38.226341Z
-e9f5a8b778f9125e63d7481170ce819d
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3611
+8008
 
 100-wg302v2_gateway7001_mac_plat_info.patch
 file
@@ -536,40 +842,6 @@ jogo
 
 13626
 
-110-pronghorn_series_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.226341Z
-81fd05da3e316a991e5ce9d448bb854b
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10557
-
 600-skb_avoid_dmabounce.patch
 file
 
@@ -604,82 +876,14 @@ juhosg
 
 562
 
-312-ixp4xx_pata_optimization.patch
-file
-
-
-
-
-2014-06-03T20:17:38.230341Z
-e3c28a1de8181d01bbf8f3d0d57a62b2
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3434
-
-900-ixp4xx-crypto-include-module.h.patch
-file
-
-
-
-
-2014-06-03T20:17:38.230341Z
-64a2856611935f1638641365121c3a81
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-290
-
-170-ixdpg425_mac_plat_info.patch
+111-pronghorn_swap_uarts.patch
 file
 
 
 
 
 2014-06-03T20:17:38.226341Z
-b56b5214f25b52f30d075d96f3d10a78
+98e00986a84daf83f7b453214c7ae185
 2013-07-01T18:42:49.672239Z
 37124
 jogo
@@ -704,75 +908,7 @@ jogo
 
 
 
-1303
-
-120-compex_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.226341Z
-ad15376d185aa7c074d580793292839f
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5406
-
-203-npe_driver_mask_phy_features.patch
-file
-
-
-
-
-2014-06-03T20:17:38.230341Z
-365796ed8a8e9a83c4a26e43ca6b8bc7
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-403
+1403
 
 207-npe_driver_multiphy_support.patch
 file
@@ -808,40 +944,6 @@ jogo
 
 3732
 
-311-gtwx5717_mac_plat_info.patch
-file
-
-
-
-
-2014-06-03T20:17:38.230341Z
-a3445cfec6c64e8f0f2db250f40b5158
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1330
-
 116-sidewinder_fis_location.patch
 file
 
@@ -876,14 +978,14 @@ jogo
 
 889
 
-115-sidewinder_support.patch
+090-increase_entropy_pools.patch
 file
 
 
 
 
 2014-06-03T20:17:38.226341Z
-e6e7646b765401079523591e99180679
+8c650d6bf19344a71e8007e70d992b16
 2013-07-01T18:42:49.672239Z
 37124
 jogo
@@ -908,41 +1010,7 @@ jogo
 
 
 
-7553
-
-160-delayed_uart_io.patch
-file
-
-
-
-
-2014-06-03T20:49:34.258297Z
-f8ce9df763dd952df075284fd5b94f6e
-2014-02-23T10:59:40.436329Z
-39707
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4035
+393
 
 205-npe_driver_separate_phy_functions.patch
 file
@@ -977,6 +1045,40 @@ jogo
 
 
 3849
+
+160-delayed_uart_io.patch
+file
+
+
+
+
+2014-06-03T20:49:34.258297Z
+f8ce9df763dd952df075284fd5b94f6e
+2014-02-23T10:59:40.436329Z
+39707
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4035
 
 151-lanready_ap1000_mac_plat_info.patch
 file
@@ -1080,6 +1182,40 @@ nbd
 
 31893
 
+310-gtwx5717_spi_bus.patch
+file
+
+
+
+
+2014-06-03T20:17:38.230341Z
+77fb2d869afed51d0de7cb97ab81faca
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1340
+
 131-wrt300nv2_mac_plat_info.patch
 file
 
@@ -1148,6 +1284,74 @@ jogo
 
 429
 
+001-arm-ixp4xx-set-cohorent_dma_mask-for-ethernet-platfo.patch
+file
+
+
+
+
+2014-06-03T20:17:38.226341Z
+9906a462ac6bb40a001febda30e490be
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4059
+
+295-latch_led_driver.patch
+file
+
+
+
+
+2014-06-03T20:17:38.230341Z
+31027826766bf19be7d3934b7c233a57
+2013-07-01T18:42:49.672239Z
+37124
+jogo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4854
+
 105-wg302v1_support.patch
 file
 
@@ -1181,208 +1385,4 @@ jogo
 
 
 6817
-
-520-tw2662_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.230341Z
-2427df88901e13007f96a3fc9eaeb018
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-9159
-
-180-tw5334_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.226341Z
-6776b7d47ca06d82c5626c0493cfaaf5
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-8008
-
-132-wrt300nv2_mac_fix.patch
-file
-
-
-
-
-2014-06-03T20:17:38.226341Z
-df742fddb4f740bc55a48e6512db68b5
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2062
-
-150-lanready_ap1000_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.226341Z
-456e88775ab56b92833d8e01ffcbaa6d
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5516
-
-500-usr8200_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.230341Z
-9dc8dea84592737678fe4ac5d6c42e4c
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-9088
-
-130-wrt300nv2_support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.226341Z
-bfb449647a13de14d23f94d2b6f26f4d
-2013-07-01T18:42:49.672239Z
-37124
-jogo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6293
 

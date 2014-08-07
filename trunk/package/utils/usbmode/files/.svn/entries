@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/utils/usbmode/files
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/usbmode/files
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,40 +25,6 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-usbmode.init
-file
-
-
-
-
-2014-06-03T20:17:37.854341Z
-5461840908a890ee1d2369876813f877
-2013-12-13T16:43:15.082714Z
-39047
-nbd
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-188
 
 usbmode.hotplug
 file
@@ -93,4 +59,38 @@ nbd
 
 
 26
+
+usbmode.init
+file
+
+
+
+
+2014-06-03T20:17:37.854341Z
+5461840908a890ee1d2369876813f877
+2013-12-13T16:43:15.082714Z
+39047
+nbd
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+188
 

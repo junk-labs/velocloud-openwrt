@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/libs/libiconv/src/include
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/libiconv/src/include
 svn://svn.openwrt.org/openwrt
 
 
@@ -25,6 +25,9 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+charmaps
+dir
 
 charmaps.h
 file
@@ -93,7 +96,4 @@ nbd
 
 
 587
-
-charmaps
-dir
 

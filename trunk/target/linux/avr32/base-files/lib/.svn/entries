@@ -1,8 +1,8 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/target/linux/avr32/base-files/lib
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/avr32/base-files/lib
 svn://svn.openwrt.org/openwrt
 
 

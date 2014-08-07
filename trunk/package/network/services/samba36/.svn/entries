@@ -1,14 +1,14 @@
 10
 
 dir
-41290
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/samba36
+42021
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/samba36
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-01T21:17:56.558788Z
-40652
+2014-07-06T11:23:13.748220Z
+41525
 hauke
 
 
@@ -26,22 +26,16 @@ hauke
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2014-06-03T20:19:30.774339Z
-314af500db258c2da021c0a2503f2250
-2014-05-01T21:17:56.558788Z
-40652
+2014-08-06T22:47:47.261824Z
+603de9757a965d780788965cdab7ec82
+2014-07-06T11:23:13.748220Z
+41525
 hauke
 
 
@@ -64,5 +58,11 @@ hauke
 
 
 
-4261
+4344
+
+files
+dir
+
+patches
+dir
 

@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libqmi
-PKG_VERSION:=1.8.0
+PKG_VERSION:=1.10.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=libqmi-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://www.freedesktop.org/software/libqmi
-PKG_MD5SUM:=1c4c64c0894f691632727363abec32b8
+PKG_MD5SUM:=b5b3aa098ac33c246f4a8122b7d04d05
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1

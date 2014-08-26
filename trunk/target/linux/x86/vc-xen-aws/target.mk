@@ -5,6 +5,8 @@ FEATURES:=ext4 pci usb display
 DEFAULT_PACKAGES += \
 	bridge \
 	ip \
+	iputils-ping \
+	iputils-ping6 \
 	net-tools-arp \
 	net-tools-ifconfig \
 	net-tools-netstat \

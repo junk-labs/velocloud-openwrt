@@ -1,14 +1,14 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-03T11:15:59.158736Z
-41982
+2014-09-01T13:22:08.134551Z
+42390
 blogic
 
 
@@ -26,6 +26,30 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+mdns
+dir
+
+odhcpd
+dir
+
+hostapd
+dir
+
+dnsmasq
+dir
+
+ipset-dns
+dir
+
+openvpn-easy-rsa
+dir
+
+uhttpd
+dir
+
+relayd
+dir
+
 openvpn
 dir
 
@@ -38,39 +62,15 @@ dir
 samba36
 dir
 
-igmpproxy
-dir
-
 dropbear
 dir
 
-ppp
+igmpproxy
 dir
 
 lldpd
 dir
 
-odhcpd
-dir
-
-mdns
-dir
-
-hostapd
-dir
-
-ipset-dns
-dir
-
-dnsmasq
-dir
-
-openvpn-easy-rsa
-dir
-
-uhttpd
-dir
-
-relayd
+ppp
 dir
 

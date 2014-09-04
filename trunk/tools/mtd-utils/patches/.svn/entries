@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/mtd-utils/patches
 svn://svn.openwrt.org/openwrt
 
@@ -25,74 +25,6 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-110-portability.patch
-file
-
-
-
-
-2014-06-03T20:17:38.466341Z
-f553d2cc286f080735c569524b5c9eac
-2012-03-01T19:55:48.065720Z
-30769
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4095
-
-133-error-fix.patch
-file
-
-
-
-
-2014-06-03T20:17:38.470341Z
-d10ec2842f7f1344237b88253509e80f
-2012-03-01T19:55:48.065720Z
-30769
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-766
 
 131-fix_lib_compile.patch
 file
@@ -399,4 +331,72 @@ juhosg
 
 
 2589
+
+110-portability.patch
+file
+
+
+
+
+2014-06-03T20:17:38.466341Z
+f553d2cc286f080735c569524b5c9eac
+2012-03-01T19:55:48.065720Z
+30769
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4095
+
+133-error-fix.patch
+file
+
+
+
+
+2014-06-03T20:17:38.470341Z
+d10ec2842f7f1344237b88253509e80f
+2012-03-01T19:55:48.065720Z
+30769
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+766
 

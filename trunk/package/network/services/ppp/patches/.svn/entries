@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/ppp/patches
 svn://svn.openwrt.org/openwrt
 
@@ -25,210 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-107-debian_pppoatm_wildcard.patch
-file
-
-
-
-
-2014-06-03T20:17:37.762341Z
-f6c1bc88d0a60e6ec03f61351391695d
-2012-06-19T17:03:24.802042Z
-32463
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-935
-
-405-no_multilink_option.patch
-file
-
-
-
-
-2014-06-20T21:11:27.500245Z
-6f1b0acc580e31ccf1afcd9591042bc9
-2014-06-15T20:55:17.573110Z
-41193
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1122
-
-330-retain_foreign_default_routes.patch
-file
-
-
-
-
-2014-06-03T20:19:30.934339Z
-19bbeb04465574d7f72fea4af1599aad
-2014-03-20T13:51:36.628006Z
-39963
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-735
-
-140-pppoe_compile_fix.patch
-file
-
-
-
-
-2014-06-20T21:11:27.500245Z
-13bed69ac75a06d3c34971315a0bc66d
-2014-06-15T20:55:17.573110Z
-41193
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2237
-
-110-debian_defaultroute.patch
-file
-
-
-
-
-2014-06-20T21:11:27.500245Z
-af43f594c5cb97951df24f74ab8193ce
-2014-06-15T20:55:17.573110Z
-41193
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11824
-
-510-pptp_compile_fix.patch
-file
-
-
-
-
-2014-06-03T20:19:30.934339Z
-1d988ffd74569d25944df0ddaed8c10e
-2014-03-20T13:51:36.628006Z
-39963
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-237
 
 500-add-pptp-plugin.patch
 file
@@ -604,40 +400,6 @@ cyrus
 
 5133
 
-132-fix_linux_includes.patch
-file
-
-
-
-
-2014-06-03T20:19:30.934339Z
-321fbde81da6c7017df8434bb6189d3f
-2014-03-20T13:51:36.628006Z
-39963
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-874
-
 202-no_strip.patch
 file
 
@@ -672,17 +434,17 @@ cyrus
 
 2817
 
-106-debian_stripMSdomain.patch
+132-fix_linux_includes.patch
 file
 
 
 
 
-2014-06-03T20:17:37.762341Z
-83db2174215a5c91f0003f0a7d02f315
-2012-06-19T17:03:24.802042Z
-32463
-jow
+2014-06-03T20:19:30.934339Z
+321fbde81da6c7017df8434bb6189d3f
+2014-03-20T13:51:36.628006Z
+39963
+nbd
 
 
 
@@ -704,7 +466,7 @@ jow
 
 
 
-1460
+874
 
 201-mppe_mppc_1.1.patch
 file
@@ -740,14 +502,14 @@ has-props
 
 46605
 
-404-remove_obsolete_protocol_names.patch
+106-debian_stripMSdomain.patch
 file
 
 
 
 
-2014-06-03T20:17:37.766341Z
-c87236d69c0ef47317acefd743979f2a
+2014-06-03T20:17:37.762341Z
+83db2174215a5c91f0003f0a7d02f315
 2012-06-19T17:03:24.802042Z
 32463
 jow
@@ -772,7 +534,7 @@ jow
 
 
 
-5496
+1460
 
 103-debian_fix_link_pidfile.patch
 file
@@ -807,6 +569,40 @@ jow
 
 
 743
+
+404-remove_obsolete_protocol_names.patch
+file
+
+
+
+
+2014-06-03T20:17:37.766341Z
+c87236d69c0ef47317acefd743979f2a
+2012-06-19T17:03:24.802042Z
+32463
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5496
 
 310-precompile_filter.patch
 file
@@ -1283,4 +1079,208 @@ cyrus
 
 
 577
+
+107-debian_pppoatm_wildcard.patch
+file
+
+
+
+
+2014-06-03T20:17:37.762341Z
+f6c1bc88d0a60e6ec03f61351391695d
+2012-06-19T17:03:24.802042Z
+32463
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+935
+
+405-no_multilink_option.patch
+file
+
+
+
+
+2014-06-20T21:11:27.500245Z
+6f1b0acc580e31ccf1afcd9591042bc9
+2014-06-15T20:55:17.573110Z
+41193
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1122
+
+330-retain_foreign_default_routes.patch
+file
+
+
+
+
+2014-06-03T20:19:30.934339Z
+19bbeb04465574d7f72fea4af1599aad
+2014-03-20T13:51:36.628006Z
+39963
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+735
+
+140-pppoe_compile_fix.patch
+file
+
+
+
+
+2014-06-20T21:11:27.500245Z
+13bed69ac75a06d3c34971315a0bc66d
+2014-06-15T20:55:17.573110Z
+41193
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2237
+
+110-debian_defaultroute.patch
+file
+
+
+
+
+2014-06-20T21:11:27.500245Z
+af43f594c5cb97951df24f74ab8193ce
+2014-06-15T20:55:17.573110Z
+41193
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11824
+
+510-pptp_compile_fix.patch
+file
+
+
+
+
+2014-06-03T20:19:30.934339Z
+1d988ffd74569d25944df0ddaed8c10e
+2014-03-20T13:51:36.628006Z
+39963
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+237
 

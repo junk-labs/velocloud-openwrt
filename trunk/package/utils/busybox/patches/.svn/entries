@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox/patches
 svn://svn.openwrt.org/openwrt
 
@@ -25,74 +25,6 @@ cyrus
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-003-upstream_date_fix.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-f6845d0a1355d45087ccf4ecb08a3cd7
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-978
-
-260-arping_missing_includes.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-b0f4c24424173654ba76a816747927aa
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-234
 
 101-gen_build_files_bash.patch
 file
@@ -230,14 +162,14 @@ nbd
 
 2620
 
-201-udhcpc_changed_ifindex.patch
+110-no_static_libgcc.patch
 file
 
 
 
 
-2014-06-03T20:36:39.058315Z
-3367c0fb7bab4bd2b3c7d7dcbef27092
+2014-06-03T20:36:39.054315Z
+fe7cfacafacd1b7aab43931a6426d402
 2014-05-25T17:42:09.256426Z
 40852
 nbd
@@ -262,7 +194,7 @@ nbd
 
 
 
-680
+635
 
 200-udhcpc_reduce_msgs.patch
 file
@@ -298,14 +230,14 @@ nbd
 
 564
 
-110-no_static_libgcc.patch
+201-udhcpc_changed_ifindex.patch
 file
 
 
 
 
-2014-06-03T20:36:39.054315Z
-fe7cfacafacd1b7aab43931a6426d402
+2014-06-03T20:36:39.058315Z
+3367c0fb7bab4bd2b3c7d7dcbef27092
 2014-05-25T17:42:09.256426Z
 40852
 nbd
@@ -330,41 +262,7 @@ nbd
 
 
 
-635
-
-100-trylink_bash.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-dba1f389b9cd0f08439137b3fde931e6
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-109
+680
 
 130-mconf_missing_sigwinch.patch
 file
@@ -399,6 +297,40 @@ nbd
 
 
 217
+
+100-trylink_bash.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+dba1f389b9cd0f08439137b3fde931e6
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+109
 
 005-upstream_nc_fix.patch
 file
@@ -705,4 +637,72 @@ has-props
 
 
 2596
+
+003-upstream_date_fix.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+f6845d0a1355d45087ccf4ecb08a3cd7
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+978
+
+260-arping_missing_includes.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+b0f4c24424173654ba76a816747927aa
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+234
 

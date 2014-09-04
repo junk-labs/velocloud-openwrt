@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/x86/generic/profiles
 svn://svn.openwrt.org/openwrt
 
@@ -25,40 +25,6 @@ cshore
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-Soekris48xx.mk
-file
-
-
-
-
-2014-06-03T20:17:38.346341Z
-e4c7655ea66f8672272a554b22b19eee
-2010-04-24T14:08:49.306290Z
-21137
-nico
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-498
 
 Soekris45xx.mk
 file
@@ -161,4 +127,38 @@ nico
 
 
 470
+
+Soekris48xx.mk
+file
+
+
+
+
+2014-06-03T20:17:38.346341Z
+e4c7655ea66f8672272a554b22b19eee
+2010-04-24T14:08:49.306290Z
+21137
+nico
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+498
 

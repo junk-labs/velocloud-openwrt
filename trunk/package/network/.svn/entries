@@ -1,15 +1,15 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-06T17:07:35.923311Z
-42015
-nbd
+2014-09-01T13:22:08.134551Z
+42390
+blogic
 
 
 
@@ -26,9 +26,6 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-config
-dir
-
 utils
 dir
 
@@ -36,5 +33,8 @@ services
 dir
 
 ipv6
+dir
+
+config
 dir
 

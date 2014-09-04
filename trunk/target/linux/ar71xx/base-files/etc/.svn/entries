@@ -1,15 +1,15 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ar71xx/base-files/etc
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-07-23T12:47:25.602409Z
-41814
-kaloz
+2014-09-01T13:22:12.016626Z
+42393
+blogic
 
 
 
@@ -25,12 +25,6 @@ kaloz
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-hotplug.d
-dir
-
-uci-defaults
-dir
 
 inittab
 file
@@ -72,11 +66,11 @@ file
 
 
 
-2014-08-06T22:40:51.553834Z
-7f1f04eea31e849b4b32d5d89612a4d9
-2014-07-23T12:47:25.602409Z
-41814
-kaloz
+2014-09-03T23:42:09.445712Z
+728e772c9f7a82a2a86f06490e8ea099
+2014-09-01T13:22:12.016626Z
+42393
+blogic
 has-props
 
 
@@ -98,5 +92,11 @@ has-props
 
 
 
-4839
+4892
+
+hotplug.d
+dir
+
+uci-defaults
+dir
 

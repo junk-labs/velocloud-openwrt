@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/toolchain/uClibc
 svn://svn.openwrt.org/openwrt
 
@@ -25,12 +25,6 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-patches-0.9.33.2
-dir
-
-utils
-dir
 
 Config.version
 file
@@ -173,4 +167,10 @@ has-props
 
 
 3404
+
+patches-0.9.33.2
+dir
+
+utils
+dir
 

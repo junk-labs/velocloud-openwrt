@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/samba36/patches
 svn://svn.openwrt.org/openwrt
 
@@ -60,40 +60,6 @@ hauke
 
 2353
 
-300-assert_debug_level.patch
-file
-
-
-
-
-2014-06-03T20:17:37.770341Z
-1c8f2817b1a580be2c27e22e37affd73
-2012-02-13T21:30:23.827711Z
-30512
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-377
-
 330-librpc_default_print.patch
 file
 
@@ -127,6 +93,40 @@ hauke
 
 
 355370
+
+300-assert_debug_level.patch
+file
+
+
+
+
+2014-06-03T20:17:37.770341Z
+1c8f2817b1a580be2c27e22e37affd73
+2012-02-13T21:30:23.827711Z
+30512
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+377
 
 320-debug_level_checks.patch
 file
@@ -332,16 +332,16 @@ hauke
 
 605
 
-111-owrt_smbpasswd.patch
+280-strip_srvsvc.patch
 file
 
 
 
 
-2014-08-06T22:47:47.257824Z
-278070eca1564a8a65f87253068edd4f
-2014-07-06T11:23:13.748220Z
-41525
+2014-06-03T20:19:30.770339Z
+e26502cdb27e74183774e0679848c692
+2014-05-01T12:17:52.906170Z
+40618
 hauke
 
 
@@ -364,7 +364,7 @@ hauke
 
 
 
-6720
+3549
 
 120-add_missing_ifdef.patch
 file
@@ -400,16 +400,16 @@ nbd
 
 693
 
-280-strip_srvsvc.patch
+111-owrt_smbpasswd.patch
 file
 
 
 
 
-2014-06-03T20:19:30.770339Z
-e26502cdb27e74183774e0679848c692
-2014-05-01T12:17:52.906170Z
-40618
+2014-08-06T22:47:47.257824Z
+278070eca1564a8a65f87253068edd4f
+2014-07-06T11:23:13.748220Z
+41525
 hauke
 
 
@@ -432,7 +432,7 @@ hauke
 
 
 
-3549
+6720
 
 310-remove_error_strings.patch
 file

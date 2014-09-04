@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/toolchain/gcc/patches/4.8-linaro
 svn://svn.openwrt.org/openwrt
 
@@ -94,40 +94,6 @@ nbd
 
 466
 
-850-use_shared_libgcc.patch
-file
-
-
-
-
-2014-06-03T20:38:09.254313Z
-f21af9f33f0cd395981600a8e4062a6b
-2014-02-24T21:09:37.710351Z
-39749
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1559
-
 900-bad-mips16-crt.patch
 file
 
@@ -161,6 +127,40 @@ nbd
 
 
 293
+
+850-use_shared_libgcc.patch
+file
+
+
+
+
+2014-06-03T20:38:09.254313Z
+f21af9f33f0cd395981600a8e4062a6b
+2014-02-24T21:09:37.710351Z
+39749
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1559
 
 840-armv4_pass_fix-v4bx_to_ld.patch
 file
@@ -332,40 +332,6 @@ nbd
 
 692
 
-880-no_java_section.patch
-file
-
-
-
-
-2014-06-03T20:17:38.430341Z
-1d5909361104dda292cc7b8b5f37541c
-2013-06-30T07:54:47.337359Z
-37095
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-466
-
 860-uclibc_use_eh_frame.patch
 file
 
@@ -400,16 +366,16 @@ nbd
 
 1190
 
-200-musl.patch
+880-no_java_section.patch
 file
 
 
 
 
-2014-06-03T20:38:09.254313Z
-ba64954a52f995c064453a3ea6fc477f
-2014-05-02T21:18:02.730138Z
-40664
+2014-06-03T20:17:38.430341Z
+1d5909361104dda292cc7b8b5f37541c
+2013-06-30T07:54:47.337359Z
+37095
 nbd
 
 
@@ -432,7 +398,7 @@ nbd
 
 
 
-11954
+466
 
 920-specs_nonfatal_getenv.patch
 file
@@ -467,6 +433,40 @@ kaloz
 
 
 446
+
+200-musl.patch
+file
+
+
+
+
+2014-06-03T20:38:09.254313Z
+ba64954a52f995c064453a3ea6fc477f
+2014-05-02T21:18:02.730138Z
+40664
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11954
 
 100-uclibc-conf.patch
 file

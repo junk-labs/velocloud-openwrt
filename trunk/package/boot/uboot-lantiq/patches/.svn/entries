@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/boot/uboot-lantiq/patches
 svn://svn.openwrt.org/openwrt
 
@@ -25,176 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-0007-sf-add-support-for-EN25QH256.patch
-file
-
-
-
-
-2014-06-03T20:36:47.910315Z
-f82cdca3dd4e76ae3e5883e736f1b164
-2014-04-22T08:08:19.341251Z
-40546
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-789
-
-0002-sf-consistently-use-debug-for-warning-error-messages.patch
-file
-
-
-
-
-2014-06-03T20:36:47.910315Z
-247bbbcda131dcda7a947ce2ac5e1a79
-2014-04-22T08:08:19.341251Z
-40546
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1642
-
-0003-sf-move-malloc-of-spi_flash-to-spi_flash_probe.patch
-file
-
-
-
-
-2014-06-03T20:36:47.910315Z
-ccfd9260302e44f36f498a4c3403ac08
-2014-04-22T08:08:19.341251Z
-40546
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2871
-
-0018-tools-lantiq-add-NAND-SPL-support.patch
-file
-
-
-
-
-2014-06-03T20:36:47.910315Z
-f67fa750f10151ab1f582be5aa144d6d
-2014-04-22T08:08:19.341251Z
-40546
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5292
-
-0029-MIPS-add-board-support-for-AVM-FritzBox-3370.patch
-file
-
-
-
-
-2014-06-03T20:36:47.910315Z
-17b39fc09b05c538e3c68f92cb3a2e55
-2014-04-22T08:08:19.341251Z
-40546
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-12002
 
 0031-MIPS-add-board-support-for-ZTE-ZXHN-H367N.patch
 file
@@ -672,14 +502,14 @@ blogic
 
 1520
 
-0030-MIPS-add-board-support-for-Gigaset-SX76X.patch
+0008-sf-fix-sector-layout-of-S25FL256S_256K-and-S25FL512S.patch
 file
 
 
 
 
 2014-06-03T20:36:47.902315Z
-5e5a16adb5ce46473c0c63891be98ecb
+58b3f83768de622e613d9fc1e0dfa510
 2014-04-22T08:08:19.341251Z
 40546
 blogic
@@ -704,7 +534,7 @@ blogic
 
 
 
-8255
+1163
 
 0022-MIPS-lantiq-easy80920-add-support-for-NAND-SPL.patch
 file
@@ -740,14 +570,14 @@ blogic
 
 3817
 
-0008-sf-fix-sector-layout-of-S25FL256S_256K-and-S25FL512S.patch
+0030-MIPS-add-board-support-for-Gigaset-SX76X.patch
 file
 
 
 
 
 2014-06-03T20:36:47.902315Z
-58b3f83768de622e613d9fc1e0dfa510
+5e5a16adb5ce46473c0c63891be98ecb
 2014-04-22T08:08:19.341251Z
 40546
 blogic
@@ -772,7 +602,7 @@ blogic
 
 
 
-1163
+8255
 
 0012-net-switchlib-add-driver-for-Atheros-AR8216.patch
 file
@@ -876,14 +706,14 @@ blogic
 
 4323
 
-0037-MIPS-add-board-support-for-Arcadyan-ARV752DPW.patch
+0020-MIPS-lantiq-add-NAND-SPL-support.patch
 file
 
 
 
 
 2014-06-03T20:36:47.902315Z
-18b60ffc74eb2ef6e410a34458a80493
+6ed8e6ca34c14c25a04b40832967f92c
 2014-04-22T08:08:19.341251Z
 40546
 blogic
@@ -908,7 +738,7 @@ blogic
 
 
 
-8415
+4415
 
 0023-MIPS-lantiq-add-default-openwrt-config.patch
 file
@@ -944,14 +774,14 @@ blogic
 
 1194
 
-0020-MIPS-lantiq-add-NAND-SPL-support.patch
+0037-MIPS-add-board-support-for-Arcadyan-ARV752DPW.patch
 file
 
 
 
 
 2014-06-03T20:36:47.902315Z
-6ed8e6ca34c14c25a04b40832967f92c
+18b60ffc74eb2ef6e410a34458a80493
 2014-04-22T08:08:19.341251Z
 40546
 blogic
@@ -976,7 +806,7 @@ blogic
 
 
 
-4415
+8415
 
 0041-Makefile-prepare-u-boot-lantiq-v2013.10-openwrt4.patch
 file
@@ -1453,4 +1283,174 @@ blogic
 
 
 9400
+
+0007-sf-add-support-for-EN25QH256.patch
+file
+
+
+
+
+2014-06-03T20:36:47.910315Z
+f82cdca3dd4e76ae3e5883e736f1b164
+2014-04-22T08:08:19.341251Z
+40546
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+789
+
+0002-sf-consistently-use-debug-for-warning-error-messages.patch
+file
+
+
+
+
+2014-06-03T20:36:47.910315Z
+247bbbcda131dcda7a947ce2ac5e1a79
+2014-04-22T08:08:19.341251Z
+40546
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1642
+
+0003-sf-move-malloc-of-spi_flash-to-spi_flash_probe.patch
+file
+
+
+
+
+2014-06-03T20:36:47.910315Z
+ccfd9260302e44f36f498a4c3403ac08
+2014-04-22T08:08:19.341251Z
+40546
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2871
+
+0018-tools-lantiq-add-NAND-SPL-support.patch
+file
+
+
+
+
+2014-06-03T20:36:47.910315Z
+f67fa750f10151ab1f582be5aa144d6d
+2014-04-22T08:08:19.341251Z
+40546
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5292
+
+0029-MIPS-add-board-support-for-AVM-FritzBox-3370.patch
+file
+
+
+
+
+2014-06-03T20:36:47.910315Z
+17b39fc09b05c538e3c68f92cb3a2e55
+2014-04-22T08:08:19.341251Z
+40546
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+12002
 

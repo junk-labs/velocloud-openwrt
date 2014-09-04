@@ -1,15 +1,15 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-06T22:01:13.613203Z
-42020
-hauke
+2014-08-10T10:17:03.033449Z
+42096
+jow
 
 
 
@@ -34,12 +34,6 @@ hauke
 
 
 ()
-
-files
-dir
-
-image
-dir
 
 config-3.10
 file
@@ -159,5 +153,11 @@ svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/patches-3.12
 41290
 
 base-files
+dir
+
+files
+dir
+
+image
 dir
 

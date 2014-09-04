@@ -1,7 +1,7 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/kirkwood/patches-3.10
 svn://svn.openwrt.org/openwrt
 
@@ -638,40 +638,6 @@ luka
 
 2991
 
-0018-pci-mvebu-allow-the-enumeration-of-devices-beyond-ph.patch
-file
-
-
-
-
-2014-06-03T20:17:38.234341Z
-7326f58b4180c5431e65d4be553c5464
-2013-10-03T02:50:00.681766Z
-38295
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3711
-
 0020-net-mv643xx_eth-use-phy_disconnect-instead-of-phy_de.patch
 file
 
@@ -705,6 +671,40 @@ juhosg
 
 
 1138
+
+0018-pci-mvebu-allow-the-enumeration-of-devices-beyond-ph.patch
+file
+
+
+
+
+2014-06-03T20:17:38.234341Z
+7326f58b4180c5431e65d4be553c5464
+2013-10-03T02:50:00.681766Z
+38295
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3711
 
 120-pogoplug_e02.patch
 file
@@ -740,40 +740,6 @@ luka
 
 2546
 
-130-iconnect.patch
-file
-
-
-
-
-2014-06-03T20:49:15.434297Z
-11656aef7ada1168b409dc54f62ac562
-2014-02-15T23:53:08.639021Z
-39591
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-853
-
 0027-ARM-kirkwood-remove-redundant-DT-board-files.patch
 file
 
@@ -808,17 +774,17 @@ luka
 
 33463
 
-0023-net-mv643xx_eth-use-of_phy_connect-if-phy_node-prese.patch
+130-iconnect.patch
 file
 
 
 
 
-2014-06-03T20:17:38.234341Z
-c248971c6ad3e07922cecf75d98e9388
-2013-11-05T08:25:45.538431Z
-38652
-juhosg
+2014-06-03T20:49:15.434297Z
+11656aef7ada1168b409dc54f62ac562
+2014-02-15T23:53:08.639021Z
+39591
+luka
 
 
 
@@ -840,7 +806,7 @@ juhosg
 
 
 
-1814
+853
 
 0011-arm-kirkwood-add-SoC-level-Device-Tree-data-for-PCIe.patch
 file
@@ -875,6 +841,40 @@ luka
 
 
 3771
+
+0023-net-mv643xx_eth-use-of_phy_connect-if-phy_node-prese.patch
+file
+
+
+
+
+2014-06-03T20:17:38.234341Z
+c248971c6ad3e07922cecf75d98e9388
+2013-11-05T08:25:45.538431Z
+38652
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1814
 
 0013-arm-kirkwood-convert-MPL-CEC4-to-use-DT-for-the-PCIe.patch
 file
@@ -944,16 +944,16 @@ luka
 
 1364
 
-110-ib62x0.patch
+0008-pci-mvebu-fix-return-value-check-in-mvebu_pcie_probe.patch
 file
 
 
 
 
-2014-06-03T20:49:15.434297Z
-498043bd6ae08f8b12c2bf42df68a4d9
-2014-02-15T23:53:09.733350Z
-39592
+2014-06-03T20:17:38.230341Z
+652aff8f72c7c20af6cf55c11830cc1d
+2013-10-03T02:50:00.681766Z
+38295
 luka
 
 
@@ -976,7 +976,7 @@ luka
 
 
 
-1763
+1019
 
 0028-ARM-kirkwood-remove-legacy-clk-alias-for-mv643xx_eth.patch
 file
@@ -1012,16 +1012,16 @@ luka
 
 1021
 
-0008-pci-mvebu-fix-return-value-check-in-mvebu_pcie_probe.patch
+110-ib62x0.patch
 file
 
 
 
 
-2014-06-03T20:17:38.230341Z
-652aff8f72c7c20af6cf55c11830cc1d
-2013-10-03T02:50:00.681766Z
-38295
+2014-06-03T20:49:15.434297Z
+498043bd6ae08f8b12c2bf42df68a4d9
+2014-02-15T23:53:09.733350Z
+39592
 luka
 
 
@@ -1044,7 +1044,7 @@ luka
 
 
 
-1019
+1763
 
 0022-net-mv643xx_eth-add-phy_node-to-platform_data-struct.patch
 file

@@ -1,12 +1,39 @@
 10
 
 dir
-42021
+42418
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/broadcom-wl/patches
 svn://svn.openwrt.org/openwrt
 
 
 
+2014-08-08T23:06:16.250644Z
+42087
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+120-fixup-mac-addresses.patch
+file
+
+
+
+
+2014-08-06T22:46:28.889826Z
+013a9fa694e8294c74980203ccb1d1c8
 2014-07-07T17:38:54.012525Z
 41545
 hauke
@@ -24,7 +51,82 @@ hauke
 
 
 
-3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+
+
+
+
+
+
+2277
+
+910-fallback-sprom.patch
+file
+
+
+
+
+2014-06-03T20:17:37.614341Z
+4c63341b828854f124b5234d8c7a91e9
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2540
+
+008-fix_virtual_interfaces.patch
+file
+
+
+
+
+2014-06-03T20:17:37.614341Z
+23c981b70b254bc6ba4385f0d8ee4ee1
+2013-11-11T22:04:26.591678Z
+38762
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3389
 
 009-fix_compile_3_2.patch
 file
@@ -127,6 +229,40 @@ blogic
 
 
 1101
+
+200-add_bcm_a8xx_support.patch
+file
+
+
+
+
+2014-09-03T23:42:10.073712Z
+3c635521119e2ab1e8d04eb7a801e91a
+2014-08-08T23:06:16.250644Z
+42087
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+398
 
 013-interface-name.patch
 file
@@ -298,40 +434,6 @@ blogic
 
 660
 
-010-remove_irqf_samble_random.patch
-file
-
-
-
-
-2014-08-06T22:46:28.889826Z
-1fc4e6cd82a8bfe93d28a04b2fe8b074
-2014-07-07T17:38:54.012525Z
-41545
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-384
-
 110-add_number_to_dev_name.patch
 file
 
@@ -365,6 +467,40 @@ hauke
 
 
 341
+
+010-remove_irqf_samble_random.patch
+file
+
+
+
+
+2014-08-06T22:46:28.889826Z
+1fc4e6cd82a8bfe93d28a04b2fe8b074
+2014-07-07T17:38:54.012525Z
+41545
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+384
 
 912-pci-bus-nvram-hack.patch
 file
@@ -434,17 +570,17 @@ hauke
 
 822
 
-011-fix_compile_3_4.patch
+015-support-probe-of-wds-interfaces.patch
 file
 
 
 
 
 2014-06-03T20:17:37.614341Z
-673a9f0b6628b1cd0c2f9ca2d293a1d5
-2013-06-21T16:54:37.987982Z
-37007
-blogic
+a58a11a71f176dfb30a25156fdd4fddd
+2013-11-11T22:04:53.285282Z
+38763
+hauke
 
 
 
@@ -466,7 +602,7 @@ blogic
 
 
 
-256
+268
 
 012-compat-3.10.patch
 file
@@ -502,17 +638,17 @@ hauke
 
 1726
 
-015-support-probe-of-wds-interfaces.patch
+011-fix_compile_3_4.patch
 file
 
 
 
 
 2014-06-03T20:17:37.614341Z
-a58a11a71f176dfb30a25156fdd4fddd
-2013-11-11T22:04:53.285282Z
-38763
-hauke
+673a9f0b6628b1cd0c2f9ca2d293a1d5
+2013-06-21T16:54:37.987982Z
+37007
+blogic
 
 
 
@@ -534,7 +670,7 @@ hauke
 
 
 
-268
+256
 
 913-avoid-dbe-on-ifs_ctl-readw-hack.patch
 file
@@ -569,106 +705,4 @@ blogic
 
 
 262
-
-120-fixup-mac-addresses.patch
-file
-
-
-
-
-2014-08-06T22:46:28.889826Z
-013a9fa694e8294c74980203ccb1d1c8
-2014-07-07T17:38:54.012525Z
-41545
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2277
-
-910-fallback-sprom.patch
-file
-
-
-
-
-2014-06-03T20:17:37.614341Z
-4c63341b828854f124b5234d8c7a91e9
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2540
-
-008-fix_virtual_interfaces.patch
-file
-
-
-
-
-2014-06-03T20:17:37.614341Z
-23c981b70b254bc6ba4385f0d8ee4ee1
-2013-11-11T22:04:26.591678Z
-38762
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3389
 

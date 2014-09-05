@@ -22,7 +22,7 @@
  endif # X86_PLATFORM_DEVICES
 --- /dev/null
 +++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,1780 @@
+@@ -0,0 +1,1921 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -100,6 +100,34 @@
 +#define EDGE500_GPIO_RESET_BTN (EDGE500_GPIO_SIO + 35)
 +#define EDGE500_GPIO_I2C_BLINK (EDGE500_GPIO_SIO + 36)
 +#define EDGE500_GPIO_I2C_RST (EDGE500_GPIO_SIO + 37)
++
++// temperature sensors;
++
++#define	EDGE500_TEMP_CPU 0x50
++#define	EDGE500_TEMP_SYS 0x50
++#define	EDGE500_TEMP_AUX 0x50
++
++// smart-fan controls;
++
++#define	EDGE500_FAN1_SEL 0x004a
++#define	EDGE500_FAN1_SEL_SYSTIN (0 << 5)
++#define	EDGE500_FAN1_SEL_CPUTIN (1 << 5)
++#define	EDGE500_FAN1_SEL_AUXTIN (2 << 5)
++
++#define	EDGE500_FAN1_CUR 0x0061
++#define	EDGE500_FAN1_TOL 0x0062
++#define	EDGE500_FAN1_TGTMP 0x0063
++#define	EDGE500_FAN1_STOPV 0x0064
++#define	EDGE500_FAN1_START 0x0065
++#define	EDGE500_FAN1_STOPT 0x0066
++#define	EDGE500_FAN1_MAX 0x0069
++#define	EDGE500_FAN1_OSTEP 0x006a
++
++#define	EDGE500_FAN_SDT 0x000e
++#define	EDGE500_FAN_SUT 0x000f
++#define	EDGE500_FAN_KMIN 0x0012
++#define	EDGE500_FAN_KMIN_0 0x10
++#define	EDGE500_FAN_KMIN_1 0x40
 +
 +// max7314 registers;
 +
@@ -413,13 +441,19 @@
 +
 +// super-io defs;
 +
++#define SIO_HWM_OFFSET 0x05	// hwm addr/data reg offset;
++
 +#define SIO_REG_DEVID 0x20	// device id, 2-bytes;
 +#define SIO_REG_VSBPWR 0x2c	// vsb/power config reg;
 +
 +#define SIO_REG_LDSEL 0x07	// select logical device reg;
 +#define SIO_LD_GPIO2345 0x09	// logical device gpio 2,3,4,5;
 +#define SIO_LD_ACPI 0x0a	// logical device acpi;
++#define	SIO_LD_HWM 0x0b		// logical device hw monitor;
 +#define SIO_REG_ENABLE 0x30	// logical device enable reg;
++#define SIO_REG_ADDR_H 0x60	// logical device address, high;
++#define SIO_REG_ADDR_L 0x61	// logical device address, low;
++#define SIO_REG_BANK 0x4e	// HWM bank register;
 +
 +#define SIO_GPIO3_STS 0xe7	// gpio3 status reg;
 +#define SIO_GPIO3_IO 0xf0	// gpio3 io reg, 0=out 1=in;
@@ -475,6 +509,7 @@
 +struct sio_chip {
 +	u16 id;
 +	u16 addr;
++	u16 hwm;
 +	u16 rid;
 +	char *name;
 +	spinlock_t spinlock;
@@ -616,6 +651,79 @@
 +	return(ret);
 +}
 +
++// set HWM bank;
++
++static inline void
++sio_set_bank(int ioreg, u16 reg)
++{
++	u8 bank = reg >> 8;
++
++	outb(SIO_REG_BANK, ioreg);
++	outb(bank, ioreg + 1);
++}
++
++// read banked register;
++// upper byte of reg is bank;
++
++static inline u8
++sio_bin8(int ioreg, u16 reg)
++{
++	u8 val, addr = reg & 0xff;
++
++	sio_set_bank(ioreg, reg);
++	outb(addr, ioreg);
++	val = inb(ioreg + 1);
++	return(val);
++}
++
++static u16
++sio_bin16(int ioreg, u16 reg)
++{
++	u8 addr = reg & 0xff;
++	u16 val;
++
++	sio_set_bank(ioreg, reg);
++	outb(addr + 0, ioreg);
++	val = inb(ioreg + 1) << 8;
++	outb(addr + 1, ioreg);
++	val |= inb(ioreg + 1);
++	return(val);
++}
++
++// write banked register;
++// upper byte of reg is bank;
++
++static void
++sio_bout8(int ioreg, u16 reg, u8 val)
++{
++	u8 addr = reg & 0xff;
++
++	sio_set_bank(ioreg, reg);
++	outb(addr, ioreg);
++	outb(val, ioreg + 1);
++}
++
++static void
++sio_bout16(int ioreg, u16 reg, u16 val)
++{
++	u8 addr = reg & 0xff;
++
++	sio_set_bank(ioreg, reg);
++	outb(addr + 0, ioreg);
++	outb(val >> 8, ioreg + 1);
++	outb(addr + 1, ioreg);
++	outb(val & 0xff, ioreg + 1);
++}
++
++// scale temp sensor readings;
++// per Portwell, sensors PT5,6,7 are off by +6C;
++
++static inline int
++edge500_t2v(vc_hw_t *hw, int temp)
++{
++	return(temp + 6);
++}
++
 +// initialize edge500 SIO;
 +
 +static struct gpio_chip edge500_gpio;
@@ -624,7 +732,7 @@
 +edge500_sio_init(vc_hw_t *hw, struct device *dev)
 +{
 +	sio_chip_t *sio;
-+	u16 val;
++	u16 val, addr;
 +	struct gpio_chip *gpio = &edge500_gpio;
 +	int ret;
 +
@@ -639,11 +747,44 @@
 +	hw->priv = sio;
 +	spin_lock_init(&sio->spinlock);
 +
++	sio_enter(sio->addr);
++
++	// check that bios activated the hw monitor;
++	// activate logical device if not active;
++
++	sio_select(sio->addr, SIO_LD_HWM);
++	val = sio_inb(sio->addr, SIO_REG_ENABLE) & 0x01;
++	if( !(val & 0x01)) {
++		pr_warn("vc: forcing HWMON enable, FIX BIOS!\n");
++		sio_outb(sio->addr, SIO_REG_ENABLE, val | 0x01);
++	}
++	sio->hwm = (sio_inb(sio->addr, SIO_REG_ADDR_H) << 8)
++		| sio_inb(sio->addr, SIO_REG_ADDR_L);
++	pr_info("vc: hwm @%x\n", sio->hwm);
++	sio->hwm += SIO_HWM_OFFSET;
++
++	// the only fan is on CPUFANOUT1;
++	// overwrite BIOS settings, which the w83xxx driver will continue with later;
++	// set temperature cruise mode, which will turn fan off below Tmin;
++
++	val = sio_bin8(sio->hwm, EDGE500_FAN_KMIN);
++	val &= ~EDGE500_FAN_KMIN_1;
++	sio_bout8(sio->hwm, EDGE500_FAN_KMIN, val);
++
++	// fan becomes unstable below pwm 130;
++
++	sio_bout8(sio->hwm, EDGE500_FAN1_TOL, 0 | 0x00 | 2);
++	sio_bout8(sio->hwm, EDGE500_FAN1_TGTMP, edge500_t2v(hw, 42));
++	sio_bout8(sio->hwm, EDGE500_FAN1_START, 150);
++	sio_bout8(sio->hwm, EDGE500_FAN1_STOPV, 140);
++	sio_bout8(sio->hwm, EDGE500_FAN1_STOPT, 20);
++	sio_bout8(sio->hwm, EDGE500_FAN1_MAX, 255);
++	sio_bout8(sio->hwm, EDGE500_FAN1_OSTEP, 1);
++	sio_bout8(sio->hwm, EDGE500_FAN1_TOL, 0 | 0x10 | 2);
++
 +	// check that bios activated gpio3 logical device;
 +	// activate logical device only if we are sure;
 +	// warn about it anyways;
-+
-+	sio_enter(sio->addr);
 +
 +	sio_select(sio->addr, SIO_LD_ACPI);
 +	val = sio_inb(sio->addr, SIO_ACPI_E4);

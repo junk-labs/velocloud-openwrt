@@ -1,15 +1,15 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/config/firewall
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-01T13:21:54.319454Z
-42379
-blogic
+2014-09-19T18:23:20.216858Z
+42623
+jow
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2014-09-03T23:42:09.837712Z
-6bbd9f45dcf0b301fea4d99b00d878bd
-2014-09-01T13:21:09.309395Z
-42354
-blogic
+2014-09-29T22:49:13.948308Z
+af01e49a7804eb540e5d8831e0a25987
+2014-09-19T18:23:20.216858Z
+42623
+jow
 
 
 
@@ -61,5 +61,5 @@ blogic
 
 
 
-1924
+1923
 

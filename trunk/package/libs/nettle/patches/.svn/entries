@@ -1,7 +1,7 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/nettle/patches
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,74 @@ cyrus
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+0005-allow-der-iterator-to-be-used-with-mini-gmp.patch
+file
+
+
+
+
+2014-06-20T21:11:27.436245Z
+493e8a8512f52d3a89cfca5f0d8f62af
+2014-06-18T17:06:30.102510Z
+41263
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+836
+
+0004-Added-auto-generated-nettle-config.h.patch
+file
+
+
+
+
+2014-06-20T21:11:27.436245Z
+9995c3efb8375b58533f8c1bd29b1340
+2014-06-18T17:06:30.102510Z
+41263
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2812
 
 0001-Updated-mini-gmp.patch
 file
@@ -127,72 +195,4 @@ cyrus
 
 
 37510
-
-0005-allow-der-iterator-to-be-used-with-mini-gmp.patch
-file
-
-
-
-
-2014-06-20T21:11:27.436245Z
-493e8a8512f52d3a89cfca5f0d8f62af
-2014-06-18T17:06:30.102510Z
-41263
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-836
-
-0004-Added-auto-generated-nettle-config.h.patch
-file
-
-
-
-
-2014-06-20T21:11:27.436245Z
-9995c3efb8375b58533f8c1bd29b1340
-2014-06-18T17:06:30.102510Z
-41263
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2812
 

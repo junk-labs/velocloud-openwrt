@@ -1,7 +1,7 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils
 svn://svn.openwrt.org/openwrt
 
@@ -26,13 +26,25 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+ugps
+dir
+
+jsonfilter
+dir
+
+robocfg
+dir
+
+lua
+dir
+
 mdadm
 dir
 
-nvram
+px5g
 dir
 
-px5g
+nvram
 dir
 
 fbtest
@@ -44,19 +56,19 @@ dir
 busybox
 dir
 
-hostap-utils
+usbreset
 dir
 
-usbreset
+hostap-utils
 dir
 
 usbmode
 dir
 
-mkelfimage
+admswconfig
 dir
 
-admswconfig
+mkelfimage
 dir
 
 fuse
@@ -65,10 +77,10 @@ dir
 px5g-standalone
 dir
 
-e2fsprogs
+usbutils
 dir
 
-usbutils
+e2fsprogs
 dir
 
 util-linux
@@ -78,17 +90,5 @@ xfsprogs
 dir
 
 ubi-utils
-dir
-
-ugps
-dir
-
-jsonfilter
-dir
-
-robocfg
-dir
-
-lua
 dir
 

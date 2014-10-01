@@ -1,7 +1,7 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic/files/fs/yaffs2
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,244 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+yaffs_summary.h
+file
+
+
+
+
+2014-06-03T20:50:37.958295Z
+b1ee53d4eb7baa176497fcd102958bc1
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1062
+
+yportenv.h
+file
+
+
+
+
+2014-06-03T20:50:37.958295Z
+7ed69f500c91cb1e4e9dc438f98ec679
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2207
+
+yaffs_verify.c
+file
+
+
+
+
+2014-06-03T20:50:37.958295Z
+35816c23ffe056f925c876625464e1f6
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+13241
+
+Makefile
+file
+
+
+
+
+2014-06-03T20:50:37.958295Z
+4a7a4d9cb7243cf3a80eeecfb5ed1425
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+502
+
+yaffs_verify.h
+file
+
+
+
+
+2014-06-03T20:50:37.962295Z
+d774294c975e51623374e01ed91235df
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1516
+
+yaffs_getblockinfo.h
+file
+
+
+
+
+2014-06-03T20:50:37.962295Z
+43c7e8c67a926bf42542e05710bac34f
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1028
+
+yaffs_bitmap.c
+file
+
+
+
+
+2014-06-03T20:50:37.962295Z
+167df783820f9d00616f77c262c89afe
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2394
 
 yaffs_nand.c
 file
@@ -502,40 +740,6 @@ has-props
 
 1494
 
-Kconfig
-file
-
-
-
-
-2014-06-03T20:50:37.970295Z
-431b6260cd78ba5fdcba07fbb946f540
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4769
-
 yaffs_tagscompat.h
 file
 
@@ -570,18 +774,17 @@ has-props
 
 1228
 
-yaffs_mtdif.h
+Kconfig
 file
 
 
 
 
 2014-06-03T20:50:37.970295Z
-c5e9fe61ba75128109243ba5f7d5e269
+431b6260cd78ba5fdcba07fbb946f540
 2013-12-16T07:51:19.712381Z
 39084
 juhosg
-has-props
 
 
 
@@ -602,7 +805,8 @@ has-props
 
 
 
-830
+
+4769
 
 yaffs_attribs.c
 file
@@ -637,6 +841,40 @@ has-props
 
 
 3021
+
+yaffs_mtdif.h
+file
+
+
+
+
+2014-06-03T20:50:37.970295Z
+c5e9fe61ba75128109243ba5f7d5e269
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+830
 
 yaffs_attribs.h
 file
@@ -740,40 +978,6 @@ has-props
 
 4480
 
-yaffs_packedtags1.c
-file
-
-
-
-
-2014-06-03T20:50:37.974295Z
-d53e61459282373d93d1f06961b2c681
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1497
-
 yaffs_tagsmarshall.h
 file
 
@@ -808,14 +1012,14 @@ has-props
 
 669
 
-yaffs_packedtags2.c
+yaffs_packedtags1.c
 file
 
 
 
 
 2014-06-03T20:50:37.974295Z
-90b3d97ece9c900789e2f5a28ca9a544
+d53e61459282373d93d1f06961b2c681
 2013-12-16T07:51:19.712381Z
 39084
 juhosg
@@ -840,7 +1044,7 @@ has-props
 
 
 
-5533
+1497
 
 yaffs_nameval.h
 file
@@ -876,6 +1080,40 @@ has-props
 
 953
 
+yaffs_packedtags2.c
+file
+
+
+
+
+2014-06-03T20:50:37.974295Z
+90b3d97ece9c900789e2f5a28ca9a544
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5533
+
 yaffs_yaffs1.c
 file
 
@@ -909,40 +1147,6 @@ has-props
 
 
 10584
-
-yaffs_ecc.c
-file
-
-
-
-
-2014-06-03T20:50:37.974295Z
-4f15cf8220a2016f8c7695f114fb4076
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-7143
 
 yaffs_yaffs2.c
 file
@@ -978,6 +1182,40 @@ has-props
 
 38335
 
+yaffs_ecc.c
+file
+
+
+
+
+2014-06-03T20:50:37.974295Z
+4f15cf8220a2016f8c7695f114fb4076
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7143
+
 yaffs_packedtags1.h
 file
 
@@ -1012,40 +1250,6 @@ has-props
 
 1068
 
-yaffs_packedtags2.h
-file
-
-
-
-
-2014-06-03T20:50:37.978295Z
-27d08abe7952c3c527fe12d6b7728814
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1447
-
 yaffs_summary.c
 file
 
@@ -1079,6 +1283,40 @@ has-props
 
 
 8428
+
+yaffs_packedtags2.h
+file
+
+
+
+
+2014-06-03T20:50:37.978295Z
+27d08abe7952c3c527fe12d6b7728814
+2013-12-16T07:51:19.712381Z
+39084
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1447
 
 yaffs_vfs.c
 file
@@ -1215,242 +1453,4 @@ has-props
 
 
 1440
-
-yaffs_summary.h
-file
-
-
-
-
-2014-06-03T20:50:37.958295Z
-b1ee53d4eb7baa176497fcd102958bc1
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1062
-
-yportenv.h
-file
-
-
-
-
-2014-06-03T20:50:37.958295Z
-7ed69f500c91cb1e4e9dc438f98ec679
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2207
-
-yaffs_verify.c
-file
-
-
-
-
-2014-06-03T20:50:37.958295Z
-35816c23ffe056f925c876625464e1f6
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-13241
-
-Makefile
-file
-
-
-
-
-2014-06-03T20:50:37.958295Z
-4a7a4d9cb7243cf3a80eeecfb5ed1425
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-502
-
-yaffs_verify.h
-file
-
-
-
-
-2014-06-03T20:50:37.962295Z
-d774294c975e51623374e01ed91235df
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1516
-
-yaffs_getblockinfo.h
-file
-
-
-
-
-2014-06-03T20:50:37.962295Z
-43c7e8c67a926bf42542e05710bac34f
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1028
-
-yaffs_bitmap.c
-file
-
-
-
-
-2014-06-03T20:50:37.962295Z
-167df783820f9d00616f77c262c89afe
-2013-12-16T07:51:19.712381Z
-39084
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2394
 

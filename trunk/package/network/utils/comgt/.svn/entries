@@ -1,15 +1,15 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/comgt
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-06-30T08:19:48.704085Z
-41411
-nbd
+2014-09-16T18:34:44.122879Z
+42577
+blogic
 
 
 
@@ -26,17 +26,23 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+files
+dir
+
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2014-08-06T22:46:29.001826Z
-d6d14019cf6e7c1b587d5d0cd3b11e09
-2014-06-30T08:19:48.704085Z
-41411
-nbd
+2014-09-29T22:49:13.876308Z
+a3b599bfd9be1df072ceb771f6c62c83
+2014-09-16T18:34:44.122879Z
+42577
+blogic
 has-props
 
 
@@ -58,11 +64,5 @@ has-props
 
 
 
-2086
-
-files
-dir
-
-patches
-dir
+2300
 

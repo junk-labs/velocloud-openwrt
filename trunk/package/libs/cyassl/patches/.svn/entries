@@ -1,15 +1,15 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/cyassl/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-08T05:26:21.219896Z
-42064
-cyrus
+2014-09-18T15:24:45.366825Z
+42614
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-09-03T23:42:09.649712Z
-f99c6b758ad3e9e1e868970fb8bad974
-2014-08-08T05:26:21.219896Z
-42064
-cyrus
+2014-09-29T22:49:13.868308Z
+a7eebe05591ebe0157d0aaceb8a649aa
+2014-09-18T15:24:45.366825Z
+42614
+blogic
 
 
 

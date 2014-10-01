@@ -1,7 +1,7 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/toolchain/gcc/patches/4.6-linaro
 svn://svn.openwrt.org/openwrt
 
@@ -94,17 +94,17 @@ florian
 
 8651
 
-305-libmudflap-susv3-legacy.patch
+010-documentation.patch
 file
 
 
 
 
 2014-06-03T20:17:38.430341Z
-a5c9ae79773846ff1d61488b491722c9
-2011-07-01T11:43:15.966641Z
-27333
-kaloz
+f0985b96b1509e09f1dca5d2ec1d1568
+2013-02-26T16:16:33.209369Z
+35807
+luka
 
 
 
@@ -126,7 +126,7 @@ kaloz
 
 
 
-1405
+660
 
 302-c99-snprintf.patch
 file
@@ -162,17 +162,17 @@ kaloz
 
 260
 
-010-documentation.patch
+305-libmudflap-susv3-legacy.patch
 file
 
 
 
 
 2014-06-03T20:17:38.430341Z
-f0985b96b1509e09f1dca5d2ec1d1568
-2013-02-26T16:16:33.209369Z
-35807
-luka
+a5c9ae79773846ff1d61488b491722c9
+2011-07-01T11:43:15.966641Z
+27333
+kaloz
 
 
 
@@ -194,7 +194,7 @@ luka
 
 
 
-660
+1405
 
 040-gcc_bug_49696.patch
 file
@@ -230,40 +230,6 @@ nbd
 
 2535
 
-880-no_java_section.patch
-file
-
-
-
-
-2014-06-03T20:17:38.430341Z
-32103b1b2135a64b221cb2d1b1a3eade
-2013-06-30T07:54:47.337359Z
-37095
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-466
-
 860-uclibc_use_eh_frame.patch
 file
 
@@ -298,17 +264,17 @@ florian
 
 1211
 
-999-coldfire.patch
+880-no_java_section.patch
 file
 
 
 
 
 2014-06-03T20:17:38.430341Z
-80f3e6e732aecb25b058affa416e2f88
-2013-02-26T16:39:54.476606Z
-35808
-florian
+32103b1b2135a64b221cb2d1b1a3eade
+2013-06-30T07:54:47.337359Z
+37095
+nbd
 
 
 
@@ -330,19 +296,19 @@ florian
 
 
 
-536
+466
 
-920-specs_nonfatal_getenv.patch
+301-missing-execinfo_h.patch
 file
 
 
 
 
 2014-06-03T20:17:38.430341Z
-baf58aeadc529226213a5e3782a65ab8
-2012-04-21T03:02:39.704676Z
-31390
-jow
+ebfa923c5f3739ae7382c4f003441fb0
+2011-07-01T11:43:15.966641Z
+27333
+kaloz
 
 
 
@@ -364,7 +330,7 @@ jow
 
 
 
-446
+422
 
 200-musl.patch
 file
@@ -400,17 +366,17 @@ florian
 
 8609
 
-301-missing-execinfo_h.patch
+920-specs_nonfatal_getenv.patch
 file
 
 
 
 
 2014-06-03T20:17:38.430341Z
-ebfa923c5f3739ae7382c4f003441fb0
-2011-07-01T11:43:15.966641Z
-27333
-kaloz
+baf58aeadc529226213a5e3782a65ab8
+2012-04-21T03:02:39.704676Z
+31390
+jow
 
 
 
@@ -432,7 +398,41 @@ kaloz
 
 
 
-422
+446
+
+999-coldfire.patch
+file
+
+
+
+
+2014-06-03T20:17:38.430341Z
+80f3e6e732aecb25b058affa416e2f88
+2013-02-26T16:39:54.476606Z
+35808
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+536
 
 100-uclibc-conf.patch
 file

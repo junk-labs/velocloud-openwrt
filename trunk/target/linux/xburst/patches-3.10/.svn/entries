@@ -1,7 +1,7 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/xburst/patches-3.10
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,40 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+008-Add-jz4740-udc-driver.patch
+file
+
+
+
+
+2014-06-03T20:17:38.362341Z
+8f208db9c32eb49043e20ff21a8f19fd
+2013-07-26T07:19:58.553626Z
+37546
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+60296
 
 016-ASoC-jz4740-Use-the-generic-dmaengine-PCM-driver.patch
 file
@@ -94,40 +128,6 @@ juhosg
 
 765
 
-005-MMC-JZ4740-Fix-handling-of-read-errors.patch
-file
-
-
-
-
-2014-06-03T20:17:38.362341Z
-720325c1c0b9994a246e6a81d424c00d
-2013-07-26T07:19:58.553626Z
-37546
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-920
-
 007-RTC-JZ4740-Init-the-regulator-register-on-startup.patch
 file
 
@@ -162,16 +162,16 @@ juhosg
 
 1579
 
-003-NAND-Add-support-for-subpage-reads-for-NAND_ECC_HW_O.patch
+005-MMC-JZ4740-Fix-handling-of-read-errors.patch
 file
 
 
 
 
-2014-06-03T20:52:05.462293Z
-082d03a1da7c02eae640f861a92cfdf1
-2014-01-11T16:06:37.461474Z
-39220
+2014-06-03T20:17:38.362341Z
+720325c1c0b9994a246e6a81d424c00d
+2013-07-26T07:19:58.553626Z
+37546
 juhosg
 
 
@@ -194,7 +194,7 @@ juhosg
 
 
 
-4844
+920
 
 012-MIPS-JZ4740-Correct-clock-gate-bit-for-DMA-controlle.patch
 file
@@ -230,16 +230,16 @@ juhosg
 
 694
 
-011-dma-Add-a-jz4740-dmaengine-driver.patch
+003-NAND-Add-support-for-subpage-reads-for-NAND_ECC_HW_O.patch
 file
 
 
 
 
-2014-06-03T20:17:38.362341Z
-ada1e9802d6fe5693ea82ec667edca87
-2013-07-26T07:19:58.553626Z
-37546
+2014-06-03T20:52:05.462293Z
+082d03a1da7c02eae640f861a92cfdf1
+2014-01-11T16:06:37.461474Z
+39220
 juhosg
 
 
@@ -262,7 +262,7 @@ juhosg
 
 
 
-12750
+4844
 
 002-NAND-Optimize-NAND_ECC_HW_OOB_FIRST-read.patch
 file
@@ -297,6 +297,40 @@ juhosg
 
 
 1649
+
+011-dma-Add-a-jz4740-dmaengine-driver.patch
+file
+
+
+
+
+2014-06-03T20:17:38.362341Z
+ada1e9802d6fe5693ea82ec667edca87
+2013-07-26T07:19:58.553626Z
+37546
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+12750
 
 015-MIPS-jz4740-Remove-custom-DMA-API.patch
 file
@@ -366,40 +400,6 @@ juhosg
 
 2033
 
-009-Add-ili8960-lcd-driver.patch
-file
-
-
-
-
-2014-06-03T20:17:38.362341Z
-2538da9da649ac45cdbdb69ac74d52eb
-2013-07-26T07:19:58.553626Z
-37546
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-7487
-
 010-qi_lb60-Don-t-use-3-wire-spi-mode-for-the-display-fo.patch
 file
 
@@ -434,14 +434,14 @@ juhosg
 
 658
 
-004-MMC-JZ4740-Remove-duplicated-code.patch
+009-Add-ili8960-lcd-driver.patch
 file
 
 
 
 
 2014-06-03T20:17:38.362341Z
-11e5eca77515ed41c168b44d85315b0d
+2538da9da649ac45cdbdb69ac74d52eb
 2013-07-26T07:19:58.553626Z
 37546
 juhosg
@@ -466,7 +466,7 @@ juhosg
 
 
 
-795
+7487
 
 006-ASoC-JZ4740-delay-activation-of-the-DAC-to-work-arou.patch
 file
@@ -502,6 +502,40 @@ juhosg
 
 1213
 
+004-MMC-JZ4740-Remove-duplicated-code.patch
+file
+
+
+
+
+2014-06-03T20:17:38.362341Z
+11e5eca77515ed41c168b44d85315b0d
+2013-07-26T07:19:58.553626Z
+37546
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+795
+
 013-MIPS-JZ4740-Acquire-and-enable-DMA-controller-clock.patch
 file
 
@@ -535,38 +569,4 @@ juhosg
 
 
 1950
-
-008-Add-jz4740-udc-driver.patch
-file
-
-
-
-
-2014-06-03T20:17:38.362341Z
-8f208db9c32eb49043e20ff21a8f19fd
-2013-07-26T07:19:58.553626Z
-37546
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-60296
 

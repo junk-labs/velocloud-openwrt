@@ -1,14 +1,14 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/lantiq/patches-3.10
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-01T13:21:23.208379Z
-42361
+2014-09-16T18:35:00.623351Z
+42578
 blogic
 
 
@@ -25,6 +25,74 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+0200-NET-fix-etop-registers.patch
+file
+
+
+
+
+2014-06-03T20:17:38.250341Z
+c6414df02133e739ddfadfbc255c654c
+2013-11-20T17:53:36.713581Z
+38884
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3544
+
+0032-USB-fix-roothub-for-IFXHCD.patch
+file
+
+
+
+
+2014-06-03T20:52:06.734293Z
+29b292d3509560a793dc51b45613b6f7
+2014-02-23T10:59:40.436329Z
+39707
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+898
 
 0022-NET-multi-phy-support.patch
 file
@@ -100,10 +168,10 @@ file
 
 
 
-2014-06-03T20:52:06.730293Z
-050c02d5ddd7bd7ab95ddabd62ea620d
-2014-03-30T09:15:50.182720Z
-40313
+2014-09-29T22:49:13.828308Z
+e91d09371517337890c1889ccba0c232
+2014-09-16T18:35:00.623351Z
+42578
 blogic
 
 
@@ -126,7 +194,7 @@ blogic
 
 
 
-122361
+122266
 
 0018-MTD-lantiq-xway-add-missing-write_buf-and-read_buf-t.patch
 file
@@ -468,6 +536,40 @@ blogic
 
 5420
 
+0008-NET-PHY-adds-driver-for-lantiq-PHY11G.patch
+file
+
+
+
+
+2014-06-03T20:52:06.730293Z
+2c8e524e536af81ebc51ad89e423557c
+2014-01-26T11:30:34.881391Z
+39399
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8347
+
 0028-pinctrl-lantiq-add-missing-pin-definition-to-falcon-.patch
 file
 
@@ -535,40 +637,6 @@ blogic
 
 
 18365
-
-0008-NET-PHY-adds-driver-for-lantiq-PHY11G.patch
-file
-
-
-
-
-2014-06-03T20:52:06.730293Z
-2c8e524e536af81ebc51ad89e423557c
-2014-01-26T11:30:34.881391Z
-39399
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-8347
 
 0002-MIPS-lantiq-adds-minimal-dcdc-driver.patch
 file
@@ -638,40 +706,6 @@ blogic
 
 385
 
-0025-GPIO-add-gpio_export_with_name.patch
-file
-
-
-
-
-2014-06-03T20:17:38.250341Z
-dba7753d6fcdc9d5a6260d0fe87113a5
-2013-09-25T17:13:24.963717Z
-38182
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-9985
-
 0209-lantiq-export-soc-type.patch
 file
 
@@ -705,6 +739,40 @@ blogic
 
 
 668
+
+0025-GPIO-add-gpio_export_with_name.patch
+file
+
+
+
+
+2014-06-03T20:17:38.250341Z
+dba7753d6fcdc9d5a6260d0fe87113a5
+2013-09-25T17:13:24.963717Z
+38182
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9985
 
 0104-nand.patch
 file
@@ -740,40 +808,6 @@ juhosg
 
 590
 
-0035-pinctrl-lantiq-fix-typo.patch
-file
-
-
-
-
-2014-06-03T20:52:06.730293Z
-3c031a92ecac464acb99b9c40cb37f36
-2014-02-23T10:59:40.436329Z
-39707
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1051
-
 0016-MTD-lantiq-xway-the-latched-command-should-be-persis.patch
 file
 
@@ -807,6 +841,40 @@ juhosg
 
 
 1384
+
+0035-pinctrl-lantiq-fix-typo.patch
+file
+
+
+
+
+2014-06-03T20:52:06.730293Z
+3c031a92ecac464acb99b9c40cb37f36
+2014-02-23T10:59:40.436329Z
+39707
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1051
 
 0001-MIPS-lantiq-add-pcie-driver.patch
 file
@@ -944,40 +1012,6 @@ juhosg
 
 1164
 
-0007-MIPS-lantiq-handle-vmmc-memory-reservation.patch
-file
-
-
-
-
-2014-06-03T20:17:38.250341Z
-97f67678001c4c7f7a187fb69f146dbd
-2013-11-20T16:56:32.707003Z
-38878
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2396
-
 0205-lantiq-nand-lock.patch
 file
 
@@ -1012,17 +1046,17 @@ juhosg
 
 2611
 
-0021-NET-MIPS-lantiq-update-etop-driver-for-devicetree.patch
+0007-MIPS-lantiq-handle-vmmc-memory-reservation.patch
 file
 
 
 
 
 2014-06-03T20:17:38.250341Z
-8b2e84b5414ce36b52710c375487f7de
-2013-09-25T17:13:24.963717Z
-38182
-juhosg
+97f67678001c4c7f7a187fb69f146dbd
+2013-11-20T16:56:32.707003Z
+38878
+blogic
 
 
 
@@ -1044,7 +1078,7 @@ juhosg
 
 
 
-23470
+2396
 
 0207-NET-fix-etop-igplen.patch
 file
@@ -1079,6 +1113,40 @@ blogic
 
 
 701
+
+0021-NET-MIPS-lantiq-update-etop-driver-for-devicetree.patch
+file
+
+
+
+
+2014-06-03T20:17:38.250341Z
+8b2e84b5414ce36b52710c375487f7de
+2013-09-25T17:13:24.963717Z
+38182
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+23470
 
 0017-MTD-lantiq-xway-remove-endless-loop.patch
 file
@@ -1392,10 +1460,10 @@ file
 
 
 
-2014-08-06T22:40:51.405834Z
-249bfad9741b402c4d3a5416d2cb8d5b
-2014-07-28T15:26:41.180338Z
-41860
+2014-09-29T22:49:13.828308Z
+82aa987ba86d702c161db580802412b6
+2014-09-08T14:30:00.085184Z
+42438
 blogic
 
 
@@ -1418,7 +1486,7 @@ blogic
 
 
 
-18521
+18687
 
 0013-MTD-lantiq-Add-NAND-support-on-Lantiq-Falcon-SoC.patch
 file
@@ -1657,72 +1725,4 @@ juhosg
 
 
 27507
-
-0200-NET-fix-etop-registers.patch
-file
-
-
-
-
-2014-06-03T20:17:38.250341Z
-c6414df02133e739ddfadfbc255c654c
-2013-11-20T17:53:36.713581Z
-38884
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3544
-
-0032-USB-fix-roothub-for-IFXHCD.patch
-file
-
-
-
-
-2014-06-03T20:52:06.734293Z
-29b292d3509560a793dc51b45613b6f7
-2014-02-23T10:59:40.436329Z
-39707
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-898
 

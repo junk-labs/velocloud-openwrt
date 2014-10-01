@@ -1,7 +1,7 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox/patches
 svn://svn.openwrt.org/openwrt
 
@@ -25,210 +25,6 @@ cyrus
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-101-gen_build_files_bash.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-2a67bd0fedbcf21c21aa7e180fb46101
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-209
-
-004-upstream_iplink_fix.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-7055529a0177118f848ff77ba146ab60
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-392
-
-120-remove_uclibc_rpc_check.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-9d69b46e2c9c86bf9a67ec2a908632c9
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-447
-
-250-date-k-flag.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-cb6764cf830e86f6965aedcc0955d444
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2620
-
-110-no_static_libgcc.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-fe7cfacafacd1b7aab43931a6426d402
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-635
-
-200-udhcpc_reduce_msgs.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-c886d988928e0cd76eda78ed83d83e1b
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-564
 
 201-udhcpc_changed_ifindex.patch
 file
@@ -264,14 +60,14 @@ nbd
 
 680
 
-130-mconf_missing_sigwinch.patch
+200-udhcpc_reduce_msgs.patch
 file
 
 
 
 
 2014-06-03T20:36:39.054315Z
-c18355c6633b78d92b549a24b29ecf30
+c886d988928e0cd76eda78ed83d83e1b
 2014-05-25T17:42:09.256426Z
 40852
 nbd
@@ -296,7 +92,41 @@ nbd
 
 
 
-217
+564
+
+110-no_static_libgcc.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+fe7cfacafacd1b7aab43931a6426d402
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+635
 
 100-trylink_bash.patch
 file
@@ -331,6 +161,40 @@ has-props
 
 
 109
+
+130-mconf_missing_sigwinch.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+c18355c6633b78d92b549a24b29ecf30
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+217
 
 005-upstream_nc_fix.patch
 file
@@ -434,40 +298,6 @@ nbd
 
 1433
 
-240-telnetd_intr.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-3dcc37b0bac39acd8583c9396a27980c
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-244
-
 220-add_lock_util.patch
 file
 
@@ -501,6 +331,40 @@ has-props
 
 
 3746
+
+240-telnetd_intr.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+3dcc37b0bac39acd8583c9396a27980c
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+244
 
 001-resource_h_include.patch
 file
@@ -705,4 +569,140 @@ nbd
 
 
 234
+
+101-gen_build_files_bash.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+2a67bd0fedbcf21c21aa7e180fb46101
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+209
+
+004-upstream_iplink_fix.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+7055529a0177118f848ff77ba146ab60
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+392
+
+120-remove_uclibc_rpc_check.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+9d69b46e2c9c86bf9a67ec2a908632c9
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+447
+
+250-date-k-flag.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+cb6764cf830e86f6965aedcc0955d444
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2620
 

@@ -1,15 +1,15 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/sdk
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-01T22:34:49.999450Z
-42398
-nbd
+2014-09-17T11:01:24.919749Z
+42592
+blogic
 
 
 
@@ -25,6 +25,9 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+files
+dir
 
 Config.in
 file
@@ -67,10 +70,10 @@ file
 
 
 
-49b4aa6f3b93fdd36b60b1c07035ff30
-2014-09-01T22:34:49.999450Z
-42398
-nbd
+1422f42973fd009c08d7bf7d0038ce6a
+2014-09-17T11:01:24.919749Z
+42592
+blogic
 has-props
 
 convert-config.pl
@@ -106,7 +109,4 @@ has-props
 
 
 527
-
-files
-dir
 

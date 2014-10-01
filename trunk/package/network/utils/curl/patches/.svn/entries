@@ -1,15 +1,15 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/curl/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-01T14:05:37.264664Z
-40622
-hauke
+2014-09-18T15:24:07.556761Z
+42612
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-06-20T21:11:27.464245Z
-167d9f9458472dd0ff7332fa04d0b61a
-2014-02-02T13:15:15.888696Z
-39446
-kaloz
+2014-09-29T22:49:13.884308Z
+8d04562136cad908eea31f28ace97869
+2014-09-18T15:24:07.556761Z
+42612
+blogic
 
 
 
@@ -58,7 +58,7 @@ kaloz
 
 
 
-714
+675
 
 100-check_long_long.patch
 file
@@ -66,11 +66,11 @@ file
 
 
 
-2014-06-20T21:11:27.464245Z
-3be43cb8448c81cd586053b6e1687279
-2014-05-01T14:05:37.264664Z
-40622
-hauke
+2014-09-29T22:49:13.884308Z
+f06b09250c43ef2d1ca43d5fc2d2f1bb
+2014-09-18T15:24:07.556761Z
+42612
+blogic
 
 
 
@@ -93,72 +93,4 @@ hauke
 
 
 229
-
-001-cyassl-Use-error-ssl.h-when-available.patch
-file
-
-
-
-
-2014-06-20T21:11:27.464245Z
-f8741863e2458666bbfcb991489ad755
-2014-05-01T14:05:37.264664Z
-40622
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1326
-
-400-hugehelp.patch
-file
-
-
-
-
-2014-06-20T21:11:27.464245Z
-25bcd4eb38738568ad935608d98fef13
-2014-03-26T14:26:49.007732Z
-40024
-kaloz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-311
 

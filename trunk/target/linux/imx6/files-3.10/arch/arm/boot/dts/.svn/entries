@@ -1,7 +1,7 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/imx6/files-3.10/arch/arm/boot/dts
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,40 @@ luka
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+imx6qdl-gw51xx.dtsi
+file
+
+
+
+
+2014-06-03T20:52:05.446293Z
+411f5fc5eeb63143647bf2fe7f3c598a
+2014-02-20T17:26:10.134654Z
+39644
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4542
 
 imx6qdl-gw52xx.dtsi
 file
@@ -433,38 +467,4 @@ luka
 
 
 1550
-
-imx6qdl-gw51xx.dtsi
-file
-
-
-
-
-2014-06-03T20:52:05.446293Z
-411f5fc5eeb63143647bf2fe7f3c598a
-2014-02-20T17:26:10.134654Z
-39644
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4542
 

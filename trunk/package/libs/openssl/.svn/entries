@@ -1,7 +1,7 @@
 10
 
 dir
-42418
+42701
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/openssl
 svn://svn.openwrt.org/openwrt
 
@@ -25,9 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-patches
-dir
 
 Config.in
 file
@@ -75,4 +72,7 @@ ea07ad002000130f081dbdd1575ab5dc
 42056
 blogic
 has-props
+
+patches
+dir
 

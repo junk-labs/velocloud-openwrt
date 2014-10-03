@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/picocom
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-07-16T00:11:18.569702Z
-32740
-luka
+2014-03-27T07:06:38.004169Z
+40275
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:04.038323Z
-af84f1e0f6dfec47c8d9ed742583754c
-2012-07-16T00:11:18.569702Z
-32740
-luka
+2014-06-17T22:32:03.430136Z
+20e4a71e7709fc81d5ccfeeced5d5033
+2014-03-27T07:06:38.004169Z
+40275
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-991
+990
 

@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/hostapd
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/hostapd
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-18T13:54:26.815739Z
-38852
-nbd
+2014-09-17T11:01:23.015860Z
+42591
+blogic
 
 
 
@@ -26,9 +26,6 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
 patches
 dir
 
@@ -38,7 +35,7 @@ file
 
 
 
-2013-12-02T20:29:11.234165Z
+2014-06-03T20:17:37.750341Z
 3eea642950607b1d77b8add6f2d3a6e6
 2013-04-17T15:36:41.835016Z
 36351
@@ -72,11 +69,11 @@ file
 
 
 
-2013-12-02T20:29:11.234165Z
-2f070716e255a192644d7fb37e4dc49c
-2013-09-14T20:07:35.409210Z
-37990
-nbd
+2014-08-06T22:47:47.297824Z
+8ff1061cda0c1a2746cce5e1e2d60c2e
+2014-08-03T11:15:59.158736Z
+41982
+blogic
 has-props
 
 
@@ -98,8 +95,11 @@ has-props
 
 
 
-9714
+10883
 
 madwifi
+dir
+
+files
 dir
 

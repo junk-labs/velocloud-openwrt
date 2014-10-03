@@ -1,14 +1,14 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/protocols
 http://svn.luci.subsignal.org
 
 
 
-2013-05-23T10:14:14.649575Z
-9824
+2014-06-03T15:11:32.285847Z
+10267
 Cyrus
 
 
@@ -26,6 +26,12 @@ Cyrus
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+pptp
+dir
+
+ipv6
+dir
+
 core
 dir
 
@@ -36,11 +42,5 @@ relay
 dir
 
 ppp
-dir
-
-pptp
-dir
-
-ipv6
 dir
 

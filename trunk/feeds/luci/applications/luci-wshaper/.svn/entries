@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-wshaper
 http://svn.luci.subsignal.org
 
@@ -26,22 +26,13 @@ soma
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-root
-dir
-
-luasrc
-dir
-
-ipkg
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:47.790324Z
+2014-06-17T22:32:22.806136Z
 d5d5f1be507456f99dd4776ae83d6a64
 2011-10-15T18:47:42.916743Z
 7733
@@ -68,4 +59,13 @@ soma
 
 
 74
+
+root
+dir
+
+luasrc
+dir
+
+ipkg
+dir
 

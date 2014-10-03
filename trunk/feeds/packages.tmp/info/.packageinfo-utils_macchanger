@@ -10,7 +10,7 @@ Title: utility for viewing/manipulating the MAC address
 Maintainer: 
 Source: macchanger-1.5.0.tar.gz
 Type: ipkg
-Description: 	This is a GNU/Linux utility for viewing/manipulating the MAC address 
+Description: 	This is a GNU/Linux utility for viewing/manipulating the MAC address
 	of network interfaces.
 http://www.alobbs.com/macchanger
 

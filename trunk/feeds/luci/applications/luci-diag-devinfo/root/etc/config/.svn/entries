@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-diag-devinfo/root/etc/config
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:39.118324Z
+2014-06-17T22:32:19.042136Z
 3e482ff100dfe2082788c5adc825422d
 2009-07-17T20:27:05.541338Z
 5097

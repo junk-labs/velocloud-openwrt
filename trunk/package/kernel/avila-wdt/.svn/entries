@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/avila-wdt
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/avila-wdt
 svn://svn.openwrt.org/openwrt
 
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T20:28:11.890164Z
+2014-06-03T20:17:37.610341Z
 b4431f6789bc5aee2287a6e490ede176
 2013-06-21T16:54:37.987982Z
 37007

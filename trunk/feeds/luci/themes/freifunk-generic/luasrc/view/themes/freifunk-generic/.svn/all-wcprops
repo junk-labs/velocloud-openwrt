@@ -3,15 +3,15 @@ svn:wc:ra_dav:version-url
 V 85
 /!svn/ver/9907/luci/trunk/themes/freifunk-generic/luasrc/view/themes/freifunk-generic
 END
-header.htm
-K 25
-svn:wc:ra_dav:version-url
-V 96
-/!svn/ver/9907/luci/trunk/themes/freifunk-generic/luasrc/view/themes/freifunk-generic/header.htm
-END
 footer.htm
 K 25
 svn:wc:ra_dav:version-url
 V 96
 /!svn/ver/7364/luci/trunk/themes/freifunk-generic/luasrc/view/themes/freifunk-generic/footer.htm
+END
+header.htm
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/9907/luci/trunk/themes/freifunk-generic/luasrc/view/themes/freifunk-generic/header.htm
 END

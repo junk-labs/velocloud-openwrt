@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/atheros/base-files/etc/uci-defaults
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/atheros/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:01.290164Z
+2014-06-03T20:17:37.962341Z
 2a5ac783ca1253ea311badfa234030e5
 2013-01-18T12:42:53.029206Z
 35217
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:28:01.290164Z
+2014-06-03T20:17:37.962341Z
 408013583d9ffa641c74cda2c55557e1
 2013-01-18T12:42:53.029206Z
 35217

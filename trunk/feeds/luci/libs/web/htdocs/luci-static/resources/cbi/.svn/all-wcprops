@@ -3,54 +3,6 @@ svn:wc:ra_dav:version-url
 V 67
 /!svn/ver/6939/luci/trunk/libs/web/htdocs/luci-static/resources/cbi
 END
-save.gif
-K 25
-svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/save.gif
-END
-reload.gif
-K 25
-svn:wc:ra_dav:version-url
-V 78
-/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/reload.gif
-END
-download.gif
-K 25
-svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/download.gif
-END
-down.gif
-K 25
-svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/6761/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/down.gif
-END
-folder.gif
-K 25
-svn:wc:ra_dav:version-url
-V 78
-/!svn/ver/6939/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/folder.gif
-END
-user.gif
-K 25
-svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/user.gif
-END
-file.gif
-K 25
-svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/6939/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/file.gif
-END
-find.gif
-K 25
-svn:wc:ra_dav:version-url
-V 76
-/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/find.gif
-END
 reset.gif
 K 25
 svn:wc:ra_dav:version-url
@@ -116,4 +68,52 @@ K 25
 svn:wc:ra_dav:version-url
 V 76
 /!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/link.gif
+END
+save.gif
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/save.gif
+END
+reload.gif
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/reload.gif
+END
+download.gif
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/download.gif
+END
+down.gif
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/6761/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/down.gif
+END
+folder.gif
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/6939/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/folder.gif
+END
+user.gif
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/user.gif
+END
+file.gif
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/6939/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/file.gif
+END
+find.gif
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/6281/luci/trunk/libs/web/htdocs/luci-static/resources/cbi/find.gif
 END

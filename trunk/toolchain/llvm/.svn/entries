@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/toolchain/llvm
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/toolchain/llvm
 svn://svn.openwrt.org/openwrt
 
 
@@ -26,16 +26,13 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T20:27:54.290163Z
+2014-06-03T20:17:38.434341Z
 37d34da8f470df0a9f61f1dd7ebe4250
 2009-10-10T19:25:48.592604Z
 18019
@@ -62,4 +59,7 @@ nbd
 
 
 1146
+
+patches
+dir
 

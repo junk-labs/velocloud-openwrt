@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-diag-devinfo/luasrc/view/diag
 http://svn.luci.subsignal.org
 
@@ -26,47 +26,13 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-smapvalue.htm
-file
-
-
-
-
-2013-12-02T22:38:39.294324Z
-7018a47b7c6c36a9b0ada7d3ce480e1d
-2009-07-17T20:27:05.541338Z
-5097
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-638
-
 smapsection.htm
 file
 
 
 
 
-2013-12-02T22:38:39.294324Z
+2014-06-17T22:32:19.074136Z
 3225f408b733789c33846683abb99ef8
 2009-11-01T13:24:33.193517Z
 5477
@@ -93,4 +59,38 @@ has-props
 
 
 5055
+
+smapvalue.htm
+file
+
+
+
+
+2014-06-17T22:32:19.074136Z
+7018a47b7c6c36a9b0ada7d3ce480e1d
+2009-07-17T20:27:05.541338Z
+5097
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+638
 

@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ar71xx/mikrotik/profiles
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ar71xx/mikrotik/profiles
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:27:59.722164Z
+2014-06-03T20:17:37.942341Z
 f32ce2658eb1efa7a5b313a8d5d3886c
 2013-10-23T15:43:26.595663Z
 38509
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:27:59.722164Z
+2014-06-03T20:17:37.942341Z
 ba75256d2849460e53404abed6de5a02
 2013-10-23T15:43:26.595663Z
 38509

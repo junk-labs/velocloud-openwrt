@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ar71xx/nand
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ar71xx/nand
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-04T18:37:09.965063Z
-38647
-juhosg
+2014-08-03T11:15:43.506046Z
+41971
+blogic
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2013-12-02T20:27:59.054164Z
-b5299a17c3e67899e5825e2c08a9bd85
-2013-11-04T18:37:08.743766Z
-38646
-juhosg
+2014-06-20T21:11:25.180245Z
+0e558b38635c50701e8f407bd7f61200
+2014-06-11T13:00:04.409461Z
+41132
+blogic
 
 
 
@@ -61,7 +61,7 @@ juhosg
 
 
 
-4091
+4136
 
 target.mk
 file
@@ -69,11 +69,11 @@ file
 
 
 
-2013-12-02T20:27:59.054164Z
-f61d50d217d52c3c9e4eecffb53e5a61
-2013-11-04T18:37:08.743766Z
-38646
-juhosg
+2014-08-06T22:40:51.569834Z
+35d57a80380429dc79849f1379ab7b32
+2014-08-03T11:15:43.506046Z
+41971
+blogic
 
 
 
@@ -95,5 +95,5 @@ juhosg
 
 
 
-209
+211
 

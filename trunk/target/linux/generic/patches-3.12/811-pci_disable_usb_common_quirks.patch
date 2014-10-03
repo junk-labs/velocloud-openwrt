@@ -46,7 +46,7 @@
 +#endif
 --- a/drivers/usb/host/pci-quirks.h
 +++ b/drivers/usb/host/pci-quirks.h
-@@ -4,20 +4,29 @@
+@@ -4,22 +4,31 @@
  #ifdef CONFIG_PCI
  void uhci_reset_hc(struct pci_dev *pdev, unsigned long base);
  int uhci_check_and_reset_hc(struct pci_dev *pdev, unsigned long base);
@@ -59,6 +59,8 @@
 +
 +#if defined(CONFIG_PCI) && !defined(CONFIG_PCI_DISABLE_COMMON_QUIRKS)
  int usb_amd_find_chipset_info(void);
+ bool usb_amd_hang_symptom_quirk(void);
+ bool usb_amd_prefetch_quirk(void);
  void usb_amd_dev_put(void);
  void usb_amd_quirk_pll_disable(void);
  void usb_amd_quirk_pll_enable(void);

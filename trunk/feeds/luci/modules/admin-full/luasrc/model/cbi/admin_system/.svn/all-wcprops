@@ -3,6 +3,12 @@ svn:wc:ra_dav:version-url
 V 74
 /!svn/ver/9866/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system
 END
+leds.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/7037/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/leds.lua
+END
 admin.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -50,10 +56,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 85
 /!svn/ver/9339/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/system.lua
-END
-leds.lua
-K 25
-svn:wc:ra_dav:version-url
-V 83
-/!svn/ver/7037/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/leds.lua
 END

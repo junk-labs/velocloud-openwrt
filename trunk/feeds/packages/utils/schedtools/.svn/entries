@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/schedtools
 svn://svn.openwrt.org/openwrt
 
 
 
-2009-12-13T12:46:09.420108Z
-18769
-florian
+2014-03-27T07:06:32.238801Z
+40269
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:04.926323Z
-c5e9ec07d2d54ccf00cc0a239212b282
-2009-12-13T12:46:09.420108Z
-18769
-florian
+2014-06-17T22:32:04.042136Z
+00505706d7e0f6e699baadeb825cf472
+2014-03-27T07:06:32.238801Z
+40269
+juhosg
 
 
 
@@ -58,5 +58,5 @@ florian
 
 
 
-1042
+1037
 

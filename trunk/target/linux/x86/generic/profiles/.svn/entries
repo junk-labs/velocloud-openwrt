@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/x86/generic/profiles
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/x86/generic/profiles
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:27:57.226163Z
+2014-06-03T20:17:38.346341Z
 b7ea9edfe6f1beb4234da3f9f37712b8
 2010-04-24T14:08:49.306290Z
 21137
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:27:57.226163Z
+2014-06-03T20:17:38.346341Z
 27c07611c883382b1a6c572912850752
 2009-01-12T03:48:42.889366Z
 13988
@@ -100,7 +100,7 @@ file
 
 
 
-2013-12-02T20:27:57.226163Z
+2014-06-03T20:17:38.346341Z
 53cfd20960fcfa0fc3639d4e9520a42c
 2010-04-24T14:08:49.306290Z
 21137
@@ -134,7 +134,7 @@ file
 
 
 
-2013-12-02T20:27:57.226163Z
+2014-06-03T20:17:38.346341Z
 e4c7655ea66f8672272a554b22b19eee
 2010-04-24T14:08:49.306290Z
 21137

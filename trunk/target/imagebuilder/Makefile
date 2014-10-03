@@ -19,13 +19,14 @@ IB_NAME:=OpenWrt-ImageBuilder-$(BOARD)$(if $(SUBTARGET),_$(SUBTARGET))-for-$(PKG
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(IB_NAME)
 IB_KDIR:=$(patsubst $(TOPDIR)/%,$(PKG_BUILD_DIR)/%,$(KERNEL_BUILD_DIR))
 IB_LDIR:=$(patsubst $(TOPDIR)/%,$(PKG_BUILD_DIR)/%,$(LINUX_DIR))
+IB_DTSDIR:=$(patsubst $(TOPDIR)/%,$(PKG_BUILD_DIR)/%,$(LINUX_DIR))/arch/$(ARCH)/boot/dts/
 
 all: compile
 
 $(BIN_DIR)/$(IB_NAME).tar.bz2: clean
 	rm -rf $(PKG_BUILD_DIR)
-	mkdir -p $(IB_KDIR) $(IB_LDIR) $(PKG_BUILD_DIR)/staging_dir/host \
-		$(PKG_BUILD_DIR)/target $(PKG_BUILD_DIR)/scripts
+	mkdir -p $(IB_KDIR) $(IB_LDIR) $(PKG_BUILD_DIR)/staging_dir/host/lib \
+		$(PKG_BUILD_DIR)/target $(PKG_BUILD_DIR)/scripts $(IB_DTSDIR)
 	-cp $(TOPDIR)/.config $(PKG_BUILD_DIR)/.config
 	$(CP) \
 		$(INCLUDE_DIR) $(SCRIPT_DIR) \
@@ -38,15 +39,20 @@ $(BIN_DIR)/$(IB_NAME).tar.bz2: clean
 	$(VERSION_SED) $(PKG_BUILD_DIR)/repositories.conf
 	$(CP) $(PACKAGE_DIR) $(PKG_BUILD_DIR)/packages
 	$(CP) $(TOPDIR)/target/linux $(PKG_BUILD_DIR)/target/
+	if [ -d $(TOPDIR)/staging_dir/host/lib/grub ]; then \
+		$(CP) $(TOPDIR)/staging_dir/host/lib/grub/ $(PKG_BUILD_DIR)/staging_dir/host/lib; \
+	fi
 	rm -rf \
 		$(PKG_BUILD_DIR)/target/linux/*/files{,-*} \
 		$(PKG_BUILD_DIR)/target/linux/*/patches{,-*}
 	-cp $(KERNEL_BUILD_DIR)/* $(IB_KDIR)/ # don't copy subdirectories here
 	[ -d $(KERNEL_BUILD_DIR)/inst.grub ] && $(CP) $(KERNEL_BUILD_DIR)/inst.grub $(IB_KDIR)/ || true # except inst.grub
-	mkdir -p $(IB_LDIR)/scripts/dtc $(IB_LDIR)/arch/$(ARCH)/boot/dts
-	-cp $(LINUX_DIR)/scripts/dtc/dtc $(IB_LDIR)/scripts/dtc/
-	-cp  $(LINUX_DIR)/arch/$(ARCH)/boot/dts/* $(IB_LDIR)/arch/$(ARCH)/boot/dts
 	-cp $(LINUX_DIR)/.config $(IB_LDIR)/
+	-$(SCRIPT_DIR)/bundle-libraries.sh $(IB_LDIR)/scripts/dtc \
+	  $(LINUX_DIR)/scripts/dtc/dtc
+	if [ -d $(LINUX_DIR)/arch/$(ARCH)/boot/dts ]; then \
+		$(CP) $(LINUX_DIR)/arch/$(ARCH)/boot/dts/* $(IB_DTSDIR); \
+	fi
 	$(SED) 's,^# REVISION:=.*,REVISION:=$(REVISION),g' $(PKG_BUILD_DIR)/include/version.mk
 	find $(PKG_BUILD_DIR) -name CVS -o -name .git -o -name .svn \
 	  | $(XARGS) rm -rf
@@ -59,6 +65,7 @@ $(BIN_DIR)/$(IB_NAME).tar.bz2: clean
 	fi
 	mkdir -p $(PKG_BUILD_DIR)/staging_dir/host/lib
 	$(CP) $(STAGING_DIR_HOST)/lib/grub $(PKG_BUILD_DIR)/staging_dir/host/lib
+	$(MAKE) -C $(PKG_BUILD_DIR) package_index
 	$(TAR) c -C $(BUILD_DIR) $(IB_NAME) | bzip2 -c > $@
 
 download:

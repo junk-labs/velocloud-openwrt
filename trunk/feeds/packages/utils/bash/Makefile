@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bash
-PKG_VERSION:=4.2
-PKG_RELEASE:=3
+PKG_VERSION:=4.3
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@GNU/bash
-PKG_MD5SUM:=3fb927c7c33022f1c327f14a81c0d4b0
+PKG_MD5SUM:=81348932d5da294953e15d4814c74dd1
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -26,8 +26,8 @@ define Package/bash
 endef
 
 define Package/bash/description
-	Bash is an sh-compatible command language interpreter that executes 
-	commands read from the standard input or from a file. Bash also 
+	Bash is an sh-compatible command language interpreter that executes
+	commands read from the standard input or from a file. Bash also
 	incorporates useful features from the Korn and C shells (ksh and csh).
 endef
 
@@ -36,6 +36,30 @@ define Build/Configure
 	$(call Build/Configure/Default, \
 		--without-bash-malloc \
                 --bindir=/bin \
+		ac_cv_func_mmap_fixed_mapped=yes \
+		ac_cv_func_strcoll_works=yes \
+		ac_cv_func_working_mktime=yes \
+		gt_cv_int_divbyzero_sigfpe=yes \
+		bash_cv_func_sigsetjmp=present \
+		bash_cv_getcwd_malloc=yes \
+		bash_cv_job_control_missing=present \
+		bash_cv_printf_a_format=yes \
+		bash_cv_sys_named_pipes=present \
+		bash_cv_ulimit_maxfds=yes \
+		bash_cv_sys_siglist=yes \
+		bash_cv_wexitstatus_offset=0 \
+		bash_cv_under_sys_siglist=yes \
+		bash_cv_unusable_rtsigs=no \
+		bash_cv_wcontinued_broken=no \
+		bash_cv_func_ctype_nonascii=no \
+		bash_cv_dup2_broken=no \
+		bash_cv_pgrp_pipe=no \
+		bash_cv_opendir_not_robust=no \
+		bash_cv_getenv_redef=yes \
+		bash_cv_func_strcoll_broken=no \
+		bash_cv_func_snprintf=yes \
+		bash_cv_func_vsnprintf=yes \
+		bash_cv_must_reinstall_sighandlers=no \
 	)
 endef
 
@@ -62,4 +86,3 @@ define Package/bash/install
 endef
 
 $(eval $(call BuildPackage,bash))
-

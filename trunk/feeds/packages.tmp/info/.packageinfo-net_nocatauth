@@ -11,9 +11,9 @@ Title: Open public network perl-based gateway daemon
 Maintainer: 
 Source: NoCatAuth-nightly.tgz
 Type: ipkg
-Description:         NoCatAuth is the original "catch and release" captive portal 
-	implementation. It provides a simple splash screen web page for 
-	clients on your network, as well as a variety of authenticated 
+Description:         NoCatAuth is the original "catch and release" captive portal
+	implementation. It provides a simple splash screen web page for
+	clients on your network, as well as a variety of authenticated
 	modes. It is written in Perl.
 http://nocat.net
 

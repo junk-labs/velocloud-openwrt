@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/gnutls
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-06-11T21:18:33.553794Z
-32206
-jow
+2014-05-20T04:51:47.831464Z
+40796
+florian
 
 
 
@@ -26,17 +26,51 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+Config.in
+file
+
+
+
+
+2014-06-17T22:32:01.758136Z
+6520af9028c5eb2941082019830d35c9
+2014-05-08T00:57:34.402395Z
+40721
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+647
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:13.326324Z
-74e1ea3ac65f94874a2e6df2daa83f1e
-2012-06-11T21:18:33.553794Z
-32206
-jow
+2014-06-17T22:32:01.758136Z
+dea02294ed2ca7674b53b4aec3819225
+2014-05-20T04:51:47.831464Z
+40796
+florian
 has-props
 
 
@@ -58,8 +92,5 @@ has-props
 
 
 
-4646
-
-patches
-dir
+5430
 

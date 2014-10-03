@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ramips/base-files/lib
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ramips/base-files/lib
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-18T09:35:41.041649Z
-38848
+2014-09-01T13:21:49.742269Z
+42376
 blogic
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:28:00.294164Z
-2fb9387faae0bc7f36eb956b4a6b0cf7
-2013-11-18T09:35:41.041649Z
-38848
+2014-09-03T23:42:09.497712Z
+0c4f986d30d4989637903c508820dfb8
+2014-09-01T13:21:49.742269Z
+42376
 blogic
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-4217
+5042
 
 upgrade
 dir

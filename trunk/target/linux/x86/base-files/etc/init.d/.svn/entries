@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/x86/base-files/etc/init.d
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/x86/base-files/etc/init.d
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:27:57.178163Z
+2014-06-03T20:17:38.346341Z
 623388c132fa0d34a0faa6c3b85a3c99
 2011-01-26T11:33:46.367773Z
 25103

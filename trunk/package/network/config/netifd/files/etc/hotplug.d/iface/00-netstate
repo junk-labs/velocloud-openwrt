@@ -1,16 +1,16 @@
 [ ifup = "$ACTION" ] && {
-        uci_toggle_state network "$INTERFACE" up 1
-        [ -n "$DEVICE" ] && {
-                uci_toggle_state network "$INTERFACE" device "$(uci -q get network.$INTERFACE.ifname)"
-                uci_toggle_state network "$INTERFACE" ifname "$DEVICE"
-                if [ -f /etc/sysctl.conf ]; then
-                        intf=${DEVICE/[0-9]*/}
-                        if [ "$intf" == "eth" -o "$intf" == "USB" ]; then
-                            intf_ipv6="net.ipv6.conf.$DEVICE.disable_ipv6=1"
-                            ret=$(grep -c $intf_ipv6 /etc/sysctl.conf)
-                            [[ $ret -eq 0 ]] && echo $intf_ipv6 >> /etc/sysctl.conf
-                            echo $intf_ipv6 | sysctl -e -p - | logger -t sysctl
-                        fi
-                fi
-        }
+	uci_toggle_state network "$INTERFACE" up 1
+	[ -n "$DEVICE" ] && {
+		uci_toggle_state network "$INTERFACE" device "$(uci -q get network.$INTERFACE.ifname)"
+		uci_toggle_state network "$INTERFACE" ifname "$DEVICE"
+		if [ -f /etc/sysctl.conf ]; then
+			intf=${DEVICE/[0-9]*/}
+			if [ "$intf" == "eth" -o "$intf" == "USB" ]; then
+			    intf_ipv6="net.ipv6.conf.$DEVICE.disable_ipv6=1"
+			    ret=$(grep -c $intf_ipv6 /etc/sysctl.conf)
+			    [[ $ret -eq 0 ]] && echo $intf_ipv6 >> /etc/sysctl.conf
+			    echo $intf_ipv6 | sysctl -e -p - | logger -t sysctl
+			fi
+		fi
+	}
 }

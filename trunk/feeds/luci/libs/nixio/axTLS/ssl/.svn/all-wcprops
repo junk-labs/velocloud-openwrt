@@ -3,54 +3,6 @@ svn:wc:ra_dav:version-url
 V 46
 /!svn/ver/4270/luci/trunk/libs/nixio/axTLS/ssl
 END
-tls1.c
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/tls1.c
-END
-openssl.c
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/openssl.c
-END
-os_port.c
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/os_port.c
-END
-gen_cert.c
-K 25
-svn:wc:ra_dav:version-url
-V 57
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/gen_cert.c
-END
-BigIntConfig.in
-K 25
-svn:wc:ra_dav:version-url
-V 62
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/BigIntConfig.in
-END
-private_key.h
-K 25
-svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/private_key.h
-END
-tls1.h
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/tls1.h
-END
-Config.in
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/Config.in
-END
 os_port.h
 K 25
 svn:wc:ra_dav:version-url
@@ -122,4 +74,52 @@ K 25
 svn:wc:ra_dav:version-url
 V 57
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/tls1_svr.c
+END
+tls1.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/tls1.c
+END
+openssl.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/openssl.c
+END
+os_port.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/os_port.c
+END
+gen_cert.c
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/gen_cert.c
+END
+BigIntConfig.in
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/BigIntConfig.in
+END
+private_key.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/private_key.h
+END
+tls1.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/tls1.h
+END
+Config.in
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/ssl/Config.in
 END

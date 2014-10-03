@@ -11,7 +11,7 @@ Title: SSL tunnel based on matrixssl
 Maintainer: 
 Source: matrixtunnel-0.2.tar.gz
 Type: ipkg
-Description: 	matrixtunnel is a stripped down version of stunnel 
+Description: 	matrixtunnel is a stripped down version of stunnel
 	based on matrixssl library.
 http://znerol.ch/svn/matrixtunnel/trunk/
 

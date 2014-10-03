@@ -1,15 +1,15 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/modules/freifunk/luasrc
 http://svn.luci.subsignal.org
 
 
 
-2013-05-23T14:07:23.517715Z
-9828
-soma
+2014-04-23T12:15:40.679058Z
+9974
+jow
 
 
 
@@ -26,12 +26,12 @@ soma
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+model
+dir
+
 controller
 dir
 
 view
-dir
-
-model
 dir
 

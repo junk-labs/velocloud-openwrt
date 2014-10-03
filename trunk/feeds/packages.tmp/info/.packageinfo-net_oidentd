@@ -6,7 +6,7 @@ Menu-Depends:
 Provides: 
 Section: net
 Category: Network
-Title: Identd server 
+Title: Identd server
 Maintainer: 
 Source: oidentd-2.0.8.tar.gz
 Type: ipkg

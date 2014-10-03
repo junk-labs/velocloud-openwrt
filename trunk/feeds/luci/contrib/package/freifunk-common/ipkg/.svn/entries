@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/contrib/package/freifunk-common/ipkg
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:50.554324Z
+2014-06-17T22:32:29.570136Z
 50737a73fb0728408e312d184888d643
 2010-07-01T09:52:12.010450Z
 6201

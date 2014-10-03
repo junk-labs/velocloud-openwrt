@@ -12,7 +12,7 @@ Title: MySQL database adapter for Python
 Maintainer: 
 Source: MySQL-python-1.2.2.tar.gz
 Type: ipkg
-Description:  MySQLdb is an thread-compatible interface to the popular MySQL database 
+Description:  MySQLdb is an thread-compatible interface to the popular MySQL database
  server that provides the Python database API.
 http://mysql-python.sourceforge.net/
 

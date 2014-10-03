@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/shorewall-lite
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-09-15T09:18:07.593207Z
-37992
-hauke
+2014-03-27T07:04:42.576119Z
+40157
+juhosg
 
 
 
@@ -26,23 +26,17 @@ hauke
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:10.070323Z
-7e6a527136a358a1310ff8ac3bcc6f3d
-2012-10-16T15:55:47.517219Z
-33796
-florian
+2014-06-17T22:31:59.902136Z
+37da79dc423d13723de2a7c4d16f1eab
+2014-03-27T07:04:42.576119Z
+40157
+juhosg
 
 
 
@@ -64,5 +58,11 @@ florian
 
 
 
-2757
+2756
+
+files
+dir
+
+patches
+dir
 

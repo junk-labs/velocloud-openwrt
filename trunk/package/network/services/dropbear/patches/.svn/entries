@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/dropbear/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/dropbear/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-10T14:42:05.863740Z
-38356
-jow
+2014-03-29T16:59:26.427555Z
+40297
+nbd
 
 
 
@@ -26,115 +26,13 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-150-dbconvert_standalone.patch
-file
-
-
-
-
-2013-12-02T20:29:11.010165Z
-490bc116a67cb88d34a52e7c001d0d5b
-2010-03-26T14:28:14.286264Z
-20460
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-428
-
-110-change_user.patch
-file
-
-
-
-
-2013-12-02T20:29:11.010165Z
-736af7652996a553867a951dd54679ec
-2013-10-10T14:42:05.863740Z
-38356
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-650
-
-130-ssh_ignore_o_and_x_args.patch
-file
-
-
-
-
-2013-12-02T20:29:11.010165Z
-36c3a2b59f39474cdc235d194cac9359
-2013-10-10T14:42:05.863740Z
-38356
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-452
-
 140-disable_assert.patch
 file
 
 
 
 
-2013-12-02T20:29:11.010165Z
+2014-06-03T20:17:37.742341Z
 9f2f1a624194d4b953d0d98d36e1e36f
 2013-10-10T14:42:05.863740Z
 38356
@@ -168,11 +66,11 @@ file
 
 
 
-2013-12-02T20:29:11.010165Z
-2801ed1078c9b1e4cc3125dc59d46b80
-2010-03-26T14:28:14.286264Z
-20460
-juhosg
+2014-06-03T20:19:30.878339Z
+bef219d4710b2dd9520f7b9283edd1fb
+2014-03-29T16:59:26.427555Z
+40297
+nbd
 has-props
 
 
@@ -202,11 +100,11 @@ file
 
 
 
-2013-12-02T20:29:11.010165Z
-ebcf130272cf3f5217b969a956d07a6b
-2013-10-10T14:42:05.863740Z
-38356
-jow
+2014-06-03T20:19:30.878339Z
+33b87a555d509d0159d2df0dffc385fc
+2014-03-29T16:59:26.427555Z
+40297
+nbd
 
 
 
@@ -228,7 +126,7 @@ jow
 
 
 
-2511
+2192
 
 500-set-default-path.patch
 file
@@ -236,11 +134,11 @@ file
 
 
 
-2013-12-02T20:29:11.010165Z
-c4002ad915993aed4916f16655edf649
-2013-10-10T14:42:05.863740Z
-38356
-jow
+2014-06-03T20:19:30.882339Z
+274bac1741cd326031efc7bd808182ad
+2014-03-29T16:59:26.427555Z
+40297
+nbd
 
 
 
@@ -264,17 +162,52 @@ jow
 
 381
 
-200-lcrypt_bsdfix.patch
+150-dbconvert_standalone.patch
 file
 
 
 
 
-2013-12-02T20:29:11.010165Z
-90f6eb6cb310c0f758a6231a7088bbf2
+2014-06-03T20:19:30.882339Z
+3784215c24039073e087f28053690b49
+2014-03-29T16:59:26.427555Z
+40297
+nbd
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+364
+
+110-change_user.patch
+file
+
+
+
+
+2014-06-03T20:17:37.742341Z
+736af7652996a553867a951dd54679ec
 2013-10-10T14:42:05.863740Z
 38356
 jow
+has-props
 
 
 
@@ -295,6 +228,39 @@ jow
 
 
 
+650
+
+130-ssh_ignore_o_and_x_args.patch
+file
 
-1001
+
+
+
+2014-06-03T20:17:37.742341Z
+36c3a2b59f39474cdc235d194cac9359
+2013-10-10T14:42:05.863740Z
+38356
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+452
 

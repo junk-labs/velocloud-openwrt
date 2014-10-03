@@ -3,6 +3,18 @@ svn:wc:ra_dav:version-url
 V 31
 /!svn/ver/9893/luci/trunk/po/en
 END
+meshwizard.po
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/!svn/ver/9477/luci/trunk/po/en/meshwizard.po
+END
+vnstat.po
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/8800/luci/trunk/po/en/vnstat.po
+END
 asterisk.po
 K 25
 svn:wc:ra_dav:version-url
@@ -242,16 +254,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 43
 /!svn/ver/8867/luci/trunk/po/en/ffwizard.po
-END
-meshwizard.po
-K 25
-svn:wc:ra_dav:version-url
-V 45
-/!svn/ver/9477/luci/trunk/po/en/meshwizard.po
-END
-vnstat.po
-K 25
-svn:wc:ra_dav:version-url
-V 41
-/!svn/ver/8800/luci/trunk/po/en/vnstat.po
 END

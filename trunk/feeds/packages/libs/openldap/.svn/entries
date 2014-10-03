@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/openldap
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-06-11T21:18:33.553794Z
-32206
-jow
+2014-02-06T21:11:23.187291Z
+39513
+hauke
 
 
 
@@ -38,11 +38,11 @@ file
 
 
 
-2013-12-02T22:38:14.410324Z
-6730e8baec5d8563def03ed0b179a0df
-2012-06-11T21:18:33.553794Z
-32206
-jow
+2014-06-17T22:32:00.986136Z
+26905a8b4678f5d669191d62a5809ea3
+2014-02-06T21:11:23.187291Z
+39513
+hauke
 has-props
 
 
@@ -64,5 +64,5 @@ has-props
 
 
 
-4080
+4102
 

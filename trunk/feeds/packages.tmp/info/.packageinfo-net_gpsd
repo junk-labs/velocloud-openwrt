@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/net/gpsd/Makefile
 Package: gpsd
-Version: 3.7-1
+Version: 3.10-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libgps +libgpsd
 Menu-Depends: 
 Provides: 
@@ -9,7 +9,7 @@ Section: net
 Category: Network
 Title: An interface daemon for GPS receivers
 Maintainer: 
-Source: gpsd-3.7.tar.gz
+Source: gpsd-3.10.tar.gz
 Type: ipkg
 Description:     gpsd is a userland daemon acting as a translator between GPS and AIS receivers
   and their clients. gpsd listens on port 2947 for clients requesting
@@ -24,7 +24,7 @@ http://catb.org/gpsd/
 @@
 
 Package: gpsd-clients
-Version: 3.7-1
+Version: 3.10-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libgps +libgpsd +libncurses
 Menu-Depends: 
 Provides: 
@@ -33,7 +33,7 @@ Section: net
 Category: Network
 Title: GPS tools and clients
 Maintainer: 
-Source: gpsd-3.7.tar.gz
+Source: gpsd-3.10.tar.gz
 Type: ipkg
 Description:     gpsd is a userland daemon acting as a translator between GPS and AIS receivers
   and their clients. gpsd listens on port 2947 for clients requesting
@@ -49,7 +49,7 @@ http://catb.org/gpsd/
 @@
 
 Package: libgps
-Version: 3.7-1
+Version: 3.10-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libcap
 Menu-Depends: 
 Provides: 
@@ -58,7 +58,7 @@ Section: libs
 Category: Libraries
 Title: C service library for communicating with the GPS daemon
 Maintainer: 
-Source: gpsd-3.7.tar.gz
+Source: gpsd-3.10.tar.gz
 Type: ipkg
 Description:     gpsd is a userland daemon acting as a translator between GPS and AIS receivers
   and their clients. gpsd listens on port 2947 for clients requesting
@@ -73,7 +73,7 @@ http://catb.org/gpsd/
 @@
 
 Package: libgpsd
-Version: 3.7-1
+Version: 3.10-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libcap +libusb-1.0
 Menu-Depends: 
 Provides: 
@@ -82,7 +82,7 @@ Section: libs
 Category: Libraries
 Title: C service library for GPS applications
 Maintainer: 
-Source: gpsd-3.7.tar.gz
+Source: gpsd-3.10.tar.gz
 Type: ipkg
 Description:     gpsd is a userland daemon acting as a translator between GPS and AIS receivers
   and their clients. gpsd listens on port 2947 for clients requesting

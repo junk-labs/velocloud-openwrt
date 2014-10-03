@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/multimedia/graphicsmagick
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:15.054324Z
+2014-06-17T22:32:02.210136Z
 e87c6bacd41182c7ebc38e9af0d883d1
 2012-06-12T01:57:19.212386Z
 32263

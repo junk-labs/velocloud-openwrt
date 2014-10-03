@@ -3,15 +3,15 @@ svn:wc:ra_dav:version-url
 V 54
 /!svn/ver/7909/luci/trunk/libs/sys/luasrc/sys/zoneinfo
 END
-tzdata.lua
-K 25
-svn:wc:ra_dav:version-url
-V 65
-/!svn/ver/7909/luci/trunk/libs/sys/luasrc/sys/zoneinfo/tzdata.lua
-END
 tzoffset.lua
 K 25
 svn:wc:ra_dav:version-url
 V 67
 /!svn/ver/7909/luci/trunk/libs/sys/luasrc/sys/zoneinfo/tzoffset.lua
+END
+tzdata.lua
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/7909/luci/trunk/libs/sys/luasrc/sys/zoneinfo/tzdata.lua
 END

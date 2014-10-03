@@ -6,7 +6,7 @@ host
 
 K 13
 svn:mergeinfo
-V 68
-/luci/branches/luci-0.11:9403-9410
+V 73
+/luci/branches/luci-0.11:9403-9410,9954
 /luci/branches/luci-0.8:4367-4369
 END

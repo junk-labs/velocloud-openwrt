@@ -1,13 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
 V 69
-/!svn/ver/9682/luci/trunk/modules/freifunk/luasrc/controller/freifunk
+/!svn/ver/9974/luci/trunk/modules/freifunk/luasrc/controller/freifunk
 END
 freifunk.lua
 K 25
 svn:wc:ra_dav:version-url
 V 82
-/!svn/ver/9682/luci/trunk/modules/freifunk/luasrc/controller/freifunk/freifunk.lua
+/!svn/ver/9974/luci/trunk/modules/freifunk/luasrc/controller/freifunk/freifunk.lua
 END
 remote_update.lua
 K 25

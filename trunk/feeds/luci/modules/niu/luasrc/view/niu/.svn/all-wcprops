@@ -3,6 +3,12 @@ svn:wc:ra_dav:version-url
 V 53
 /!svn/ver/8847/luci/trunk/modules/niu/luasrc/view/niu
 END
+traffic.htm
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/5555/luci/trunk/modules/niu/luasrc/view/niu/traffic.htm
+END
 system.htm
 K 25
 svn:wc:ra_dav:version-url
@@ -26,10 +32,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 62
 /!svn/ver/5417/luci/trunk/modules/niu/luasrc/view/niu/null.htm
-END
-traffic.htm
-K 25
-svn:wc:ra_dav:version-url
-V 65
-/!svn/ver/5555/luci/trunk/modules/niu/luasrc/view/niu/traffic.htm
 END

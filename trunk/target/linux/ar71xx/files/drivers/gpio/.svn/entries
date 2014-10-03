@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ar71xx/files/drivers/gpio
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ar71xx/files/drivers/gpio
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-02-19T20:52:06.572781Z
-35687
+2014-02-22T18:05:29.627040Z
+39697
 juhosg
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:27:59.362164Z
+2014-06-03T20:17:37.930341Z
 45127fd0c8434cf75ac775c806dcdccb
 2013-02-19T20:52:06.572781Z
 35687
@@ -59,4 +59,38 @@ has-props
 
 
 5803
+
+gpio-latch.c
+file
+
+
+
+
+2014-06-03T20:52:08.130293Z
+8c1aae399748f2503cbd3941891b9dc7
+2014-02-22T18:05:29.627040Z
+39697
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4744
 

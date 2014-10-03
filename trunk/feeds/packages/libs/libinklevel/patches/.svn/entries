@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/libinklevel/patches
 svn://svn.openwrt.org/openwrt
 
@@ -26,47 +26,13 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-003-fix_usb_device_location.patch
-file
-
-
-
-
-2013-12-02T22:38:13.186324Z
-0ec7c9446383628c50c2553d5f15b55d
-2009-05-07T15:10:01.008490Z
-15692
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-710
-
 002-disable_parport.patch
 file
 
 
 
 
-2013-12-02T22:38:13.186324Z
+2014-06-17T22:32:01.574136Z
 45f4a92f8ccb5f936671c8ef533ad2ae
 2009-05-07T15:10:01.008490Z
 15692
@@ -100,7 +66,7 @@ file
 
 
 
-2013-12-02T22:38:13.186324Z
+2014-06-17T22:32:01.574136Z
 a312dfc2b4a03b8235b85be12d1fdab6
 2010-12-15T04:19:20.425308Z
 24584
@@ -127,4 +93,38 @@ jow
 
 
 9037
+
+003-fix_usb_device_location.patch
+file
+
+
+
+
+2014-06-17T22:32:01.574136Z
+0ec7c9446383628c50c2553d5f15b55d
+2009-05-07T15:10:01.008490Z
+15692
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+710
 

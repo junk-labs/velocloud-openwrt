@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/ifstat
 svn://svn.openwrt.org/openwrt
 
 
 
-2009-04-17T15:22:00.575847Z
-15247
-nico
+2014-03-27T07:04:00.244770Z
+40111
+juhosg
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2013-12-02T22:38:10.026323Z
-37635e0d5fe8cb21ceb3f2a53d3ff8d3
-2009-04-17T15:22:00.575847Z
-15247
-nico
+2014-06-17T22:31:59.890136Z
+2f8af97ca690f130b855298011bc9f5e
+2014-03-27T07:04:00.244770Z
+40111
+juhosg
 has-props
 
 
@@ -61,5 +61,5 @@ has-props
 
 
 
-1075
+1074
 

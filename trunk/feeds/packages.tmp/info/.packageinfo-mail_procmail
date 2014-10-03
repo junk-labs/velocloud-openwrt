@@ -10,7 +10,7 @@ Title: Mail processing tool
 Maintainer: 
 Source: procmail-3.22.tar.gz
 Type: ipkg
-Description:  Procmail is able to process and classify incoming mail into 
+Description:  Procmail is able to process and classify incoming mail into
  different mail boxes.
  Very useful in conjunction with mutt.
 http://www.procmail.org

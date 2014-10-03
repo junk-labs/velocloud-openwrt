@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-statistics/luasrc/statistics
 http://svn.luci.subsignal.org
 
@@ -26,40 +26,6 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-i18n.lua
-file
-
-
-
-
-2013-12-02T22:38:40.906324Z
-16c9e3d5d39dcfaf7e443e8c9da93869
-2012-11-26T12:53:43.730041Z
-9507
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2446
-
 rrdtool
 dir
 
@@ -69,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:40.906324Z
+2014-06-17T22:32:22.202136Z
 15cdc437d2ce9a91f8c998b162e2cad4
 2012-12-14T21:53:03.482912Z
 9540
@@ -103,7 +69,7 @@ file
 
 
 
-2013-12-02T22:38:40.906324Z
+2014-06-17T22:32:22.202136Z
 eaca71907360d3df6a5f91eb5c193c89
 2012-02-19T17:05:09.907817Z
 8312
@@ -130,4 +96,38 @@ has-props
 
 
 4439
+
+i18n.lua
+file
+
+
+
+
+2014-06-17T22:32:22.202136Z
+16c9e3d5d39dcfaf7e443e8c9da93869
+2012-11-26T12:53:43.730041Z
+9507
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2446
 

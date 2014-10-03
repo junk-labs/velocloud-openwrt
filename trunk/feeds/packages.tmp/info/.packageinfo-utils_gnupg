@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/utils/gnupg/Makefile
 Package: gnupg
-Version: 1.4.12-1
+Version: 1.4.16-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +zlib +libncurses +libreadline
 Menu-Depends: 
 Provides: 
@@ -8,7 +8,7 @@ Section: utils
 Category: Utilities
 Title: GNU privacy guard - a free PGP replacement
 Maintainer: 
-Source: gnupg-1.4.12.tar.bz2
+Source: gnupg-1.4.16.tar.bz2
 Type: ipkg
 Description:  GnuPG is GNU's tool for secure communication and data storage.
  It can be used to encrypt data and to create digital signatures.

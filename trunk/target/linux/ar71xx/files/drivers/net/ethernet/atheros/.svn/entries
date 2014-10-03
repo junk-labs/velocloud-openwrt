@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ar71xx/files/drivers/net/ethernet/atheros
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ar71xx/files/drivers/net/ethernet/atheros
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-11T07:47:00.646399Z
-38716
-juhosg
+2014-09-11T15:14:05.055973Z
+42475
+nbd
 
 
 

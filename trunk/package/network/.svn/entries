@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-21T21:52:24.986868Z
-38888
-nbd
+2014-09-27T16:58:15.440047Z
+42675
+cyrus
 
 
 
@@ -26,9 +26,6 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-utils
-dir
-
 services
 dir
 
@@ -36,5 +33,8 @@ ipv6
 dir
 
 config
+dir
+
+utils
 dir
 

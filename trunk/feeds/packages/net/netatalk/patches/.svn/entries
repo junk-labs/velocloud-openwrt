@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/netatalk/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:10.410323Z
+2014-06-17T22:31:58.714137Z
 d9369400a7660efc2d565ff0beefd1ea
 2011-10-17T14:52:22.569675Z
 28482

@@ -1,91 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 31
-/!svn/ver/9893/luci/trunk/po/fr
-END
-multiwan.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/9440/luci/trunk/po/fr/multiwan.po
-END
-commands.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/9700/luci/trunk/po/fr/commands.po
-END
-wol.po
-K 25
-svn:wc:ra_dav:version-url
-V 38
-/!svn/ver/8867/luci/trunk/po/fr/wol.po
-END
-polipo.po
-K 25
-svn:wc:ra_dav:version-url
-V 41
-/!svn/ver/8800/luci/trunk/po/fr/polipo.po
-END
-firewall.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/9702/luci/trunk/po/fr/firewall.po
-END
-freifunk.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/9519/luci/trunk/po/fr/freifunk.po
-END
-p910nd.po
-K 25
-svn:wc:ra_dav:version-url
-V 41
-/!svn/ver/8867/luci/trunk/po/fr/p910nd.po
-END
-voice_core.po
-K 25
-svn:wc:ra_dav:version-url
-V 45
-/!svn/ver/9445/luci/trunk/po/fr/voice_core.po
-END
-diag_devinfo.po
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/9701/luci/trunk/po/fr/diag_devinfo.po
-END
-freifunk-policyrouting.po
-K 25
-svn:wc:ra_dav:version-url
-V 57
-/!svn/ver/8846/luci/trunk/po/fr/freifunk-policyrouting.po
-END
-olsr.po
-K 25
-svn:wc:ra_dav:version-url
-V 39
-/!svn/ver/8867/luci/trunk/po/fr/olsr.po
-END
-upnp.po
-K 25
-svn:wc:ra_dav:version-url
-V 39
-/!svn/ver/9444/luci/trunk/po/fr/upnp.po
-END
-tinyproxy.po
-K 25
-svn:wc:ra_dav:version-url
-V 44
-/!svn/ver/9443/luci/trunk/po/fr/tinyproxy.po
-END
-openvpn.po
-K 25
-svn:wc:ra_dav:version-url
-V 42
-/!svn/ver/8867/luci/trunk/po/fr/openvpn.po
+V 32
+/!svn/ver/10022/luci/trunk/po/fr
 END
 ddns.po
 K 25
@@ -93,47 +9,17 @@ svn:wc:ra_dav:version-url
 V 39
 /!svn/ver/9477/luci/trunk/po/fr/ddns.po
 END
-hd_idle.po
-K 25
-svn:wc:ra_dav:version-url
-V 42
-/!svn/ver/9438/luci/trunk/po/fr/hd_idle.po
-END
-pbx.po
-K 25
-svn:wc:ra_dav:version-url
-V 38
-/!svn/ver/8800/luci/trunk/po/fr/pbx.po
-END
 transmission.po
 K 25
 svn:wc:ra_dav:version-url
 V 47
 /!svn/ver/8572/luci/trunk/po/fr/transmission.po
 END
-coovachilli.po
-K 25
-svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/9434/luci/trunk/po/fr/coovachilli.po
-END
-pbx-voicemail.po
-K 25
-svn:wc:ra_dav:version-url
-V 48
-/!svn/ver/8800/luci/trunk/po/fr/pbx-voicemail.po
-END
-radvd.po
-K 25
-svn:wc:ra_dav:version-url
-V 40
-/!svn/ver/8867/luci/trunk/po/fr/radvd.po
-END
-qos.po
+wol.po
 K 25
 svn:wc:ra_dav:version-url
 V 38
-/!svn/ver/9442/luci/trunk/po/fr/qos.po
+/!svn/ver/8867/luci/trunk/po/fr/wol.po
 END
 ntpc.po
 K 25
@@ -141,17 +27,11 @@ svn:wc:ra_dav:version-url
 V 39
 /!svn/ver/9441/luci/trunk/po/fr/ntpc.po
 END
-wshaper.po
-K 25
-svn:wc:ra_dav:version-url
-V 42
-/!svn/ver/7830/luci/trunk/po/fr/wshaper.po
-END
 base.po
 K 25
 svn:wc:ra_dav:version-url
-V 39
-/!svn/ver/9670/luci/trunk/po/fr/base.po
+V 40
+/!svn/ver/10017/luci/trunk/po/fr/base.po
 END
 ahcp.po
 K 25
@@ -164,12 +44,6 @@ K 25
 svn:wc:ra_dav:version-url
 V 43
 /!svn/ver/8867/luci/trunk/po/fr/p2pblock.po
-END
-diag_core.po
-K 25
-svn:wc:ra_dav:version-url
-V 44
-/!svn/ver/9436/luci/trunk/po/fr/diag_core.po
 END
 ffwizard.po
 K 25
@@ -189,35 +63,41 @@ svn:wc:ra_dav:version-url
 V 41
 /!svn/ver/8867/luci/trunk/po/fr/vnstat.po
 END
-samba.po
-K 25
-svn:wc:ra_dav:version-url
-V 40
-/!svn/ver/8867/luci/trunk/po/fr/samba.po
-END
-rrdtool.po
-K 25
-svn:wc:ra_dav:version-url
-V 42
-/!svn/ver/6623/luci/trunk/po/fr/rrdtool.po
-END
 asterisk.po
 K 25
 svn:wc:ra_dav:version-url
 V 43
 /!svn/ver/8867/luci/trunk/po/fr/asterisk.po
 END
-mmc_over_gpio.po
+tinyproxy.po
 K 25
 svn:wc:ra_dav:version-url
-V 48
-/!svn/ver/9439/luci/trunk/po/fr/mmc_over_gpio.po
+V 45
+/!svn/ver/10021/luci/trunk/po/fr/tinyproxy.po
+END
+openvpn.po
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/10020/luci/trunk/po/fr/openvpn.po
 END
 ushare.po
 K 25
 svn:wc:ra_dav:version-url
-V 41
-/!svn/ver/8892/luci/trunk/po/fr/ushare.po
+V 42
+/!svn/ver/10022/luci/trunk/po/fr/ushare.po
+END
+hd_idle.po
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/!svn/ver/9438/luci/trunk/po/fr/hd_idle.po
+END
+pbx.po
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/!svn/ver/8800/luci/trunk/po/fr/pbx.po
 END
 voice_diag.po
 K 25
@@ -243,15 +123,135 @@ svn:wc:ra_dav:version-url
 V 43
 /!svn/ver/8545/luci/trunk/po/fr/minidlna.po
 END
+coovachilli.po
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/9434/luci/trunk/po/fr/coovachilli.po
+END
 watchcat.po
 K 25
 svn:wc:ra_dav:version-url
 V 43
 /!svn/ver/8800/luci/trunk/po/fr/watchcat.po
 END
+pbx-voicemail.po
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/8800/luci/trunk/po/fr/pbx-voicemail.po
+END
 uvc_streamer.po
 K 25
 svn:wc:ra_dav:version-url
 V 47
 /!svn/ver/8867/luci/trunk/po/fr/uvc_streamer.po
+END
+radvd.po
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/!svn/ver/8867/luci/trunk/po/fr/radvd.po
+END
+multiwan.po
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/9440/luci/trunk/po/fr/multiwan.po
+END
+commands.po
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/10018/luci/trunk/po/fr/commands.po
+END
+qos.po
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/!svn/ver/9442/luci/trunk/po/fr/qos.po
+END
+polipo.po
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/8800/luci/trunk/po/fr/polipo.po
+END
+firewall.po
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/9702/luci/trunk/po/fr/firewall.po
+END
+wshaper.po
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/!svn/ver/7830/luci/trunk/po/fr/wshaper.po
+END
+freifunk.po
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/9519/luci/trunk/po/fr/freifunk.po
+END
+p910nd.po
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/8867/luci/trunk/po/fr/p910nd.po
+END
+diag_core.po
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/9436/luci/trunk/po/fr/diag_core.po
+END
+voice_core.po
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/!svn/ver/9445/luci/trunk/po/fr/voice_core.po
+END
+diag_devinfo.po
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/10019/luci/trunk/po/fr/diag_devinfo.po
+END
+freifunk-policyrouting.po
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/8846/luci/trunk/po/fr/freifunk-policyrouting.po
+END
+olsr.po
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/!svn/ver/8867/luci/trunk/po/fr/olsr.po
+END
+upnp.po
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/!svn/ver/9444/luci/trunk/po/fr/upnp.po
+END
+samba.po
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/!svn/ver/8867/luci/trunk/po/fr/samba.po
+END
+rrdtool.po
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/!svn/ver/6623/luci/trunk/po/fr/rrdtool.po
+END
+mmc_over_gpio.po
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/9439/luci/trunk/po/fr/mmc_over_gpio.po
 END

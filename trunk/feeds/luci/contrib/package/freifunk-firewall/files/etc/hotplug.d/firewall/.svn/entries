@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/contrib/package/freifunk-firewall/files/etc/hotplug.d/firewall
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:50.734324Z
+2014-06-17T22:32:31.414136Z
 dd49f35a9e70a00c984ba1dc9fc5e78e
 2013-06-02T16:29:29.646941Z
 9832

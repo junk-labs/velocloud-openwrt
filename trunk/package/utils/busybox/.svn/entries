@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/utils/busybox
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-13T11:07:24.636699Z
-38789
+2014-09-01T13:21:54.319454Z
+42379
 blogic
 
 
@@ -26,17 +26,51 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-Makefile
+Config-defaults.in
 file
 
 
 
 
-2013-12-02T20:28:13.898164Z
-af05403f695ccab5e171199beac356b8
-2013-08-04T12:40:24.608161Z
-37681
-jow
+2014-06-03T20:36:39.070315Z
+e4f2046449ab0b71ee46dcc55c658bbe
+2014-05-25T17:45:22.883753Z
+40853
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+49597
+
+convert_defaults.pl
+file
+
+
+
+
+2014-06-03T20:36:39.070315Z
+fc96120b369977dc1560744c5b2a703f
+2014-01-31T13:50:16.915345Z
+39435
+nbd
 has-props
 
 
@@ -58,7 +92,7 @@ has-props
 
 
 
-2951
+327
 
 files
 dir
@@ -69,11 +103,11 @@ file
 
 
 
-2013-12-02T20:28:13.898164Z
-ef4fbf17c695b947d5fa996ef33a9d39
-2013-06-21T16:54:37.987982Z
-37007
-blogic
+2014-06-03T20:36:39.066315Z
+c72d69695d5a64b36f057b8c2a71233f
+2014-01-31T13:50:16.915345Z
+39435
+nbd
 has-props
 
 
@@ -95,7 +129,7 @@ has-props
 
 
 
-2008
+1676
 
 config
 dir
@@ -109,11 +143,46 @@ file
 
 
 
-2013-12-02T20:28:13.898164Z
-d535ca902feccda102e13bb016025fda
-2013-06-21T16:54:37.987982Z
-37007
+2014-06-03T20:36:39.066315Z
+62fac50f4ab318c0070c795f584d034d
+2014-01-31T19:15:14.955652Z
+39440
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+818
+
+Makefile
+file
+
+
+
+
+2014-09-03T23:42:10.077712Z
+2ec0969e2e8f17cd45fcba641aabf2a3
+2014-09-01T13:21:36.567901Z
+42368
 blogic
+has-props
 
 
 
@@ -134,6 +203,5 @@ blogic
 
 
 
-
-76
+3160
 

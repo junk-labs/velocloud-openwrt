@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/e169-stats/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-05-15T08:23:01.531557Z
-26892
-swalker
+2014-03-08T00:56:45.198597Z
+39803
+florian
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:11.322323Z
-bd293274ab310e6e1b969b81a2a081ac
-2011-05-15T08:23:01.531557Z
-26892
-swalker
+2014-06-17T22:31:57.222137Z
+eec9756dd9d84054c92d8cc0e72d0c4a
+2014-03-08T00:56:45.198597Z
+39803
+florian
 
 
 
@@ -58,5 +58,5 @@ swalker
 
 
 
-277
+247
 

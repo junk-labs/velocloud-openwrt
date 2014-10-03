@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm63xx/generic
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm63xx/generic
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-06-30T13:10:03.165563Z
-37100
+2014-07-12T12:31:43.522418Z
+41589
 jogo
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:27:55.902163Z
+2014-06-03T20:17:38.006341Z
 43331e31f3368359852face31ea6741a
 2013-05-02T15:28:31.864997Z
 36527

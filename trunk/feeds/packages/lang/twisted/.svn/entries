@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/lang/twisted
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-10-12T06:50:00.684252Z
-28426
-nico
+2014-03-27T07:03:37.823838Z
+40089
+juhosg
 
 
 
@@ -26,20 +26,17 @@ nico
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:07.230323Z
-87ebff656a0aa6894589718196e998f2
-2011-10-12T06:50:00.684252Z
-28426
-nico
+2014-06-17T22:31:56.594137Z
+9f7e8ae3ed4a9c44da475e7d3557e06e
+2014-03-27T07:03:37.823838Z
+40089
+juhosg
 has-props
 
 
@@ -61,5 +58,8 @@ has-props
 
 
 
-6813
+6810
+
+patches
+dir
 

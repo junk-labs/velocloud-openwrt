@@ -1,15 +1,15 @@
 10
 
 dir
-40477
-svn://svn.openwrt.org/openwrt/trunk/package/libs/openssl
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/openssl
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-04-08T05:24:36.663970Z
-40421
-cyrus
+2014-08-07T20:55:33.682149Z
+42056
+blogic
 
 
 
@@ -26,16 +26,13 @@ cyrus
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Config.in
 file
 
 
 
 
-2014-03-24T17:57:41.219555Z
+2014-06-03T20:17:37.698341Z
 f044a5d9cb169b64e565c3dda7b1c388
 2013-07-24T12:38:06.356185Z
 37524
@@ -70,9 +67,12 @@ file
 
 
 
-70a97df50275cb27ae058598cd8285c5
-2014-04-08T05:24:36.663970Z
-40421
-cyrus
+ea07ad002000130f081dbdd1575ab5dc
+2014-08-07T20:55:33.682149Z
+42056
+blogic
 has-props
+
+patches
+dir
 

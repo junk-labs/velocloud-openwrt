@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/net/e169-stats/Makefile
 Package: e169-stats
-Version: 0.6-1
+Version: 0.6-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libncurses
 Menu-Depends: 
 Provides: 

@@ -1,14 +1,14 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/system/ubox
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/system/ubox
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-18T13:33:43.968568Z
-39616
+2014-09-16T18:35:15.980696Z
+42582
 blogic
 
 
@@ -26,19 +26,16 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2014-02-27T00:44:01.492740Z
-df3ac5e46e1fee1bf33e229103fc0637
-2014-01-30T09:02:58.283894Z
-39425
+2014-09-29T22:49:13.984308Z
+3db9440cf0c806862cc28ef292e590aa
+2014-09-16T18:35:15.980696Z
+42582
 blogic
 
 
@@ -61,7 +58,7 @@ blogic
 
 
 
-2147
+1355
 
 files
 dir

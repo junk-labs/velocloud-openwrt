@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/lang/kid
 svn://svn.openwrt.org/openwrt
 
 
 
-2010-02-24T23:13:32.482440Z
-19848
-lars
+2014-03-27T07:03:32.951805Z
+40084
+juhosg
 
 
 
@@ -26,17 +26,20 @@ lars
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:07.142323Z
-a7e0379cae139e012d0f742fc0758129
-2010-02-24T23:13:32.482440Z
-19848
-lars
+2014-06-17T22:31:55.158137Z
+c95e997bad9350da9cb5b727d0926988
+2014-03-27T07:03:32.951805Z
+40084
+juhosg
 has-props
 
 
@@ -58,8 +61,5 @@ has-props
 
 
 
-1154
-
-patches
-dir
+1153
 

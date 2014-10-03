@@ -3,30 +3,6 @@ svn:wc:ra_dav:version-url
 V 69
 /!svn/ver/9898/luci/trunk/modules/admin-full/luasrc/view/admin_system
 END
-upgrade.htm
-K 25
-svn:wc:ra_dav:version-url
-V 81
-/!svn/ver/7798/luci/trunk/modules/admin-full/luasrc/view/admin_system/upgrade.htm
-END
-backupfiles.htm
-K 25
-svn:wc:ra_dav:version-url
-V 85
-/!svn/ver/7773/luci/trunk/modules/admin-full/luasrc/view/admin_system/backupfiles.htm
-END
-ipkg.htm
-K 25
-svn:wc:ra_dav:version-url
-V 78
-/!svn/ver/7773/luci/trunk/modules/admin-full/luasrc/view/admin_system/ipkg.htm
-END
-reboot.htm
-K 25
-svn:wc:ra_dav:version-url
-V 80
-/!svn/ver/5448/luci/trunk/modules/admin-full/luasrc/view/admin_system/reboot.htm
-END
 clock_status.htm
 K 25
 svn:wc:ra_dav:version-url
@@ -50,4 +26,28 @@ K 25
 svn:wc:ra_dav:version-url
 V 85
 /!svn/ver/9898/luci/trunk/modules/admin-full/luasrc/view/admin_system/applyreboot.htm
+END
+upgrade.htm
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/7798/luci/trunk/modules/admin-full/luasrc/view/admin_system/upgrade.htm
+END
+backupfiles.htm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/7773/luci/trunk/modules/admin-full/luasrc/view/admin_system/backupfiles.htm
+END
+ipkg.htm
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/7773/luci/trunk/modules/admin-full/luasrc/view/admin_system/ipkg.htm
+END
+reboot.htm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/5448/luci/trunk/modules/admin-full/luasrc/view/admin_system/reboot.htm
 END

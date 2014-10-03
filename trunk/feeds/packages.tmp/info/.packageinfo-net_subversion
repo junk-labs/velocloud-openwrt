@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/net/subversion/Makefile
 Package: subversion-libs
 Submenu: Version Control Systems
-Version: 1.6.17-3
+Version: 1.6.23-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +zlib +libneon +libaprutil +unixodbc
 Menu-Depends: 
 Provides: 
@@ -9,7 +9,7 @@ Section: net
 Category: Network
 Title: subversion libs
 Maintainer: 
-Source: subversion-1.6.17.tar.bz2
+Source: subversion-1.6.23.tar.bz2
 Type: ipkg
 Description:   	Subversion is a free/open-source version control system. That is,
 	Subversion manages files and directories, and the changes made to them,
@@ -23,7 +23,7 @@ http://subversion.apache.org/
 
 Package: subversion-client
 Submenu: Version Control Systems
-Version: 1.6.17-3
+Version: 1.6.23-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +zlib +libneon +libaprutil subversion-libs
 Menu-Depends: 
 Provides: 
@@ -31,7 +31,7 @@ Section: net
 Category: Network
 Title: subversion client tools
 Maintainer: 
-Source: subversion-1.6.17.tar.bz2
+Source: subversion-1.6.23.tar.bz2
 Type: ipkg
 Description:   	Subversion is a free/open-source version control system. That is,
 	Subversion manages files and directories, and the changes made to them,
@@ -45,7 +45,7 @@ http://subversion.apache.org/
 
 Package: subversion-server
 Submenu: Version Control Systems
-Version: 1.6.17-3
+Version: 1.6.23-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +zlib +libneon +libaprutil subversion-libs
 Menu-Depends: 
 Provides: 
@@ -53,7 +53,7 @@ Section: net
 Category: Network
 Title: subversion server
 Maintainer: 
-Source: subversion-1.6.17.tar.bz2
+Source: subversion-1.6.23.tar.bz2
 Type: ipkg
 Description:   	Subversion is a free/open-source version control system. That is,
 	Subversion manages files and directories, and the changes made to them,

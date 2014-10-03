@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/net/netpipe/Makefile
 Package: netpipe
-Version: 3.7.1-1
+Version: 3.7.1-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 

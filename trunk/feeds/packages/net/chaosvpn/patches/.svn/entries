@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/chaosvpn/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:08.714323Z
+2014-06-17T22:32:00.562136Z
 19b36a082c3ae3fcad7892e83e9a8b1b
 2010-08-26T22:27:08.482651Z
 22820

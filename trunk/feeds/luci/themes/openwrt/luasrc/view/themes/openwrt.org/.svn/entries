@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/themes/openwrt/luasrc/view/themes/openwrt.org
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:38.502324Z
+2014-06-17T22:32:18.810136Z
 c37e17fddb35dac343024052bee3944f
 2011-08-13T09:52:12.796334Z
 7364
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T22:38:38.498324Z
+2014-06-17T22:32:18.810136Z
 0f40b9478d3150f0826801e8467f1b9a
 2012-11-21T18:36:40.147637Z
 9475

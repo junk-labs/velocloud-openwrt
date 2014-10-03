@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/protocols/core/luasrc/model/cbi/admin_network
 http://svn.luci.subsignal.org
 
@@ -26,13 +26,47 @@ Cyrus
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+proto_static.lua
+file
+
+
+
+
+2014-06-17T22:32:18.266136Z
+fb07cd67aa8ad672643ed51ab4e3c279
+2013-05-23T10:14:14.649575Z
+9824
+Cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2663
+
 proto_dhcp.lua
 file
 
 
 
 
-2013-12-02T22:38:35.450324Z
+2014-06-17T22:32:18.266136Z
 99af840a8d128a3891c866a0aff8186c
 2013-05-10T11:33:18.984610Z
 9814
@@ -66,7 +100,7 @@ file
 
 
 
-2013-12-02T22:38:35.450324Z
+2014-06-17T22:32:18.266136Z
 da834445958f215a4fd79136f0f696e8
 2011-10-11T02:07:15.202304Z
 7690
@@ -93,38 +127,4 @@ jow
 
 
 342
-
-proto_static.lua
-file
-
-
-
-
-2013-12-02T22:38:35.450324Z
-fb07cd67aa8ad672643ed51ab4e3c279
-2013-05-23T10:14:14.649575Z
-9824
-Cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2663
 

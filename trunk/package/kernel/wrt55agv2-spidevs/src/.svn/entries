@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/wrt55agv2-spidevs/src
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/wrt55agv2-spidevs/src
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-06-21T16:54:37.987982Z
-37007
+2014-07-03T11:56:56.603802Z
+41493
 blogic
 
 
@@ -26,13 +26,47 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+Kconfig
+file
+
+
+
+
+2014-06-03T20:17:37.674341Z
+cc2b38746a4558f5946fe2f35253f5c2
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+113
+
 wrt55agv2_spidevs.c
 file
 
 
 
 
-2013-12-02T20:28:12.982164Z
+2014-06-03T20:17:37.674341Z
 698788550fb6262e591945acd04228f0
 2013-06-21T16:54:37.987982Z
 37007
@@ -66,10 +100,10 @@ file
 
 
 
-2013-12-02T20:28:12.986164Z
-8c38679fa1cd6e0f1436b410d782e68f
-2013-06-21T16:54:37.987982Z
-37007
+2014-08-06T22:43:07.281831Z
+9f863968f49221347d1bf3da60d8fc53
+2014-07-03T11:56:56.603802Z
+41493
 blogic
 has-props
 
@@ -92,39 +126,5 @@ has-props
 
 
 
-54
-
-Kconfig
-file
-
-
-
-
-2013-12-02T20:28:12.982164Z
-cc2b38746a4558f5946fe2f35253f5c2
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-113
+29
 

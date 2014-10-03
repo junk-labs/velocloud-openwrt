@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/libs/libftdi/Makefile
 Package: libftdi
-Version: 0.19-1
+Version: 0.19-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libusb-compat
 Menu-Depends: 
 Provides: 

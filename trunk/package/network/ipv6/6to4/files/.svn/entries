@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/ipv6/6to4/files
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/ipv6/6to4/files
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-01-15T13:08:10.006426Z
-35172
+2014-01-17T13:59:47.067862Z
+39307
 cyrus
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:29:11.322165Z
-4a28c5c1df028f23d81f88924d2b5cda
-2013-01-15T13:08:10.006426Z
-35172
+2014-06-03T20:21:37.054336Z
+5e2352e069749c33f6484c779b9e2f76
+2014-01-17T13:59:47.067862Z
+39307
 cyrus
 has-props
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1853
+2167
 

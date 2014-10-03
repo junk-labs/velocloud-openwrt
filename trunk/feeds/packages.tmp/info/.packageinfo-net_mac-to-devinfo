@@ -20,7 +20,7 @@ Daniel Dickinson <openwrt@cshore.neomailbox.net>
 Package: smap-to-devinfo
 Submenu: Telephony
 Version: 1.0.0-2
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread mac-to-devinfo +smap +httping
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +mac-to-devinfo +smap +httping
 Menu-Depends: 
 Provides: 
 Section: net
@@ -37,7 +37,7 @@ Description:   A script to use smap to discover all SIP devices on the networks
 
 Package: netdiscover-to-devinfo
 Version: 1.0.0-2
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread mac-to-devinfo +netdiscover
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +mac-to-devinfo +netdiscover
 Menu-Depends: 
 Provides: 
 Section: net

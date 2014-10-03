@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/tools/b43-tools
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/b43-tools
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-02-28T10:43:02.730422Z
-35830
+2014-07-12T15:41:50.306932Z
+41595
 hauke
 
 
@@ -26,19 +26,16 @@ hauke
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T20:29:12.014165Z
-883fccb0780093237cf5d5a7150d2ac0
-2012-12-07T18:30:19.257724Z
-34574
+2014-08-06T22:38:46.301837Z
+a5e06054d81f0edd19d7e0387f7dc422
+2014-07-02T20:52:50.389689Z
+41484
 hauke
 
 
@@ -61,8 +58,11 @@ hauke
 
 
 
-1493
+1502
 
 files
+dir
+
+patches
 dir
 

@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/dante/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/dante/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:57.494165Z
+2014-06-03T20:17:37.774341Z
 982addaecd7ddf2c8584b44339f09114
 2011-02-27T23:22:38.253882Z
 25780
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:28:57.494165Z
+2014-06-03T20:17:37.774341Z
 94c9b00be80af04177dacdacb48f7d90
 2011-02-27T23:22:38.253882Z
 25780
@@ -100,7 +100,7 @@ file
 
 
 
-2013-12-02T20:28:57.494165Z
+2014-06-03T20:17:37.774341Z
 701c7a99de0c8b472aa2fe053ee4d7bd
 2011-02-27T23:22:38.253882Z
 25780

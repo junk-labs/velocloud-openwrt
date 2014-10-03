@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/tools/bison
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/bison
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-09-24T20:01:02.114548Z
-38169
+2013-12-15T03:59:49.052224Z
+39056
 luka
 
 
@@ -26,19 +26,16 @@ luka
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T20:29:11.878165Z
-1c3e5b3afccf01fe5074e7a7b1c28274
-2013-09-24T20:01:02.114548Z
-38169
+2014-06-03T20:52:31.638293Z
+01ee182dc1224b69049f3564aea181f1
+2013-12-15T03:59:49.052224Z
+39056
 luka
 
 
@@ -61,5 +58,8 @@ luka
 
 
 
-581
+583
+
+patches
+dir
 

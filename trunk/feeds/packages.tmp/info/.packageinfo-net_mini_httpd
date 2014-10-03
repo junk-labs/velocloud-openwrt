@@ -11,9 +11,9 @@ Title: A small web server
 Maintainer: 
 Source: mini_httpd-1.19.tar.gz
 Type: ipkg
-Description:  mini_httpd is a small HTTP server. Its performance is not great, but for 
- low or medium traffic sites it's quite adequate. It implements all the 
- basic features of an HTTP server, including: 
+Description:  mini_httpd is a small HTTP server. Its performance is not great, but for
+ low or medium traffic sites it's quite adequate. It implements all the
+ basic features of an HTTP server, including:
  - GET, HEAD, and POST methods
  - CGI
  - Basic authentication
@@ -42,9 +42,9 @@ Title: A small web server (built with MatrixSSL)
 Maintainer: 
 Source: mini_httpd-1.19.tar.gz
 Type: ipkg
-Description:  mini_httpd is a small HTTP server. Its performance is not great, but for 
- low or medium traffic sites it's quite adequate. It implements all the 
- basic features of an HTTP server, including: 
+Description:  mini_httpd is a small HTTP server. Its performance is not great, but for
+ low or medium traffic sites it's quite adequate. It implements all the
+ basic features of an HTTP server, including:
  - GET, HEAD, and POST methods
  - CGI
  - Basic authentication
@@ -74,9 +74,9 @@ Title: A small web server (built with OpenSSL)
 Maintainer: 
 Source: mini_httpd-1.19.tar.gz
 Type: ipkg
-Description:  mini_httpd is a small HTTP server. Its performance is not great, but for 
- low or medium traffic sites it's quite adequate. It implements all the 
- basic features of an HTTP server, including: 
+Description:  mini_httpd is a small HTTP server. Its performance is not great, but for
+ low or medium traffic sites it's quite adequate. It implements all the
+ basic features of an HTTP server, including:
  - GET, HEAD, and POST methods
  - CGI
  - Basic authentication
@@ -106,9 +106,9 @@ Title: Utility to generate HTTP access files
 Maintainer: 
 Source: mini_httpd-1.19.tar.gz
 Type: ipkg
-Description:  mini_httpd is a small HTTP server. Its performance is not great, but for 
- low or medium traffic sites it's quite adequate. It implements all the 
- basic features of an HTTP server, including: 
+Description:  mini_httpd is a small HTTP server. Its performance is not great, but for
+ low or medium traffic sites it's quite adequate. It implements all the
+ basic features of an HTTP server, including:
  - GET, HEAD, and POST methods
  - CGI
  - Basic authentication

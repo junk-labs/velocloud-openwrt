@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-minidlna/luasrc
 http://svn.luci.subsignal.org
 
@@ -26,12 +26,12 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-view
-dir
-
 model
 dir
 
 controller
+dir
+
+view
 dir
 

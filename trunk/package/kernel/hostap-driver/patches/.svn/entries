@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/hostap-driver/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/hostap-driver/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:11.202164Z
+2014-06-03T20:17:37.622341Z
 d9fadaa4dc0cdcf3ff89259baa9fb152
 2013-06-21T16:54:37.987982Z
 37007

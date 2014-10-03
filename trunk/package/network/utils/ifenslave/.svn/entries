@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/ifenslave
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/ifenslave
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-10-10T12:32:29.935169Z
-33688
-nbd
+2014-01-15T09:28:41.955734Z
+39295
+wigyori
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:28:42.882164Z
-7d899213033aa5d94b30f8682be556ba
-2010-06-26T20:44:28.317476Z
-21956
-nbd
+2014-06-03T20:21:34.022336Z
+33a04d93362b4aaaa65054eeabe1481e
+2014-01-15T09:28:41.955734Z
+39295
+wigyori
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-964
+1033
 

@@ -1,8 +1,8 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/network/config/netifd/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/config/netifd/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:29:11.486165Z
+2014-06-03T20:17:37.734341Z
 ef2db5f9cbc33fb642df085540830c2b
 2012-11-23T20:02:10.520862Z
 34310

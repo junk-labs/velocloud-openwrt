@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/rssh
 svn://svn.openwrt.org/openwrt
 
@@ -26,13 +26,16 @@ cshore
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:10.514323Z
+2014-06-17T22:31:58.850136Z
 43f513ce5ad4264d785c255ed66103f0
 2011-03-12T08:07:15.620351Z
 26096
@@ -59,7 +62,4 @@ cshore
 
 
 1602
-
-patches
-dir
 

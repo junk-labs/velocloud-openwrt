@@ -12,7 +12,7 @@ Title: PostgreSQL database adapter for Python
 Maintainer: 
 Source: psycopg-1.1.21.tar.gz
 Type: ipkg
-Description:  This package contains is a PostgreSQL database adapter for the Python 
+Description:  This package contains is a PostgreSQL database adapter for the Python
  programming language.
 http://www.initd.org/
 

@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/flow-tools
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-06-11T23:30:29.468213Z
-32239
-nbd
+2014-03-27T07:06:18.563420Z
+40255
+juhosg
 
 
 
@@ -26,17 +26,20 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:12.050323Z
-03e9c48db876d5486f975c18e57cf0c5
-2012-06-11T23:30:29.468213Z
-32239
-nbd
+2014-06-17T22:31:57.790137Z
+d0b18b1d8bb6d7ef94e1d766ce3dc2ae
+2014-03-27T07:06:18.563420Z
+40255
+juhosg
 
 
 
@@ -58,8 +61,5 @@ nbd
 
 
 
-975
-
-patches
-dir
+978
 

@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/tcpdump
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/tcpdump
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-01-22T07:51:15.696421Z
-35288
+2014-02-05T09:54:38.243639Z
+39474
 nbd
 
 
@@ -26,16 +26,19 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T20:28:42.602164Z
-349d6f20057dffaec2230498e056f718
-2013-01-22T07:51:15.696421Z
-35288
+2014-06-03T20:21:34.018336Z
+2a84d7c6c649fdb4a1e014bfc0d76411
+2014-02-05T09:54:38.243639Z
+39474
 nbd
 has-props
 
@@ -59,7 +62,4 @@ has-props
 
 
 1961
-
-patches
-dir
 

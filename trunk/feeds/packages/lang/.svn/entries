@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/lang
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-16T22:22:28.337281Z
-38825
-mhei
+2014-06-01T15:24:32.254816Z
+40897
+nbd
 
 
 
@@ -26,139 +26,46 @@ mhei
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-php5-pecl-dio
-dir
-
-jamvm
-dir
-
-pyyaml
-dir
-
-python-dbus
-dir
-
-telepathy-python
-dir
-
-arm
-dir
-
-perl-compress-bzip2
-dir
-
 simplejson
-dir
-
-logilab-astng
-dir
-
-vala
-dir
-
-python-curl
-dir
-
-psycopg
-dir
-
-perl-www-mechanize
-dir
-
-mako
-dir
-
-pyserial
-dir
-
-pyxdg
-dir
-
-pypcap
-dir
-
-php5-pecl-apc
-dir
-
-perl-dbi
-dir
-
-python-crypto
-dir
-
-egenix-mx
-dir
-
-python-eeml
-dir
-
-python-mimms
-dir
-
-perl
-dir
-
-python-ifconfig
-dir
-
-sigscheme
-dir
-
-luavstruct
-dir
-
-perl-lockfile-simple
-dir
-
-perl-net-telnet
-dir
-
-php-pear-xmlrpc
-dir
-
-perl-test-harness
-dir
-
-python
 dir
 
 pyclips
 dir
 
-perl-www
+luaexpat
 dir
 
-pygobject
+perl-www-mechanize
+dir
+
+perl-www-curl
 dir
 
 eggdrop
 dir
 
+perl-html-tagset
+dir
+
 pyevent
 dir
 
-python-cjson
+pypcap
 dir
 
-urbi
+pyopenssl
 dir
 
-pyusb
+python-rsfile
 dir
 
-php5-pecl-libevent
+sqlite3-ruby
 dir
 
-luaposix
+php5-pecl-dio
 dir
 
-python-webpy
-dir
-
-erlang
-dir
-
-pysqlite
+jamvm
 dir
 
 xapian-bindings
@@ -167,73 +74,7 @@ dir
 python2-chardet
 dir
 
-gst-python
-dir
-
-pymysql
-dir
-
-distribute
-dir
-
-luaexpat
-dir
-
-python-flup
-dir
-
-luafilesystem
-dir
-
-python-json
-dir
-
-perl-html-tagset
-dir
-
-pybluez
-dir
-
-luasocket
-dir
-
-python-pydaemon
-dir
-
-4th
-dir
-
-php-pear-db
-dir
-
-pyrrd
-dir
-
-perl-html-tree
-dir
-
-sqlite3-ruby
-dir
-
-luasoap
-dir
-
-php5-pecl-bcompiler
-dir
-
-kid
-dir
-
-numpy
-dir
-
-python-sip
-dir
-
-php5-pecl-http
-dir
-
-php4
+luavstruct
 dir
 
 php5
@@ -245,46 +86,52 @@ dir
 python-pyosc
 dir
 
-luasec
+pymysql
+dir
+
+luabitop
 dir
 
 ruby
 dir
 
-python-django
+python
 dir
 
-tcl
+logilab-astng
 dir
 
-twisted
-dir
-
-luaprofiler
+python-flup
 dir
 
 jsonpath
 dir
 
-yapsnmp
+python-json
 dir
 
-perl-www-curl
+pybluez
 dir
 
-ipython
+pyxdg
 dir
 
-python-imaging-library
+python-pydaemon
 dir
 
-pyopenssl
+php5-pecl-apc
 dir
 
 perl-html-parser
 dir
 
-logilab-common
+python-crypto
+dir
+
+4th
+dir
+
+php-pear-db
 dir
 
 perl-uri
@@ -293,12 +140,168 @@ dir
 lsqlite3
 dir
 
+egenix-mx
+dir
+
+php5-pecl-libevent
+dir
+
+luasoap
+dir
+
+sigscheme
+dir
+
+kid
+dir
+
+php5-pecl-bcompiler
+dir
+
+erlang
+dir
+
+gst-python
+dir
+
+telepathy-python
+dir
+
+distribute
+dir
+
+perl-test-harness
+dir
+
+tcl
+dir
+
+vala
+dir
+
+twisted
+dir
+
+luaprofiler
+dir
+
+pygobject
+dir
+
+mako
+dir
+
+yapsnmp
+dir
+
+pyserial
+dir
+
+ipython
+dir
+
+perl-dbi
+dir
+
+python-mimms
+dir
+
+perl-html-tree
+dir
+
+perl
+dir
+
+pyusb
+dir
+
+luacurl
+dir
+
+php5-pecl-http
+dir
+
+python-sip
+dir
+
+python-dbus
+dir
+
+luasec
+dir
+
+perl-lockfile-simple
+dir
+
+arm
+dir
+
+perl-compress-bzip2
+dir
+
+psycopg
+dir
+
+python-curl
+dir
+
+perl-www
+dir
+
+luafilesystem
+dir
+
+luasocket
+dir
+
+python-cjson
+dir
+
+python-imaging-library
+dir
+
+logilab-common
+dir
+
+pyrrd
+dir
+
+python-eeml
+dir
+
 luasql
 dir
 
-python-rsfile
+urbi
+dir
+
+python-ifconfig
 dir
 
 cython
+dir
+
+luaposix
+dir
+
+python-webpy
+dir
+
+numpy
+dir
+
+pysqlite
+dir
+
+pyyaml
+dir
+
+php-pear-xmlrpc
+dir
+
+perl-net-telnet
+dir
+
+python-django
 dir
 

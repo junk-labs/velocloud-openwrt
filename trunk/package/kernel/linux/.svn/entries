@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/linux
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/linux
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-17T16:41:40.383232Z
-38840
-hauke
+2014-08-07T10:00:28.219320Z
+42030
+cyrus
 
 
 
@@ -26,13 +26,16 @@ hauke
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+modules
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T20:28:12.494164Z
+2014-06-03T20:17:37.654341Z
 0e070e6f01d2197e76bc8ee392b6d3c5
 2013-07-18T16:32:07.577420Z
 37403
@@ -59,7 +62,4 @@ has-props
 
 
 1254
-
-modules
-dir
 

@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/samba36
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/samba36
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-04-17T15:36:41.835016Z
-36351
-nbd
+2014-07-06T11:23:13.748220Z
+41525
+hauke
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:29:11.002165Z
-347f4a433311d18174c43c05e3058085
-2013-04-17T15:36:41.835016Z
-36351
-nbd
+2014-08-06T22:47:47.261824Z
+603de9757a965d780788965cdab7ec82
+2014-07-06T11:23:13.748220Z
+41525
+hauke
 
 
 
@@ -58,7 +58,7 @@ nbd
 
 
 
-4244
+4344
 
 files
 dir

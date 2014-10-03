@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/orion/generic/base-files/etc/uci-defaults
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/orion/generic/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:06.158164Z
+2014-06-03T20:17:38.290341Z
 20cde54346405ddc9dfd0fb90a689534
 2013-01-18T12:42:53.029206Z
 35217

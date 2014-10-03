@@ -103,7 +103,7 @@ openwrt-fix-svn:
 
 OPENWRT_FEED_SCRIPT = $(OPENWRT_ROOT)/scripts/feeds
 
-.PHONY: feeds-all
+.PHONY: openwrt-feeds
 openwrt-feeds: $(OPENWRT_ROOT)/feeds.conf
 	$(OPENWRT_FEED_SCRIPT) update -a
 	$(OPENWRT_FEED_SCRIPT) install -a
@@ -173,6 +173,10 @@ define OpenwrtConfig
 		-e '/CONFIG_TARGET_BOARD/d' \
 		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
 		-e '/CONFIG_X\(64\|86\)_/d' \
+		-e '/CONFIG_GRUB_/d' \
+		-e '/CONFIG_VMDK_/d' \
+		-e '/CONFIG.*_EC2_/d' \
+		-e '/CONFIG_VELOCLOUD_/d' \
 		-e '/CONFIG_KEXEC_TOOLS_TARGET_NAME/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \
@@ -180,6 +184,8 @@ define OpenwrtConfig
 		-e '$$ aCONFIG_TARGET_BOARD="$(OPENWRT_ARCH)"' \
 		-e '$$ aCONFIG_$(OPENWRT_CPUARCH)=y' \
 		-e '$$ aCONFIG_ARCH="$(OPENWRT_CPUARCH)"' \
+		-e '$$ aCONFIG_GRUB_IMAGES=y' \
+		-e '$$ aCONFIG_GRUB_TIMEOUT="2"' \
 		-e '$$ aCONFIG_VERSION_NICK="OpenWRT $(1)"' \
 		-e '$$ aCONFIG_VERSION_NUMBER="$(OPENWRT_VC_VERSION)"' \
 	$(OPENWRT_CONFIG) > $(OPENWRT_ROOT)/.config
@@ -217,6 +223,16 @@ clean:
 .PHONY: dirclean
 dirclean:
 	make -C $(OPENWRT_ROOT) $@
+
+# Clobber is OPENWRT_ARCH-independent, and really cleans the tree
+.PHONY: clobber
+clobber:
+	rm -rf $(OPENWRT_ROOT)/bin \
+	       $(OPENWRT_ROOT)/build_dir \
+	       $(OPENWRT_ROOT)/logs \
+	       $(OPENWRT_ROOT)/staging_dir \
+	       $(OPENWRT_ROOT)/tmp \
+	       $(OPENWRT_ROOT)/.config*
 
 # clean everything, including the downloaded pachages and feeds;
 # careful: this also removes any non-saved config files;

@@ -9,12 +9,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=debootstrap
-PKG_VERSION:=1.0.48
+PKG_VERSION:=1.0.60~bpo70+1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-udeb_$(PKG_VERSION)_all.udeb
 PKG_SOURCE_URL:=http://ftp.debian.org/debian/pool/main/d/debootstrap
-PKG_MD5SUM:=fae3ba2258e41e17bcb77bbe84d26b2e
+PKG_MD5SUM:=6d4e3b97981b9e0bb86f49d8edac91af
 
 UNPACK_CMD=ar -p "$(DL_DIR)/$(PKG_SOURCE)" data.tar.xz | xzcat | tar -C $(1) -xf -
 
@@ -32,7 +32,7 @@ define Package/debootstrap/description
  debootstrap is used to create a Debian base system from scratch, without
  requiring the availability of dpkg or apt. It does this by downloading .deb
  files from a mirror site, and carefully unpacking them into a directory which
- can eventually be chrooted into. 
+ can eventually be chrooted into.
 endef
 
 define Build/Compile

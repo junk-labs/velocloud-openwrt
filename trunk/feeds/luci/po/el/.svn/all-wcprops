@@ -3,48 +3,6 @@ svn:wc:ra_dav:version-url
 V 31
 /!svn/ver/9893/luci/trunk/po/el
 END
-watchcat.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/8800/luci/trunk/po/el/watchcat.po
-END
-uvc_streamer.po
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/8867/luci/trunk/po/el/uvc_streamer.po
-END
-multiwan.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/8867/luci/trunk/po/el/multiwan.po
-END
-commands.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/9477/luci/trunk/po/el/commands.po
-END
-wol.po
-K 25
-svn:wc:ra_dav:version-url
-V 38
-/!svn/ver/8800/luci/trunk/po/el/wol.po
-END
-polipo.po
-K 25
-svn:wc:ra_dav:version-url
-V 41
-/!svn/ver/8867/luci/trunk/po/el/polipo.po
-END
-firewall.po
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/9262/luci/trunk/po/el/firewall.po
-END
 freifunk.po
 K 25
 svn:wc:ra_dav:version-url
@@ -254,4 +212,46 @@ K 25
 svn:wc:ra_dav:version-url
 V 43
 /!svn/ver/8545/luci/trunk/po/el/minidlna.po
+END
+watchcat.po
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/8800/luci/trunk/po/el/watchcat.po
+END
+uvc_streamer.po
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/8867/luci/trunk/po/el/uvc_streamer.po
+END
+multiwan.po
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/8867/luci/trunk/po/el/multiwan.po
+END
+commands.po
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/9477/luci/trunk/po/el/commands.po
+END
+wol.po
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/!svn/ver/8800/luci/trunk/po/el/wol.po
+END
+polipo.po
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/8867/luci/trunk/po/el/polipo.po
+END
+firewall.po
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/9262/luci/trunk/po/el/firewall.po
 END

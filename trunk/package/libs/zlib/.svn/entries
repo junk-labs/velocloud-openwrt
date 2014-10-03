@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/libs/zlib
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/zlib
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:28.874164Z
+2014-06-03T20:17:37.702341Z
 bc6b3ef95f0612b748bc783b26409706
 2013-07-28T23:27:34.084110Z
 37589

@@ -3,6 +3,12 @@ svn:wc:ra_dav:version-url
 V 71
 /!svn/ver/9824/luci/trunk/protocols/core/luasrc/model/cbi/admin_network
 END
+proto_static.lua
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/9824/luci/trunk/protocols/core/luasrc/model/cbi/admin_network/proto_static.lua
+END
 proto_dhcp.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -14,10 +20,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 86
 /!svn/ver/7690/luci/trunk/protocols/core/luasrc/model/cbi/admin_network/proto_none.lua
-END
-proto_static.lua
-K 25
-svn:wc:ra_dav:version-url
-V 88
-/!svn/ver/9824/luci/trunk/protocols/core/luasrc/model/cbi/admin_network/proto_static.lua
 END

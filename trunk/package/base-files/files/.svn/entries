@@ -1,15 +1,15 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/base-files/files
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/base-files/files
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-21T10:39:14.626725Z
-39650
-kaloz
+2014-09-01T13:21:54.319454Z
+42379
+blogic
 
 
 

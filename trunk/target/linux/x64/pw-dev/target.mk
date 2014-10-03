@@ -5,6 +5,8 @@ FEATURES:=ext4 pci usb
 DEFAULT_PACKAGES += \
 	bridge \
 	ip \
+	iputils-ping \
+	iputils-ping6 \
 	net-tools-arp \
 	net-tools-ifconfig \
 	net-tools-netstat \
@@ -16,7 +18,7 @@ DEFAULT_PACKAGES += \
 
 # pw-dev-specific packages:
 DEFAULT_PACKAGES += \
-	kmod-intel-igb \
+	kmod-igb \
 	igb-eeprom \
 	kmod-dsa-velocloud \
 

@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ar7/base-files/etc
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ar7/base-files/etc
 svn://svn.openwrt.org/openwrt
 
 
@@ -41,7 +41,7 @@ file
 
 
 
-2013-12-02T20:28:07.306164Z
+2014-06-03T20:17:37.910341Z
 9be56b5d862ab93c98e65758c30627b7
 2013-02-18T10:37:43.874011Z
 35659

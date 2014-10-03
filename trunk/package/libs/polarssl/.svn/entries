@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/libs/polarssl
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/polarssl
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-07T21:28:12.626818Z
-38330
-luka
+2014-08-08T05:21:38.255920Z
+42062
+cyrus
 
 
 
@@ -26,20 +26,17 @@ luka
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T20:28:28.406164Z
-061bd8dd1d5bd2790f22b83717fffb85
-2013-10-07T21:28:12.626818Z
-38330
-luka
+2014-09-03T23:42:09.821712Z
+656e233d8d23bfc102a9271d5372e634
+2014-08-08T05:21:38.255920Z
+42062
+cyrus
 
 
 
@@ -61,5 +58,8 @@ luka
 
 
 
-2006
+1618
+
+patches
+dir
 

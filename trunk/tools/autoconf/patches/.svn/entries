@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/tools/autoconf/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/autoconf/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:29:12.174165Z
+2014-06-03T20:17:38.438341Z
 e71800ea50e7d72cafba984cdfd254f7
 2012-01-20T02:56:08.150625Z
 29821
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:29:12.178165Z
+2014-06-03T20:17:38.438341Z
 58db4a2e18d0c1bab463ae088fc37433
 2012-01-28T04:42:15.299551Z
 29931

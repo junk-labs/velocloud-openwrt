@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/foxboard-utils
 svn://svn.openwrt.org/openwrt
 
 
 
-2009-12-18T11:06:19.966693Z
-18816
-nico
+2014-03-27T07:02:52.875493Z
+40061
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:05.474323Z
-72319de8bf2286a04fd6ad8cab67153a
-2009-12-18T11:06:19.966693Z
-18816
-nico
+2014-06-17T22:32:02.578136Z
+6e47b9715f19df2dae9992817c91d87d
+2014-03-27T07:02:52.875493Z
+40061
+juhosg
 
 
 
@@ -58,5 +58,5 @@ nico
 
 
 
-1119
+1117
 

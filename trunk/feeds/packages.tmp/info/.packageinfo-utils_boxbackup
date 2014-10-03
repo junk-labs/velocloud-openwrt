@@ -29,7 +29,7 @@ Title: Server for secure network backup
 Maintainer: Daniel Dickinson <openwrt@cshore.neomailbox.net>
 Source: boxbackup-0.11.1.tgz
 Type: ipkg
-Description:   Boxbackup is an open source, completely automatic, on-line backup system. 
+Description:   Boxbackup is an open source, completely automatic, on-line backup system.
   This package is for the server (where the backups are stored).  The
   server is known as bbstored.
 http://www.boxbackup.org/
@@ -82,7 +82,7 @@ Title: Client for secure network backup
 Maintainer: Daniel Dickinson <openwrt@cshore.neomailbox.net>
 Source: boxbackup-0.11.1.tgz
 Type: ipkg
-Description:   Box Backup is an open source, completely automatic, on-line backup system. 
+Description:   Box Backup is an open source, completely automatic, on-line backup system.
   This package is for the client (host to be backed up).
 http://www.boxbackup.org/
 Daniel Dickinson <openwrt@cshore.neomailbox.net>

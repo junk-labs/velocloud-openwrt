@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/admin/sudo/Makefile
 Package: sudo
-Version: 1.7.8p1-1
+Version: 1.7.10p8-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 
@@ -8,7 +8,7 @@ Section: admin
 Category: Administration
 Title: Delegate authority to run commands
 Maintainer: 
-Source: sudo-1.7.8p1.tar.gz
+Source: sudo-1.7.10p8.tar.gz
 Type: ipkg
 Description:  Sudo (su "do") allows a system administrator to delegate authority to
  give certain users (or groups of users) the ability to run some (or

@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/libs/libiconv/src/include
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/libiconv/src/include
 svn://svn.openwrt.org/openwrt
 
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T20:28:16.098164Z
+2014-06-03T20:17:37.686341Z
 9bd18fe692885df550ee9ed1e3d3bbde
 2011-01-01T23:11:48.338490Z
 24870
@@ -69,7 +69,7 @@ file
 
 
 
-2013-12-02T20:28:16.098164Z
+2014-06-03T20:17:37.690341Z
 56176d1ec37ab95f34c431704ed57c7d
 2011-02-01T20:31:41.287235Z
 25290

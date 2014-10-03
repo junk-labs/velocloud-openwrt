@@ -1,5 +1,75 @@
+Fix for AT&T Beam 340U (Netgear AirCard 340U) and other Sierra wireless devices.
+
+The odd thing is that this modem is listed in the usbmode database as a
+card with a USB id of "1199:0fff", with a t_product of 9051, whereas what
+actually shows up is a USB id of "1199:9051".  In fact, the qmi driver in
+Linux also expects the same thing, so clearly usbmode's database is out of
+date with respect to the kernel.  Or else they have things really mixed up.
+
+In any case, we might have to do the same thing with other AT&T Sierra modems.
+
 --- /dev/null
-+++ b/usb-modeswitch-data-20131113/usb_modeswitch.d/1199:9051
++++ b/usb-modeswitch-data-20140529/usb_modeswitch.d/1199:9051
+@@ -0,0 +1,7 @@
++# Sierra devices (specific driver)
++
++TargetVendor=   0x1199
++SierraMode=1
++Configuration=1
++NoDriverLoading=1
++
+--- /dev/null
++++ b/usb-modeswitch-data-20140529/usb_modeswitch.d/1199:9053
+@@ -0,0 +1,7 @@
++# Sierra devices (specific driver)
++
++TargetVendor=   0x1199
++SierraMode=1
++Configuration=1
++NoDriverLoading=1
++
+--- /dev/null
++++ b/usb-modeswitch-data-20140529/usb_modeswitch.d/1199:9054
+@@ -0,0 +1,7 @@
++# Sierra devices (specific driver)
++
++TargetVendor=   0x1199
++SierraMode=1
++Configuration=1
++NoDriverLoading=1
++
+--- /dev/null
++++ b/usb-modeswitch-data-20140529/usb_modeswitch.d/1199:9055
+@@ -0,0 +1,7 @@
++# Sierra devices (specific driver)
++
++TargetVendor=   0x1199
++SierraMode=1
++Configuration=1
++NoDriverLoading=1
++
+--- /dev/null
++++ b/usb-modeswitch-data-20140529/usb_modeswitch.d/1199:9056
+@@ -0,0 +1,7 @@
++# Sierra devices (specific driver)
++
++TargetVendor=   0x1199
++SierraMode=1
++Configuration=1
++NoDriverLoading=1
++
+--- /dev/null
++++ b/usb-modeswitch-data-20140529/usb_modeswitch.d/1199:9057
+@@ -0,0 +1,7 @@
++# Sierra devices (specific driver)
++
++TargetVendor=   0x1199
++SierraMode=1
++Configuration=1
++NoDriverLoading=1
++
+--- /dev/null
++++ b/usb-modeswitch-data-20140529/usb_modeswitch.d/1199:9061
 @@ -0,0 +1,7 @@
 +# Sierra devices (specific driver)
 +

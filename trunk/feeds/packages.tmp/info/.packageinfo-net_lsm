@@ -10,7 +10,7 @@ Title: A link state monitor
 Maintainer: 
 Source: lsm-0.131.tar.gz
 Type: ipkg
-Description: 	lsm is a link state monitor for carrying out actions when a link 
+Description: 	lsm is a link state monitor for carrying out actions when a link
 	transistions from the up to down state or vice versa.
 http://lsm.foobar.fi/
 

@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/utils/maccalc/src
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/maccalc/src
 svn://svn.openwrt.org/openwrt
 
 
@@ -26,47 +26,13 @@ juhosg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-Makefile
-file
-
-
-
-
-2013-12-02T20:28:46.274164Z
-4f4d09f95e66e7695ff4b2b2f414fd03
-2011-08-15T18:55:51.371841Z
-28004
-juhosg
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-157
-
 main.c
 file
 
 
 
 
-2013-12-02T20:28:46.274164Z
+2014-06-03T20:17:37.786341Z
 641b6faf83ff4caf4264dde86a5ef503
 2011-09-21T11:47:35.705323Z
 28266
@@ -93,4 +59,38 @@ has-props
 
 
 4581
+
+Makefile
+file
+
+
+
+
+2014-06-03T20:17:37.786341Z
+4f4d09f95e66e7695ff4b2b2f414fd03
+2011-08-15T18:55:51.371841Z
+28004
+juhosg
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+157
 

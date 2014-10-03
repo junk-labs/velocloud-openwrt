@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/apcupsd/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:10.086323Z
+2014-06-17T22:31:59.238136Z
 fd6ccc5a9505a016079a1c4c08417d99
 2010-02-20T21:36:16.870247Z
 19784

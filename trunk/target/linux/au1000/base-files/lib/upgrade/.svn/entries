@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/au1000/base-files/lib/upgrade
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/au1000/base-files/lib/upgrade
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-07T12:46:16.557266Z
-38675
+2014-06-02T12:43:22.188606Z
+40915
 blogic
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:28:08.850164Z
-bf17ca39c2e5bf98620fd7a74213617f
-2013-11-07T12:46:16.557266Z
-38675
+2014-06-03T20:49:34.278297Z
+011134b126f5b2c5fb99b2fbd0032a1b
+2014-06-02T12:43:22.188606Z
+40915
 blogic
 
 
@@ -58,5 +58,5 @@ blogic
 
 
 
-925
+922
 

@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/proftpd
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-24T11:38:27.996720Z
-38527
-tripolar
+2014-05-25T09:03:28.030898Z
+40844
+obsy
 
 
 
@@ -38,11 +38,11 @@ file
 
 
 
-2013-12-02T22:38:09.282323Z
-db71a533cd832953556cda74953289a7
-2013-10-24T11:38:27.996720Z
-38527
-tripolar
+2014-06-17T22:31:58.626137Z
+5e521a343b13f7237ee5fff7d37a204e
+2014-05-25T09:03:28.030898Z
+40844
+obsy
 
 
 
@@ -64,5 +64,5 @@ tripolar
 
 
 
-1591
+1590
 

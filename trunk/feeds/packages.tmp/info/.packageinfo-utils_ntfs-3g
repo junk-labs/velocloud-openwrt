@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/utils/ntfs-3g/Makefile
 Package: ntfs-3g
 Submenu: Filesystem
-Version: 2011.4.12-1-fuseint
+Version: 2014.2.15-1-fuseint
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-fuse +PACKAGE_NTFS-3G_USE_LIBFUSE:libfuse +libpthread
 Menu-Depends: 
 Provides: 
@@ -9,7 +9,7 @@ Section: utils
 Category: Utilities
 Title: Stable Read/Write NTFS Driver
 Maintainer: Bud <wrt_buddhay@gmx.net>
-Source: ntfs-3g_ntfsprogs-2011.4.12.tgz
+Source: ntfs-3g_ntfsprogs-2014.2.15.tgz
 Type: ipkg
 Description:   Ntfs-3g is a NTFS driver, which can create, remove, rename,
   move files, directories, hard links, and streams. It can read
@@ -39,7 +39,7 @@ config PACKAGE_NTFS-3G_USE_LIBFUSE
 
 Package: ntfs-3g-low
 Submenu: Filesystem
-Version: 2011.4.12-1-fuseint
+Version: 2014.2.15-1-fuseint
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +ntfs-3g
 Menu-Depends: 
 Provides: 
@@ -47,13 +47,13 @@ Section: utils
 Category: Utilities
 Title: lowntfs-3g (alternative using the fuse low-level interface)
 Maintainer: Bud <wrt_buddhay@gmx.net>
-Source: ntfs-3g_ntfsprogs-2011.4.12.tgz
+Source: ntfs-3g_ntfsprogs-2014.2.15.tgz
 Type: ipkg
 Description:   Contains:
    - lowntfs-3g
    - mount.lowntfs-3g (symlink to lowntfs-3g)
 
-  A driver variant using the fuse low-level interface missing some of the 
+  A driver variant using the fuse low-level interface missing some of the
   enhanced functionality for streams or the like. You might want to check:
   http://www.tuxera.com/community/ntfs-3g-manual/
 
@@ -63,7 +63,7 @@ Bud <wrt_buddhay@gmx.net>
 
 Package: ntfs-3g-utils
 Submenu: Filesystem
-Version: 2011.4.12-1-fuseint
+Version: 2014.2.15-1-fuseint
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +ntfs-3g
 Menu-Depends: 
 Provides: 
@@ -71,7 +71,7 @@ Section: utils
 Category: Utilities
 Title: ntfs-3g utilities (ntfs-3g.secaudit, ntfs-3g.usermap)
 Maintainer: Bud <wrt_buddhay@gmx.net>
-Source: ntfs-3g_ntfsprogs-2011.4.12.tgz
+Source: ntfs-3g_ntfsprogs-2014.2.15.tgz
 Type: ipkg
 Description:   Additional ntfs-3g utilities. Not included by default for size
   considerations. All binaries except ntfs-3g, ntfs-3g.probe.
@@ -86,7 +86,7 @@ Bud <wrt_buddhay@gmx.net>
 
 Package: ntfsprogs_ntfs-3g
 Submenu: Filesystem
-Version: 2011.4.12-1-fuseint
+Version: 2014.2.15-1-fuseint
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +ntfs-3g +libgcrypt +libuuid
 Menu-Depends: 
 Provides: 
@@ -94,7 +94,7 @@ Section: utils
 Category: Utilities
 Title: ntfsprogs (ntfs-3g)
 Maintainer: Bud <wrt_buddhay@gmx.net>
-Source: ntfs-3g_ntfsprogs-2011.4.12.tgz
+Source: ntfs-3g_ntfsprogs-2014.2.15.tgz
 Type: ipkg
 Description: ntfsprogs (ntfs-3g)
 http://www.tuxera.com

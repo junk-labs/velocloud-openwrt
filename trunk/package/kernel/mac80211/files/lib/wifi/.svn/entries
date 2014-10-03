@@ -1,15 +1,15 @@
 10
 
 dir
-39633
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/mac80211/files/lib/wifi
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/mac80211/files/lib/wifi
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-03T13:31:44.963383Z
-39456
-nbd
+2014-08-03T11:15:35.126892Z
+41965
+blogic
 
 
 
@@ -32,9 +32,31 @@ file
 
 
 
+2014-08-06T22:43:07.305831Z
+bd1f6c016750b53f66f0eef91b536f54
+2014-08-03T11:15:35.126892Z
+41965
+blogic
 
-762eca687c8b9ea70f2cf677915ce781
-2014-02-03T13:31:44.963383Z
-39456
-nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2511
 

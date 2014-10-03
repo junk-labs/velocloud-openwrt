@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/brcm47xx/base-files/etc/uci-defaults
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm47xx/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-07-31T17:41:52.602141Z
-37625
+2014-07-03T21:40:59.018113Z
+41500
 hauke
 
 
@@ -26,16 +26,16 @@ hauke
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-09_fix_crc
+03_network_migration
 file
 
 
 
 
-2013-12-02T20:27:56.198163Z
-89730815249bccca8d3e0a7b8d4113f1
-2013-07-31T17:41:52.602141Z
-37625
+2014-08-06T22:38:49.561837Z
+610928d16e01450efaa7e50b7f167498
+2014-07-03T21:40:59.018113Z
+41500
 hauke
 
 
@@ -58,5 +58,39 @@ hauke
 
 
 
-67
+798
+
+09_fix_crc
+file
+
+
+
+
+2014-06-03T20:52:03.566293Z
+4068b8fb992731bf676675c7af098281
+2013-12-01T16:32:32.438544Z
+38973
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+70
 

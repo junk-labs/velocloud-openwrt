@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/boot/uboot-lantiq
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/boot/uboot-lantiq
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-28T15:15:05.019096Z
-38559
-nbd
+2014-07-16T10:43:44.565839Z
+41671
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:28:15.006164Z
-0d66ab3650f62a7e14adc40af47efc23
-2013-10-28T15:15:05.019096Z
-38559
-nbd
+2014-06-03T20:36:47.910315Z
+f8fda5b3b42317514dfe4160fc9f29c6
+2014-06-02T12:43:31.662792Z
+40918
+blogic
 
 
 
@@ -58,7 +58,41 @@ nbd
 
 
 
-3025
+8626
+
+README
+file
+
+
+
+
+2014-06-03T20:36:47.910315Z
+093718edefb9bf37e56c3adee20459d7
+2014-04-12T21:21:14.434995Z
+40482
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+315
 
 patches
 dir

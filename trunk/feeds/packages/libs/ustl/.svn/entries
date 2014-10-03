@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/ustl
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-02-14T17:34:08.761991Z
-30530
-cshore
+2014-03-27T07:05:32.061667Z
+40208
+juhosg
 
 
 
@@ -26,9 +26,6 @@ cshore
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
 patches
 dir
 
@@ -38,11 +35,11 @@ file
 
 
 
-2013-12-02T22:38:14.910324Z
-d16cdff419029adf40f677585fce7038
-2010-02-18T13:10:21.112707Z
-19705
-lars
+2014-06-17T22:32:02.050136Z
+bb5f73d5c0c1ba89ebe6d5e9e55ed215
+2014-03-27T07:05:32.061667Z
+40208
+juhosg
 has-props
 
 
@@ -64,5 +61,8 @@ has-props
 
 
 
-1547
+1546
+
+files
+dir
 

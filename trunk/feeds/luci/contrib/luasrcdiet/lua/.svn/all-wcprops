@@ -3,6 +3,18 @@ svn:wc:ra_dav:version-url
 V 48
 /!svn/ver/6780/luci/trunk/contrib/luasrcdiet/lua
 END
+LuaSrcDiet.lua
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/6780/luci/trunk/contrib/luasrcdiet/lua/LuaSrcDiet.lua
+END
+optparser.lua
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/6780/luci/trunk/contrib/luasrcdiet/lua/optparser.lua
+END
 llex.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -26,16 +38,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 59
 /!svn/ver/6780/luci/trunk/contrib/luasrcdiet/lua/optlex.lua
-END
-LuaSrcDiet.lua
-K 25
-svn:wc:ra_dav:version-url
-V 63
-/!svn/ver/6780/luci/trunk/contrib/luasrcdiet/lua/LuaSrcDiet.lua
-END
-optparser.lua
-K 25
-svn:wc:ra_dav:version-url
-V 62
-/!svn/ver/6780/luci/trunk/contrib/luasrcdiet/lua/optparser.lua
 END

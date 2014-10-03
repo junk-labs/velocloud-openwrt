@@ -1,0 +1,36 @@
+ifconfig should never truncate an interface name, because that will
+lose critical information for these networks:
+
+br-networ Link encap:Ethernet  HWaddr F0:8E:DB:01:00:09
+          inet addr:10.8.0.1  Bcast:10.8.0.255  Mask:255.255.255.0
+          ...
+br-networ Link encap:Ethernet  HWaddr 06:F0:21:09:04:23
+          inet addr:192.168.2.1  Bcast:192.168.2.255  Mask:255.255.255.0
+          ...
+
+Or worse,
+
+Iface   MTU Met    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+br-ne  1500   0   28623      0      0      0   24399      0      0      0 BMRU
+br-ne  1500   0       0      0      0      0      36      0      0      0 BMRU
+
+--- a/lib/interface.c	2001-02-10 11:31:15.000000000 -0800
++++ b/lib/interface.c	2014-08-19 13:08:48.220028775 -0700
+@@ -579,7 +579,7 @@
+ 
+ void ife_print_short(struct interface *ptr)
+ {
+-    printf("%-5.5s ", ptr->name);
++    printf("%-5s ", ptr->name);
+     printf("%5d %3d", ptr->mtu, ptr->metric);
+     /* If needed, display the interface statistics. */
+     if (ptr->statistics_valid) {
+@@ -670,7 +670,7 @@
+     if (hw == NULL)
+ 	hw = get_hwntype(-1);
+ 
+-    printf(_("%-9.9s Link encap:%s  "), ptr->name, hw->title);
++    printf(_("%-9s Link encap:%s  "), ptr->name, hw->title);
+     /* For some hardware types (eg Ash, ATM) we don't print the 
+        hardware address if it's null.  */
+     if (hw->print != NULL && (! (hw_null_address(hw, ptr->hwaddr) &&

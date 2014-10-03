@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/transmission/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-08-06T11:08:44.072593Z
-33012
-mirko
+2014-05-25T08:58:06.186945Z
+40843
+obsy
 
 
 
@@ -26,17 +26,51 @@ mirko
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+020-use-internal-miniupnp.patch
+file
+
+
+
+
+2014-06-17T22:31:57.570137Z
+258c231a52afe4ac5e70a8e06cb63847
+2014-05-25T08:58:06.186945Z
+40843
+obsy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+261
+
 010_libtransmission_fallocate64_eglibc.patch
 file
 
 
 
 
-2013-12-02T22:38:09.390323Z
-c28383cabbc2b6c24a277fc987631470
-2012-08-06T11:08:44.072593Z
-33012
-mirko
+2014-06-17T22:31:57.570137Z
+3d16c9ab647dd98e55659148ab76e4c4
+2014-01-04T17:03:21.711809Z
+39199
+obsy
 
 
 
@@ -58,5 +92,5 @@ mirko
 
 
 
-621
+409
 

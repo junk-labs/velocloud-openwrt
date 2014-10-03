@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/libs/web/luasrc/http/protocol
 http://svn.luci.subsignal.org
 
@@ -26,13 +26,47 @@ jow
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
+date.lua
+file
+
+
+
+
+2014-06-17T22:32:28.998136Z
+e72787d8fd6a47a0f2cb873dd4a37cc2
+2008-12-06T03:18:14.861716Z
+3860
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2801
+
 conditionals.lua
 file
 
 
 
 
-2013-12-02T22:38:50.314324Z
+2014-06-17T22:32:28.998136Z
 86d6a379e0b6e0760310c4bcc603b132
 2009-12-20T18:35:05.997323Z
 5637
@@ -66,7 +100,7 @@ file
 
 
 
-2013-12-02T22:38:50.314324Z
+2014-06-17T22:32:28.998136Z
 6b9e696ef6148fc6d401713d8a0c1ba2
 2009-09-11T01:55:10.645970Z
 5327
@@ -93,38 +127,4 @@ has-props
 
 
 2974
-
-date.lua
-file
-
-
-
-
-2013-12-02T22:38:50.314324Z
-e72787d8fd6a47a0f2cb873dd4a37cc2
-2008-12-06T03:18:14.861716Z
-3860
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2801
 

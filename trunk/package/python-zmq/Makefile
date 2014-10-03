@@ -3,12 +3,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-zmq
-PKG_VERSION:=14.1.1
+PKG_VERSION:=14.3.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=pyzmq-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://pypi.python.org/packages/source/p/pyzmq/
-PKG_MD5SUM:=bea18143c347dcde92cd0409392fbb58
+PKG_MD5SUM:=7196b4a6fbf98022f17ffa924be3d68d
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/pyzmq-$(PKG_VERSION)
 PKG_BUILD_DEPENDS:=python

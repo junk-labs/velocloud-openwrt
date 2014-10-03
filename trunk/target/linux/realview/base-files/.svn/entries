@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/realview/base-files
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/realview/base-files
 svn://svn.openwrt.org/openwrt
 
 
 
-2010-12-13T08:01:21.821616Z
-24540
-nbd
+2014-07-03T17:19:10.236232Z
+41495
+florian
 
 
 

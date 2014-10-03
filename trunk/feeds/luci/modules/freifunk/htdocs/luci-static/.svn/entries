@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/modules/freifunk/htdocs/luci-static
 http://svn.luci.subsignal.org
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:51.062324Z
+2014-06-17T22:32:35.930136Z
 40c503d213cecc960fd7c3a5637e996d
 2009-07-07T00:38:47.317539Z
 5015

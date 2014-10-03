@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/sqlite2
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-06-11T21:18:33.553794Z
-32206
-jow
+2014-03-27T07:04:52.839320Z
+40167
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:13.658324Z
-87e74bea2070162c23df8fb1be48607a
-2012-06-11T21:18:33.553794Z
-32206
-jow
+2014-06-17T22:32:01.394136Z
+81da105d43217f6b0610c5da63de437b
+2014-03-27T07:04:52.839320Z
+40167
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-2688
+2682
 

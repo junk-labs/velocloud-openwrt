@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/chillispot
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-06-11T21:18:33.553794Z
-32206
-jow
+2014-03-27T07:06:15.564187Z
+40252
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:10.234323Z
-3a5fdf75182448f552d1b36925102c1d
-2012-06-11T21:18:33.553794Z
-32206
-jow
+2014-06-17T22:32:00.126136Z
+6d7c65c6b08be26ff538c97b807a3810
+2014-03-27T07:06:15.564187Z
+40252
+juhosg
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1541
+1535
 
 files
 dir

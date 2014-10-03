@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/crowdcontrol
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-11-16T20:02:41.452853Z
-29199
-nico
+2014-03-27T07:06:16.544353Z
+40253
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:10.522323Z
-1dc112e101587fa19ff0f470887fccee
-2011-11-16T20:02:41.452853Z
-29199
-nico
+2014-06-17T22:31:58.842136Z
+d23cbb7ac6d26367d03ce2d86bde5b70
+2014-03-27T07:06:16.544353Z
+40253
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1616
+1614
 

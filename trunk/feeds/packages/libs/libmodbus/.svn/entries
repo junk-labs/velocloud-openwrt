@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/libmodbus
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-12-04T16:20:40.779096Z
-34479
-florian
+2014-03-27T07:04:15.394042Z
+40128
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:14.470324Z
-800a658c854b88eed801deea68dceda6
-2012-12-04T16:20:40.779096Z
-34479
-florian
+2014-06-17T22:32:01.546136Z
+bede8e9c6a2257379e41c479236070b3
+2014-03-27T07:04:15.394042Z
+40128
+juhosg
 
 
 
@@ -58,5 +58,5 @@ florian
 
 
 
-1235
+1234
 

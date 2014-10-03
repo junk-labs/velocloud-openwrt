@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/net/wget/Makefile
 Package: wget
 Submenu: File Transfer
-Version: 1.14-1
+Version: 1.15-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpcre +libopenssl +librt
 Menu-Depends: 
 Provides: 
@@ -10,7 +10,7 @@ Section: net
 Category: Network
 Title: Non-interactive network downloader (with SSL support)
 Maintainer: 
-Source: wget-1.14.tar.xz
+Source: wget-1.15.tar.xz
 Type: ipkg
 Description:  Wget is a network utility to retrieve files from the Web using http
  and ftp, the two most widely used Internet protocols. It works
@@ -25,7 +25,7 @@ http://www.gnu.org/software/wget/index.html
 
 Package: wget-nossl
 Submenu: File Transfer
-Version: 1.14-1
+Version: 1.15-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpcre +zlib
 Menu-Depends: 
 Provides: 
@@ -34,7 +34,7 @@ Section: net
 Category: Network
 Title: Non-interactive network downloader (without SSL support)
 Maintainer: 
-Source: wget-1.14.tar.xz
+Source: wget-1.15.tar.xz
 Type: ipkg
 Description:  Wget is a network utility to retrieve files from the Web using http
  and ftp, the two most widely used Internet protocols. It works

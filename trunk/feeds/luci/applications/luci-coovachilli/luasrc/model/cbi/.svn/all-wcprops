@@ -3,12 +3,6 @@ svn:wc:ra_dav:version-url
 V 72
 /!svn/ver/3943/luci/trunk/applications/luci-coovachilli/luasrc/model/cbi
 END
-coovachilli_radius.lua
-K 25
-svn:wc:ra_dav:version-url
-V 95
-/!svn/ver/3591/luci/trunk/applications/luci-coovachilli/luasrc/model/cbi/coovachilli_radius.lua
-END
 coovachilli_network.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -26,4 +20,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 93
 /!svn/ver/3591/luci/trunk/applications/luci-coovachilli/luasrc/model/cbi/coovachilli_auth.lua
+END
+coovachilli_radius.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/3591/luci/trunk/applications/luci-coovachilli/luasrc/model/cbi/coovachilli_radius.lua
 END

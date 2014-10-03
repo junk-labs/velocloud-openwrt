@@ -11,7 +11,7 @@ Title: A serial terminal emulation program
 Maintainer: 
 Source: m102.tar.gz
 Type: ipkg
-Description: 	microcom is a minicom-like serial terminal emulator with scripting 
+Description: 	microcom is a minicom-like serial terminal emulator with scripting
 	support.
 http://microcomlinux.homestead.com/
 

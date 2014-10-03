@@ -1,14 +1,14 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/libs/httpclient
 http://svn.luci.subsignal.org
 
 
 
-2011-06-25T22:57:18.037965Z
-7236
+2014-02-05T13:44:07.865601Z
+9953
 jow
 has-props
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:50.410324Z
+2014-06-17T22:32:29.210136Z
 f1f6e420b1487ea32da1fc4d1c34a4f4
 2009-02-18T21:46:55.536646Z
 4249

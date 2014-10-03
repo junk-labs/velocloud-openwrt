@@ -14,7 +14,7 @@ Source: protobuf-2.4.1.tar.bz2
 Type: ipkg
 Description:  Protocol Buffers are a way of encoding structured data in an efficient
  yet extensible format. Google uses Protocol Buffers for almost all
- of its internal RPC protocols and file formats. 
+ of its internal RPC protocols and file formats.
 http://code.google.com/p/protobuf/
 Obinou <obconseil@gmail.com>
 @@

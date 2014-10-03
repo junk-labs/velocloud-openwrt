@@ -1,14 +1,14 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/i18n
 http://svn.luci.subsignal.org
 
 
 
-2013-03-19T17:06:21.639223Z
-9765
+2014-04-27T20:30:59.209731Z
+10180
 jow
 
 
@@ -25,18 +25,6 @@ jow
 
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
-
-russian
-dir
-
-japanese
-dir
-
-norwegian
-dir
-
-english
-dir
 
 greek
 dir
@@ -65,6 +53,9 @@ dir
 spanish
 dir
 
+swedish
+dir
+
 german
 dir
 
@@ -84,5 +75,17 @@ italian
 dir
 
 ukrainian
+dir
+
+russian
+dir
+
+japanese
+dir
+
+norwegian
+dir
+
+english
 dir
 

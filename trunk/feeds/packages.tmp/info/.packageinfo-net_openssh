@@ -1,7 +1,7 @@
 Source-Makefile: feeds/packages/net/openssh/Makefile
 Package: openssh-client
 Submenu: SSH
-Version: 6.4p1-5
+Version: 6.6p1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +SSP_SUPPORT:libssp
 Menu-Depends: 
 Provides: 
@@ -11,7 +11,7 @@ Section: net
 Category: Network
 Title: OpenSSH client
 Maintainer: Peter Wagner <tripolar@gmx.at>
-Source: openssh-6.4p1.tar.gz
+Source: openssh-6.6p1.tar.gz
 Type: ipkg
 Description: OpenSSH client.
 http://www.openssh.com/
@@ -20,7 +20,7 @@ Peter Wagner <tripolar@gmx.at>
 
 Package: openssh-moduli
 Submenu: SSH
-Version: 6.4p1-5
+Version: 6.6p1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +SSP_SUPPORT:libssp +openssh-keygen
 Menu-Depends: 
 Provides: 
@@ -30,7 +30,7 @@ Section: net
 Category: Network
 Title: OpenSSH moduli file
 Maintainer: Peter Wagner <tripolar@gmx.at>
-Source: openssh-6.4p1.tar.gz
+Source: openssh-6.6p1.tar.gz
 Type: ipkg
 Description: OpenSSH server moduli file.
 http://www.openssh.com/
@@ -39,7 +39,7 @@ Peter Wagner <tripolar@gmx.at>
 
 Package: openssh-client-utils
 Submenu: SSH
-Version: 6.4p1-5
+Version: 6.6p1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +SSP_SUPPORT:libssp +openssh-client +openssh-keygen
 Menu-Depends: 
 Provides: 
@@ -49,7 +49,7 @@ Section: net
 Category: Network
 Title: OpenSSH client utilities
 Maintainer: Peter Wagner <tripolar@gmx.at>
-Source: openssh-6.4p1.tar.gz
+Source: openssh-6.6p1.tar.gz
 Type: ipkg
 Description: OpenSSH client utilities.
 http://www.openssh.com/
@@ -58,7 +58,7 @@ Peter Wagner <tripolar@gmx.at>
 
 Package: openssh-keygen
 Submenu: SSH
-Version: 6.4p1-5
+Version: 6.6p1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +SSP_SUPPORT:libssp
 Menu-Depends: 
 Provides: 
@@ -68,7 +68,7 @@ Section: net
 Category: Network
 Title: OpenSSH keygen
 Maintainer: Peter Wagner <tripolar@gmx.at>
-Source: openssh-6.4p1.tar.gz
+Source: openssh-6.6p1.tar.gz
 Type: ipkg
 Description: OpenSSH keygen.
 http://www.openssh.com/
@@ -77,7 +77,7 @@ Peter Wagner <tripolar@gmx.at>
 
 Package: openssh-server
 Submenu: SSH
-Version: 6.4p1-5
+Version: 6.6p1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +SSP_SUPPORT:libssp +openssh-keygen
 Menu-Depends: 
 Provides: 
@@ -87,7 +87,7 @@ Section: net
 Category: Network
 Title: OpenSSH server
 Maintainer: Peter Wagner <tripolar@gmx.at>
-Source: openssh-6.4p1.tar.gz
+Source: openssh-6.6p1.tar.gz
 Type: ipkg
 Description: OpenSSH server.
 http://www.openssh.com/
@@ -96,7 +96,7 @@ Peter Wagner <tripolar@gmx.at>
 
 Package: openssh-server-pam
 Submenu: SSH
-Version: 6.4p1-5
+Version: 6.6p1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +SSP_SUPPORT:libssp +libpthread +openssh-keygen +libpam
 Menu-Depends: 
 Provides: 
@@ -106,7 +106,7 @@ Section: net
 Category: Network
 Title: OpenSSH server (with PAM support)
 Maintainer: Peter Wagner <tripolar@gmx.at>
-Source: openssh-6.4p1.tar.gz
+Source: openssh-6.6p1.tar.gz
 Type: ipkg
 Description: OpenSSH server (with PAM support).
 http://www.openssh.com/
@@ -115,7 +115,7 @@ Peter Wagner <tripolar@gmx.at>
 
 Package: openssh-sftp-client
 Submenu: SSH
-Version: 6.4p1-5
+Version: 6.6p1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +SSP_SUPPORT:libssp
 Menu-Depends: 
 Provides: 
@@ -125,7 +125,7 @@ Section: net
 Category: Network
 Title: OpenSSH SFTP client
 Maintainer: Peter Wagner <tripolar@gmx.at>
-Source: openssh-6.4p1.tar.gz
+Source: openssh-6.6p1.tar.gz
 Type: ipkg
 Description: OpenSSH SFTP client.
 http://www.openssh.com/
@@ -134,7 +134,7 @@ Peter Wagner <tripolar@gmx.at>
 
 Package: openssh-sftp-server
 Submenu: SSH
-Version: 6.4p1-5
+Version: 6.6p1-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +SSP_SUPPORT:libssp
 Menu-Depends: 
 Provides: 
@@ -144,7 +144,7 @@ Section: net
 Category: Network
 Title: OpenSSH SFTP server
 Maintainer: Peter Wagner <tripolar@gmx.at>
-Source: openssh-6.4p1.tar.gz
+Source: openssh-6.6p1.tar.gz
 Type: ipkg
 Description: OpenSSH SFTP server.
 http://www.openssh.com/

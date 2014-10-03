@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/boot/rbcfg
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/boot/rbcfg
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-10-17T21:53:23.143554Z
-33824
-blogic
+2014-06-30T08:19:44.622024Z
+41410
+nbd
 
 
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T20:28:15.522164Z
+2014-06-03T20:17:37.578341Z
 54ebd1734c602f5d5c63ed6b37cd830c
 2012-10-17T21:53:23.143554Z
 33824

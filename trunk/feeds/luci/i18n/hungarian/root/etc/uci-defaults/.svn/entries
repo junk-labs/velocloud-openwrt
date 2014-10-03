@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/i18n/hungarian/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:35.050324Z
+2014-06-17T22:32:18.042136Z
 ae07ef15e405010857c19121bf66c04d
 2012-04-02T09:48:31.104133Z
 8383

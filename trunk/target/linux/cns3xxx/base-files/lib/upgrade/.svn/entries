@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/cns3xxx/base-files/lib/upgrade
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/cns3xxx/base-files/lib/upgrade
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-10-07T23:24:02.760166Z
-33650
-nbd
+2014-06-02T12:43:22.188606Z
+40915
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:28:05.258164Z
-37d55efab05b61fcdb376e8ccfa5a31d
-2012-10-07T23:24:02.760166Z
-33650
-nbd
+2014-06-03T20:51:59.690293Z
+a22ef608b3f8e58142ba15c6b7125984
+2014-06-02T12:43:22.188606Z
+40915
+blogic
 
 
 
@@ -58,5 +58,5 @@ nbd
 
 
 
-2970
+2967
 

@@ -1,14 +1,14 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-meshwizard/luasrc/model/cbi/freifunk
 http://svn.luci.subsignal.org
 
 
 
-2013-05-23T14:06:21.383974Z
-9827
+2014-04-27T13:45:53.491945Z
+9978
 soma
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T22:38:47.842324Z
-d16be29c9955f723b95428c36daa97fc
-2013-05-23T14:06:21.383974Z
-9827
+2014-06-17T22:32:22.898136Z
+09c7ac996d9e2e0d11267a4ac88ce843
+2014-04-27T13:45:53.491945Z
+9978
 soma
 
 
@@ -58,5 +58,5 @@ soma
 
 
 
-6893
+6913
 

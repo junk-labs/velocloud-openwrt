@@ -3,6 +3,12 @@ svn:wc:ra_dav:version-url
 V 56
 /!svn/ver/9900/luci/trunk/modules/admin-core/luasrc/view
 END
+header.htm
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4234/luci/trunk/modules/admin-core/luasrc/view/header.htm
+END
 error500.htm
 K 25
 svn:wc:ra_dav:version-url
@@ -32,10 +38,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 69
 /!svn/ver/9014/luci/trunk/modules/admin-core/luasrc/view/error404.htm
-END
-header.htm
-K 25
-svn:wc:ra_dav:version-url
-V 67
-/!svn/ver/4234/luci/trunk/modules/admin-core/luasrc/view/header.htm
 END

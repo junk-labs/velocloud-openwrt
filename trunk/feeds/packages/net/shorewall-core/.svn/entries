@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/shorewall-core
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-10-16T15:55:48.821199Z
-33797
-florian
+2014-03-27T07:04:50.973654Z
+40166
+juhosg
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2013-12-02T22:38:09.838323Z
-1c37fa2bca386e4b68ebc032d404b964
-2012-10-16T15:55:48.821199Z
-33797
-florian
+2014-06-17T22:31:59.678136Z
+823873610cff8735c13451c24e55db51
+2014-03-27T07:04:50.973654Z
+40166
+juhosg
 
 
 
@@ -61,5 +61,5 @@ florian
 
 
 
-1878
+1877
 

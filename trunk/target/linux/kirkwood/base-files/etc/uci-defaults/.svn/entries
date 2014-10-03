@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/kirkwood/base-files/etc/uci-defaults
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/kirkwood/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-31T12:04:04.284843Z
-38631
+2014-06-26T10:13:47.391463Z
+41338
 luka
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:28:06.686164Z
-db6fb771cc79600a2697fcf30cc30a98
-2013-10-31T12:04:04.284843Z
-38631
+2014-08-06T22:40:51.461834Z
+793d82d62bbec2be5036e6db1765b8a8
+2014-06-26T10:13:47.391463Z
+41338
 luka
 
 
@@ -58,7 +58,7 @@ luka
 
 
 
-744
+799
 
 01_leds
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2013-12-02T20:28:06.690164Z
-a24447fde9d4054f41d5243b8e7910a2
-2013-10-31T12:04:04.284843Z
-38631
+2014-08-06T22:40:51.461834Z
+399c00eb644cb46503ac38850f7d3373
+2014-06-26T10:13:47.391463Z
+41338
 luka
 
 
@@ -92,5 +92,5 @@ luka
 
 
 
-473
+710
 

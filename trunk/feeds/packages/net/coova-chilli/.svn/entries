@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/coova-chilli
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-11T13:20:27.519633Z
-38363
+2014-03-24T11:16:05.396132Z
+40015
 kaloz
 
 
@@ -26,19 +26,16 @@ kaloz
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Config.in
 file
 
 
 
 
-2013-12-02T22:38:08.790323Z
-4d90966c470d9ece1c45ce19f0053f30
-2013-10-11T13:20:27.519633Z
-38363
+2014-06-17T22:31:57.214137Z
+603287e68737cd1b589d3841f6cf4d7c
+2014-03-17T12:55:31.733856Z
+39932
 kaloz
 
 
@@ -61,7 +58,7 @@ kaloz
 
 
 
-541
+898
 
 Makefile
 file
@@ -69,10 +66,10 @@ file
 
 
 
-2013-12-02T22:38:08.790323Z
-9c9b74d39a7e1f7aa6a31fa399c6dc0e
-2013-10-11T13:20:27.519633Z
-38363
+2014-06-17T22:31:57.214137Z
+c3d1be7a13becaef36bf19074f1d2343
+2014-03-24T11:16:05.396132Z
+40015
 kaloz
 
 
@@ -95,5 +92,11 @@ kaloz
 
 
 
-2350
+2956
+
+files
+dir
+
+patches
+dir
 

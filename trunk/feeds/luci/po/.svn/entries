@@ -1,14 +1,14 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/po
 http://svn.luci.subsignal.org
 
 
 
-2013-09-01T15:56:45.005175Z
-9897
+2014-06-04T09:42:40.444780Z
+10274
 i18n-system
 
 
@@ -25,27 +25,6 @@ i18n-system
 
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
-
-fr
-dir
-
-es
-dir
-
-pl
-dir
-
-no
-dir
-
-it
-dir
-
-hu
-dir
-
-sk
-dir
 
 vi
 dir
@@ -74,6 +53,9 @@ dir
 de
 dir
 
+sv
+dir
+
 ja
 dir
 
@@ -99,5 +81,26 @@ cs
 dir
 
 pt_BR
+dir
+
+fr
+dir
+
+es
+dir
+
+pl
+dir
+
+no
+dir
+
+it
+dir
+
+hu
+dir
+
+sk
 dir
 

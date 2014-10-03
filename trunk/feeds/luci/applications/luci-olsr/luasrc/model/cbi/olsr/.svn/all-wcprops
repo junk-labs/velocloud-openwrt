@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 70
-/!svn/ver/9681/luci/trunk/applications/luci-olsr/luasrc/model/cbi/olsr
+/!svn/ver/9946/luci/trunk/applications/luci-olsr/luasrc/model/cbi/olsr
 END
 olsrdhna.lua
 K 25
@@ -13,13 +13,13 @@ olsrdiface.lua
 K 25
 svn:wc:ra_dav:version-url
 V 85
-/!svn/ver/6629/luci/trunk/applications/luci-olsr/luasrc/model/cbi/olsr/olsrdiface.lua
+/!svn/ver/9946/luci/trunk/applications/luci-olsr/luasrc/model/cbi/olsr/olsrdiface.lua
 END
 olsrd.lua
 K 25
 svn:wc:ra_dav:version-url
 V 80
-/!svn/ver/7745/luci/trunk/applications/luci-olsr/luasrc/model/cbi/olsr/olsrd.lua
+/!svn/ver/9946/luci/trunk/applications/luci-olsr/luasrc/model/cbi/olsr/olsrd.lua
 END
 olsrdplugins.lua
 K 25

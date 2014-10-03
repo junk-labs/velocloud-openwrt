@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/knock/patches
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:09.162323Z
+2014-06-17T22:32:00.110136Z
 c79742781c4ccd3e0f4e855007e0514d
 2012-08-06T11:08:13.681947Z
 33009

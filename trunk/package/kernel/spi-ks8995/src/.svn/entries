@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/kernel/spi-ks8995/src
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/spi-ks8995/src
 svn://svn.openwrt.org/openwrt
 
 
@@ -26,47 +26,13 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-spi_ks8995.c
-file
-
-
-
-
-2013-12-02T20:28:12.562164Z
-8ffb8fd061c53bdd3f89e2af79dd6e94
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10272
-
 Makefile
 file
 
 
 
 
-2013-12-02T20:28:12.566164Z
+2014-06-03T20:17:37.670341Z
 3b0b5a155ec2d709446f6e0786e8faee
 2013-06-21T16:54:37.987982Z
 37007
@@ -100,7 +66,7 @@ file
 
 
 
-2013-12-02T20:28:12.566164Z
+2014-06-03T20:17:37.670341Z
 50f3e187686b78a939d54a26984b2ffb
 2013-06-21T16:54:37.987982Z
 37007
@@ -127,4 +93,38 @@ blogic
 
 
 83
+
+spi_ks8995.c
+file
+
+
+
+
+2014-06-03T20:17:37.670341Z
+8ffb8fd061c53bdd3f89e2af79dd6e94
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10272
 

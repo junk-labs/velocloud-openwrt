@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/multimedia/gstreamer/Makefile
 Package: libgstcheck
-Version: 0.10.36-1
+Version: 0.10.36-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libgstreamer
 Menu-Depends: 
 Provides: 
@@ -19,7 +19,7 @@ http://gstreamer.freedesktop.org/
 @@
 
 Package: libgstcontroller
-Version: 0.10.36-1
+Version: 0.10.36-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libgstreamer
 Menu-Depends: 
 Provides: 
@@ -38,7 +38,7 @@ http://gstreamer.freedesktop.org/
 @@
 
 Package: libgstdataprotocol
-Version: 0.10.36-1
+Version: 0.10.36-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libgstreamer
 Menu-Depends: 
 Provides: 
@@ -57,7 +57,7 @@ http://gstreamer.freedesktop.org/
 @@
 
 Package: libgstnet
-Version: 0.10.36-1
+Version: 0.10.36-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libgstreamer
 Menu-Depends: 
 Provides: 
@@ -76,7 +76,7 @@ http://gstreamer.freedesktop.org/
 @@
 
 Package: gstreamer
-Version: 0.10.36-1
+Version: 0.10.36-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libgstreamer +libgstcheck +libgstcontroller +libgstdataprotocol +libgstnet
 Menu-Depends: 
 Provides: 
@@ -96,7 +96,7 @@ http://gstreamer.freedesktop.org/
 @@
 
 Package: gstreamer-utils
-Version: 0.10.36-1
+Version: 0.10.36-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libgstreamer
 Menu-Depends: 
 Provides: 
@@ -115,7 +115,7 @@ http://gstreamer.freedesktop.org/
 @@
 
 Package: libgstreamer
-Version: 0.10.36-1
+Version: 0.10.36-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +glib2 +libpthread +libxml2
 Menu-Depends: 
 Provides: 

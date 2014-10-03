@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/tools/bison/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/bison/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-09-24T20:01:02.114548Z
-38169
+2013-12-15T03:59:49.052224Z
+39056
 luka
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:29:11.858165Z
-bf0482e5801ab1ed0c397e3de91c6621
-2013-02-28T00:52:34.934626Z
-35827
+2014-06-03T20:52:31.638293Z
+33f84f4c2c9b3acc932dd5dd851fbdb8
+2013-12-15T03:59:49.052224Z
+39056
 luka
 
 
@@ -58,7 +58,7 @@ luka
 
 
 
-440
+410
 
 100-fix-gets-removal.patch
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2013-12-02T20:29:11.854165Z
-4c27da472e8242e56df7e3d35c578608
-2013-09-24T20:01:02.114548Z
-38169
+2014-06-03T20:52:31.638293Z
+7ae705cddd378a3ff5bb4fea6537a01a
+2013-12-15T03:59:49.052224Z
+39056
 luka
 
 
@@ -92,5 +92,5 @@ luka
 
 
 
-468
+427
 

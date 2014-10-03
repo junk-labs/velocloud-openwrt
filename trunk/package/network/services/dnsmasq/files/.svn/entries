@@ -1,15 +1,15 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/dnsmasq/files
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/dnsmasq/files
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-01-17T14:00:09.513508Z
-39312
-cyrus
+2014-09-01T13:22:08.134551Z
+42390
+blogic
 
 
 
@@ -26,51 +26,17 @@ cyrus
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-dnsmasq.hotplug
-file
-
-
-
-
-2014-02-26T23:26:24.636848Z
-67e9e2b04e47f252b1f0c9ad1f91bb9c
-2013-12-21T13:31:28.621121Z
-39152
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-100
-
 dnsmasq.init
 file
 
 
 
 
-2014-02-26T23:26:24.636848Z
-0b2bde0d37cd52335a0d5e6d98d4677f
-2014-01-17T14:00:09.513508Z
-39312
-cyrus
+2014-09-03T23:42:09.869712Z
+a8f6bc8bbb455ea3d4ed011c104a450c
+2014-09-01T13:22:08.134551Z
+42390
+blogic
 has-props
 
 
@@ -92,7 +58,7 @@ has-props
 
 
 
-13785
+14350
 
 dnsmasq.conf
 file
@@ -100,7 +66,7 @@ file
 
 
 
-2013-12-02T20:29:05.650165Z
+2014-06-03T20:17:37.742341Z
 7cf378e58d3fe5db31f4116a16c15c61
 2009-09-21T13:25:11.362945Z
 17663
@@ -134,7 +100,7 @@ file
 
 
 
-2013-12-02T20:29:05.650165Z
+2014-06-03T20:17:37.742341Z
 326e2116bd9bc3ecc5be4f75cd1e7647
 2010-10-06T13:10:15.331143Z
 23270
@@ -161,4 +127,38 @@ jow
 
 
 885
+
+dnsmasq.hotplug
+file
+
+
+
+
+2014-06-03T20:17:37.742341Z
+67e9e2b04e47f252b1f0c9ad1f91bb9c
+2013-12-21T13:31:28.621121Z
+39152
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+100
 

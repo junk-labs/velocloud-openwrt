@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/contrib/package/freifunk-common/files/etc/rc.local.d
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:50.542324Z
+2014-06-17T22:32:29.558136Z
 47ca041b6ac3b11ae0ed39fb6f0655c1
 2009-09-17T11:12:01.048932Z
 5334

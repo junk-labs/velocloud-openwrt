@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-openvpn
 http://svn.luci.subsignal.org
 
@@ -26,19 +26,13 @@ has-props
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-root
-dir
-
-luasrc
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:40.058324Z
+2014-06-17T22:32:20.762136Z
 b9a1d9a80b96b2ac8a41da0004e25546
 2009-05-19T02:18:28.983459Z
 4560
@@ -65,4 +59,10 @@ jow
 
 
 74
+
+root
+dir
+
+luasrc
+dir
 

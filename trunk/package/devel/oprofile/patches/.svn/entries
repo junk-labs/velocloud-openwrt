@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/devel/oprofile/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/devel/oprofile/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-03-20T01:00:43.264887Z
-31039
+2014-06-06T10:51:44.020736Z
+41035
 nbd
 
 
@@ -25,18 +25,6 @@ nbd
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-101-remove_24_support.patch
-file
-
-
-
-
-2013-12-02T20:28:11.090164Z
-6367480bbf7e1aa7a1aa8b2f7844f1e9
-2012-03-20T01:00:43.264887Z
-31039
-nbd
 
 
 
@@ -45,20 +33,7 @@ nbd
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-1978
+()
 
 100-use_insmod_instead_of_modprobe.patch
 file
@@ -66,10 +41,22 @@ file
 
 
 
-2013-12-02T20:28:11.090164Z
-6a72010f0d238329f0b90f33e612f488
-2012-03-20T01:00:43.264887Z
-31039
+
+7348449838eee995dced10c21f44cf24
+2014-06-06T10:51:44.020736Z
+41035
+nbd
+
+110-fix_compile_error.patch
+file
+
+
+
+
+2014-06-20T21:11:26.816245Z
+96852ebf0de5fa6b4e9e43e34501d326
+2014-06-06T10:51:44.020736Z
+41035
 nbd
 
 
@@ -92,5 +79,5 @@ nbd
 
 
 
-483
+763
 

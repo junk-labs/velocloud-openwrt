@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/files/crypto/ocf/kirkwood/mvHal/kw_family/boardEnv
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic/files/crypto/ocf/kirkwood/mvHal/kw_family/boardEnv
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:03.942164Z
+2014-06-03T20:17:38.066341Z
 368bf6d52eecaffa3c866cf17a83c4a1
 2010-06-26T20:42:58.993070Z
 21952
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:28:03.942164Z
+2014-06-03T20:17:38.066341Z
 7d6900f42c2947ab8324f1d02c7ba563
 2010-06-26T20:42:58.993070Z
 21952
@@ -100,7 +100,7 @@ file
 
 
 
-2013-12-02T20:28:03.942164Z
+2014-06-03T20:17:38.066341Z
 e56de1703896a2e9a3e5330a77ba72d1
 2010-06-26T20:42:58.993070Z
 21952
@@ -134,7 +134,7 @@ file
 
 
 
-2013-12-02T20:28:03.942164Z
+2014-06-03T20:17:38.066341Z
 d4db942f1d0907c2ae2d89a47922f8ba
 2010-06-26T20:42:58.993070Z
 21952

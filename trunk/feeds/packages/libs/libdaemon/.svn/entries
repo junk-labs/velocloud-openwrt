@@ -1,14 +1,14 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/libdaemon
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-03-09T09:49:26.752394Z
-25967
+2014-01-29T13:01:21.514658Z
+39418
 jow
 
 
@@ -26,16 +26,19 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:14.010324Z
-88aade88738a4bcea2a17556df247de8
-2011-03-09T09:49:26.752394Z
-25967
+2014-06-17T22:32:01.158136Z
+1109f5710e13f5fbddaad0071cbbe735
+2014-01-29T13:01:21.514658Z
+39418
 jow
 has-props
 
@@ -58,5 +61,5 @@ has-props
 
 
 
-2092
+2097
 

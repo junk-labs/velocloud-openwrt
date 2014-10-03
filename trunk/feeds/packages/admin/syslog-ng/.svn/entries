@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/admin/syslog-ng
 svn://svn.openwrt.org/openwrt
 
@@ -26,13 +26,16 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:12.610323Z
+2014-06-17T22:32:00.710136Z
 678fa3880fb753d5afb49edab7e4219c
 2012-02-07T22:11:18.811927Z
 30367
@@ -61,8 +64,5 @@ has-props
 1694
 
 files
-dir
-
-patches
 dir
 

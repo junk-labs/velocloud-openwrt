@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 44
-/!svn/ver/9916/luci/trunk/modules/admin-full
+V 45
+/!svn/ver/10266/luci/trunk/modules/admin-full
 END
 Makefile
 K 25

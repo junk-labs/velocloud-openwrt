@@ -1,14 +1,14 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/utils/usbmode
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/usbmode
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-01-17T21:45:55.499882Z
-39317
+2014-07-19T16:57:09.533622Z
+41761
 blogic
 
 
@@ -26,19 +26,16 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
 Makefile
 file
 
 
 
 
-2014-02-06T01:25:23.380312Z
-8aef8646a61c282c126f3a3a10d7e2fd
-2014-01-17T21:45:55.499882Z
-39317
+2014-08-06T22:46:28.909826Z
+6fe1255ddfe9899c5936740843a798b5
+2014-07-19T16:57:09.533622Z
+41761
 blogic
 
 
@@ -61,5 +58,8 @@ blogic
 
 
 
-1701
+1702
+
+files
+dir
 

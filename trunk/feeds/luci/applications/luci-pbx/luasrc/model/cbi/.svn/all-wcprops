@@ -3,12 +3,6 @@ svn:wc:ra_dav:version-url
 V 64
 /!svn/ver/9679/luci/trunk/applications/luci-pbx/luasrc/model/cbi
 END
-pbx-voip.lua
-K 25
-svn:wc:ra_dav:version-url
-V 77
-/!svn/ver/7978/luci/trunk/applications/luci-pbx/luasrc/model/cbi/pbx-voip.lua
-END
 pbx-calls.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -38,4 +32,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 79
 /!svn/ver/7979/luci/trunk/applications/luci-pbx/luasrc/model/cbi/pbx-google.lua
+END
+pbx-voip.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/7978/luci/trunk/applications/luci-pbx/luasrc/model/cbi/pbx-voip.lua
 END

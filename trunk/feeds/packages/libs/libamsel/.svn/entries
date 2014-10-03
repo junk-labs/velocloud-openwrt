@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/libamsel
 svn://svn.openwrt.org/openwrt
 
 
 
-2009-12-18T11:06:19.966693Z
-18816
-nico
+2014-03-27T07:04:26.629368Z
+40140
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:13.090324Z
-c96b4a86d6a9928f4e0b2b929b89899e
-2009-12-18T11:06:19.966693Z
-18816
-nico
+2014-06-17T22:32:01.478136Z
+4c68b93e4e2554bba7e9cd740b69a967
+2014-03-27T07:04:26.629368Z
+40140
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1332
+1331
 

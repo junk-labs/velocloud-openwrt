@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/curl
 svn://svn.openwrt.org/openwrt
+delete
 
 
-
-2013-10-28T10:02:47.603419Z
-38556
-kaloz
+2014-05-01T14:05:37.264664Z
+40622
+hauke
 
 
 
@@ -31,11 +31,11 @@ file
 
 
 
-
-2013-12-02T22:38:13.862324Z
-909a24f0705c3549f7143aefc878ccf2
-2013-10-28T10:02:47.603419Z
-38556
+delete
+2014-06-17T22:32:01.214136Z
+40a7dd0ee9d7ff9b1d224d0c929f9007
+2014-03-26T14:26:49.007732Z
+40024
 kaloz
 has-props
 
@@ -62,18 +62,22 @@ has-props
 
 patches
 dir
+
+
+
+delete
 
 Config.in
 file
 
 
 
-
-2013-12-02T22:38:13.862324Z
-8f906a137a5dab3e8067a48fab257331
-2013-10-28T10:02:47.603419Z
-38556
-kaloz
+delete
+2014-06-17T22:32:01.214136Z
+c07d18e367a1491f82259cd6bf9cad35
+2014-02-06T12:06:17.238349Z
+39503
+jow
 
 
 

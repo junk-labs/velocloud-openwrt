@@ -302,12 +302,14 @@ endef
 
 $(eval $(call KernelPackage,sdhci))
 
+OPROFILE_KARCH=$(subst x86_64,x86,$(LINUX_KARCH))
 
 define KernelPackage/oprofile
   SUBMENU:=$(OTHER_MENU)
   TITLE:=OProfile profiling support
-  KCONFIG:=CONFIG_OPROFILE
-  FILES:=$(LINUX_DIR)/arch/$(LINUX_KARCH)/oprofile/oprofile.ko
+  KCONFIG:=CONFIG_OPROFILE \
+	CONFIG_OPROFILE_EVENT_MULTIPLEX=n
+  FILES:=$(LINUX_DIR)/arch/$(OPROFILE_KARCH)/oprofile/oprofile.ko
   DEPENDS:=@KERNEL_PROFILING
 endef
 
@@ -796,6 +798,7 @@ define KernelPackage/thermal
 	CONFIG_THERMAL_GOV_FAIR_SHARE=n \
 	CONFIG_THERMAL_GOV_STEP_WISE=y \
 	CONFIG_THERMAL_GOV_USER_SPACE=n \
+	CONFIG_THERMAL_HWMON=y \
 	CONFIG_THERMAL_EMULATION=n
   FILES:=$(LINUX_DIR)/drivers/thermal/thermal_sys.ko
   AUTOLOAD:=$(call AutoProbe,thermal_sys)

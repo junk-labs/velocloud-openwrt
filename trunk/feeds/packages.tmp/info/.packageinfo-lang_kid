@@ -12,7 +12,7 @@ Title: XML-based Templating
 Maintainer: 
 Source: kid-0.9.6.tar.gz
 Type: ipkg
-Description:  Kid is a simple template language for XML based vocabularies written in 
+Description:  Kid is a simple template language for XML based vocabularies written in
  Python.
 http://www.kid-templating.org/
 

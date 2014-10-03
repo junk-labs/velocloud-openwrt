@@ -3,18 +3,6 @@ svn:wc:ra_dav:version-url
 V 59
 /!svn/ver/9563/luci/trunk/modules/niu/luasrc/controller/niu
 END
-wireless.lua
-K 25
-svn:wc:ra_dav:version-url
-V 72
-/!svn/ver/7362/luci/trunk/modules/niu/luasrc/controller/niu/wireless.lua
-END
-traffic.lua
-K 25
-svn:wc:ra_dav:version-url
-V 71
-/!svn/ver/7362/luci/trunk/modules/niu/luasrc/controller/niu/traffic.lua
-END
 system.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -32,4 +20,16 @@ K 25
 svn:wc:ra_dav:version-url
 V 71
 /!svn/ver/7362/luci/trunk/modules/niu/luasrc/controller/niu/network.lua
+END
+wireless.lua
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/7362/luci/trunk/modules/niu/luasrc/controller/niu/wireless.lua
+END
+traffic.lua
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/7362/luci/trunk/modules/niu/luasrc/controller/niu/traffic.lua
 END

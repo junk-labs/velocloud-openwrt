@@ -3,15 +3,15 @@ svn:wc:ra_dav:version-url
 V 49
 /!svn/ver/4775/luci/trunk/libs/nixio/axtls-config
 END
-.config
-K 25
-svn:wc:ra_dav:version-url
-V 57
-/!svn/ver/4775/luci/trunk/libs/nixio/axtls-config/.config
-END
 config.h
 K 25
 svn:wc:ra_dav:version-url
 V 58
 /!svn/ver/4775/luci/trunk/libs/nixio/axtls-config/config.h
+END
+.config
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/4775/luci/trunk/libs/nixio/axtls-config/.config
 END

@@ -1,8 +1,8 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/base-files/files/etc/uci-defaults
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/base-files/files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
@@ -26,47 +26,13 @@ luka
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-10_migrate-shadow
-file
-
-
-
-
-2013-12-02T20:29:11.590165Z
-83550010e2d2318b21225909bb42e771
-2013-01-18T12:46:43.271056Z
-35218
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-418
-
 12_network-generate-ula
 file
 
 
 
 
-2013-12-02T20:29:11.594165Z
+2014-06-03T20:17:37.570341Z
 8913b77b8051465347a016300495dffa
 2013-06-06T09:52:00.695795Z
 36865
@@ -100,7 +66,7 @@ file
 
 
 
-2014-02-27T01:19:02.772692Z
+2014-06-03T20:17:37.570341Z
 4f200c8570108e57b890bb4ed3ea68d0
 2013-12-09T11:30:14.772888Z
 39006
@@ -127,4 +93,38 @@ luka
 
 
 450
+
+10_migrate-shadow
+file
+
+
+
+
+2014-06-03T20:17:37.570341Z
+83550010e2d2318b21225909bb42e771
+2013-01-18T12:46:43.271056Z
+35218
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+418
 

@@ -3,6 +3,24 @@ svn:wc:ra_dav:version-url
 V 72
 /!svn/ver/9906/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr
 END
+legend.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/9906/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/legend.htm
+END
+neighbors.htm
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/9874/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/neighbors.htm
+END
+routes.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/routes.htm
+END
 interfaces.htm
 K 25
 svn:wc:ra_dav:version-url
@@ -50,22 +68,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 85
 /!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/topology.htm
-END
-legend.htm
-K 25
-svn:wc:ra_dav:version-url
-V 83
-/!svn/ver/9906/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/legend.htm
-END
-neighbors.htm
-K 25
-svn:wc:ra_dav:version-url
-V 86
-/!svn/ver/9874/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/neighbors.htm
-END
-routes.htm
-K 25
-svn:wc:ra_dav:version-url
-V 83
-/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/routes.htm
 END

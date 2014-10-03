@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/xsupplicant
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-03-12T08:26:12.011482Z
-26102
-cshore
+2014-03-27T07:02:38.492935Z
+40056
+juhosg
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2013-12-02T22:38:12.138323Z
-11497e7766588b50dad09ec0f3b55b86
-2011-03-12T08:26:12.011482Z
-26102
-cshore
+2014-06-17T22:32:00.538136Z
+be1656c278f21c66c0bdc19fe5f4b52f
+2014-03-27T07:02:38.492935Z
+40056
+juhosg
 has-props
 
 
@@ -61,5 +61,5 @@ has-props
 
 
 
-1687
+1686
 

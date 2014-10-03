@@ -1,13 +1,25 @@
 K 25
 svn:wc:ra_dav:version-url
-V 75
-/!svn/ver/9829/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network
+V 76
+/!svn/ver/10266/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network
+END
+network.lua
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9647/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/network.lua
+END
+ifaces.lua
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/10266/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/ifaces.lua
 END
 dhcp.lua
 K 25
 svn:wc:ra_dav:version-url
 V 84
-/!svn/ver/9768/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/dhcp.lua
+/!svn/ver/9949/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/dhcp.lua
 END
 proto_ahcp.lua
 K 25
@@ -18,8 +30,8 @@ END
 wifi.lua
 K 25
 svn:wc:ra_dav:version-url
-V 84
-/!svn/ver/9414/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
+V 85
+/!svn/ver/10234/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/wifi.lua
 END
 iface_add.lua
 K 25
@@ -45,27 +57,9 @@ svn:wc:ra_dav:version-url
 V 86
 /!svn/ver/6447/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/routes.lua
 END
-ipv6.lua
-K 25
-svn:wc:ra_dav:version-url
-V 84
-/!svn/ver/9829/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/ipv6.lua
-END
 wifi_add.lua
 K 25
 svn:wc:ra_dav:version-url
 V 88
 /!svn/ver/8889/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/wifi_add.lua
-END
-network.lua
-K 25
-svn:wc:ra_dav:version-url
-V 87
-/!svn/ver/9647/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/network.lua
-END
-ifaces.lua
-K 25
-svn:wc:ra_dav:version-url
-V 86
-/!svn/ver/9067/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_network/ifaces.lua
 END

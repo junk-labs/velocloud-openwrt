@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/system/udev/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/system/udev/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -26,13 +26,47 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+0001-build-don-t-use-gc-sections.patch
+file
+
+
+
+
+2014-06-03T20:17:37.826341Z
+77a37f7dc2cb20fff999f9db9605da85
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+710
+
 0002-udevd-add-lrt-for-message-queue-symbols.patch
 file
 
 
 
 
-2013-12-02T20:28:15.818164Z
+2014-06-03T20:17:37.826341Z
 f3df7e563a912343ab8b653a426c5f30
 2013-06-21T16:54:37.987982Z
 37007
@@ -66,7 +100,7 @@ file
 
 
 
-2013-12-02T20:28:15.818164Z
+2014-06-03T20:17:37.826341Z
 675e55e72161d3430ff2bdcc18badc8a
 2013-06-21T16:54:37.987982Z
 37007
@@ -93,38 +127,4 @@ blogic
 
 
 363
-
-0001-build-don-t-use-gc-sections.patch
-file
-
-
-
-
-2013-12-02T20:28:15.822164Z
-77a37f7dc2cb20fff999f9db9605da85
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-710
 

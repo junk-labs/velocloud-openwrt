@@ -10,7 +10,7 @@ Title: Library for reading/writing audio files
 Maintainer: 
 Source: libsndfile-1.0.25.tar.gz
 Type: ipkg
-Description:  libsndfile is a library of C routines for reading and writing files 
+Description:  libsndfile is a library of C routines for reading and writing files
  containing sampled audio data.
 http://www.mega-nerd.com/libsndfile/
 

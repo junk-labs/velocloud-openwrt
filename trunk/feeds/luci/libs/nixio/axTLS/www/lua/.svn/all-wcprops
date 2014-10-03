@@ -3,6 +3,24 @@ svn:wc:ra_dav:version-url
 V 50
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/lua
 END
+test_sql2.lua
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/lua/test_sql2.lua
+END
+test_conc.lua
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/lua/test_conc.lua
+END
+test_session.lua
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/lua/test_session.lua
+END
 test_main.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -92,22 +110,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 63
 /!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/lua/test_main.lp
-END
-test_sql2.lua
-K 25
-svn:wc:ra_dav:version-url
-V 64
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/lua/test_sql2.lua
-END
-test_conc.lua
-K 25
-svn:wc:ra_dav:version-url
-V 64
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/lua/test_conc.lua
-END
-test_session.lua
-K 25
-svn:wc:ra_dav:version-url
-V 67
-/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/www/lua/test_session.lua
 END

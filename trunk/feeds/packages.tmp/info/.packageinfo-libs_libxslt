@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/libs/libxslt/Makefile
 Package: libxslt
-Version: 1.1.26-1
+Version: 1.1.28-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libxml2
 Menu-Depends: 
 Provides: 
@@ -8,7 +8,7 @@ Section: libs
 Category: Libraries
 Title: Gnome XSLT library
 Maintainer: 
-Source: libxslt-1.1.26.tar.gz
+Source: libxslt-1.1.28.tar.gz
 Type: ipkg
 Description: 	A library for XML transformation using XSLT.
 http://xmlsoft.org/XSLT/
@@ -16,7 +16,7 @@ http://xmlsoft.org/XSLT/
 @@
 
 Package: libexslt
-Version: 1.1.26-1
+Version: 1.1.28-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libxslt
 Menu-Depends: 
 Provides: 
@@ -24,7 +24,7 @@ Section: libs
 Category: Libraries
 Title: Gnome XSLT library Extention
 Maintainer: 
-Source: libxslt-1.1.26.tar.gz
+Source: libxslt-1.1.28.tar.gz
 Type: ipkg
 Description: 	A extention for XSLT.
 http://xmlsoft.org/XSLT/EXSLT/
@@ -32,7 +32,7 @@ http://xmlsoft.org/XSLT/EXSLT/
 @@
 
 Package: xsltproc
-Version: 1.1.26-1
+Version: 1.1.28-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libxml2 +libxslt +libexslt
 Menu-Depends: 
 Provides: 
@@ -40,7 +40,7 @@ Section: utils
 Category: Utilities
 Title: Gnome XSLT xsltproc Utility
 Maintainer: 
-Source: libxslt-1.1.26.tar.gz
+Source: libxslt-1.1.28.tar.gz
 Type: ipkg
 Description: 	XSLT XML transformation utility
 http://xmlsoft.org/XSLT/

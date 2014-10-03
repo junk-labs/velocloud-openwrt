@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/utils/rsnapshot
 svn://svn.openwrt.org/openwrt
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:06.522323Z
+2014-06-17T22:32:03.670136Z
 8730fbac00bf5b526e6ff2c6b0228c2d
 2012-12-05T17:31:02.028912Z
 34508

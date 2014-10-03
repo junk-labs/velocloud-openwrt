@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/net/aoetools/Makefile
 Package: aoetools
-Version: 32-1
+Version: 32-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-aoe +libpthread
 Menu-Depends: 
 Provides: 

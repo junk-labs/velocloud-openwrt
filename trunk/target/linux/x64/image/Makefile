@@ -23,27 +23,27 @@ ifneq ($(strip $(foreach subtarget,$(USE_ATKBD),$(CONFIG_TARGET_x64_$(subtarget)
   GRUB2_MODULES_ISO += at_keyboard
 endif
 
-ifneq ($(CONFIG_X64_GRUB_CONSOLE),)
+ifneq ($(CONFIG_GRUB_CONSOLE),)
   GRUB_CONSOLE_CMDLINE += console=tty0
   GRUB_TERMINALS += console
 endif
 
-GRUB_SERIAL:=$(call qstrip,$(CONFIG_X64_GRUB_SERIAL))
+GRUB_SERIAL:=$(call qstrip,$(CONFIG_GRUB_SERIAL))
 
 GRUB_UNIT:=0
-ifneq ($(CONFIG_X64_GRUB_SERIAL_UNIT),)
-  GRUB_UNIT:=$(call qstrip,$(CONFIG_X64_GRUB_SERIAL_UNIT))
+ifneq ($(CONFIG_GRUB_SERIAL_UNIT),)
+  GRUB_UNIT:=$(call qstrip,$(CONFIG_GRUB_SERIAL_UNIT))
 endif
 
 ifneq ($(GRUB_SERIAL),)
   GRUB2_MODULES += pci extcmd terminfo serial
-  GRUB_CONSOLE_CMDLINE += console=$(GRUB_SERIAL),$(CONFIG_X64_GRUB_BAUDRATE)n8
+  GRUB_CONSOLE_CMDLINE += console=$(GRUB_SERIAL),$(CONFIG_GRUB_BAUDRATE)n8
   GRUB_SERIAL_PCH:=$(subst PCH,pch,$(subst tty,,$(GRUB_SERIAL)))
 ifeq ($(shell echo $(GRUB_SERIAL_PCH) | grep pch),)
-  GRUB_SERIAL_CONFIG := serial --unit=$(GRUB_UNIT) --speed=$(CONFIG_X64_GRUB_BAUDRATE) --word=8 --parity=no --stop=1
+  GRUB_SERIAL_CONFIG := serial --unit=$(GRUB_UNIT) --speed=$(CONFIG_GRUB_BAUDRATE) --word=8 --parity=no --stop=1
   GRUB_TERMINALS += serial
 else
-  GRUB_SERIAL_CONFIG := serial $(GRUB_SERIAL_PCH) --speed=$(CONFIG_X64_GRUB_BAUDRATE)
+  GRUB_SERIAL_CONFIG := serial $(GRUB_SERIAL_PCH) --speed=$(CONFIG_GRUB_BAUDRATE)
   GRUB_TERMINALS += serial_$(GRUB_SERIAL_PCH)
 endif
 endif
@@ -54,17 +54,17 @@ endif
 
 ROOTPART:=$(call qstrip,$(CONFIG_TARGET_ROOTFS_PARTNAME))
 
-GRUB_TIMEOUT:=$(call qstrip,$(CONFIG_X64_GRUB_TIMEOUT))
+GRUB_TIMEOUT:=$(call qstrip,$(CONFIG_GRUB_TIMEOUT))
 
-ifneq ($(CONFIG_X64_GRUB_IMAGES),)
+ifneq ($(CONFIG_GRUB_IMAGES),)
 
-  BOOTOPTS:=$(call qstrip,$(CONFIG_X64_GRUB_BOOTOPTS)) panic_timeout=5
+  BOOTOPTS:=$(call qstrip,$(CONFIG_GRUB_BOOTOPTS)) panic_timeout=5
 
   define Image/cmdline/ext4
     root=$(ROOTPART) rootfstype=ext4 rootwait
   endef
 
-ifneq ($(CONFIG_X64_EC2_IMAGES),)
+ifneq ($(CONFIG_EC2_IMAGES),)
   define Image/cmdline/ext4-ec2
     root=$(call qstrip,$(CONFIG_TARGET_ROOTFS_EC2_PARTNAME)) rootfstype=ext4 rootwait
   endef
@@ -122,38 +122,6 @@ endif
 
 ROOTDELAY=10
 
-ifneq ($(CONFIG_OLPC_BOOTSCRIPT_IMAGES),)
-
-  define Image/cmdline/ext4
-    root=$(ROOTPART) rootfstype=ext4 rootwait
-  endef
-
-  define Image/cmdline/jffs2-64k
-    block2mtd.block2mtd=$(ROOTPART),65536,rootfs root=/dev/mtdblock0 rootfstype=jffs2 rootdelay=$(ROOTDELAY)
-  endef
-
-  define Image/cmdline/jffs2-128k
-    block2mtd.block2mtd=$(ROOTPART),131072,rootfs root=/dev/mtdblock0 rootfstype=jffs2 rootdelay=$(ROOTDELAY)
-  endef
-
-  define Image/cmdline/squashfs
-    block2mtd.block2mtd=$(ROOTPART),65536,rootfs root=/dev/mtdblock0 rootfstype=squashfs rootdelay=$(ROOTDELAY)
-  endef
-
-  define Image/Build/bootscript
-	# left here because the image builder doesnt need these
-	$(INSTALL_DIR) $(KDIR)/root.bootscript/boot
-	$(CP) $(KDIR)/bzImage $(KDIR)/root.bootscript/boot/vmlinuz
-	sed -e 's#@CMDLINE@#$(strip $(call Image/cmdline/$(1))) $(BOOTOPTS)#g' \
-		./olpc.fth > $(KDIR)/root.bootscript/boot/olpc.fth
-	PADDING="$(CONFIG_TARGET_IMAGES_PAD)" PATH="$(TARGET_PATH)" ./gen_image_olpc.sh \
-		$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img \
-		$(CONFIG_TARGET_KERNEL_PARTSIZE) $(KDIR)/root.bootscript \
-		$(CONFIG_TARGET_ROOTFS_PARTSIZE) $(KDIR)/root.$(1)
-  endef
-
-endif
-
 define Image/Build/squashfs
 	$(call prepare_generic_squashfs,$(KDIR)/root.squashfs)
 endef
@@ -182,7 +150,7 @@ define Image/Build/iso
 		-o $(KDIR)/root.iso $(KDIR)/root.grub $(TARGET_DIR)
 endef
 
-ifneq ($(CONFIG_X64_VDI_IMAGES),)
+ifneq ($(CONFIG_VDI_IMAGES),)
   define Image/Build/vdi
     # left here because the image builder doesnt need these
     ifeq ($(1),ext4)
@@ -196,7 +164,7 @@ ifneq ($(CONFIG_X64_VDI_IMAGES),)
   endef
 endif
 
-ifneq ($(CONFIG_X64_VMDK_IMAGES),)
+ifneq ($(CONFIG_VMDK_IMAGES),)
   define Image/Build/vmdk
     # left here because the image builder doesnt need these
     ifeq ($(1),ext4)
@@ -233,13 +201,6 @@ endif
 define Image/BuildKernel
 	$(CP) $(KDIR)/bzImage $(BIN_DIR)/$(IMG_PREFIX)-vmlinuz
 	$(CP) $(KDIR)/bzImage $(TARGET_DIR)/vmlinuz
-  ifneq ($(CONFIG_X64_ETHERBOOT_IMAGES),)
-	rm -f $(BIN_DIR)/$(IMG_PREFIX)-etherboot
-	$(STAGING_DIR_HOST)/bin/mkelfImage \
-		--append=$(CONFIG_X64_ETHERBOOT_BOOTOPTS) \
-		$(KDIR)/bzImage \
-		$(BIN_DIR)/$(IMG_PREFIX)-etherboot
-  endif
 endef
 
 define Image/Build/Profile/ar525w
@@ -313,7 +274,7 @@ define Image/Build/velocloud/gpt
 	$(call Image/Build/grub/$(1))
 endef
 
-ifneq ($(CONFIG_X64_VELOCLOUD_MANUFACTURING_INSTALLER),)
+ifneq ($(CONFIG_VELOCLOUD_MANUFACTURING_INSTALLER),)
   define Image/Build/velocloud-manufacturing
 	echo "Building Velocloud Manufacturing Image."
 	$(call Image/Build/velocloud/grubcfg,root.grub,grub-manufacturing.cfg,grub.cfg)
@@ -321,7 +282,7 @@ ifneq ($(CONFIG_X64_VELOCLOUD_MANUFACTURING_INSTALLER),)
   endef
 endif
 
-ifneq ($(CONFIG_X64_VELOCLOUD_INSTALLER),)
+ifneq ($(CONFIG_VELOCLOUD_INSTALLER),)
   define Image/Build/velocloud-installer
 	echo "Building Velocloud Installer Image."
 	$(call Image/Build/velocloud/grubcfg,root.grub,grub-installer.cfg,grub.cfg)
@@ -329,7 +290,7 @@ ifneq ($(CONFIG_X64_VELOCLOUD_INSTALLER),)
   endef
 endif
 
-ifneq ($(CONFIG_X64_EC2_IMAGES),)
+ifneq ($(CONFIG_EC2_IMAGES),)
   define Image/Build/vc-ec2
 	# Build AWS (EC2) Image, too
 	E2SIZE=$(shell echo $$(($(CONFIG_TARGET_ROOTFS_PARTSIZE)*1024)))
@@ -343,7 +304,7 @@ ifneq ($(CONFIG_X64_EC2_IMAGES),)
 		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/menu.lst \
 		  > $(TARGET_DIR)/boot/grub/menu.lst
 
-	$(STAGING_DIR_HOST)/bin/genext2fs -U -B 4096 -b $(E2SIZE) -N $(CONFIG_TARGET_ROOTFS_MAXINODE) -d $(TARGET_DIR)/ $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img -m $(CONFIG_TARGET_ROOTFS_RESERVED_PCT)
+	$(STAGING_DIR_HOST)/bin/genext2fs -U -B $(CONFIG_TARGET_EXT4_BLOCKSIZE) -b $(E2SIZE) -N $(CONFIG_TARGET_EXT4_MAXINODE) -m $(CONFIG_TARGET_EXT4_RESERVED_PCT) -d $(TARGET_DIR)/ $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
 	$(STAGING_DIR_HOST)/bin/tune2fs -O extents,uninit_bg,dir_index $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
 	$(STAGING_DIR_HOST)/bin/e2fsck -fy $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
   endef
@@ -369,9 +330,18 @@ define Image/Build
 	$(call Image/Build/$(1))
 	$(call Image/Build/bootscript,$(1))
   ifneq ($(1),iso)
+	echo ENV_CONFIG_NO_INSTALLER_IMAGE=$(ENV_CONFIG_NO_INSTALLER_IMAGE)
+    ifeq ($(ENV_CONFIG_NO_INSTALLER_IMAGE),)
 	$(call Image/Build/velocloud-installer,$(1))
+    endif
+	echo ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE=$(ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE)
+    ifeq ($(ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE),)
 	$(call Image/Build/velocloud-manufacturing,$(1))
+    endif
+	echo ENV_CONFIG_NO_COMBINED_IMAGE=$(ENV_CONFIG_NO_COMBINED_IMAGE)
+    ifeq ($(ENV_CONFIG_NO_COMBINED_IMAGE),)
 	$(call Image/Build/grub2,$(1))
+    endif
 	$(call Image/Build/vdi,$(1))
 	$(call Image/Build/vmdk,$(1))
 	$(call Image/Build/vc-ec2,$(1))

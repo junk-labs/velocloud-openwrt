@@ -1,15 +1,15 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/network/config/netifd/files/etc/init.d
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/config/netifd/files/etc/init.d
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-21T00:17:04.617872Z
-39648
-jow
+2014-09-01T13:21:54.319454Z
+42379
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-02-26T23:23:05.000860Z
-b5b0de3c405d1fb7ffb44c5486054518
-2014-02-21T00:17:04.617872Z
-39648
-jow
+2014-09-03T23:42:09.841712Z
+494a7fc2f0d562693e59483f0f78f90a
+2014-09-01T13:21:54.319454Z
+42379
+blogic
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-2912
+2742
 

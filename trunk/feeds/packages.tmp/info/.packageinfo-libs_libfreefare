@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/libs/libfreefare/Makefile
 Package: libfreefare
-Version: 0.2.3-1
+Version: 0.4.0-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libnfc +libopenssl
 Menu-Depends: 
 Provides: 
@@ -8,7 +8,7 @@ Section: libs
 Category: Libraries
 Title: Library for high level manipulation of MIFARE cards
 Maintainer: 
-Source: libfreefare-0.2.3.tar.gz
+Source: libfreefare-0.4.0.tar.bz2
 Type: ipkg
 Description:   The libfreefare project aims to provide a convenient API for MIFARE card
   manipulations.
@@ -17,7 +17,7 @@ http://code.google.com/p/nfc-tools/wiki/libfreefare
 @@
 
 Package: libfreefare-examples
-Version: 0.2.3-1
+Version: 0.4.0-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libfreefare
 Menu-Depends: 
 Provides: 
@@ -25,7 +25,7 @@ Section: utils
 Category: Utilities
 Title: Library for high level manipulation of MIFARE cards (examples)
 Maintainer: 
-Source: libfreefare-0.2.3.tar.gz
+Source: libfreefare-0.4.0.tar.bz2
 Type: ipkg
 Description:   libfreefare is provided with some examples:
    * mifare-classic-format, mifare-desfire-format: attempt to format Mifare

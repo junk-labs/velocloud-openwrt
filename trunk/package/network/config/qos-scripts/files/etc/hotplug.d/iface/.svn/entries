@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/network/config/qos-scripts/files/etc/hotplug.d/iface
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/config/qos-scripts/files/etc/hotplug.d/iface
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:29:11.390165Z
+2014-06-03T20:17:37.734341Z
 19424796e16c97fce7a4dd2b01abf796
 2007-09-27T14:06:07.234823Z
 9046

@@ -3,6 +3,12 @@ svn:wc:ra_dav:version-url
 V 66
 /!svn/ver/5569/luci/trunk/modules/niu/luasrc/model/cbi/niu/traffic
 END
+qos1.lua
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/5555/luci/trunk/modules/niu/luasrc/model/cbi/niu/traffic/qos1.lua
+END
 portfw.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -32,10 +38,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 78
 /!svn/ver/5569/luci/trunk/modules/niu/luasrc/model/cbi/niu/traffic/routes1.lua
-END
-qos1.lua
-K 25
-svn:wc:ra_dav:version-url
-V 75
-/!svn/ver/5555/luci/trunk/modules/niu/luasrc/model/cbi/niu/traffic/qos1.lua
 END

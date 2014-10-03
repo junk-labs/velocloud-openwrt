@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/mail/mini_sendmail
 svn://svn.openwrt.org/openwrt
 
@@ -26,16 +26,13 @@ swalker
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patches
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:07.818323Z
+2014-06-17T22:31:57.006137Z
 ac3f3a08e6c8254d0bb860df9cfdb208
 2010-12-24T12:08:11.885061Z
 24817
@@ -62,4 +59,7 @@ has-props
 
 
 1316
+
+patches
+dir
 

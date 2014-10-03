@@ -1,7 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
-V 25
-/!svn/ver/9934/luci/trunk
+V 26
+/!svn/ver/10274/luci/trunk
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/!svn/ver/9952/luci/trunk/Makefile
 END
 NOTICE
 K 25
@@ -50,10 +56,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 36
 /!svn/ver/3591/luci/trunk/.buildpath
-END
-Makefile
-K 25
-svn:wc:ra_dav:version-url
-V 34
-/!svn/ver/9493/luci/trunk/Makefile
 END

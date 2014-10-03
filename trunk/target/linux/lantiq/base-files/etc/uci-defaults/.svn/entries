@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/lantiq/base-files/etc/uci-defaults
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/lantiq/base-files/etc/uci-defaults
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-11T13:15:08.359474Z
-38733
+2014-09-16T18:35:00.623351Z
+42578
 blogic
 
 
@@ -32,78 +32,10 @@ file
 
 
 
-2013-12-02T20:27:58.922164Z
-b790232b1444625981b81f3302d3e8d8
-2013-01-18T12:42:53.029206Z
-35217
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-304
-
-01_leds
-file
-
-
-
-
-2013-12-02T20:27:58.922164Z
-3cf9e3f3c3638a3fc79ebf88e2315489
-2013-09-19T00:50:44.828832Z
-38048
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-804
-
-02_network
-file
-
-
-
-
-2013-12-02T20:27:58.922164Z
-10c5f8fdf58ce7f394af0d3a2d381b48
-2013-11-11T13:15:08.359474Z
-38733
+2014-08-06T22:40:51.425834Z
+a42f53b9cdc3c2cb5daa4077c225fe2b
+2014-07-02T16:33:11.931151Z
+41472
 blogic
 
 
@@ -126,5 +58,73 @@ blogic
 
 
 
-2472
+307
+
+01_leds
+file
+
+
+
+
+2014-08-06T22:40:51.425834Z
+74f4971387e9c83fd65eea5bbe757c83
+2014-07-02T16:33:11.931151Z
+41472
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1149
+
+02_network
+file
+
+
+
+
+2014-09-29T22:49:13.832308Z
+ea430e9366047ecfb1368f4e7553751a
+2014-09-16T18:35:00.623351Z
+42578
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4069
 

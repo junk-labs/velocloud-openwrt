@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/libs/polarssl/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/polarssl/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-07T21:28:12.626818Z
-38330
-luka
+2014-08-08T05:21:38.255920Z
+42062
+cyrus
 
 
 
@@ -26,51 +26,17 @@ luka
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-100-disable-testsuites.patch
-file
-
-
-
-
-2013-12-02T20:28:28.034164Z
-24ac43df7734b072c1eb34d945cd475a
-2013-01-30T20:07:04.784853Z
-35411
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-530
-
 200-reduce_config.patch
 file
 
 
 
 
-2013-12-02T20:28:28.034164Z
-60f9c2f6feddb7a8add1e0660ffe13d2
-2013-07-24T16:59:43.024585Z
-37527
-nbd
+2014-09-03T23:42:09.821712Z
+193a4f7013e0fe7e22e365dc727c1cf1
+2014-08-08T05:21:38.255920Z
+42062
+cyrus
 
 
 
@@ -92,19 +58,19 @@ nbd
 
 
 
-1837
+4591
 
-300-openssl_cipher_name_compat.patch
+210-gen_key_config_fix.patch
 file
 
 
 
 
-2013-12-02T20:28:28.034164Z
-e7b736f7357682d2e8fe70d21364b092
-2013-10-07T21:28:12.626818Z
-38330
-luka
+2014-09-03T23:42:09.821712Z
+bcc53eea2c2ddbc8dfdd0a106deb04cd
+2014-08-08T05:21:38.255920Z
+42062
+cyrus
 
 
 
@@ -126,5 +92,5 @@ luka
 
 
 
-1736
+1330
 

@@ -3,6 +3,36 @@ svn:wc:ra_dav:version-url
 V 78
 /!svn/ver/4397/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk
 END
+dialplan_out.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/4385/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/dialplan_out.lua
+END
+meetme.lua
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/4397/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/meetme.lua
+END
+meetme_settings.lua
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/4397/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/meetme_settings.lua
+END
+phones.lua
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/4274/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/phones.lua
+END
+trunk_sip.lua
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/4274/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/trunk_sip.lua
+END
 phone_sip.lua
 K 25
 svn:wc:ra_dav:version-url
@@ -38,34 +68,4 @@ K 25
 svn:wc:ra_dav:version-url
 V 101
 /!svn/ver/4396/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/voicemail_settings.lua
-END
-dialplan_out.lua
-K 25
-svn:wc:ra_dav:version-url
-V 95
-/!svn/ver/4385/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/dialplan_out.lua
-END
-meetme.lua
-K 25
-svn:wc:ra_dav:version-url
-V 89
-/!svn/ver/4397/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/meetme.lua
-END
-meetme_settings.lua
-K 25
-svn:wc:ra_dav:version-url
-V 98
-/!svn/ver/4397/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/meetme_settings.lua
-END
-phones.lua
-K 25
-svn:wc:ra_dav:version-url
-V 89
-/!svn/ver/4274/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/phones.lua
-END
-trunk_sip.lua
-K 25
-svn:wc:ra_dav:version-url
-V 92
-/!svn/ver/4274/luci/trunk/applications/luci-asterisk/luasrc/model/cbi/asterisk/trunk_sip.lua
 END

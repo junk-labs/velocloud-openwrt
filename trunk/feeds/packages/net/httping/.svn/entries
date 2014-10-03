@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/httping
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-02-05T20:25:38.881307Z
-30319
-jow
+2014-05-05T19:31:03.408395Z
+40701
+florian
 
 
 
@@ -26,17 +26,20 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:10.242323Z
-6b1eafb74629a2d45714240918a9cef8
-2012-02-05T20:25:38.881307Z
-30319
-jow
+2014-06-17T22:31:59.294136Z
+c88eb221992ab2df0a8ec2a215e79bc3
+2014-05-05T19:31:03.408395Z
+40701
+florian
 has-props
 
 
@@ -58,8 +61,5 @@ has-props
 
 
 
-1832
-
-patches
-dir
+1984
 

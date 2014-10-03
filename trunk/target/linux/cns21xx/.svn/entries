@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/cns21xx
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/cns21xx
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-05T08:25:45.538431Z
-38652
-juhosg
+2014-07-20T17:31:11.270376Z
+41776
+blogic
 
 
 
@@ -26,6 +26,40 @@ juhosg
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+config-3.10
+file
+
+
+
+
+2014-06-03T20:17:38.022341Z
+a3e6eee7cc507da10b2f8acd72a23dcc
+2013-09-13T16:39:33.192625Z
+37971
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4417
+
 patches-3.10
 dir
 
@@ -38,11 +72,11 @@ file
 
 
 
-2013-12-02T20:28:09.102164Z
-4906c91e4eee03e44d47a0084d5efd9c
-2013-11-05T08:25:45.538431Z
-38652
-juhosg
+2014-08-06T22:38:47.709837Z
+f1be650cf099df1da20649e8e0f021a6
+2014-07-20T17:31:11.270376Z
+41776
+blogic
 has-props
 
 
@@ -72,7 +106,7 @@ file
 
 
 
-2013-12-02T20:28:09.102164Z
+2014-06-03T20:17:38.022341Z
 2f48e84bb6f0072844b09c6be5eece91
 2013-09-13T15:38:42.326472Z
 37968
@@ -105,38 +139,4 @@ dir
 
 profiles
 dir
-
-config-3.10
-file
-
-
-
-
-2013-12-02T20:28:09.102164Z
-a3e6eee7cc507da10b2f8acd72a23dcc
-2013-09-13T16:39:33.192625Z
-37971
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4417
 

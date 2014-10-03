@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/modules/freifunk/htdocs/luci-static/resources/freifunk-map
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:51.062324Z
+2014-06-17T22:32:35.926136Z
 57bda7b5e9c912b1d085e9b92283d77f
 2009-05-25T13:53:31.908914Z
 4606
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T22:38:51.062324Z
+2014-06-17T22:32:35.926136Z
 d097b08a8503323b5e7dc3b62c3fe99c
 2009-05-25T13:53:31.908914Z
 4606

@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/lang/lsqlite3
 svn://svn.openwrt.org/openwrt
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:07.498323Z
+2014-06-17T22:31:56.622137Z
 ea5e10796246bc3aea02f5b021c6b0e0
 2011-06-23T14:23:31.888829Z
 27263

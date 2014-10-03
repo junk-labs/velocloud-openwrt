@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/libqmi
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-02-18T09:59:33.354615Z
-35654
-florian
+2014-02-08T17:01:28.319987Z
+39536
+hauke
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:14.802324Z
-46388ad0efa8c32eb4e4ccd67300e02c
-2013-02-18T09:59:33.354615Z
-35654
-florian
+2014-06-17T22:32:01.538136Z
+55df5d91607b9773e829b09f1faa4854
+2014-02-08T17:01:28.319987Z
+39536
+hauke
 
 
 
@@ -58,5 +58,5 @@ florian
 
 
 
-1272
+1353
 

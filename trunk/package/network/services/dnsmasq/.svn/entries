@@ -1,15 +1,15 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/dnsmasq
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/dnsmasq
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-01-17T14:00:09.513508Z
-39312
-cyrus
+2014-09-01T13:22:08.134551Z
+42390
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-02-26T23:26:24.636848Z
-7f01f17c1d000239a159cf10a51988ea
-2013-12-21T13:31:28.621121Z
-39152
-jow
+2014-09-03T23:42:09.873712Z
+99cc0737a0b0765c8ff4b64d7f3438e9
+2014-08-20T09:53:29.995767Z
+42226
+cyrus
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-2281
+3073
 
 files
 dir

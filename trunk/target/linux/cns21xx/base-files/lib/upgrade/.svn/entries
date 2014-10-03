@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/cns21xx/base-files/lib/upgrade
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/cns21xx/base-files/lib/upgrade
 svn://svn.openwrt.org/openwrt
 
 
 
-2010-12-30T17:19:16.126325Z
-24859
-juhosg
+2014-06-02T12:43:22.188606Z
+40915
+blogic
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T20:28:08.950164Z
-09571d9868d3e859decd2dd662ba1dd9
-2010-12-30T17:19:16.126325Z
-24859
-juhosg
+2014-06-03T20:52:29.566293Z
+be1304f613ba3dd5f59c064129f6bdaf
+2014-06-02T12:43:22.188606Z
+40915
+blogic
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-721
+718
 

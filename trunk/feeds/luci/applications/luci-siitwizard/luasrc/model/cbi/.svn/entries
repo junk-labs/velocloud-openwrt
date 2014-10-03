@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-siitwizard/luasrc/model/cbi
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:38.970324Z
+2014-06-17T22:32:18.994136Z
 7c2f75ee3ffd382e8f695c3e23f583f1
 2008-12-29T17:39:48.042232Z
 3966

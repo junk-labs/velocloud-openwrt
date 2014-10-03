@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/mail/procmail
 svn://svn.openwrt.org/openwrt
 
 
 
-2012-06-29T21:09:37.667973Z
-32540
-nbd
+2014-03-27T07:03:02.506596Z
+40068
+juhosg
 
 
 
@@ -35,11 +35,11 @@ file
 
 
 
-2013-12-02T22:38:07.810323Z
-0a7a288a7f4eb29d8a229e81ccd4c430
-2012-06-29T21:09:37.667973Z
-32540
-nbd
+2014-06-17T22:31:56.994137Z
+5a2de0a4f1570b5e2dc3eb00bdd86a03
+2014-03-27T07:03:02.506596Z
+40068
+juhosg
 has-props
 
 
@@ -61,5 +61,5 @@ has-props
 
 
 
-1080
+1077
 

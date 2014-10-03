@@ -1,8 +1,8 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/system/uci/files
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/system/uci/files
 svn://svn.openwrt.org/openwrt
 
 

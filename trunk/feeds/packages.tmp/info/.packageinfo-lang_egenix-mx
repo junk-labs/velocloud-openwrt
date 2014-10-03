@@ -12,7 +12,7 @@ Title: Egenix mxBase
 Maintainer: 
 Source: egenix-mx-base-2.0.6.tar.gz
 Type: ipkg
-Description:  This package contains a set of base packages from Egenix required by other 
+Description:  This package contains a set of base packages from Egenix required by other
  python packages.
 http://www.egenix.com/products/python/mxBase/
 

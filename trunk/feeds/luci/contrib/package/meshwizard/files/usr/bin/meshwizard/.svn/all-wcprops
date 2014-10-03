@@ -1,17 +1,17 @@
 K 25
 svn:wc:ra_dav:version-url
 V 77
-/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard
-END
-wizard.sh
-K 25
-svn:wc:ra_dav:version-url
-V 87
-/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/wizard.sh
+/!svn/ver/9960/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard
 END
 functions.sh
 K 25
 svn:wc:ra_dav:version-url
 V 90
 /!svn/ver/9307/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/functions.sh
+END
+wizard.sh
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9960/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/wizard.sh
 END

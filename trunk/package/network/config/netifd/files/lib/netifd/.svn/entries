@@ -1,15 +1,15 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/network/config/netifd/files/lib/netifd
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/config/netifd/files/lib/netifd
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-02-18T13:34:04.268980Z
-39621
-blogic
+2014-07-30T13:18:35.675532Z
+41894
+cyrus
 
 
 
@@ -26,9 +26,6 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-proto
-dir
-
 dhcp.script
 file
 
@@ -36,9 +33,12 @@ file
 
 
 
-442708a3cef6d5e164ba6f2f26a0c366
-2013-12-15T19:38:53.261139Z
-39061
+9e79028e6b756418419896b88db30199
+2014-07-30T13:18:35.675532Z
+41894
 cyrus
 has-props
+
+proto
+dir
 

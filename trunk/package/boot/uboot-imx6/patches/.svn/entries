@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/boot/uboot-imx6/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/boot/uboot-imx6/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-31T00:00:51.458037Z
-38625
+2014-05-20T21:01:18.486147Z
+40805
 luka
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:28:14.614164Z
-749e40af448cbf2030cc83414b4e61d3
-2013-10-31T00:00:51.458037Z
-38625
+2014-06-03T20:36:41.938315Z
+a653681d5d49a50bd36cf79518476848
+2014-05-20T21:01:18.486147Z
+40805
 luka
 
 
@@ -58,7 +58,7 @@ luka
 
 
 
-2793
+2815
 
 100-wandboard-enable-fit.patch
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2013-12-02T20:28:14.614164Z
-51131e685f24d292f0aa7ab2851df7d0
-2013-08-29T23:06:31.063862Z
-37858
+2014-06-03T20:36:41.938315Z
+6b3d3b037195ddc87290a0b304f08a6c
+2014-05-20T21:01:18.486147Z
+40805
 luka
 
 

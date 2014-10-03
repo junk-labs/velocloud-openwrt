@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/gdbm
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-10T18:04:54.709607Z
-38706
-tripolar
+2014-03-27T07:02:55.793725Z
+40063
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:14.106324Z
-28358688b2c5979fbb39298e46a00849
-2013-11-10T18:04:54.709607Z
-38706
-tripolar
+2014-06-17T22:32:01.450136Z
+ff986d6a14386b56cbb2400284ca7e82
+2014-03-27T07:02:55.793725Z
+40063
+juhosg
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1246
+1245
 

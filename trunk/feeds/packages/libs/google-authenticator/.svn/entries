@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/libs/google-authenticator
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-22T00:57:54.706022Z
-38493
-tripolar
+2014-03-27T07:03:28.341131Z
+40080
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:14.542324Z
-e6ba7935a1fde9959fd519b54ea3214d
-2013-10-22T00:55:46.486162Z
-38492
-tripolar
+2014-06-17T22:32:01.618136Z
+aad34e64990344d0fa6dbe3b7e6d93b5
+2014-03-27T07:03:28.341131Z
+40080
+juhosg
 
 
 
@@ -58,7 +58,7 @@ tripolar
 
 
 
-1875
+1873
 
 patches
 dir

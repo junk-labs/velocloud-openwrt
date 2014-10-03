@@ -10,7 +10,7 @@ DEFAULT_PACKAGES += \
 
 # pw-dev-specific packages:
 DEFAULT_PACKAGES += \
-	kmod-intel-igb \
+	kmod-igb \
 	igb-eeprom \
 	kmod-r8169 \
 	kmod-dsa-velocloud \

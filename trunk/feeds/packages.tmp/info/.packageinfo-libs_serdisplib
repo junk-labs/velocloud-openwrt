@@ -10,7 +10,7 @@ Title: A display control library
 Maintainer: 
 Source: serdisplib-1.97.9.tar.gz
 Type: ipkg
-Description: 	serdisplib is a library to drive serial and parallel displays 
+Description: 	serdisplib is a library to drive serial and parallel displays
 	with built-in controllers.
 http://serdisplib.sourceforge.net/
 

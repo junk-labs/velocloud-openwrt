@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/net/tor-alpha/Makefile
 Package: tor-alpha
-Version: 0.2.4.15-rc-1
+Version: 0.2.5.4-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libevent2 +libopenssl +libpthread +librt +SSP_SUPPORT:libssp
 Menu-Depends: 
 Provides: 
@@ -9,7 +9,7 @@ Section: net
 Category: Network
 Title: An anonymous Internet communication system
 Maintainer: 
-Source: tor-0.2.4.15-rc.tar.gz
+Source: tor-0.2.5.4-alpha.tar.gz
 Type: ipkg
 Description:  Tor is a toolset for a wide range of organizations and people that want to
  improve their safety and security on the Internet. Using Tor can help you
@@ -22,7 +22,7 @@ https://www.torproject.org/
 @@
 
 Package: tor-alpha-fw-helper
-Version: 0.2.4.15-rc-1
+Version: 0.2.5.4-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +tor-alpha +libminiupnpc +libnatpmp
 Menu-Depends: 
 Provides: 
@@ -31,7 +31,7 @@ Section: net
 Category: Network
 Title: Firewall helper for tor
 Maintainer: 
-Source: tor-0.2.4.15-rc.tar.gz
+Source: tor-0.2.5.4-alpha.tar.gz
 Type: ipkg
 Description:  Tor is a toolset for a wide range of organizations and people that want to
  improve their safety and security on the Internet. Using Tor can help you
@@ -44,7 +44,7 @@ https://www.torproject.org/
 @@
 
 Package: tor-alpha-geoip
-Version: 0.2.4.15-rc-1
+Version: 0.2.5.4-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +tor-alpha
 Menu-Depends: 
 Provides: 
@@ -53,7 +53,7 @@ Section: net
 Category: Network
 Title: GeoIP db for tor
 Maintainer: 
-Source: tor-0.2.4.15-rc.tar.gz
+Source: tor-0.2.5.4-alpha.tar.gz
 Type: ipkg
 Description:  Tor is a toolset for a wide range of organizations and people that want to
  improve their safety and security on the Internet. Using Tor can help you

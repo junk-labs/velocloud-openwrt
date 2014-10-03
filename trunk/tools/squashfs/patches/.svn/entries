@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/tools/squashfs/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/squashfs/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:29:12.050165Z
+2014-06-03T20:17:38.470341Z
 66082f532da3d44c558860ce8eab8165
 2013-10-28T15:15:20.699841Z
 38563
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:29:12.050165Z
+2014-06-03T20:17:38.470341Z
 70a4a7e75d3be8641c3833c12c48b897
 2009-05-04T17:04:03.671374Z
 15595

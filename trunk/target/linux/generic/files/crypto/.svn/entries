@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/files/crypto
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic/files/crypto
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-08-14T08:52:19.509836Z
-37769
-nbd
+2014-01-21T12:11:18.482116Z
+39357
+jogo
 
 
 

@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/applications/luci-freifunk-widgets
 http://svn.luci.subsignal.org
 
@@ -26,16 +26,13 @@ soma
 
 ab181a69-ba2e-0410-a84d-ff88ab4c47bc
 
-luasrc
-dir
-
 Makefile
 file
 
 
 
 
-2013-12-02T22:38:39.770324Z
+2014-06-17T22:32:19.910136Z
 23f05eaf90077e411c9f96b7286c80c9
 2012-09-17T20:33:51.054686Z
 9305
@@ -64,5 +61,8 @@ soma
 83
 
 root
+dir
+
+luasrc
 dir
 

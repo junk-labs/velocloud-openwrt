@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/files/Documentation/networking
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic/files/Documentation/networking
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:03.310164Z
+2014-06-03T20:17:38.050341Z
 59fcfd8ad2d62cc63c4b7d8f7c25ad98
 2011-05-09T15:21:58.085718Z
 26865

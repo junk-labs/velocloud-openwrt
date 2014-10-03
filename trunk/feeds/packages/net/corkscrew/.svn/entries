@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/corkscrew
 svn://svn.openwrt.org/openwrt
 
 
 
-2011-03-12T01:37:47.001597Z
-26057
-cshore
+2014-03-27T07:02:23.335314Z
+40045
+juhosg
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:11.670323Z
-4efe01c467e505311f107dcb5e9a123d
-2011-03-12T01:37:47.001597Z
-26057
-cshore
+2014-06-17T22:31:58.694137Z
+a761b11bf5660faf416f044f687da1fc
+2014-03-27T07:02:23.335314Z
+40045
+juhosg
 
 
 
@@ -58,5 +58,5 @@ cshore
 
 
 
-807
+806
 

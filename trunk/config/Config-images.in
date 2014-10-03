@@ -64,13 +64,64 @@ menu "Target Images"
 		help
 		  Build a compressed tar archive of the the root filesystem
 
+	config TARGET_ROOTFS_TARBZ2
+		bool "tar.bz2"
+		default y if USES_TARBZ2
+		help
+		  Build a bzip2-compressed tar archive of the the root filesystem
+
 	comment "Root filesystem images"
 
-	config TARGET_ROOTFS_EXT4FS
+	menuconfig TARGET_ROOTFS_EXT4FS
 		bool "ext4"
 		default y if USES_EXT4
 		help
-		  Ext4 file system with some free space for uml images
+		  Build a ext4 root filesystem
+
+		config TARGET_EXT4_MAXINODE
+			int "Maximum number of inodes in root filesystem"
+			depends on TARGET_ROOTFS_EXT4FS
+			default 6000
+			help
+			  Allows you to change the maximum number of inodes in the root filesystem
+
+		config TARGET_EXT4_RESERVED_PCT
+			int "Percentage of reserved blocks in root filesystem"
+			depends on TARGET_ROOTFS_EXT4FS
+			default 0
+			help
+			  Allows you to change the percentage of reserved blocks in the root filesystem
+
+		choice
+			prompt "Root filesystem block size"
+			default TARGET_EXT4_BLOCKSIZE_4K
+			depends on TARGET_ROOTFS_EXT4FS
+			help
+			  Allows you to change the block size of the root filesystem
+
+			config TARGET_EXT4_BLOCKSIZE_4K
+				bool "4k"
+
+			config TARGET_EXT4_BLOCKSIZE_2K
+				bool "2k"
+
+			config TARGET_EXT4_BLOCKSIZE_1K
+				bool "1k"
+		endchoice
+
+		config TARGET_EXT4_BLOCKSIZE
+			int
+			default 4096 if TARGET_EXT4_BLOCKSIZE_4K
+			default 2048 if TARGET_EXT4_BLOCKSIZE_2K
+			default 1024 if TARGET_EXT4_BLOCKSIZE_1K
+			depends on TARGET_ROOTFS_EXT4FS
+
+		config TARGET_EXT4_JOURNAL
+			bool "Create a journaling filesystem"
+			depends on TARGET_ROOTFS_EXT4FS
+			default n
+			help
+			  Create an ext4 filesystem with a journal
 
 	config TARGET_ROOTFS_ISO
 		bool "iso"
@@ -92,11 +143,17 @@ menu "Target Images"
 		help
 		  Build a jffs2 root filesystem for NAND flash
 
-	config TARGET_ROOTFS_SQUASHFS
+	menuconfig TARGET_ROOTFS_SQUASHFS
 		bool "squashfs"
 		default y if USES_SQUASHFS
 		help
 		  Build a squashfs-lzma root filesystem
+
+		config TARGET_SQUASHFS_BLOCK_SIZE
+			int "Block size (in KiB)"
+			depends on TARGET_ROOTFS_SQUASHFS
+			default 64 if LOW_MEMORY_FOOTPRINT
+			default 256
 
 	menuconfig TARGET_ROOTFS_UBIFS
 		bool "ubifs"
@@ -107,7 +164,7 @@ menu "Target Images"
 
 		choice
 			prompt "compression"
-			default TARGET_UBIFS_COMPRESSION_NONE
+			default TARGET_UBIFS_COMPRESSION_ZLIB
 			depends on TARGET_ROOTFS_UBIFS
 			help
 			  Select compression type
@@ -133,30 +190,145 @@ menu "Target Images"
 			prompt "journal size" if TARGET_ROOTFS_UBIFS
 			default ""
 
+	config GRUB_IMAGES
+		bool "Build GRUB images (Linux x86 or x86_64 host only)"
+		depends on TARGET_x86_64 || TARGET_x64 || (TARGET_x86 && !(TARGET_x86_olpc || TARGET_x86_rdc))
+		depends on TARGET_ROOTFS_EXT4FS || TARGET_ROOTFS_ISO || TARGET_ROOTFS_JFFS2 || TARGET_ROOTFS_SQUASHFS
+		select PACKAGE_grub2
+		default y
+
+	config GRUB_CONSOLE
+		bool "Use Console Terminal (in addition to Serial)"
+		depends on GRUB_IMAGES
+		default n if (TARGET_x86_generic_Soekris45xx || TARGET_x86_generic_Soekris48xx || TARGET_x86_net5501 || TARGET_x86_geos || TARGET_x86_alix2)
+		default y
+
+	config GRUB_SERIAL
+		string "Serial port device"
+		depends on GRUB_IMAGES
+		default "hvc0" if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
+		default "ttyPCH0" if TARGET_x86_sb_itc
+		default "ttyS1" if (TARGET_x86_pw_dev || TARGET_x64_pw_dev)
+		default "ttyS0"
+
+	config GRUB_SERIAL_UNIT
+		string "Serial port grub unit"
+		depends on GRUB_IMAGES
+		default "1" if (TARGET_x86_pw_dev || TARGET_x64_pw_dev)
+		default "0"
+		help
+		  Unit name of serial port device for grub itself.
+		  This could be different from GRUB_SERIAL, depending on grub serial device order.
+
+	config GRUB_BAUDRATE
+		int "Serial port baud rate"
+		depends on GRUB_IMAGES
+		default 19200 if TARGET_x86_generic_Soekris45xx || TARGET_x86_generic_Soekris48xx || TARGET_x86_net5501
+		default 38400 if TARGET_x86_alix2
+		default 115200 if TARGET_x86_geos || TARGET_x86_kvm_guest
+		default 115200 if TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500
+		default 38400
+
+	config GRUB_BOOTOPTS
+		string "Extra kernel boot options"
+		depends on GRUB_IMAGES
+		default "xencons=hvc" if TARGET_x86_xen_domu
+		default "earlyprintk=pch,0x3058,115200" if TARGET_x86_sb_itc
+		default "earlyprintk=serial,ttyS1,115200" if TARGET_x64_pw_dev
+		default "earlyprintk=serial,ttyS0,115200" if TARGET_x64_edge500
+		help
+		  If you don't know, just leave it blank.
+
+	config GRUB_TIMEOUT
+		string "Seconds to wait before booting the default entry"
+		depends on GRUB_IMAGES
+		default "5"
+		help
+		  If you don't know, 5 seconds is a reasonable default.
+
+	config VDI_IMAGES
+		bool "Build VirtualBox image files (VDI)"
+		depends on TARGET_x86 || TARGET_x86_64
+		select GRUB_IMAGES
+		select TARGET_IMAGES_PAD
+		select PACKAGE_kmod-e1000
+
+	config VELOCLOUD_INSTALLER
+		bool "Build Velocloud installer image"
+		depends on GRUB_IMAGES
+		depends on TARGET_x86 || TARGET_x64
+		depends on TARGET_ROOTFS_EXT4FS
+		default y if (TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500)
+
+	config VELOCLOUD_MANUFACTURING_INSTALLER
+		bool "Build Velocloud manufacturing installer image"
+		depends on GRUB_IMAGES
+		depends on VELOCLOUD_INSTALLER
+		depends on TARGET_ROOTFS_EXT4FS
+		default y if TARGET_x64_edge500
+
+	config VMDK_IMAGES
+		bool "Build VMware image files (VMDK)"
+		depends on TARGET_x86 || TARGET_x86_64 || TARGET_x64
+		select GRUB_IMAGES
+		select TARGET_IMAGES_PAD
+		select PACKAGE_kmod-e1000
+		select PACKAGE_kmod-pcnet32
+		default y if TARGET_x86_vc_vmdk || TARGET_x64_vc_vmdk
+		default y if TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
+		default y if TARGET_x86_vc_kvm_guest || TARGET_x64_vc_kvm_guest
+
+	config EC2_IMAGES
+		bool "Build Amazon EC2 image files"
+		default y if TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
+		depends on GRUB_IMAGES
+		depends on TARGET_ROOTFS_EXT4FS
+
+	config TARGET_ROOTFS_EC2_PARTNAME
+		string "Root partition on EC2 target image"
+		depends on TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
+		depends on GRUB_IMAGES
+		default "/dev/xvda1"
+
+	config TARGET_IMAGES_PAD
+		bool "Pad images to filesystem size (for JFFS2)"
+		depends on OLPC_BOOTSCRIPT_IMAGES || GRUB_IMAGES
+
+	config TARGET_IMAGES_GZIP
+		bool "GZip images"
+		depends on TARGET_IMAGES_PAD || TARGET_ROOTFS_EXT4FS
+		default y
+
 	comment "Image Options"
 
 	source "target/linux/*/image/Config.in"
 
+	config TARGET_KERNEL_PARTSIZE
+		int "Boot partition size (in MB)"
+		depends on OLPC_BOOTSCRIPT_IMAGES || GRUB_IMAGES
+		default 4
+
 	config TARGET_ROOTFS_PARTSIZE
 		int "Root filesystem partition size (in MB)"
-		depends on X86_GRUB_IMAGES || TARGET_ROOTFS_EXT4FS || TARGET_rb532
+		depends on GRUB_IMAGES || TARGET_ROOTFS_EXT4FS || TARGET_rb532
 		default 48
 		help
 		  Allows you to change the root filesystem partition size
 
-	config TARGET_ROOTFS_MAXINODE
-		int "Maximum number of inodes in root filesystem"
-		depends on TARGET_ROOTFS_EXT4FS
-		default 6000
+	config TARGET_ROOTFS_PARTNAME
+		string "Root partition on target device"
+		depends on OLPC_BOOTSCRIPT_IMAGES || GRUB_IMAGES
+		default "/dev/xvda2" if TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
+		default "/dev/sdb2" if TARGET_x64_pw_dev || TARGET_x64_edge500
+		default "/dev/sda2" if ! TARGET_x86_xen_domu
 		help
-		  Allows you to change the maximum number of inodes in the root filesystem
+		  The root partition on the final device.  If you don't know,
+		  you probably want the default (/dev/sda2).
 
-	config TARGET_ROOTFS_RESERVED_PCT
-		int "Percentage of reserved blocks in root filesystem"
-		depends on TARGET_ROOTFS_EXT4FS
-		default 0
-		help
-		  Allows you to change the percentage of reserved blocks in the root filesystem
+	config TARGET_ROOTFS_INSTSIZE
+		int "Installed root partition size (in MB)"
+		depends on GRUB_IMAGES && (TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500)
+		default 1024
 
 	menuconfig TARGET_ROOTFS_INCLUDE_KERNEL
 		bool "Include kernel in root filesystem"

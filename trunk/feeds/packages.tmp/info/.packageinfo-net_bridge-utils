@@ -10,7 +10,7 @@ Title: Ethernet bridging configuration utility
 Maintainer: 
 Source: bridge-utils-1.5.tar.gz
 Type: ipkg
-Description:  Manage ethernet bridging: a way to connect networks together to 
+Description:  Manage ethernet bridging: a way to connect networks together to
  form a larger network.
 http://bridge.sourceforge.net/
 

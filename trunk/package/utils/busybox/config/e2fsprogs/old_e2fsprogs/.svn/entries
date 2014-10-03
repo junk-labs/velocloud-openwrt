@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/utils/busybox/config/e2fsprogs/old_e2fsprogs
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox/config/e2fsprogs/old_e2fsprogs
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-06-21T16:54:37.987982Z
-37007
-blogic
+2014-05-25T17:42:09.256426Z
+40852
+nbd
 
 
 
@@ -32,12 +32,11 @@ file
 
 
 
-2013-12-02T20:28:13.506164Z
-4ff20325f4696b6e4ae4db6dda321101
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-has-props
+2014-06-03T20:36:35.706315Z
+a4a586606ffcf7e9ae509edc55ab2992
+2014-05-25T17:42:09.256426Z
+40852
+nbd
 
 
 
@@ -58,5 +57,6 @@ has-props
 
 
 
-1813
+
+1980
 

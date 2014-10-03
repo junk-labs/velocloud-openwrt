@@ -1,14 +1,14 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/ramips/base-files/lib/preinit
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ramips/base-files/lib/preinit
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-09-18T16:31:37.473375Z
-38040
+2014-09-01T13:21:17.175507Z
+42358
 blogic
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:28:00.282164Z
-23a4bed4d3e300e330cff2549dc58549
-2013-06-24T12:39:28.455194Z
-37027
+2014-09-03T23:42:09.497712Z
+9706db0558e810a64ae90c066cb85119
+2014-09-01T13:21:17.175507Z
+42358
 blogic
 
 
@@ -58,41 +58,7 @@ blogic
 
 
 
-284
-
-04_disable_wnce2001_flash_checksumming
-file
-
-
-
-
-2013-12-02T20:28:00.282164Z
-1e38d513b914007c47d9ee6870c6b0d5
-2013-04-09T14:19:33.087059Z
-36289
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1414
+915
 
 03_preinit_do_ramips.sh
 file
@@ -100,7 +66,7 @@ file
 
 
 
-2013-12-02T20:28:00.282164Z
+2014-06-03T20:17:38.298341Z
 be863146c3e1fa1d1f0d61b92be310f1
 2013-03-03T12:47:02.440277Z
 35850
@@ -128,16 +94,16 @@ juhosg
 
 105
 
-06_set_iface_mac
+04_handle_checksumming
 file
 
 
 
 
-2013-12-02T20:28:00.282164Z
-ac16e88a5f1eb46852fdef2c53d17ca9
-2013-09-18T16:31:37.473375Z
-38040
+2014-06-20T21:11:26.088245Z
+61b783f1603182bdf66892e3993d3edc
+2014-06-16T18:57:20.317620Z
+41224
 blogic
 
 
@@ -160,5 +126,5 @@ blogic
 
 
 
-1854
+2120
 

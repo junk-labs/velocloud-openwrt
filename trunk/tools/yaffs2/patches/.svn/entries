@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/tools/yaffs2/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools/yaffs2/patches
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:29:12.018165Z
+2014-06-03T20:17:38.478341Z
 7ffcfe8daece9d1d406cf30d74b559c9
 2010-07-22T02:59:14.592651Z
 22345
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:29:12.018165Z
+2014-06-03T20:17:38.478341Z
 b8e97f27e17f2604d8191d5dcf038e1f
 2013-03-07T17:32:29.455175Z
 35900

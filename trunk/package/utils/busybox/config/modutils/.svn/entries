@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/package/utils/busybox/config/modutils
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox/config/modutils
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-06-21T16:54:37.987982Z
-37007
-blogic
+2014-05-25T17:42:09.256426Z
+40852
+nbd
 
 
 
@@ -32,12 +32,11 @@ file
 
 
 
-2013-12-02T20:28:13.722164Z
-a2b6bda6e488acb67346f41b873009e7
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-has-props
+2014-06-03T20:36:35.786315Z
+3e828164f933a909e9f83ecb3c494c3c
+2014-05-25T17:42:09.256426Z
+40852
+nbd
 
 
 
@@ -58,5 +57,6 @@ has-props
 
 
 
-9312
+
+10091
 

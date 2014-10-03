@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/utils/xdelta3/Makefile
 Package: xdelta3
-Version: 3.0.0-1
+Version: 3.0.0-2
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
 Menu-Depends: 
 Provides: 

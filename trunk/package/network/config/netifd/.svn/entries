@@ -1,15 +1,15 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/network/config/netifd
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/config/netifd
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-03-11T09:28:28.818366Z
-39870
-nbd
+2014-09-08T14:47:26.660438Z
+42440
+cyrus
 
 
 
@@ -26,17 +26,23 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+files
+dir
+
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2014-03-12T18:13:07.425261Z
-19c3d1bbe27ff747386b74d60ce825b6
-2014-03-11T09:28:28.818366Z
-39870
-nbd
+2014-09-29T22:49:13.948308Z
+b232aa6f4254bd744507d574182dde4b
+2014-09-08T14:47:26.660438Z
+42440
+cyrus
 
 
 
@@ -58,11 +64,5 @@ nbd
 
 
 
-1136
-
-files
-dir
-
-patches
-dir
+1146
 

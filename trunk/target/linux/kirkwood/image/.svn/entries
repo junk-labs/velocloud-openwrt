@@ -1,15 +1,15 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/kirkwood/image
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/kirkwood/image
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-11-23T15:55:10.601471Z
-38897
-luka
+2014-07-21T18:42:06.245379Z
+41791
+blogic
 
 
 
@@ -26,47 +26,13 @@ luka
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-Makefile
-file
-
-
-
-
-2013-12-02T20:28:06.782164Z
-299cb4c4ec11bc7d4a4f05f7e6aa76dd
-2013-11-23T15:55:10.601471Z
-38897
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4793
-
 ubinize.cfg
 file
 
 
 
 
-2013-12-02T20:28:06.782164Z
+2014-06-03T20:17:38.230341Z
 10fdde26bfba51d84f9324b2938f5d2a
 2013-10-04T03:45:52.005298Z
 38301
@@ -93,4 +59,38 @@ luka
 
 
 253
+
+Makefile
+file
+
+
+
+
+2014-08-06T22:40:51.453834Z
+be6799a21de943677b5583e7abd4abaa
+2014-07-21T18:42:06.245379Z
+41791
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5099
 

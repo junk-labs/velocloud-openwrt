@@ -26,6 +26,15 @@ has-props
 
 2dee665f-611b-0410-ab39-d748a57cfec1
 
+logtrigger
+dir
+
+webif-iw-lua-openssl
+dir
+
+webif-iw-lua-openvpn
+dir
+
 webif-asterisk
 dir
 
@@ -35,25 +44,25 @@ dir
 webif-mesh
 dir
 
-m-route
+webif-netsukuku
 dir
 
 webif-iw-lua
 dir
 
-webif-netsukuku
+m-route
 dir
 
 webif-hotspot
 dir
 
-webif-batman
+webif
 dir
 
 webif-fonheartbeat
 dir
 
-webif
+webif-batman
 dir
 
 webif-vpn
@@ -66,14 +75,5 @@ webif-iw-lua-chillispot
 dir
 
 webif-freeloader
-dir
-
-logtrigger
-dir
-
-webif-iw-lua-openssl
-dir
-
-webif-iw-lua-openvpn
 dir
 

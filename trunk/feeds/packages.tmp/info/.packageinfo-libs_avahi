@@ -11,11 +11,11 @@ Title: An mDNS/DNS-SD implementation (libavahi-client library)
 Maintainer: 
 Source: avahi-0.6.31.tar.gz
 Type: ipkg
-Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf) 
- implementation (library). It facilitates 
- service discovery on a local network -- this means that 
+Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf)
+ implementation (library). It facilitates
+ service discovery on a local network -- this means that
  you can plug your laptop or computer into a network and
- instantly be able to view other people who you can chat with, 
+ instantly be able to view other people who you can chat with,
  find printers to print to or find files being shared.
  This kind of technology is already found in MacOS X
  (branded 'Rendezvous', 'Bonjour' and sometimes 'ZeroConf')
@@ -42,11 +42,11 @@ Title: An mDNS/DNS-SD implementation (utilities)
 Maintainer: 
 Source: avahi-0.6.31.tar.gz
 Type: ipkg
-Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf) 
- implementation (library). It facilitates 
- service discovery on a local network -- this means that 
+Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf)
+ implementation (library). It facilitates
+ service discovery on a local network -- this means that
  you can plug your laptop or computer into a network and
- instantly be able to view other people who you can chat with, 
+ instantly be able to view other people who you can chat with,
  find printers to print to or find files being shared.
  This kind of technology is already found in MacOS X
  (branded 'Rendezvous', 'Bonjour' and sometimes 'ZeroConf')
@@ -73,11 +73,11 @@ Title: An mDNS/DNS-SD implementation (D-Bus support)
 Maintainer: 
 Source: avahi-0.6.31.tar.gz
 Type: ipkg
-Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf) 
- implementation (library). It facilitates 
- service discovery on a local network -- this means that 
+Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf)
+ implementation (library). It facilitates
+ service discovery on a local network -- this means that
  you can plug your laptop or computer into a network and
- instantly be able to view other people who you can chat with, 
+ instantly be able to view other people who you can chat with,
  find printers to print to or find files being shared.
  This kind of technology is already found in MacOS X
  (branded 'Rendezvous', 'Bonjour' and sometimes 'ZeroConf')
@@ -116,11 +116,11 @@ Title: An mDNS/DNS-SD implementation (library)
 Maintainer: 
 Source: avahi-0.6.31.tar.gz
 Type: ipkg
-Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf) 
- implementation (library). It facilitates 
- service discovery on a local network -- this means that 
+Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf)
+ implementation (library). It facilitates
+ service discovery on a local network -- this means that
  you can plug your laptop or computer into a network and
- instantly be able to view other people who you can chat with, 
+ instantly be able to view other people who you can chat with,
  find printers to print to or find files being shared.
  This kind of technology is already found in MacOS X
  (branded 'Rendezvous', 'Bonjour' and sometimes 'ZeroConf')
@@ -150,19 +150,19 @@ Title: IPv4LL network address configuration daemon
 Maintainer: 
 Source: avahi-0.6.31.tar.gz
 Type: ipkg
-Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf) 
- implementation (library). It facilitates 
- service discovery on a local network -- this means that 
+Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf)
+ implementation (library). It facilitates
+ service discovery on a local network -- this means that
  you can plug your laptop or computer into a network and
- instantly be able to view other people who you can chat with, 
+ instantly be able to view other people who you can chat with,
  find printers to print to or find files being shared.
  This kind of technology is already found in MacOS X
  (branded 'Rendezvous', 'Bonjour' and sometimes 'ZeroConf')
  and is very convenient.
  .
- This package implements IPv4LL, "Dynamic Configuration of IPv4 Link-Local 
- Addresses" (IETF RFC3927), a protocol for automatic IP address configuration 
- from the link-local 169.254.0.0/16 range without the need for a central 
+ This package implements IPv4LL, "Dynamic Configuration of IPv4 Link-Local
+ Addresses" (IETF RFC3927), a protocol for automatic IP address configuration
+ from the link-local 169.254.0.0/16 range without the need for a central
  server. It is primarily intended to be used in ad-hoc networks which lack a
  DHCP server.
 http://www.avahi.org/
@@ -182,11 +182,11 @@ Title: An mDNS/DNS-SD implementation (daemon)
 Maintainer: 
 Source: avahi-0.6.31.tar.gz
 Type: ipkg
-Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf) 
- implementation (library). It facilitates 
- service discovery on a local network -- this means that 
+Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf)
+ implementation (library). It facilitates
+ service discovery on a local network -- this means that
  you can plug your laptop or computer into a network and
- instantly be able to view other people who you can chat with, 
+ instantly be able to view other people who you can chat with,
  find printers to print to or find files being shared.
  This kind of technology is already found in MacOS X
  (branded 'Rendezvous', 'Bonjour' and sometimes 'ZeroConf')
@@ -210,11 +210,11 @@ Title: A Unicast DNS server from mDNS/DNS-SD configuration daemon
 Maintainer: 
 Source: avahi-0.6.31.tar.gz
 Type: ipkg
-Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf) 
- implementation (library). It facilitates 
- service discovery on a local network -- this means that 
+Description:  Avahi is an mDNS/DNS-SD (aka RendezVous/Bonjour/ZeroConf)
+ implementation (library). It facilitates
+ service discovery on a local network -- this means that
  you can plug your laptop or computer into a network and
- instantly be able to view other people who you can chat with, 
+ instantly be able to view other people who you can chat with,
  find printers to print to or find files being shared.
  This kind of technology is already found in MacOS X
  (branded 'Rendezvous', 'Bonjour' and sometimes 'ZeroConf')

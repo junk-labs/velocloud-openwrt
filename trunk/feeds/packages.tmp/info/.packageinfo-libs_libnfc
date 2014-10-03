@@ -19,7 +19,7 @@ Description:   libnfc is a free software library used to handle NFC capable devi
   And depending on hardware, it supports:
    * Read (RFID @13.56Mhz),
    * Emulation and
-   * Peer2Peer mode.  
+   * Peer2Peer mode.
 http://www.libnfc.org
 
 @@

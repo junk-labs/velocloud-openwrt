@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/mail/alpine
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-10-20T15:58:25.893349Z
-38479
-juhosg
+2014-02-09T15:01:58.511241Z
+39552
+hauke
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:07.814323Z
-e7d37add84ddf0b19b2de38e00596e8f
-2013-10-20T15:58:25.893349Z
-38479
-juhosg
+2014-06-17T22:31:56.998137Z
+10fabaf217c9bb1fd263a7608563bc37
+2014-02-09T15:01:58.511241Z
+39552
+hauke
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-1792
+1814
 

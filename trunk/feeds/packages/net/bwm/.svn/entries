@@ -1,7 +1,7 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/bwm
 svn://svn.openwrt.org/openwrt
 
@@ -35,7 +35,7 @@ file
 
 
 
-2013-12-02T22:38:08.538323Z
+2014-06-17T22:31:57.742137Z
 e2b7a18310dd3f99561b7e34df2ba9dd
 2009-05-26T14:21:59.110511Z
 16080

@@ -1,6 +1,6 @@
 Source-Makefile: feeds/packages/libs/libnet-1.0.x/Makefile
 Package: libnet0
-Version: 1.0.2a-8
+Version: 1.0.2a-9
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpcap
 Menu-Depends: 
 Provides: 

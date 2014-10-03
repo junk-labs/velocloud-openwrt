@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zabbix
-PKG_VERSION:=2.0.8
+PKG_VERSION:=2.2.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/zabbix
-PKG_MD5SUM:=8fef9e6f499295211dd9b2a9db96464b
+PKG_MD5SUM:=7f680ad3ef7145840e3de5c7a0f19b7c
 
 PKG_INSTALL:=1
 
@@ -99,12 +99,6 @@ As it uses libiwinfo, it works with all wifi devices supported by openwrt.
 See http://wiki.openwrt.org/doc/howto/zabbix for ready to use zabbix templates.
 endef
 
-
-define Package/zabbix-agentd/config
-  select BUSYBOX_CONFIG_HOSTNAME if !PACKAGE_net-tools-hostname
-  select BUSYBOX_CONFIG_UNAME if !PACKAGE_coreutils-uname
-endef
-
 CONFIGURE_ARGS+= \
 	--enable-agent \
 	--enable-server \
@@ -152,11 +146,11 @@ endef
 
 define Package/zabbix/install/zabbix.conf.d
 	$(INSTALL_DIR) \
-		$(1)/etc/zabbix_$(2).conf.d
+		$(1)/etc/zabbix_agentd.conf.d
 
 	$(INSTALL_BIN) \
-		./files/$(3) \
-		$(1)/etc/zabbix_$(2).conf.d/$(3)
+		./files/$(2) \
+		$(1)/etc/zabbix_agentd.conf.d/$(2)
 endef
 
 define Package/zabbix-agent/conffiles
@@ -199,24 +193,25 @@ define Package/zabbix-agent/install
 endef
 
 define Package/zabbix-agentd/install
+	$(INSTALL_DIR) $(1)/etc/zabbix_agentd.conf.d
 	$(call Package/zabbix/install/sbin,$(1),agentd)
 	$(call Package/zabbix/install/etc,$(1),agentd)
 	$(call Package/zabbix/install/init.d,$(1),agentd)
 endef
 
 define Package/zabbix-extra-mac80211/install
-	$(call Package/zabbix/install/zabbix.conf.d,$(1),agentd,mac80211)
+	$(call Package/zabbix/install/zabbix.conf.d,$(1),mac80211)
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/zabbix-extra-mac80211/zabbix_helper_mac80211 $(1)/usr/bin/
 	chmod 4755 $(1)/usr/bin/zabbix_helper_mac80211
 endef
 
 define Package/zabbix-extra-network/install
-	$(call Package/zabbix/install/zabbix.conf.d,$(1),agentd,network)
+	$(call Package/zabbix/install/zabbix.conf.d,$(1),network)
 endef
 
 define Package/zabbix-extra-wifi/install
-	$(call Package/zabbix/install/zabbix.conf.d,$(1),agentd,wifi)
+	$(call Package/zabbix/install/zabbix.conf.d,$(1),wifi)
 endef
 
 define Package/zabbix-sender/install

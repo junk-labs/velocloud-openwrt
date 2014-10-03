@@ -1,8 +1,8 @@
 10
 
 dir
-38900
-svn://svn.openwrt.org/openwrt/trunk/target/linux/at91/base-files/etc/config
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/at91/base-files/etc/config
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T20:28:04.846164Z
+2014-06-03T20:17:37.950341Z
 86cb68cf5b6c2a9c7423a651b9ac7b99
 2010-07-11T12:27:05.572853Z
 22128
@@ -66,7 +66,7 @@ file
 
 
 
-2013-12-02T20:28:04.846164Z
+2014-06-03T20:17:37.950341Z
 3907839ea45af5cf57f74589c96f63c1
 2013-11-17T17:14:32.697114Z
 38842

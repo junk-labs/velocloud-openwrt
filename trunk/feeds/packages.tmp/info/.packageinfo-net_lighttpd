@@ -2,7 +2,7 @@ Source-Makefile: feeds/packages/net/lighttpd/Makefile
 Package: lighttpd
 Menu: 1
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +LIGHTTPD_SSL:libopenssl +libpcre +libpthread
 Menu-Depends: 
 Provides: 
@@ -10,7 +10,7 @@ Section: net
 Category: Network
 Title: A flexible and lightweight web server
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: A flexible and lightweight web server
 http://www.lighttpd.net/
@@ -29,7 +29,7 @@ config LIGHTTPD_SSL
 
 Package: lighttpd-mod-access
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -37,7 +37,7 @@ Section: net
 Category: Network
 Title: Access restrictions module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Access restrictions module
 http://www.lighttpd.net/
@@ -46,7 +46,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-accesslog
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -54,7 +54,7 @@ Section: net
 Category: Network
 Title: Access logging module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Access logging module
 http://www.lighttpd.net/
@@ -63,7 +63,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-alias
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -71,7 +71,7 @@ Section: net
 Category: Network
 Title: Directory alias module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Directory alias module
 http://www.lighttpd.net/
@@ -80,7 +80,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-auth
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -88,7 +88,7 @@ Section: net
 Category: Network
 Title: Authentication module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Authentication module
 http://www.lighttpd.net/
@@ -97,7 +97,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-cgi
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -105,7 +105,7 @@ Section: net
 Category: Network
 Title: CGI module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: CGI module
 http://www.lighttpd.net/
@@ -114,7 +114,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-cml
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -122,7 +122,7 @@ Section: net
 Category: Network
 Title: Cache Meta Language module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Cache Meta Language module
 http://www.lighttpd.net/
@@ -131,15 +131,15 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-compress
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +zlib
+Version: 1.4.35-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +PACKAGE_lighttpd-mod-compress:zlib
 Menu-Depends: 
 Provides: 
 Section: net
 Category: Network
 Title: Compress output module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Compress output module
 http://www.lighttpd.net/
@@ -148,7 +148,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-evasive
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -156,7 +156,7 @@ Section: net
 Category: Network
 Title: Evasive module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Evasive module
 http://www.lighttpd.net/
@@ -165,7 +165,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-evhost
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -173,7 +173,7 @@ Section: net
 Category: Network
 Title: Exnhanced Virtual-Hosting module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Exnhanced Virtual-Hosting module
 http://www.lighttpd.net/
@@ -182,7 +182,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-expire
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -190,7 +190,7 @@ Section: net
 Category: Network
 Title: Expire module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Expire module
 http://www.lighttpd.net/
@@ -199,7 +199,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-extforward
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -207,7 +207,7 @@ Section: net
 Category: Network
 Title: Extract client module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Extract client module
 http://www.lighttpd.net/
@@ -216,7 +216,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-fastcgi
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -224,7 +224,7 @@ Section: net
 Category: Network
 Title: FastCGI module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: FastCGI module
 http://www.lighttpd.net/
@@ -233,7 +233,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-flv_streaming
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -241,7 +241,7 @@ Section: net
 Category: Network
 Title: FLV streaming module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: FLV streaming module
 http://www.lighttpd.net/
@@ -250,7 +250,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-magnet
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -258,7 +258,7 @@ Section: net
 Category: Network
 Title: Magnet module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Magnet module
 http://www.lighttpd.net/
@@ -267,15 +267,15 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-mysql_vhost
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +libmysqlclient
+Version: 1.4.35-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +PACKAGE_lighttpd-mod-mysql_vhost:libmysqlclient
 Menu-Depends: 
 Provides: 
 Section: net
 Category: Network
 Title: Mysql virtual hosting module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Mysql virtual hosting module
 http://www.lighttpd.net/
@@ -284,7 +284,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-proxy
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -292,7 +292,7 @@ Section: net
 Category: Network
 Title: Proxy module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Proxy module
 http://www.lighttpd.net/
@@ -301,15 +301,15 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-redirect
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +libpcre
+Version: 1.4.35-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +PACKAGE_lighttpd-mod-redirect:libpcre
 Menu-Depends: 
 Provides: 
 Section: net
 Category: Network
 Title: URL redirection module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: URL redirection module
 http://www.lighttpd.net/
@@ -318,15 +318,15 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-rewrite
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +libpcre
+Version: 1.4.35-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +PACKAGE_lighttpd-mod-rewrite:libpcre
 Menu-Depends: 
 Provides: 
 Section: net
 Category: Network
 Title: URL rewriting module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: URL rewriting module
 http://www.lighttpd.net/
@@ -335,7 +335,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-rrdtool
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -343,7 +343,7 @@ Section: net
 Category: Network
 Title: RRDtool module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: RRDtool module
 http://www.lighttpd.net/
@@ -352,7 +352,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-scgi
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -360,7 +360,7 @@ Section: net
 Category: Network
 Title: SCGI module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: SCGI module
 http://www.lighttpd.net/
@@ -369,7 +369,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-secdownload
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -377,7 +377,7 @@ Section: net
 Category: Network
 Title: Secure and fast download module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Secure and fast download module
 http://www.lighttpd.net/
@@ -386,7 +386,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-setenv
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -394,7 +394,7 @@ Section: net
 Category: Network
 Title: Environment variable setting module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Environment variable setting module
 http://www.lighttpd.net/
@@ -403,7 +403,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-simple_vhost
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -411,7 +411,7 @@ Section: net
 Category: Network
 Title: Simple virtual hosting module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Simple virtual hosting module
 http://www.lighttpd.net/
@@ -420,7 +420,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-ssi
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +libpcre
 Menu-Depends: 
 Provides: 
@@ -428,7 +428,7 @@ Section: net
 Category: Network
 Title: SSI module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: SSI module
 http://www.lighttpd.net/
@@ -437,7 +437,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-status
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -445,7 +445,7 @@ Section: net
 Category: Network
 Title: Server status display module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Server status display module
 http://www.lighttpd.net/
@@ -454,15 +454,15 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-trigger_b4_dl
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +libpcre
+Version: 1.4.35-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +PACKAGE_lighttpd-mod-trigger_b4_dl:libpcre
 Menu-Depends: 
 Provides: 
 Section: net
 Category: Network
 Title: Trigger before download module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: Trigger before download module
 http://www.lighttpd.net/
@@ -471,7 +471,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-userdir
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -479,7 +479,7 @@ Section: net
 Category: Network
 Title: User directory module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: User directory module
 http://www.lighttpd.net/
@@ -488,7 +488,7 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-usertrack
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
+Version: 1.4.35-1
 Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd
 Menu-Depends: 
 Provides: 
@@ -496,7 +496,7 @@ Section: net
 Category: Network
 Title: User tracking module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: User tracking module
 http://www.lighttpd.net/
@@ -505,15 +505,15 @@ http://www.lighttpd.net/
 
 Package: lighttpd-mod-webdav
 Submenu: Web Servers/Proxies
-Version: 1.4.32-1
-Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +libsqlite3 +libuuid +libxml2
+Version: 1.4.35-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread lighttpd +PACKAGE_lighttpd-mod-webdav:libsqlite3 +PACKAGE_lighttpd-mod-webdav:libuuid +PACKAGE_lighttpd-mod-webdav:libxml2
 Menu-Depends: 
 Provides: 
 Section: net
 Category: Network
 Title: WebDAV module
 Maintainer: 
-Source: lighttpd-1.4.32.tar.xz
+Source: lighttpd-1.4.35.tar.xz
 Type: ipkg
 Description: WebDAV module
 http://www.lighttpd.net/

@@ -1,7 +1,7 @@
 10
 
 dir
-9934
+10274
 http://svn.luci.subsignal.org/luci/trunk/contrib/package/freifunk-gwcheck/root/etc/uci-defaults
 http://svn.luci.subsignal.org
 
@@ -32,7 +32,7 @@ file
 
 
 
-2013-12-02T22:38:50.578324Z
+2014-06-17T22:32:29.586136Z
 c879ff4188f304d5f000de852775d1c8
 2011-11-13T13:45:17.024070Z
 7928

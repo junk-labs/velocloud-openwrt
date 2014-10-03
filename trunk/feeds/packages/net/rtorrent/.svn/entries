@@ -1,15 +1,15 @@
 10
 
 dir
-38900
+40995
 svn://svn.openwrt.org/openwrt/packages/net/rtorrent
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-07-28T23:28:20.033043Z
-37592
-luka
+2014-04-20T10:33:08.266390Z
+40537
+tripolar
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2013-12-02T22:38:08.066323Z
-b84d2e628acbe7ff8456132930a76162
-2013-07-28T23:28:20.033043Z
-37592
-luka
+2014-06-17T22:31:59.778136Z
+b0d9a7dfbf43370a7de3f29298bbb56a
+2014-04-20T10:33:08.266390Z
+40537
+tripolar
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1602
+2331
 
 patches
 dir

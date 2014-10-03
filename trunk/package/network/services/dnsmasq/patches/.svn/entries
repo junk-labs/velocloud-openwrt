@@ -1,14 +1,14 @@
 10
 
 dir
-39894
-svn://svn.openwrt.org/openwrt/trunk/package/network/services/dnsmasq/patches
+42701
+svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/dnsmasq/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-04-24T05:55:39.828494Z
-36412
+2014-08-20T09:53:29.995767Z
+42226
 cyrus
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2013-12-02T20:29:06.138165Z
-533419a5a42abacfec481271ac37d8fe
-2013-04-24T05:55:39.828494Z
-36412
+2014-06-20T21:11:27.936245Z
+f110ca535a26a6b4750276dbf2e56fe6
+2014-06-18T10:04:34.224357Z
+41246
 cyrus
 
 
@@ -58,18 +58,18 @@ cyrus
 
 
 
-1794
+1734
 
-110-fix-incorrect-length-memset.patch
+001-Build-config-add-DNO_GMP-for-use-with-nettle-mini-gm.patch
 file
 
 
 
 
-2013-12-02T20:29:06.138165Z
-e1ee7aa70c7bc3fdda39009a2b4ab917
-2013-04-24T05:55:39.828494Z
-36412
+2014-06-20T21:11:27.936245Z
+6a1419de9b4b8e0394f2912081cddbfa
+2014-06-18T10:04:34.224357Z
+41246
 cyrus
 
 
@@ -92,5 +92,73 @@ cyrus
 
 
 
-446
+2743
+
+110-ipset-remove-old-kernel-support.patch
+file
+
+
+
+
+2014-06-20T21:11:27.936245Z
+0bb2128ef13b6f4be366078ea059ebb7
+2014-06-18T10:04:34.224357Z
+41246
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2991
+
+002-fix-race-on-interface-flaps.patch
+file
+
+
+
+
+2014-09-03T23:42:09.869712Z
+1671ceae611c081be4418ccfe6f1e70d
+2014-08-20T09:53:29.995767Z
+42226
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7367
 

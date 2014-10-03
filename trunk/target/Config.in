@@ -60,6 +60,9 @@ config USES_EXT4
 config USES_TARGZ
 	bool
 
+config USES_TARBZ2
+	bool
+
 config USES_CPIOGZ
 	bool
 

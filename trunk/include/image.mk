@@ -204,6 +204,13 @@ ifneq ($(CONFIG_TARGET_ROOTFS_TARGZ),)
   endef
 endif
 
+ifneq ($(CONFIG_TARGET_ROOTFS_TARBZ2),)
+  define Image/mkfs/tarbz2
+		# Preserve permissions (-p) when building as non-root user
+		$(TAR) -cjpf $(BIN_DIR)/$(IMG_PREFIX)$(if $(PROFILE),-$(PROFILE))-rootfs.tar.bz2 --numeric-owner --owner=0 --group=0 -C $(TARGET_DIR)/ .
+  endef
+endif
+
 ifneq ($(CONFIG_TARGET_ROOTFS_EXT4FS),)
   E2SIZE=$(shell echo $$(($(CONFIG_TARGET_ROOTFS_PARTSIZE)*1024*1024/$(CONFIG_TARGET_EXT4_BLOCKSIZE))))
 
@@ -268,6 +275,7 @@ define BuildImage
 		$(call Image/InstallKernel)
 		$(call Image/mkfs/cpiogz)
 		$(call Image/mkfs/targz)
+		$(call Image/mkfs/tarbz2)
 		$(call Image/mkfs/ext4)
 		$(call Image/mkfs/iso)
 		$(call Image/mkfs/jffs2)
@@ -282,6 +290,7 @@ define BuildImage
 		$(call Image/InstallKernel)
 		$(call Image/mkfs/cpiogz)
 		$(call Image/mkfs/targz)
+		$(call Image/mkfs/tarbz2)
 		$(call Image/mkfs/ext4)
 		$(call Image/mkfs/iso)
 		$(call Image/mkfs/jffs2)

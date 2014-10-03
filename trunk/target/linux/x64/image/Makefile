@@ -330,9 +330,18 @@ define Image/Build
 	$(call Image/Build/$(1))
 	$(call Image/Build/bootscript,$(1))
   ifneq ($(1),iso)
+	echo ENV_CONFIG_NO_INSTALLER_IMAGE=$(ENV_CONFIG_NO_INSTALLER_IMAGE)
+    ifeq ($(ENV_CONFIG_NO_INSTALLER_IMAGE),)
 	$(call Image/Build/velocloud-installer,$(1))
+    endif
+	echo ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE=$(ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE)
+    ifeq ($(ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE),)
 	$(call Image/Build/velocloud-manufacturing,$(1))
+    endif
+	echo ENV_CONFIG_NO_COMBINED_IMAGE=$(ENV_CONFIG_NO_COMBINED_IMAGE)
+    ifeq ($(ENV_CONFIG_NO_COMBINED_IMAGE),)
 	$(call Image/Build/grub2,$(1))
+    endif
 	$(call Image/Build/vdi,$(1))
 	$(call Image/Build/vmdk,$(1))
 	$(call Image/Build/vc-ec2,$(1))

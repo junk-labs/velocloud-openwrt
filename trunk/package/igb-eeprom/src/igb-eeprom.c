@@ -25,7 +25,13 @@ struct mfg {
 	unsigned char mac_max[6];
 };
 
+// the first runs had a bug where the board number was added twice,
+// once from the mac_min and via bnum;
+// old ones are now commented out;
+// if older boards have to be reflashed the full MAC has to be given;
+
 mfg_t Mfg[] = {
+#ifdef IGB_EEPROM_BUGGY_MACS
 	{ "pw-pilot",
 	  "edge500",
 	  "atom-c2000-igb-sgmii.bin",
@@ -41,6 +47,14 @@ mfg_t Mfg[] = {
 	  "atom-c2000-igb-sgmii.bin",
 	  { 100, 599 },
 	  { 0xF0,0x8E,0xDB,0x01,0x01,0x90 }, { 0xF0,0x8E,0xDB,0x01,0x09,0x5f }, },
+#endif // IGB_EEPROM_BUGGY_MACS
+	// all above squeezed into 01:0x:xx 4k block;
+	// start a new 4k block 01:1x:xx for pw-mp for units 200..2047;
+	{ "pw-mp",
+	  "edge500",
+	  "atom-c2000-igb-sgmii.bin",
+	  { 200, 2047 },
+	  { 0xF0,0x8E,0xDB,0x01,0x10,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x09,0x5f }, },
 	{ 0 },
 };
 
@@ -302,6 +316,23 @@ get_board(char *name, int size)
 	return(name);
 }
 
+// print manufacturing lots;
+
+void
+mfg_list(g_t *g)
+{
+	mfg_t *mfg;
+	char *p;
+
+	Msg("list of mfg runs (for -u):\n");
+	for(mfg = Mfg; p = mfg->name; mfg++) {
+		Msg(" %s board ids %d..%d base %02x:%02x:%02x:%02x:%02x:%02x\n",
+			p, mfg->bnums[0], mfg->bnums[1],
+			mfg->mac_min[0], mfg->mac_min[1], mfg->mac_min[2],
+			mfg->mac_min[3], mfg->mac_min[4], mfg->mac_min[5]);
+	}
+}
+
 // manufacturing support;
 
 char *
@@ -337,6 +368,8 @@ mfg_init(g_t *g)
 		return("unsupported board type");
 	if((bnum < mfg->bnums[0]) || (bnum > mfg->bnums[1]))
 		return("board number out of range");
+	Msg("mfg: %s [%d..%d], board: %d\n",
+		mfg->name, mfg->bnums[0], mfg->bnums[1], bnum);
 
 	// init MAC addresses;
 
@@ -346,7 +379,7 @@ mfg_init(g_t *g)
 		| ((unsigned long long)mfg->mac_min[3] << 16)
 		| ((unsigned long long)mfg->mac_min[4] << 8)
 		| ((unsigned long long)mfg->mac_min[5] << 0);
-	mac += ((bnum - 1) * g->nmacs);
+	mac += (bnum * g->nmacs);
 	g->mac[0] = (mac >> 40) & 0xff;
 	g->mac[1] = (mac >> 32) & 0xff;
 	g->mac[2] = (mac >> 24) & 0xff;
@@ -455,7 +488,8 @@ main(int argc, char **argv)
 				"  [-n]           (dry run, do not program)\n"
 				"  [-h]           (this help)\n",
 				g->cmd);
-			break;
+			mfg_list(g);
+			exit(0);
 		default:
 			Msg("@unknown option: -%c\n", c);
 		}

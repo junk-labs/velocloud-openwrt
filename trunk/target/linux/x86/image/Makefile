@@ -9,7 +9,7 @@ include $(INCLUDE_DIR)/image.mk
 
 export PATH=$(TARGET_PATH):/sbin
 
-GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos reboot vga
+GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos part_gpt reboot vga
 GRUB2_MODULES_ISO = biosdisk boot chain configfile iso9660 linux ls part_msdos reboot vga
 GRUB_TERMINALS =
 GRUB_SERIAL_CONFIG =
@@ -256,7 +256,16 @@ endef
 ifneq ($(CONFIG_VELOCLOUD_INSTALLER),)
   define Image/Build/velocloud-installer
 	echo "Building Velocloud Installer Image."
-	$(INSTALL_DIR) $(KDIR)/inst.grub/boot/grub
+	$(INSTALL_DIR) $(KDIR)/root.grub/boot/grub $(KDIR)/grub2
+	$(CP) $(KDIR)/bzImage $(KDIR)/root.grub/boot/vmlinuz
+	grub-mkimage \
+		-d $(STAGING_DIR_HOST)/lib/grub/i386-pc \
+		-o $(KDIR)/grub2/core.img \
+		-O i386-pc \
+		-c ./grub-early.cfg \
+		$(GRUB2_MODULES)
+	$(CP) $(STAGING_DIR_HOST)/lib/grub/i386-pc/*.img $(KDIR)/grub2/
+	echo '(hd0) $(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img' > $(KDIR)/grub2/device.map
 	sed \
 		-e 's#@SERIAL_CONFIG@#$(strip $(GRUB_SERIAL_CONFIG))#g' \
 		-e 's#@TERMINAL_CONFIG@#$(strip $(GRUB_TERMINAL_CONFIG))#g' \
@@ -281,6 +290,7 @@ ifneq ($(CONFIG_VELOCLOUD_INSTALLER),)
 		$(TARGET_DIR) \
 		$(KDIR)/root.grub \
 		$(KDIR)/inst.grub
+	echo '(hd0) $(BIN_DIR)/$(IMG_PREFIX)-installer-$(1).img' > $(KDIR)/grub2/device.map
 	grub-bios-setup \
 		--device-map="$(KDIR)/grub2/device.map" \
 		-d "$(KDIR)/grub2" \
@@ -330,15 +340,15 @@ define Image/Build
 	$(call Image/Build/$(1))
 	$(call Image/Build/bootscript,$(1))
   ifneq ($(1),iso)
+	echo ENV_CONFIG_NO_INSTALLER_IMAGE=$(ENV_CONFIG_NO_INSTALLER_IMAGE)
+    ifeq ($(ENV_CONFIG_NO_INSTALLER_IMAGE),)
+	$(call Image/Build/velocloud-installer,$(1))
+    endif
 	echo ENV_CONFIG_NO_COMBINED_IMAGE=$(ENV_CONFIG_NO_COMBINED_IMAGE)
     ifeq ($(ENV_CONFIG_NO_COMBINED_IMAGE),)
 	$(call Image/Build/grub2,$(1))
     endif
 	$(call Image/Build/vdi,$(1))
-	echo ENV_CONFIG_NO_INSTALLER_IMAGE=$(ENV_CONFIG_NO_INSTALLER_IMAGE)
-    ifeq ($(ENV_CONFIG_NO_INSTALLER_IMAGE),)
-	$(call Image/Build/velocloud-installer,$(1))
-    endif
 	$(call Image/Build/vmdk,$(1))
 	$(call Image/Build/vc-ec2,$(1))
 	$(CP) $(KDIR)/root.$(1) $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img

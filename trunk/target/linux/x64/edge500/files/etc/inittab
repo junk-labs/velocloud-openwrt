@@ -1,4 +1,5 @@
 ::sysinit:/etc/init.d/rcS S boot
 ::shutdown:/etc/init.d/rcS K shutdown
-ttyS0::respawn:/sbin/getty -L ttyS0 115200 vt100
-ttyS1::respawn:/sbin/getty -L ttyS1 115200 vt100
+ttyS0::askfirst:/bin/ash --login
+ttyS1::askfirst:/bin/ash --login
+tty1::askfirst:/bin/ash --login

@@ -128,6 +128,18 @@ define Package/blkid/description
  library.
 endef
 
+define Package/blockdev
+$(call Package/util-linux/Default)
+  TITLE:=tool for simple block device ioctls
+  DEPENDS:= +libblkid
+  SUBMENU=disc
+endef
+
+define Package/blockdev/description
+ The blockdev program is the command-line interface to issuing ioctls
+ directly to block devices.
+endef
+
 define Package/cal
 $(call Package/util-linux/Default)
   TITLE:=display a calendar
@@ -428,6 +440,11 @@ define Package/blkid/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/.libs/blkid $(1)/usr/sbin/
 endef
 
+define Package/blockdev/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/blockdev $(1)/usr/sbin/
+endef
+
 define Package/cal/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/cal $(1)/usr/bin/
@@ -564,6 +581,7 @@ $(eval $(call BuildPackage,libmount))
 $(eval $(call BuildPackage,libuuid))
 $(eval $(call BuildPackage,agetty))
 $(eval $(call BuildPackage,blkid))
+$(eval $(call BuildPackage,blockdev))
 $(eval $(call BuildPackage,cal))
 $(eval $(call BuildPackage,cfdisk))
 $(eval $(call BuildPackage,dmesg))

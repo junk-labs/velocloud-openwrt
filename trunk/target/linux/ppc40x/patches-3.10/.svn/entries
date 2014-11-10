@@ -1,7 +1,7 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ppc40x/patches-3.10
 svn://svn.openwrt.org/openwrt
 
@@ -25,74 +25,6 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-004-magicbox.patch
-file
-
-
-
-
-2014-06-03T20:17:38.294341Z
-f22feeefda8661408bba206f1628dbb5
-2013-09-07T11:34:03.871612Z
-37912
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11747
-
-101-pata-magicbox-cf-driver.patch
-file
-
-
-
-
-2014-06-03T20:17:38.294341Z
-ed89936adcbc77fa561eeae79106d8f5
-2013-09-07T11:34:03.871612Z
-37912
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11925
 
 120-usb-isp116x-hcd-add-of-binding.patch
 file
@@ -263,4 +195,72 @@ juhosg
 
 
 2675
+
+004-magicbox.patch
+file
+
+
+
+
+2014-06-03T20:17:38.294341Z
+f22feeefda8661408bba206f1628dbb5
+2013-09-07T11:34:03.871612Z
+37912
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11747
+
+101-pata-magicbox-cf-driver.patch
+file
+
+
+
+
+2014-06-03T20:17:38.294341Z
+ed89936adcbc77fa561eeae79106d8f5
+2013-09-07T11:34:03.871612Z
+37912
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11925
 

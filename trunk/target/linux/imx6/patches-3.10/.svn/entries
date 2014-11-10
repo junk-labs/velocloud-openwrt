@@ -1,7 +1,7 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/imx6/patches-3.10
 svn://svn.openwrt.org/openwrt
 
@@ -25,74 +25,6 @@ juhosg
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-0012-ARM-imx-Add-LVDS-general-purpose-clocks-to-i.MX6Q.patch
-file
-
-
-
-
-2014-06-03T20:17:38.218341Z
-40efa596a9384bd7cc4c78b9066350bc
-2013-10-03T13:06:42.813903Z
-38298
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2975
-
-0001-usb-chipidea-improve-kconfig.patch
-file
-
-
-
-
-2014-06-03T20:17:38.218341Z
-d2d3944684574bfa833e0c474486b43c
-2013-10-03T13:06:42.813903Z
-38298
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2870
 
 0010-ARM-imx6q-Add-PCIe-bits-to-GPR-syscon-definition.patch
 file
@@ -128,16 +60,16 @@ luka
 
 1292
 
-0029-regulator-pfuze100-allow-misprogrammed-ID.patch
+0023-regulator-pfuze100-Use-i2c_-set-get-_clientdata.patch
 file
 
 
 
 
 2014-06-03T20:17:38.218341Z
-a81e896e31dc10e9ebd763a48db11293
-2013-10-30T23:31:26.714596Z
-38624
+654be4ce5244e0a194aa5366a4f22ce7
+2013-10-29T02:19:03.785646Z
+38571
 luka
 
 
@@ -160,7 +92,41 @@ luka
 
 
 
-1041
+1139
+
+100-bootargs.patch
+file
+
+
+
+
+2014-06-03T20:17:38.218341Z
+32c3ee5e8f07fffcc2eb96798ff45bd6
+2013-07-15T00:03:40.450500Z
+37326
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+231
 
 0034-PCI-imx6-add-support-for-legacy-irqs.patch
 file
@@ -264,6 +230,40 @@ luka
 
 2402
 
+0025-regulator-pfuze100-Use-regulator_map_voltage_ascend.patch
+file
+
+
+
+
+2014-06-03T20:17:38.218341Z
+cc548548f82d11cf05499acc069dfae0
+2013-10-29T02:19:03.785646Z
+38571
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+800
+
 0027-regulator-pfuze100-Simplify-pfuze100_set_ramp_delay-.patch
 file
 
@@ -298,16 +298,16 @@ luka
 
 1858
 
-120-ventana-init.ptach
+0006-ARM-imx6q-update-the-sata-bits-definitions-of-gpr13.patch
 file
 
 
 
 
 2014-06-03T20:17:38.218341Z
-681f6022de00ffad07e2ef930cc01564
-2013-10-16T03:25:54.139150Z
-38423
+27853259e13744c9604a2bd9cce23fde
+2013-10-03T13:06:42.813903Z
+38298
 luka
 
 
@@ -330,7 +330,7 @@ luka
 
 
 
-1925
+7137
 
 0021-regulator-pfuze100-fix-build-warning-and-correct-the.patch
 file
@@ -434,16 +434,16 @@ luka
 
 752
 
-0060-flexcan.patch
+0031-PCI-imx6-init-must-be-early.patch
 file
 
 
 
 
-2014-06-03T20:52:03.622293Z
-7696cf5db45555ff78edf61261b1bf22
-2013-12-11T10:56:09.808416Z
-39033
+2014-06-03T20:17:38.218341Z
+d0a12e0e9f38f1e36e7e2a711d5266ec
+2013-10-23T22:16:03.561628Z
+38511
 luka
 
 
@@ -466,7 +466,7 @@ luka
 
 
 
-2176
+854
 
 0008-ahci_imx-depend-on-CONFIG_MFD_SYSCON.patch
 file
@@ -502,17 +502,17 @@ luka
 
 781
 
-0005-ahci_imx-add-ahci-sata-support-on-imx-platforms.patch
+0061-can-flexcan-use-correct-clock-as-base-for-bit-rate-c.patch
 file
 
 
 
 
-2014-06-03T20:17:38.218341Z
-5b015256665f06063bb8c56603388572
-2013-10-03T13:06:42.813903Z
-38298
-luka
+2014-06-03T20:52:03.622293Z
+68a0b55ee425bdd6506abc950536de8d
+2014-03-27T09:28:33.784995Z
+40291
+juhosg
 
 
 
@@ -534,41 +534,7 @@ luka
 
 
 
-8992
-
-0013-ARM-imx6q-clock-and-Kconfig-update-for-PCIe-support.patch
-file
-
-
-
-
-2014-06-03T20:17:38.218341Z
-3799cb9a8d5d46c832f0cae247a6a15f
-2013-10-03T13:06:42.813903Z
-38298
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1161
+1250
 
 0003-usb-chipidea-improve-kconfig-2.0.patch
 file
@@ -604,50 +570,16 @@ luka
 
 1971
 
-0061-can-flexcan-use-correct-clock-as-base-for-bit-rate-c.patch
-file
-
-
-
-
-2014-06-03T20:52:03.622293Z
-68a0b55ee425bdd6506abc950536de8d
-2014-03-27T09:28:33.784995Z
-40291
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1250
-
-0023-regulator-pfuze100-Use-i2c_-set-get-_clientdata.patch
+0012-ARM-imx-Add-LVDS-general-purpose-clocks-to-i.MX6Q.patch
 file
 
 
 
 
 2014-06-03T20:17:38.218341Z
-654be4ce5244e0a194aa5366a4f22ce7
-2013-10-29T02:19:03.785646Z
-38571
+40efa596a9384bd7cc4c78b9066350bc
+2013-10-03T13:06:42.813903Z
+38298
 luka
 
 
@@ -670,18 +602,18 @@ luka
 
 
 
-1139
+2975
 
-100-bootargs.patch
+0029-regulator-pfuze100-allow-misprogrammed-ID.patch
 file
 
 
 
 
 2014-06-03T20:17:38.218341Z
-32c3ee5e8f07fffcc2eb96798ff45bd6
-2013-07-15T00:03:40.450500Z
-37326
+a81e896e31dc10e9ebd763a48db11293
+2013-10-30T23:31:26.714596Z
+38624
 luka
 
 
@@ -704,7 +636,7 @@ luka
 
 
 
-231
+1041
 
 0030-pcie-designware-fix-io-transfers.patch
 file
@@ -739,40 +671,6 @@ luka
 
 
 2121
-
-0025-regulator-pfuze100-Use-regulator_map_voltage_ascend.patch
-file
-
-
-
-
-2014-06-03T20:17:38.218341Z
-cc548548f82d11cf05499acc069dfae0
-2013-10-29T02:19:03.785646Z
-38571
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-800
 
 0022-regulator-pfuze100-add-MODULE_LICENSE-in-pfuze100-dr.patch
 file
@@ -876,74 +774,6 @@ luka
 
 1913
 
-0020-regulator-pfuze100-REGULATOR_PFUZE100-needs-to-selec.patch
-file
-
-
-
-
-2014-06-03T20:17:38.218341Z
-250f9bbde899d065e47310a4ca3ff120
-2013-10-29T02:19:03.785646Z
-38571
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2715
-
-0006-ARM-imx6q-update-the-sata-bits-definitions-of-gpr13.patch
-file
-
-
-
-
-2014-06-03T20:17:38.218341Z
-27853259e13744c9604a2bd9cce23fde
-2013-10-03T13:06:42.813903Z
-38298
-luka
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-7137
-
 0019-regulator-pfuze100-add-pfuze100-regulator-driver.patch
 file
 
@@ -978,16 +808,16 @@ luka
 
 19252
 
-0015-thermal-add-imx-thermal-driver-support.patch
+0020-regulator-pfuze100-REGULATOR_PFUZE100-needs-to-selec.patch
 file
 
 
 
 
 2014-06-03T20:17:38.218341Z
-0c46ff6326caf0147022fe4d204f9e92
-2013-10-03T13:06:42.813903Z
-38298
+250f9bbde899d065e47310a4ca3ff120
+2013-10-29T02:19:03.785646Z
+38571
 luka
 
 
@@ -1010,7 +840,41 @@ luka
 
 
 
-13711
+2715
+
+010-pcie-backport-fixes.patch
+file
+
+
+
+
+2014-06-03T20:17:38.218341Z
+e19dc13b921258d084862ad186c1813e
+2013-10-23T22:16:03.561628Z
+38511
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1270
 
 0011-PCI-imx6-Add-support-for-i.MX6-PCIe-controller.patch
 file
@@ -1046,16 +910,16 @@ luka
 
 15879
 
-010-pcie-backport-fixes.patch
+0015-thermal-add-imx-thermal-driver-support.patch
 file
 
 
 
 
 2014-06-03T20:17:38.218341Z
-e19dc13b921258d084862ad186c1813e
-2013-10-23T22:16:03.561628Z
-38511
+0c46ff6326caf0147022fe4d204f9e92
+2013-10-03T13:06:42.813903Z
+38298
 luka
 
 
@@ -1078,7 +942,41 @@ luka
 
 
 
-1270
+13711
+
+120-ventana-init.ptach
+file
+
+
+
+
+2014-06-03T20:17:38.218341Z
+681f6022de00ffad07e2ef930cc01564
+2013-10-16T03:25:54.139150Z
+38423
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1925
 
 0014-ARM-dts-imx6qdl-add-pcie-device-node.patch
 file
@@ -1250,16 +1148,16 @@ luka
 
 1482
 
-0031-PCI-imx6-init-must-be-early.patch
+0060-flexcan.patch
 file
 
 
 
 
-2014-06-03T20:17:38.218341Z
-d0a12e0e9f38f1e36e7e2a711d5266ec
-2013-10-23T22:16:03.561628Z
-38511
+2014-06-03T20:52:03.622293Z
+7696cf5db45555ff78edf61261b1bf22
+2013-12-11T10:56:09.808416Z
+39033
 luka
 
 
@@ -1282,5 +1180,107 @@ luka
 
 
 
-854
+2176
+
+0013-ARM-imx6q-clock-and-Kconfig-update-for-PCIe-support.patch
+file
+
+
+
+
+2014-06-03T20:17:38.218341Z
+3799cb9a8d5d46c832f0cae247a6a15f
+2013-10-03T13:06:42.813903Z
+38298
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1161
+
+0005-ahci_imx-add-ahci-sata-support-on-imx-platforms.patch
+file
+
+
+
+
+2014-06-03T20:17:38.218341Z
+5b015256665f06063bb8c56603388572
+2013-10-03T13:06:42.813903Z
+38298
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8992
+
+0001-usb-chipidea-improve-kconfig.patch
+file
+
+
+
+
+2014-06-03T20:17:38.218341Z
+d2d3944684574bfa833e0c474486b43c
+2013-10-03T13:06:42.813903Z
+38298
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2870
 

@@ -1,15 +1,15 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-10T10:17:03.033449Z
-42096
-jow
+2014-11-08T21:00:20.260109Z
+43222
+rmilecki
 
 
 
@@ -34,6 +34,66 @@ jow
 
 
 ()
+
+config-3.10
+file
+
+
+
+
+2014-08-06T22:38:49.529837Z
+81e342fbee467d1475bbe5dc2db40455
+2014-07-16T20:45:20.026500Z
+41678
+hauke
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+131782
+
+patches-3.10
+dir
+
+config-3.12
+file
+41290
+
+
+add
+
+7594fee55242ad8c61b2e46c13da6796
+2014-05-02T21:08:22.188446Z
+40661
+hauke
+
+
+
+
+
+
+
+
+copied
+svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/config-3.12
+41290
 
 PATCHES
 file
@@ -100,64 +160,4 @@ dir
 
 image
 dir
-
-config-3.10
-file
-
-
-
-
-2014-08-06T22:38:49.529837Z
-81e342fbee467d1475bbe5dc2db40455
-2014-07-16T20:45:20.026500Z
-41678
-hauke
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-131782
-
-patches-3.10
-dir
-
-config-3.12
-file
-41290
-
-
-add
-
-7594fee55242ad8c61b2e46c13da6796
-2014-05-02T21:08:22.188446Z
-40661
-hauke
-
-
-
-
-
-
-
-
-copied
-svn://svn.openwrt.org/openwrt/trunk/target/linux/generic/config-3.12
-41290
 

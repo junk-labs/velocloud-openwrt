@@ -1,15 +1,15 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/rb532
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-07-20T17:31:11.270376Z
-41776
-blogic
+2014-10-26T13:27:27.309772Z
+43067
+rmilecki
 
 
 
@@ -26,17 +26,26 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches-3.10
+dir
+
+src
+dir
+
+base-files
+dir
+
 Makefile
 file
 
 
 
 
-2014-08-06T22:40:51.965834Z
-04be407985067b81b3b66ca3a20fa83a
-2014-07-20T17:31:11.270376Z
-41776
-blogic
+2014-11-09T00:22:12.063437Z
+4bdff7d8ba3a4cefcfbc9662cd2fe421
+2014-10-26T13:27:27.309772Z
+43067
+rmilecki
 has-props
 
 
@@ -58,7 +67,7 @@ has-props
 
 
 
-413
+412
 
 modules.mk
 file
@@ -164,13 +173,4 @@ nbd
 
 
 4027
-
-patches-3.10
-dir
-
-src
-dir
-
-base-files
-dir
 

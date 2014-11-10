@@ -1,7 +1,7 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/ep80579-drivers/patches
 svn://svn.openwrt.org/openwrt
 
@@ -94,14 +94,14 @@ blogic
 
 12724
 
-106-iegbe_new_irqf_constant.patch
+210-can_include_linux_fs_h.patch
 file
 
 
 
 
 2014-06-03T20:17:37.622341Z
-a0aed6adb700a205511dd3ebdd70a956
+e9222415af4999267d302cf190d694ef
 2013-06-21T16:54:37.987982Z
 37007
 blogic
@@ -126,7 +126,7 @@ blogic
 
 
 
-521
+263
 
 601-2.6.32_includes.patch
 file
@@ -162,14 +162,14 @@ blogic
 
 781
 
-210-can_include_linux_fs_h.patch
+106-iegbe_new_irqf_constant.patch
 file
 
 
 
 
 2014-06-03T20:17:37.622341Z
-e9222415af4999267d302cf190d694ef
+a0aed6adb700a205511dd3ebdd70a956
 2013-06-21T16:54:37.987982Z
 37007
 blogic
@@ -194,41 +194,7 @@ blogic
 
 
 
-263
-
-713-3.3-gpio-fixes.patch
-file
-
-
-
-
-2014-06-03T20:17:37.622341Z
-ce03bbbaef6282522db09e52fd0b87ea
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1182
+521
 
 150-ocracoke_island.patch
 file
@@ -264,6 +230,40 @@ blogic
 
 21129
 
+713-3.3-gpio-fixes.patch
+file
+
+
+
+
+2014-06-03T20:17:37.622341Z
+ce03bbbaef6282522db09e52fd0b87ea
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1182
+
 714-3.3-wdt-fixes.patch
 file
 
@@ -298,14 +298,14 @@ blogic
 
 1397
 
-712-3.3-can-fixes.patch
+400-edma_fix_irq_request_warning.patch
 file
 
 
 
 
 2014-06-03T20:17:37.622341Z
-bab2aebaae8d0dd816c3d19a9158a6e9
+9a370d81b5633ccc5834a8c0b25efe5e
 2013-06-21T16:54:37.987982Z
 37007
 blogic
@@ -330,41 +330,7 @@ blogic
 
 
 
-1343
-
-600-2.6.27_includes.patch
-file
-
-
-
-
-2014-06-03T20:17:37.622341Z
-ae63a5800f0d6497320b0c3b0d7ef0fc
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-688
+874
 
 500-1588_fix_irq_request_warning.patch
 file
@@ -400,14 +366,14 @@ blogic
 
 975
 
-400-edma_fix_irq_request_warning.patch
+600-2.6.27_includes.patch
 file
 
 
 
 
 2014-06-03T20:17:37.622341Z
-9a370d81b5633ccc5834a8c0b25efe5e
+ae63a5800f0d6497320b0c3b0d7ef0fc
 2013-06-21T16:54:37.987982Z
 37007
 blogic
@@ -432,7 +398,41 @@ blogic
 
 
 
-874
+688
+
+712-3.3-can-fixes.patch
+file
+
+
+
+
+2014-06-03T20:17:37.622341Z
+bab2aebaae8d0dd816c3d19a9158a6e9
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1343
 
 102-iegbe_nuke_polling_netdev.patch
 file

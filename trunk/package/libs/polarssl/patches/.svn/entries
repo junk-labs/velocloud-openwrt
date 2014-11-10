@@ -1,15 +1,15 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/polarssl/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-08T05:21:38.255920Z
-42062
-cyrus
+2014-10-18T09:19:51.640076Z
+42948
+nbd
 
 
 
@@ -59,6 +59,40 @@ cyrus
 
 
 4591
+
+100-disable_sslv3.patch
+file
+
+
+
+
+2014-11-09T00:21:28.848230Z
+04e5a72f60b5668fd48215164fc46dd9
+2014-10-18T09:19:51.640076Z
+42948
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+255
 
 210-gen_key_config_fix.patch
 file

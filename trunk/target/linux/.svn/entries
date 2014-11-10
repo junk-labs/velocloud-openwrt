@@ -1,15 +1,15 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-27T19:13:32.503049Z
-42682
-florian
+2014-11-08T21:00:20.260109Z
+43222
+rmilecki
 
 
 
@@ -26,28 +26,43 @@ florian
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-brcm2708
+ramips
+dir
+
+avr32
+dir
+
+rb532
+dir
+
+uml
+dir
+
+malta
 dir
 
 ixp4xx
 dir
 
-atheros
+brcm2708
 dir
 
-au1000
+atheros
 dir
 
 cns21xx
 dir
 
-mpc85xx
+au1000
+dir
+
+generic
 dir
 
 brcm63xx
 dir
 
-generic
+mpc85xx
 dir
 
 Makefile
@@ -84,19 +99,19 @@ has-props
 
 373
 
-brcm47xx
-dir
-
-cns3xxx
-dir
-
-realview
+ppc40x
 dir
 
 at91
 dir
 
-ppc40x
+realview
+dir
+
+cns3xxx
+dir
+
+brcm47xx
 dir
 
 imx6
@@ -124,20 +139,5 @@ ar7
 dir
 
 ar71xx
-dir
-
-ramips
-dir
-
-avr32
-dir
-
-rb532
-dir
-
-uml
-dir
-
-malta
 dir
 

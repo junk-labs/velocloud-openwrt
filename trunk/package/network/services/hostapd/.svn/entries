@@ -1,15 +1,15 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/hostapd
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-17T11:01:23.015860Z
-42591
-blogic
+2014-10-17T06:16:07.280944Z
+42943
+cyrus
 
 
 
@@ -25,9 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-patches
-dir
 
 Config.in
 file
@@ -69,11 +66,11 @@ file
 
 
 
-2014-08-06T22:47:47.297824Z
-8ff1061cda0c1a2746cce5e1e2d60c2e
-2014-08-03T11:15:59.158736Z
-41982
-blogic
+2014-11-09T00:21:29.736214Z
+33db80e90baa954cfe67111415c1ef55
+2014-10-17T06:16:07.280944Z
+42943
+cyrus
 has-props
 
 
@@ -95,11 +92,14 @@ has-props
 
 
 
-10883
+10885
 
 madwifi
 dir
 
 files
+dir
+
+patches
 dir
 

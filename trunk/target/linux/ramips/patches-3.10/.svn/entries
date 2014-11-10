@@ -1,14 +1,14 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ramips/patches-3.10
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-01T13:22:00.427370Z
-42384
+2014-10-06T06:11:37.518697Z
+42801
 blogic
 
 
@@ -25,210 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-0208-MIPS-ralink-add-MT7621-dts-file.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-065002d2ee9e4b2d29e15a2777cc059a
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6053
-
-0015-MIPS-ralink-mt7620-add-wdt-clock-definition.patch
-file
-
-
-
-
-2014-06-03T20:17:38.318341Z
-26daedf3844b6718b06331c44d0fe409
-2013-08-14T18:15:15.962376Z
-37778
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-775
-
-0009-MIPS-ralink-add-support-for-reset-controller-API.patch
-file
-
-
-
-
-2014-06-03T20:17:38.318341Z
-4ff3d60f93f162347138eae0243311c6
-2013-08-23T17:31:04.354001Z
-37832
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3138
-
-0116-NET-multi-phy-support.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-ef23710facf0b8b1f218447423fcc718
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1661
-
-0012-MIPS-ralink-probe-clocksources-from-OF.patch
-file
-
-
-
-
-2014-06-03T20:17:38.318341Z
-a8b251dd54d8b93d29f385c29a68a721
-2013-08-14T18:15:15.962376Z
-37778
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-680
-
-0130-mtd-ralink-add-mt7620-nand-driver.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-faf1b56484520e5b10920bad564dee4a
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-62815
 
 0220-NET-ralink-squelch_mdio_access.patch
 file
@@ -332,40 +128,6 @@ blogic
 
 2488
 
-0100-MIPS-use-set_mode-to-enable-disable-the-cevt-r4k-irq.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-d90eb9b32f6828d5b978794b0fbc4994
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1811
-
 0101-MIPS-ralink-add-verbose-pmu-info.patch
 file
 
@@ -399,6 +161,40 @@ blogic
 
 
 1554
+
+0100-MIPS-use-set_mode-to-enable-disable-the-cevt-r4k-irq.patch
+file
+
+
+
+
+2014-06-03T20:52:25.318293Z
+d90eb9b32f6828d5b978794b0fbc4994
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1811
 
 0010-MIPS-ralink-add-support-for-periodic-timer-irq.patch
 file
@@ -434,40 +230,6 @@ blogic
 
 5361
 
-0133-uvc-add-iPassion-iP2970-support.patch
-file
-
-
-
-
-2014-06-03T20:52:25.318293Z
-be31475d1ced377f70aa9f2e635e32a5
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6195
-
 0111-DMA-ralink-add-rt2880-dma-engine.patch
 file
 
@@ -501,6 +263,40 @@ blogic
 
 
 18482
+
+0133-uvc-add-iPassion-iP2970-support.patch
+file
+
+
+
+
+2014-06-03T20:52:25.318293Z
+be31475d1ced377f70aa9f2e635e32a5
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6195
 
 0221-pinmux-rt5350-spi_cs1.patch
 file
@@ -1114,40 +910,6 @@ juhosg
 
 24549
 
-0122-serial-ralink-adds-mt7620-serial.patch
-file
-
-
-
-
-2014-06-03T20:52:25.322293Z
-f42ee1aff13f88bd10308458ed99cc09
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-941
-
 0216-NET-ralink-add-mt7621-SDK-ethernet-driver.patch
 file
 
@@ -1182,14 +944,14 @@ blogic
 
 212986
 
-0112-asoc-add-mt7620-support.patch
+0122-serial-ralink-adds-mt7620-serial.patch
 file
 
 
 
 
-2014-06-03T20:52:25.326293Z
-94438b737c705ecf62fcc883b0dd13b3
+2014-06-03T20:52:25.322293Z
+f42ee1aff13f88bd10308458ed99cc09
 2014-03-18T19:21:56.733429Z
 39949
 blogic
@@ -1214,7 +976,7 @@ blogic
 
 
 
-18743
+941
 
 0113-pinctrl-ralink-add-pinctrl-driver.patch
 file
@@ -1249,6 +1011,40 @@ blogic
 
 
 38971
+
+0112-asoc-add-mt7620-support.patch
+file
+
+
+
+
+2014-06-03T20:52:25.326293Z
+94438b737c705ecf62fcc883b0dd13b3
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+18743
 
 0104-MIPS-ralink-workaround-DTB-memory-issue.patch
 file
@@ -1590,40 +1386,6 @@ juhosg
 
 5721
 
-0200-MIPS-Fix-TLBR-use-hazards-for-R2-cores-in-the-TLB-re.patch
-file
-
-
-
-
-2014-06-03T20:52:25.326293Z
-21484d59741deaf76114e88b7752bdf6
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1622
-
 0213-MTD-add-mt7621-nand-support.patch
 file
 
@@ -1658,14 +1420,14 @@ nbd
 
 139144
 
-0109-MIPS-ralink-add-pseudo-pwm-led-trigger-based-on-time.patch
+0200-MIPS-Fix-TLBR-use-hazards-for-R2-cores-in-the-TLB-re.patch
 file
 
 
 
 
-2014-06-03T20:52:25.330293Z
-8490f189554a05955abe144c1518b648
+2014-06-03T20:52:25.326293Z
+21484d59741deaf76114e88b7752bdf6
 2014-03-18T19:21:56.733429Z
 39949
 blogic
@@ -1690,7 +1452,7 @@ blogic
 
 
 
-8093
+1622
 
 0123-serial-ralink-the-core-has-a-size-of-0x100-and-not-0.patch
 file
@@ -1725,6 +1487,40 @@ blogic
 
 
 736
+
+0109-MIPS-ralink-add-pseudo-pwm-led-trigger-based-on-time.patch
+file
+
+
+
+
+2014-06-03T20:52:25.330293Z
+8490f189554a05955abe144c1518b648
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8093
 
 0117-NET-add-of_get_mac_address_mtd.patch
 file
@@ -1794,40 +1590,6 @@ blogic
 
 2770
 
-0212-GPIO-ralink-add-mt7621-gpio-controller.patch
-file
-
-
-
-
-2014-06-03T20:52:25.330293Z
-d084814b83e92be0da4a57dfe9b4afc2
-2014-03-27T09:28:33.784995Z
-40291
-juhosg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6031
-
 0132-GPIO-add-gpio_export_with_name.patch
 file
 
@@ -1861,6 +1623,40 @@ blogic
 
 
 9987
+
+0212-GPIO-ralink-add-mt7621-gpio-controller.patch
+file
+
+
+
+
+2014-06-03T20:52:25.330293Z
+d084814b83e92be0da4a57dfe9b4afc2
+2014-03-27T09:28:33.784995Z
+40291
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6031
 
 0016-MIPS-ralink-mt7620-fix-usb-issue-during-frequency-sc.patch
 file
@@ -2032,40 +1828,6 @@ blogic
 
 2139
 
-0300-MIPS-OWRTDTB.patch
-file
-
-
-
-
-2014-06-03T20:52:25.310293Z
-8c0fa694f4b1b082f0fe833f65333050
-2014-03-18T19:21:56.733429Z
-39949
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1454
-
 0135-mtd-add-rtn56u-support.patch
 file
 
@@ -2099,6 +1861,40 @@ blogic
 
 
 698
+
+0300-MIPS-OWRTDTB.patch
+file
+
+
+
+
+2014-06-03T20:52:25.310293Z
+8c0fa694f4b1b082f0fe833f65333050
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1454
 
 0018-DT-Add-documentation-for-spi-rt2880.patch
 file
@@ -2779,4 +2575,242 @@ blogic
 
 
 2706
+
+0208-MIPS-ralink-add-MT7621-dts-file.patch
+file
+
+
+
+
+2014-06-03T20:52:25.318293Z
+065002d2ee9e4b2d29e15a2777cc059a
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6053
+
+0015-MIPS-ralink-mt7620-add-wdt-clock-definition.patch
+file
+
+
+
+
+2014-06-03T20:17:38.318341Z
+26daedf3844b6718b06331c44d0fe409
+2013-08-14T18:15:15.962376Z
+37778
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+775
+
+0009-MIPS-ralink-add-support-for-reset-controller-API.patch
+file
+
+
+
+
+2014-06-03T20:17:38.318341Z
+4ff3d60f93f162347138eae0243311c6
+2013-08-23T17:31:04.354001Z
+37832
+juhosg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3138
+
+0012-MIPS-ralink-probe-clocksources-from-OF.patch
+file
+
+
+
+
+2014-06-03T20:17:38.318341Z
+a8b251dd54d8b93d29f385c29a68a721
+2013-08-14T18:15:15.962376Z
+37778
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+680
+
+0116-NET-multi-phy-support.patch
+file
+
+
+
+
+2014-06-03T20:52:25.318293Z
+ef23710facf0b8b1f218447423fcc718
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1661
+
+0035-USB-dwc2.patch
+file
+
+
+
+
+2014-11-09T00:22:12.027438Z
+b63d3e952e63e6729648d0f5e6ae9dcf
+2014-10-06T06:11:37.518697Z
+42801
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+527
+
+0130-mtd-ralink-add-mt7620-nand-driver.patch
+file
+
+
+
+
+2014-06-03T20:52:25.318293Z
+faf1b56484520e5b10920bad564dee4a
+2014-03-18T19:21:56.733429Z
+39949
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+62815
 

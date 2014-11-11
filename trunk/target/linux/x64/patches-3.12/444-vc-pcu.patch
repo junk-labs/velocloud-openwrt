@@ -26,7 +26,7 @@
  	depends on PCI
 --- /dev/null
 +++ b/drivers/gpio/gpio-pcu.c
-@@ -0,0 +1,430 @@
+@@ -0,0 +1,572 @@
 +/*
 + * Copyright (C) 2014 Velocloud Inc.
 + *
@@ -50,10 +50,29 @@
 +#include <linux/gpio.h>
 +#include <linux/interrupt.h>
 +#include <linux/irq.h>
++#include <linux/mfd/core.h>
++#include <linux/mfd/lpc_ich.h>
 +
-+#define DEBUG_GPIO_PCU		// define for debug;
++//#define DEBUG_GPIO_PCU		// define for debug;
++#define DEBUG_WDT_PCU		// define for debug;
 +
 +// interrupt handling not supported;
++
++#define REG_LPC_ABASE 0x40
++#define	REG_LPC_ABASE_EN 0x02		// BAR GBASE is enabled;
++#define	REG_LPC_ABASE_IO 0x01		// BAR is i/o mapped;
++#define	REG_LPC_ABASE_MASK 0xff80
++
++#define LPC_ABASE_SMI_OFF 0x30
++#define LPC_ABASE_SMI_END (LPC_ABASE_SMI_OFF + 3)
++#define LPC_ABASE_TCO_OFF 0x60
++#define LPC_ABASE_TCO_END (LPC_ABASE_TCO_OFF + 0x1f)
++
++#define REG_LPC_PMC 0x44
++#define REG_LPC_PMC_MASK 0xfffffe00
++
++#define LPC_PBASE_PMC_OFF 0x08
++#define LPC_PBASE_PMC_END (LPC_PBASE_PMC_OFF + 4)
 +
 +#define	REG_LPC_GBASE 0x48		// GBASE in 00:1f.0 config space;
 +#define	REG_LPC_GBASE_EN 0x02		// BAR GBASE is enabled;
@@ -114,6 +133,36 @@
 +	struct gpio_chip gpio[N_PCU_GPIO];
 +};
 +
++static struct resource pcu_wdt_res[] = {
++	{ // acpi - tco
++	  .flags = IORESOURCE_IO,
++	},
++	{ // acpi - smi
++	  .flags = IORESOURCE_IO,
++	},
++	{ // pmc
++	  .flags = IORESOURCE_MEM,
++	},
++};
++
++static struct mfd_cell pcu_wdt_cell[] = {
++	{
++	  .name = "iTCO_wdt",
++	  .num_resources = ARRAY_SIZE(pcu_wdt_res),
++	  .resources = pcu_wdt_res,
++	  .ignore_resource_conflicts = true,
++	},
++};
++
++static struct lpc_ich_info lpc_ich_info[] = {
++	{
++	  .name = "Atom C2000 SoC",
++	  .iTCO_version = 3,
++	},
++};
++
++#ifdef DEBUG_GPIO_PCU
++
 +// dump registers;
 +
 +static void
@@ -128,6 +177,8 @@
 +		ioread32(&regs->tne),
 +		ioread32(&regs->ts));
 +}
++
++#endif // DEBUG_GPIO_PCU
 +
 +// set gpio output;
 +
@@ -286,6 +337,85 @@
 +	gpio->to_irq = NULL;
 +}
 +
++// finalize a mfd cell;
++
++static void
++lpc_ich_finalize_cell(struct mfd_cell *cell)
++{
++	cell->platform_data = lpc_ich_info;
++	cell->pdata_size = sizeof(struct lpc_ich_info);
++}
++
++// init wdt;
++
++static int
++pcu_wdt_init(struct pci_dev *pdev)
++{
++	s32 ret = -ENODEV;
++	u32 abase, pbase;
++	struct resource *res;
++
++	// get acpi base;
++
++	pci_bus_read_config_dword(pdev->bus, 
++		PCI_DEVFN(PCI_SLOT(pdev->devfn), 0),
++		REG_LPC_ABASE, &abase);
++	dev_info(&pdev->dev, "abase is 0x%x\n", abase);
++	if((abase & (REG_LPC_ABASE_EN | REG_LPC_ABASE_IO)) != (REG_LPC_ABASE_EN | REG_LPC_ABASE_IO)) {
++		dev_err(&pdev->dev, "%s: acpi space not enabled\n", __func__);
++		goto out;
++	}
++	abase &= REG_LPC_ABASE_MASK;
++
++	// get pmc base;
++
++	pci_bus_read_config_dword(pdev->bus, 
++		PCI_DEVFN(PCI_SLOT(pdev->devfn), 0),
++		REG_LPC_PMC, &pbase);
++	dev_info(&pdev->dev, "pbase is 0x%x\n", pbase);
++	pbase &= REG_LPC_PMC_MASK;
++
++	// sanity checks;
++
++	if( !abase) {
++		dev_err(&pdev->dev, "%s: acpi space not intialized\n", __func__);
++		goto out;
++	}
++	if( !pbase) {
++		dev_err(&pdev->dev, "%s: pmc space not intialized\n", __func__);
++		goto out;
++	}
++
++	// setup io spaces;
++
++	res = pcu_wdt_res + 0;
++	res->start = abase + LPC_ABASE_TCO_OFF;
++	res->end = abase + LPC_ABASE_TCO_END;
++
++	res++;
++	res->start = abase + LPC_ABASE_SMI_OFF;
++	res->end = abase + LPC_ABASE_SMI_END;
++
++	res++;
++	res->start = pbase + LPC_PBASE_PMC_OFF;
++	res->end = pbase + LPC_PBASE_PMC_END;
++
++	// add mfd device;
++
++	lpc_ich_finalize_cell(pcu_wdt_cell);
++	ret = mfd_add_devices(&pdev->dev, -1, pcu_wdt_cell, 1, NULL, 0, NULL);
++out:
++	return(ret);
++}
++
++// remove wdt;
++
++static void
++pcu_wdt_remove(struct pci_dev *pdev)
++{
++	mfd_remove_devices(&pdev->dev);
++}
++
 +// probe pcu gpio;
 +
 +static int
@@ -321,10 +451,10 @@
 +	pci_bus_read_config_dword(pdev->bus, 
 +		PCI_DEVFN(PCI_SLOT(pdev->devfn), 0),
 +		REG_LPC_GBASE, &gbase);
-+	if((gbase & 3) != (REG_LPC_GBASE_EN | REG_LPC_GBASE_IO))
++	dev_info(&pdev->dev, "gbase is 0x%x\n", gbase);
++	if((gbase & (REG_LPC_GBASE_EN | REG_LPC_GBASE_IO)) != (REG_LPC_GBASE_EN | REG_LPC_GBASE_IO))
 +		goto err_request_regions;
 +	gbase &= REG_LPC_GBASE_MASK;
-+	dev_info(&pdev->dev, "gbase at 0x%x\n", gbase);
 +	if( !gbase)
 +		goto err_request_regions;
 +
@@ -378,6 +508,16 @@
 +		goto err_gpiochip_sus;
 +	}
 +
++	// register watchdog;
++	// lpc_ich driver conflicts with our implementation;
++	// eventually, need to port pcu_gpio to use lpc_ich driver, when kernel > 3.18;
++
++	ret = pcu_wdt_init(pdev);
++	if(ret) {
++		dev_err(&pdev->dev, "%s: failed to init wdt: %d\n", __func__, ret);
++		goto err_gpiochip_sus;
++	}
++
 +	return 0;
 +
 +err_gpiochip_sus:
@@ -402,6 +542,8 @@
 +{
 +	int ret;
 +	struct pcu_gpio *chip = pci_get_drvdata(pdev);
++
++	pcu_wdt_remove(pdev);
 +
 +	ret = gpiochip_remove(chip->gpio + PCU_GPIO_SUS);
 +	if(ret)

@@ -1,7 +1,7 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/system/opkg/patches
 svn://svn.openwrt.org/openwrt
 
@@ -26,14 +26,14 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-009-remove-upgrade-all.patch
+060-add-find-command.patch
 file
 
 
 
 
 2014-06-03T20:17:37.826341Z
-582f06882d4c5a63af3db4852c3a1653
+8786a9b188412b7d6989ce8f89bcb745
 2013-06-21T16:54:37.987982Z
 37007
 blogic
@@ -58,7 +58,109 @@ blogic
 
 
 
-1564
+2316
+
+004-host_cpu.patch
+file
+
+
+
+
+2014-06-03T20:17:37.826341Z
+3e09d6fa2843d5e4a5deb95643ea2278
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1064
+
+011-old-config-location.patch
+file
+
+
+
+
+2014-06-03T20:17:37.826341Z
+c32ac99f21d96a78fa97ae251ed49832
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+247
+
+090-suppress-blank-provides-field.patch
+file
+
+
+
+
+2014-06-03T20:36:40.294315Z
+6c7e1712ed85d4c0f1b96d59d8221f28
+2013-12-13T10:40:26.640748Z
+39039
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+501
 
 001-ship-pkg-m4.patch
 file
@@ -94,6 +196,40 @@ blogic
 
 5589
 
+009-remove-upgrade-all.patch
+file
+
+
+
+
+2014-06-03T20:17:37.826341Z
+582f06882d4c5a63af3db4852c3a1653
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1564
+
 014-errors-to-stderr.patch
 file
 
@@ -128,14 +264,14 @@ blogic
 
 428
 
-050-add-case-insensitive-flag.patch
+012-strip-trailing-conffiles-whitespace.patch
 file
 
 
 
 
 2014-06-03T20:17:37.826341Z
-0a918e8934f2da447ee9de8b7d8e7a74
+c31bc55bd41a9355a0a2de89e79de6ae
 2013-06-21T16:54:37.987982Z
 37007
 blogic
@@ -160,41 +296,7 @@ blogic
 
 
 
-6199
-
-040-wrap-descriptions-only-on-ttys.patch
-file
-
-
-
-
-2014-06-03T20:17:37.826341Z
-26d02029d4276575af845fb168950312
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-896
+635
 
 020-avoid_getline.patch
 file
@@ -230,14 +332,14 @@ blogic
 
 7405
 
-012-strip-trailing-conffiles-whitespace.patch
+040-wrap-descriptions-only-on-ttys.patch
 file
 
 
 
 
 2014-06-03T20:17:37.826341Z
-c31bc55bd41a9355a0a2de89e79de6ae
+26d02029d4276575af845fb168950312
 2013-06-21T16:54:37.987982Z
 37007
 blogic
@@ -262,7 +364,41 @@ blogic
 
 
 
-635
+896
+
+050-add-case-insensitive-flag.patch
+file
+
+
+
+
+2014-06-03T20:17:37.826341Z
+0a918e8934f2da447ee9de8b7d8e7a74
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6199
 
 007-force_static.patch
 file
@@ -467,140 +603,4 @@ jow
 
 
 3332
-
-004-host_cpu.patch
-file
-
-
-
-
-2014-06-03T20:17:37.826341Z
-3e09d6fa2843d5e4a5deb95643ea2278
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1064
-
-060-add-find-command.patch
-file
-
-
-
-
-2014-06-03T20:17:37.826341Z
-8786a9b188412b7d6989ce8f89bcb745
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2316
-
-011-old-config-location.patch
-file
-
-
-
-
-2014-06-03T20:17:37.826341Z
-c32ac99f21d96a78fa97ae251ed49832
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-247
-
-090-suppress-blank-provides-field.patch
-file
-
-
-
-
-2014-06-03T20:36:40.294315Z
-6c7e1712ed85d4c0f1b96d59d8221f28
-2013-12-13T10:40:26.640748Z
-39039
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-501
 

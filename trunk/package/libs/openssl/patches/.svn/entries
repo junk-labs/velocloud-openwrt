@@ -1,15 +1,15 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/openssl/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-03-09T13:23:41.179571Z
-39853
-nbd
+2014-10-16T08:34:38.313893Z
+42930
+jow
 
 
 
@@ -26,17 +26,85 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-150-no_engines.patch
+180-fix_link_segfault.patch
 file
 
 
 
 
 2014-06-03T20:17:37.702341Z
-4fc6df76be8b0a6b43441b56cb42c99c
+bfdf3fa3a83b422e933acc9a28e9c0e5
+2012-10-08T11:24:12.513797Z
+33657
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+857
+
+190-remove_timestamp_check.patch
+file
+
+
+
+
+2014-06-03T20:17:37.702341Z
+aa618baf35950cd1a022859d01681470
 2014-03-09T13:23:41.179571Z
 39853
 nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+877
+
+150-no_engines.patch
+file
+
+
+
+
+2014-11-09T00:21:29.052226Z
+6c1fb7c8c63ce243c1a8dceafdd1e5af
+2014-10-16T08:34:38.313893Z
+42930
+jow
 has-props
 
 
@@ -100,11 +168,11 @@ file
 
 
 
-2014-06-03T20:17:37.702341Z
-9647f7489d848ac0e96c7950fcfd641f
-2014-03-09T13:23:41.179571Z
-39853
-nbd
+2014-11-09T00:21:29.052226Z
+85eee97274ceb83d0e3d866fd797e531
+2014-10-16T08:34:38.313893Z
+42930
+jow
 
 
 
@@ -126,7 +194,7 @@ nbd
 
 
 
-9871
+9869
 
 110-optimize-for-size.patch
 file
@@ -297,72 +365,4 @@ has-props
 
 
 195
-
-180-fix_link_segfault.patch
-file
-
-
-
-
-2014-06-03T20:17:37.702341Z
-bfdf3fa3a83b422e933acc9a28e9c0e5
-2012-10-08T11:24:12.513797Z
-33657
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-857
-
-190-remove_timestamp_check.patch
-file
-
-
-
-
-2014-06-03T20:17:37.702341Z
-aa618baf35950cd1a022859d01681470
-2014-03-09T13:23:41.179571Z
-39853
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-877
 

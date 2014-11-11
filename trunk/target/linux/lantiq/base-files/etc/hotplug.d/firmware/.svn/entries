@@ -1,14 +1,14 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/lantiq/base-files/etc/hotplug.d/firmware
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-07-02T16:33:11.931151Z
-41472
+2014-10-14T11:03:23.995636Z
+42902
 blogic
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2014-08-06T22:40:51.421834Z
-8b9564f5babe93e38c7846223fa001d8
-2014-07-02T16:33:11.931151Z
-41472
+2014-11-09T00:22:11.867441Z
+3d9ecdb24c615edec51843d31b10dfc1
+2014-10-14T11:03:23.995636Z
+42902
 blogic
 
 
@@ -58,5 +58,5 @@ blogic
 
 
 
-1060
+1068
 

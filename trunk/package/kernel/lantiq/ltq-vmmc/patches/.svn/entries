@@ -1,14 +1,14 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/lantiq/ltq-vmmc/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-09-17T21:45:56.010072Z
-38028
+2014-11-03T08:32:30.561331Z
+43156
 blogic
 
 
@@ -25,6 +25,40 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+500-ar9_vr9.patch
+file
+
+
+
+
+2014-11-09T00:21:05.380661Z
+2fd6e4beb02a07e6272ab057ff0ad6bb
+2014-11-03T08:32:30.561331Z
+43156
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9559
 
 000-portability.patch
 file

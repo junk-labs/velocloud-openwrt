@@ -1,7 +1,7 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/lua/patches-host
 svn://svn.openwrt.org/openwrt
 
@@ -25,40 +25,6 @@ blogic
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-030-archindependent-bytecode.patch
-file
-
-
-
-
-2014-06-03T20:17:37.842341Z
-6b38446b0ffa9ee7ddc3b0b26377ce2b
-2013-06-21T16:54:37.987982Z
-37007
-blogic
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2306
 
 010-lua-5.1.3-lnum-full-260308.patch
 file
@@ -195,4 +161,38 @@ blogic
 
 
 286
+
+030-archindependent-bytecode.patch
+file
+
+
+
+
+2014-06-03T20:17:37.842341Z
+6b38446b0ffa9ee7ddc3b0b26377ce2b
+2013-06-21T16:54:37.987982Z
+37007
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2306
 

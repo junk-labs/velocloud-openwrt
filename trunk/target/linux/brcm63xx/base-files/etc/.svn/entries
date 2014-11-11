@@ -1,7 +1,7 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm63xx/base-files/etc
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,9 @@ jogo
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+uci-defaults
+dir
 
 diag.sh
 file
@@ -61,8 +64,5 @@ has-props
 334
 
 hotplug.d
-dir
-
-uci-defaults
 dir
 

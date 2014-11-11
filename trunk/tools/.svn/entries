@@ -1,14 +1,14 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/tools
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-29T11:37:50.706481Z
-42323
+2014-10-26T11:27:15.926877Z
+43065
 nbd
 
 
@@ -26,30 +26,6 @@ nbd
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-patch-image
-dir
-
-lzma-old
-dir
-
-mklibs
-dir
-
-gmp
-dir
-
-include
-dir
-
-sstrip
-dir
-
-b43-tools
-dir
-
-ipkg-utils
-dir
-
 libelf
 dir
 
@@ -65,13 +41,13 @@ dir
 dosfstools
 dir
 
+findutils
+dir
+
 xz
 dir
 
 upslug2
-dir
-
-findutils
 dir
 
 cloog
@@ -86,19 +62,19 @@ dir
 qemu
 dir
 
-firmware-utils
+mkimage
 dir
 
-mkimage
+firmware-utils
 dir
 
 mpc
 dir
 
-m4
+cmake
 dir
 
-cmake
+m4
 dir
 
 squashfs4
@@ -107,10 +83,10 @@ dir
 mtd-utils
 dir
 
-pkg-config
+bc
 dir
 
-bc
+pkg-config
 dir
 
 scons
@@ -180,9 +156,9 @@ file
 
 
 
-85d8f2045b0e43fdbdb012001f4a7af0
-2014-08-29T11:37:50.706481Z
-42323
+814b13127148c4eec45c2313e0a336fe
+2014-10-26T11:27:15.926877Z
+43065
 nbd
 has-props
 
@@ -193,5 +169,29 @@ wrt350nv2-builder
 dir
 
 autoconf
+dir
+
+patch-image
+dir
+
+lzma-old
+dir
+
+mklibs
+dir
+
+gmp
+dir
+
+include
+dir
+
+sstrip
+dir
+
+b43-tools
+dir
+
+ipkg-utils
 dir
 

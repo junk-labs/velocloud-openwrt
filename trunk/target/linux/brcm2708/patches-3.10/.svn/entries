@@ -1,7 +1,7 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/brcm2708/patches-3.10
 svn://svn.openwrt.org/openwrt
 
@@ -26,184 +26,14 @@ florian
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-0109-vchiq-fix-the-shim-message-release.patch
-file
-
-
-
-
-2014-09-29T22:49:13.732308Z
-253f8a1ae1d2b7ac1075e72d161edfd9
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2829
-
-0125-clockevents-Add-module-refcount.patch
-file
-
-
-
-
-2014-09-29T22:49:13.712308Z
-db43b3c36d71d7451b5eb79ac4b9dab7
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1766
-
-0010-sdcard-patch-improvements-from-naren.patch
-file
-
-
-
-
-2014-09-29T22:49:13.700308Z
-67c83ed9c6c9f8ff083c98a567128c83
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2006
-
-0005-bcm2708-vchiq-driver.patch
-file
-
-
-
-
-2014-09-29T22:49:13.700308Z
-77a3d25b8f9cfcca7a8a2e51cbf33d27
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-395324
-
-0174-alsa-Make-alsa-work-queue-high-priority.-Fixes-under.patch
-file
-
-
-
-
-2014-09-29T22:49:13.700308Z
-aef5617cf2f6dc04bc810c72c58a4e08
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-813
-
-0026-Add-low-latency-mode-to-sdcard-driver.-Disable-with-.patch
+0087-dwc_otg-make-fiq_split_enable-imply-fiq_fix_enable.patch
 file
 
 
 
 
 2014-09-29T22:49:13.704308Z
-71b26326fd75eaf73c8e42646c63bf09
+00ede555835fcb664ea1c63ef3fee4ca
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -228,109 +58,7 @@ florian
 
 
 
-16467
-
-0140-V4L2-Fix-JPEG-timestamp-issue.patch
-file
-
-
-
-
-2014-09-29T22:49:13.748308Z
-2e571c87cb41bbf7dfb5afba095cf461
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1462
-
-0168-spidev-fix-hang-when-transfer_one_message-fails.patch
-file
-
-
-
-
-2014-09-29T22:49:13.716308Z
-ba79a6f30c6c4aabb4b9073bd8d661ee
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1657
-
-0023-Add-module-parameter-for-missing_status-quirk.-sdhci.patch
-file
-
-
-
-
-2014-09-29T22:49:13.704308Z
-1e1af1c28424222bf4b0806dcc8b4acf
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2206
+1058
 
 0173-V4L2-Initial-pass-at-scene-modes.patch
 file
@@ -365,6 +93,74 @@ florian
 
 
 11679
+
+0068-Speed-up-console-framebuffer-imageblit-function.patch
+file
+
+
+
+
+2014-09-29T22:49:13.704308Z
+551708dfbf5ae3d976e21b2dca2711d3
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6820
+
+0004-bcm2708-framebuffer-driver.patch
+file
+
+
+
+
+2014-09-29T22:49:13.704308Z
+807b98bf3d64be586c901f29c3a6ae5e
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+139694
 
 0116-ASoC-Add-support-for-BCM2708.patch
 file
@@ -434,116 +230,14 @@ florian
 
 814
 
-0011-sdhci-bcm2708-speed-up-DMA-sync.patch
-file
-
-
-
-
-2014-09-29T22:49:13.716308Z
-55325b382e2b04a45eb2bf5394ff9023
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-910
-
-0147-V4L2-Correct-flag-settings-for-compressed-formats.patch
-file
-
-
-
-
-2014-09-29T22:49:13.752308Z
-c0b202c38d2e1e998c057a50c0c299c8
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3138
-
-0003-bcm2708-watchdog-driver.patch
-file
-
-
-
-
-2014-09-29T22:49:13.720308Z
-6e52e1d503204b962fb56f49b6a8665b
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11130
-
-0098-wifi-add-patches-from-3.6.y-tree-to-make-rtl8192cu-w.patch
+0107-sdhci-Only-do-one-iteration-of-PIO-reading-loop.patch
 file
 
 
 
 
 2014-09-29T22:49:13.704308Z
-f015a312b4d66c45ba41d91578046b28
+08589f8e763e8325123e20ae9dc382e4
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -568,7 +262,75 @@ florian
 
 
 
-3900
+724
+
+0161-Revert-bcm2708-fix-gpio_to_irq-name-clash.patch
+file
+
+
+
+
+2014-09-29T22:49:13.704308Z
+ef2adb72fe727fcf101af0efc7c66076
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4364
+
+0158-BCM2708-Added-support-for-HiFiBerry-Digi-board.patch
+file
+
+
+
+
+2014-09-29T22:49:13.704308Z
+306167b547667104dff35cf5d312054a
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1899
 
 0124-ASoC-BCM2708-Add-support-for-RPi-DAC.patch
 file
@@ -604,14 +366,14 @@ florian
 
 9956
 
-0024-Fix-spinlock-recursion-in-sdhci-bcm2708.c.patch
+0098-wifi-add-patches-from-3.6.y-tree-to-make-rtl8192cu-w.patch
 file
 
 
 
 
-2014-09-29T22:49:13.752308Z
-eba6d04d4ad288eb5abaacd77348f805
+2014-09-29T22:49:13.704308Z
+f015a312b4d66c45ba41d91578046b28
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -636,7 +398,41 @@ florian
 
 
 
-2040
+3900
+
+0151-Makefiles-change-EXTRA_CFLAGS-to-ccflags-y.patch
+file
+
+
+
+
+2014-09-29T22:49:13.704308Z
+8a76d7af33be42416f1cc4cc9be7f515
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6961
 
 0030-Avoid-dynamic-memory-allocation-for-channel-lock-in-.patch
 file
@@ -706,14 +502,14 @@ florian
 
 7991
 
-0136-V4L2-Add-support-for-frame-rate-control.patch
+0001-Main-bcm2708-linux-port.patch
 file
 
 
 
 
-2014-09-29T22:49:13.720308Z
-1b1d3c7467df04f2d89d268b8b9a9b93
+2014-09-29T22:49:13.708308Z
+424a52a9a26d8f31ee402a9cf604a892
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -738,7 +534,177 @@ florian
 
 
 
-8694
+262596
+
+0118-ASoC-Add-support-for-PCM5102A-codec.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+4953918764d295a0e96e7136538ec7c7
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4009
+
+0110-vchiq-export-additional-symbols.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+4f15c961603d71b0f3a4b4c8f5728cdc
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1119
+
+0050-dwc_otg-Fix-incorrect-URB-allocation-error-handling.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+8701bbc2ab47bd27bd9278a1def7ed39
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1521
+
+0150-Cleanup-include-for-files-under-include-linux.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+4246643ab9f5009d4e8db732b4685b82
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1429
+
+0066-Only-init-gpio-pins-of-selected-i2c-bus.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+b168d3bcfe7267e777be3d38a247f009
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1539
 
 0144-vc_mem-tidy-up-debug-procfs-code.patch
 file
@@ -774,14 +740,14 @@ florian
 
 5089
 
-0092-Support-for-cheap-Ralink-3070-WiFi-plug.patch
+0162-bcm2708-select-NEED_MACH_GPIO_H.patch
 file
 
 
 
 
-2014-09-29T22:49:13.720308Z
-d8cf433aafe14ffbf3b2571dee87590b
+2014-09-29T22:49:13.708308Z
+c3c155a7f6a254f9da9607b3981898e5
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -806,7 +772,75 @@ florian
 
 
 
-2485
+1224
+
+0067-Avoid-responding-to-unexpected-I2C-interrupts.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+5a084eafd8b653345a63f395beb0aa77
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1055
+
+0052-Add-retry-on-error-and-tidy-of-temperature-driver.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+6dc3acf22e1edf7251177f32ad7e5d32
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4698
 
 0078-dwc_otg-mask-correct-interrupts-after-transaction-er.patch
 file
@@ -842,14 +876,14 @@ florian
 
 2597
 
-0146-fixes-a-bug-in-the-snd-bcm2835-driver.patch
+0058-Added-Device-IDs-for-August-DVB-T-205.patch
 file
 
 
 
 
-2014-09-29T22:49:13.696308Z
-73e2f00e916b4a51500d2a0b6f361ca0
+2014-09-29T22:49:13.708308Z
+2ad716cf0b5d823c3ffbd7d59bec6cf1
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -874,16 +908,16 @@ florian
 
 
 
-1251
+1048
 
-0056-spi-bcm2708-add-9-bit-support-using-LoSSI-mode.patch
+0039-bcm2708-Add-vc_cma-driver-to-enable-use-of-CMA.patch
 file
 
 
 
 
-2014-09-29T22:49:13.744308Z
-11b4dcf6d4f088b4bd3cb226386258d4
+2014-09-29T22:49:13.708308Z
+75743a39fa9dfcfe419a540d5c19086a
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -908,16 +942,16 @@ florian
 
 
 
-2035
+1641
 
-0081-dwc_otg-whitespace-cleanup-in-dwc_otg_urb_enqueue.patch
+0015-sdhci-bcm2708-assume-50-MHz-eMMC-clock.patch
 file
 
 
 
 
-2014-09-29T22:49:13.696308Z
-e1159dca404341bf8a7d09ae2413640c
+2014-09-29T22:49:13.708308Z
+5da8a17b84a06d62c4a99003789bf57d
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -942,16 +976,84 @@ florian
 
 
 
-3528
+1049
 
-0027-Add-FIQ-patch-to-dwc_otg-driver.-Enable-with-dwc_otg.patch
+0160-ASoC-wm8804-Set-idle_bias_off-to-false.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+e63c700bf3b2f9548b276deb3c0f8c20
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+916
+
+0085-dwc_otg-fiq_split-use-TTs-with-more-granularity.patch
+file
+
+
+
+
+2014-09-29T22:49:13.708308Z
+a073662c727a1bf3690f6b85ce85690f
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4359
+
+0142-V4L2-Enable-MJPEG-encoding.patch
 file
 
 
 
 
 2014-09-29T22:49:13.712308Z
-5c7d5acf9f85416fb96a886490091cd6
+f0cf5b75a71ac95095604c0264ec3eeb
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -976,41 +1078,7 @@ florian
 
 
 
-42366
-
-0100-sdhci-sdhci_bcm2708_quirk_voltage_broken-appears-to-.patch
-file
-
-
-
-
-2014-09-29T22:49:13.712308Z
-5a3b2828668351cdeff0639d17666610
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2360
+1755
 
 0103-lirc_rpi-Don-t-register-with-lirc_dev-if-we-can-t-cl.patch
 file
@@ -1046,6 +1114,74 @@ florian
 
 1837
 
+0100-sdhci-sdhci_bcm2708_quirk_voltage_broken-appears-to-.patch
+file
+
+
+
+
+2014-09-29T22:49:13.712308Z
+5a3b2828668351cdeff0639d17666610
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2360
+
+0027-Add-FIQ-patch-to-dwc_otg-driver.-Enable-with-dwc_otg.patch
+file
+
+
+
+
+2014-09-29T22:49:13.712308Z
+5c7d5acf9f85416fb96a886490091cd6
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+42366
+
 0172-V4L2-Drop-logging-msg-from-info-to-debug.patch
 file
 
@@ -1080,14 +1216,14 @@ florian
 
 1054
 
-0051-Added-inverted-transmitter-support.patch
+0009-possible-fix-for-sdcard-missing-status.-Thank-naren.patch
 file
 
 
 
 
-2014-09-29T22:49:13.744308Z
-c0b572032cc4e5f0232fb6bcae98b08d
+2014-09-29T22:49:13.712308Z
+537ada83a418fe513c864769f4af5c21
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1112,7 +1248,7 @@ florian
 
 
 
-2833
+1279
 
 0115-ASoC-core-Add-API-for-configuration-of-DAI-BCLK-rati.patch
 file
@@ -1148,14 +1284,14 @@ florian
 
 2527
 
-0117-BCM2708-Extend-mach-header.patch
+0112-config-Enable-V4L-MMAL-driver.patch
 file
 
 
 
 
-2014-09-29T22:49:13.748308Z
-7baae1949a872c4e5dd349fa97ce67ac
+2014-09-29T22:49:13.712308Z
+4fb734c2f3cf6e2b67bbb061f61a745a
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1180,7 +1316,7 @@ florian
 
 
 
-2251
+769
 
 0062-Add-quick-config.patch
 file
@@ -1216,14 +1352,14 @@ florian
 
 6016
 
-0104-config-Add-CONFIG_MD_LINEAR.patch
+0014-sdhci-bcm2708-add-allow_highspeed-parameter.patch
 file
 
 
 
 
-2014-09-29T22:49:13.724308Z
-c655fef51b15cd54c0a721b19e312760
+2014-09-29T22:49:13.712308Z
+5659ad7e7f768b36f6c043505b060d0e
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1248,41 +1384,7 @@ florian
 
 
 
-671
-
-0154-gpio-support-low-and-high-level-interrupts.patch
-file
-
-
-
-
-2014-09-29T22:49:13.748308Z
-6a1bec49e0fbdceb84f1d6e9c0c17e7e
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4217
+1678
 
 0132-V4L2-Correct-JPEG-Q-factor-range.patch
 file
@@ -1318,14 +1420,14 @@ florian
 
 1283
 
-0105-config-Add-CONFIG_IFB.patch
+0111-bcm2835-add-v4l2-camera-device.patch
 file
 
 
 
 
-2014-09-29T22:49:13.700308Z
-bbc815f9e22a97d4b096b82355269674
+2014-09-29T22:49:13.712308Z
+b67275c77f5f2e44177b750b5d4eb838
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1350,16 +1452,16 @@ florian
 
 
 
-640
+178742
 
-0167-bcm2708fb-Allow-swapping-of-red-blue-in-24-32-modes.patch
+0125-clockevents-Add-module-refcount.patch
 file
 
 
 
 
-2014-09-29T22:49:13.732308Z
-c1b898b8869ee5a4e9b2e01b01fb7476
+2014-09-29T22:49:13.712308Z
+db43b3c36d71d7451b5eb79ac4b9dab7
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1384,41 +1486,7 @@ florian
 
 
 
-2528
-
-0143-i2c-bcm2708-fixed-baudrate.patch
-file
-
-
-
-
-2014-09-29T22:49:13.748308Z
-5e02b6bc63ed688c75782302dc31ce38
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2063
+1766
 
 0166-bcm2708-Allow-disk-activity-led-gpio-to-be-specified.patch
 file
@@ -1454,74 +1522,6 @@ florian
 
 1474
 
-0031-Add-cpufreq-driver.patch
-file
-
-
-
-
-2014-09-29T22:49:13.748308Z
-7b5ae8595cdc8a2a5e1e12cc6d1c67f0
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10635
-
-0170-V4L2-Correct-BGR24-to-RGB24-in-format-table.patch
-file
-
-
-
-
-2014-09-29T22:49:13.732308Z
-020520f396322a5a032da745c9fe362c
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-935
-
 0063-mmc-suppress-sdcard-warnings-we-are-happy-about-by-d.patch
 file
 
@@ -1555,6 +1555,40 @@ florian
 
 
 2571
+
+0168-spidev-fix-hang-when-transfer_one_message-fails.patch
+file
+
+
+
+
+2014-09-29T22:49:13.716308Z
+ba79a6f30c6c4aabb4b9073bd8d661ee
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1657
 
 0032-Add-NAK-holdoff-scheme.-Enabled-by-default-disable-w.patch
 file
@@ -1624,40 +1658,6 @@ florian
 
 1401
 
-0135-V4L2-Add-flicker-avoidance-controls.patch
-file
-
-
-
-
-2014-09-29T22:49:13.732308Z
-bfb825ccc54990e4a437b4af5796ec16
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3919
-
 0037-Allow-the-number-of-cycles-delay-between-sdcard-peri.patch
 file
 
@@ -1692,14 +1692,14 @@ florian
 
 1606
 
-0055-Add-bitbanging-pullups-use-them-for-w1-gpio.patch
+0141-V4L2-Fix-issue-when-switching-down-JPEG-resolution.patch
 file
 
 
 
 
-2014-09-29T22:49:13.732308Z
-18b35ed3676a354505899059a296b914
+2014-09-29T22:49:13.716308Z
+945afe1204feaecad1106bbd217ebffd
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1724,16 +1724,16 @@ florian
 
 
 
-4618
+5166
 
-0161-Revert-bcm2708-fix-gpio_to_irq-name-clash.patch
+0127-config-Make-XPAD-and-USB_NET_AX88179_178A-modules.patch
 file
 
 
 
 
-2014-09-29T22:49:13.704308Z
-ef2adb72fe727fcf101af0efc7c66076
+2014-09-29T22:49:13.716308Z
+1d396eb2e9c637f2c72fa78cbf6a378b
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1758,16 +1758,16 @@ florian
 
 
 
-4364
+1180
 
-0072-USB-fix-using-a-FIQ-to-implement-split-transactions.patch
+0114-dmaengine-Add-support-for-BCM2708.patch
 file
 
 
 
 
-2014-09-29T22:49:13.736308Z
-71889c2da1f9ebe6016200995ad18b31
+2014-09-29T22:49:13.716308Z
+9772042b67b0f225d37dd9f702b03454
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1792,7 +1792,109 @@ florian
 
 
 
-47607
+16427
+
+0113-config-Add-BCACHE.patch
+file
+
+
+
+
+2014-09-29T22:49:13.716308Z
+250f861e4da8647d5d0e8e91e23e4ada
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+652
+
+0011-sdhci-bcm2708-speed-up-DMA-sync.patch
+file
+
+
+
+
+2014-09-29T22:49:13.716308Z
+55325b382e2b04a45eb2bf5394ff9023
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+910
+
+0002-Add-dwc_otg-driver.patch
+file
+
+
+
+
+2014-09-29T22:49:13.716308Z
+5051a520af1bfce5c11adf2585a4b69e
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1692506
 
 0060-dwc_otg-fix-NAK-holdoff-and-allow-on-split-transacti.patch
 file
@@ -1828,6 +1930,40 @@ florian
 
 2892
 
+0003-bcm2708-watchdog-driver.patch
+file
+
+
+
+
+2014-09-29T22:49:13.720308Z
+6e52e1d503204b962fb56f49b6a8665b
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11130
+
 0075-Fix-for-deprecated-undefined-create_proc_entry-in-RT.patch
 file
 
@@ -1862,14 +1998,14 @@ florian
 
 1241
 
-0157-ASoC-BCM-Add-support-for-HiFiBerry-Digi.patch
+0120-ASoC-Add-support-for-HifiBerry-DAC.patch
 file
 
 
 
 
-2014-09-29T22:49:13.736308Z
-755e5e8a399b7e116e26504e5cd51ab0
+2014-09-29T22:49:13.720308Z
+651ad6c09f388ecb85264230337528d2
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1894,16 +2030,16 @@ florian
 
 
 
-6505
+4853
 
-0126-config-recreate-with-savedefconfig.patch
+0136-V4L2-Add-support-for-frame-rate-control.patch
 file
 
 
 
 
-2014-09-29T22:49:13.752308Z
-a4f12378a06b0cac5fe06185fa6cf266
+2014-09-29T22:49:13.720308Z
+1b1d3c7467df04f2d89d268b8b9a9b93
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1928,16 +2064,16 @@ florian
 
 
 
-1159
+8694
 
-0152-V4L2-Increase-the-MMAL-timeout-to-3sec.patch
+0123-BCM2708-Add-I2S-and-DMA-support-to-default-config.patch
 file
 
 
 
 
-2014-09-29T22:49:13.752308Z
-ca520874bd04b6522378303064a796c6
+2014-09-29T22:49:13.720308Z
+c1eed30f266113e639e3bc22a163cfce
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -1962,75 +2098,7 @@ florian
 
 
 
-1154
-
-0150-Cleanup-include-for-files-under-include-linux.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-4246643ab9f5009d4e8db732b4685b82
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1429
-
-0074-hack-fix-for-incorrect-uart-fifo-size-detection.patch
-file
-
-
-
-
-2014-09-29T22:49:13.744308Z
-d63ee320183c94322ea8636de9636317
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-744
+1359
 
 0095-dwc_otg-Don-t-issue-traffic-to-LS-devices-in-FS-mode.patch
 file
@@ -2100,14 +2168,14 @@ florian
 
 1493
 
-0067-Avoid-responding-to-unexpected-I2C-interrupts.patch
+0153-bcm2708-fix-gpio_to_irq-name-clash.patch
 file
 
 
 
 
-2014-09-29T22:49:13.708308Z
-5a084eafd8b653345a63f395beb0aa77
+2014-09-29T22:49:13.720308Z
+c1021c52d5feef08a7fbfc7c77de99b1
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -2132,16 +2200,16 @@ florian
 
 
 
-1055
+4177
 
-0058-Added-Device-IDs-for-August-DVB-T-205.patch
+0092-Support-for-cheap-Ralink-3070-WiFi-plug.patch
 file
 
 
 
 
-2014-09-29T22:49:13.708308Z
-2ad716cf0b5d823c3ffbd7d59bec6cf1
+2014-09-29T22:49:13.720308Z
+d8cf433aafe14ffbf3b2571dee87590b
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -2166,41 +2234,7 @@ florian
 
 
 
-1048
-
-0052-Add-retry-on-error-and-tidy-of-temperature-driver.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-6dc3acf22e1edf7251177f32ad7e5d32
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4698
+2485
 
 0093-dwc_otg-Enable-NAK-holdoff-for-control-split-transac.patch
 file
@@ -2235,6 +2269,74 @@ florian
 
 
 1300
+
+0029-Add-device-ID-330d.patch
+file
+
+
+
+
+2014-09-29T22:49:13.720308Z
+0ced49783018c0886f95f7070f00de51
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1734
+
+0047-Add-hwrng-hardware-random-number-generator-driver.patch
+file
+
+
+
+
+2014-09-29T22:49:13.720308Z
+9b4b98091cc1c70569bb266ed10c520c
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6733
 
 0155-config-Remove-CONFIG_RTC_HCTOSYS.patch
 file
@@ -2304,6 +2406,40 @@ florian
 
 6718
 
+0163-config-CONFIG_RT2800USB_RT55XX-for-more-RaLink-ID.patch
+file
+
+
+
+
+2014-09-29T22:49:13.720308Z
+27e20fa7743b67f2220a9a02c9ec48a7
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+899
+
 0080-Fix-function-tracing.patch
 file
 
@@ -2337,40 +2473,6 @@ florian
 
 
 2273
-
-0006-cma-Add-vc_cma-driver-to-enable-use-of-CMA.patch
-file
-
-
-
-
-2014-09-29T22:49:13.696308Z
-45542d1b2d9887f01b0e587e63afb036
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-35688
 
 0018-Use-ndelay-rather-than-udelay.-Thanks-lb.patch
 file
@@ -2474,14 +2576,14 @@ florian
 
 1590
 
-0112-config-Enable-V4L-MMAL-driver.patch
+0104-config-Add-CONFIG_MD_LINEAR.patch
 file
 
 
 
 
-2014-09-29T22:49:13.712308Z
-4fb734c2f3cf6e2b67bbb061f61a745a
+2014-09-29T22:49:13.724308Z
+c655fef51b15cd54c0a721b19e312760
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -2506,16 +2608,16 @@ florian
 
 
 
-769
+671
 
-0137-V4L2-Improve-G_FBUF-handling-so-we-pass-conformance.patch
+0097-wifi-Update-to-newer-rtl8192cu-driver-release.patch
 file
 
 
 
 
-2014-09-29T22:49:13.748308Z
-7d997d402ab3882d92997a2e3b472d51
+2014-09-29T22:49:13.728308Z
+9e35852154ebd3bf25ca441d3e96dfe0
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -2540,7 +2642,41 @@ florian
 
 
 
-1635
+4767292
+
+0076-sdhci-bcm2807-Increase-sync_after_dma-timeout.patch
+file
+
+
+
+
+2014-09-29T22:49:13.728308Z
+9aa46069d441d80cf13e2ef1a6194d66
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1133
 
 0061-Merge-pull-request-286-from-martinezjavier-rpi-3.6.y.patch
 file
@@ -2610,40 +2746,6 @@ florian
 
 1271
 
-0070-bcm2708_fb-DMA-acceleration-for-fb_copyarea.patch
-file
-
-
-
-
-2014-09-29T22:49:13.748308Z
-06a7773e67a8347d69649ae27e0231e8
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-8184
-
 0082-dwc_otg-prevent-OOPSes-during-device-disconnects.patch
 file
 
@@ -2678,14 +2780,14 @@ florian
 
 4981
 
-0148-bcm2708_fb-report-number-of-dma-copies.patch
+0109-vchiq-fix-the-shim-message-release.patch
 file
 
 
 
 
-2014-09-29T22:49:13.700308Z
-9bd9f2602c5b8f7171346e0503be692e
+2014-09-29T22:49:13.732308Z
+253f8a1ae1d2b7ac1075e72d161edfd9
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -2710,7 +2812,41 @@ florian
 
 
 
-3247
+2829
+
+0145-vc_mem-tidy-up-debug-printing.patch
+file
+
+
+
+
+2014-09-29T22:49:13.732308Z
+6f5a9b474e0d7b0e95765e82bca938f2
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6096
 
 0048-Changed-wording-on-logging.-Previously-we-received-e.patch
 file
@@ -2746,14 +2882,14 @@ florian
 
 1182
 
-0133-V4L2-Fix-issue-of-driver-jamming-if-STREAMON-failed.patch
+0007-bcm2708-alsa-sound-driver.patch
 file
 
 
 
 
-2014-09-29T22:49:13.748308Z
-6c0e185788b3220af9e37c2851f66764
+2014-09-29T22:49:13.732308Z
+0a1b6dda8534bdb755bf5aa598aafd9d
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -2778,7 +2914,7 @@ florian
 
 
 
-1382
+65025
 
 0094-dwc_otg-Fix-for-occasional-lockup-on-boot-when-doing.patch
 file
@@ -2814,14 +2950,14 @@ florian
 
 920
 
-0012-sdhci-bcm2708-remove-custom-clock-handling.patch
+0167-bcm2708fb-Allow-swapping-of-red-blue-in-24-32-modes.patch
 file
 
 
 
 
-2014-09-29T22:49:13.704308Z
-a10f560e575381874377bdec7724873d
+2014-09-29T22:49:13.732308Z
+c1b898b8869ee5a4e9b2e01b01fb7476
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -2846,16 +2982,16 @@ florian
 
 
 
-3097
+2528
 
-0108-vchiq-create_pagelist-copes-with-vmalloc-memory.patch
+0040-Make-sure-we-wait-for-the-reset-to-finish.patch
 file
 
 
 
 
-2014-09-29T22:49:13.748308Z
-d66a0a89e759af19eb767fbd074b0bd7
+2014-09-29T22:49:13.732308Z
+130eac4ff0a1e8c2409bdd8b61ccb132
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -2880,7 +3016,109 @@ florian
 
 
 
-4861
+839
+
+0170-V4L2-Correct-BGR24-to-RGB24-in-format-table.patch
+file
+
+
+
+
+2014-09-29T22:49:13.732308Z
+020520f396322a5a032da745c9fe362c
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+935
+
+0135-V4L2-Add-flicker-avoidance-controls.patch
+file
+
+
+
+
+2014-09-29T22:49:13.732308Z
+bfb825ccc54990e4a437b4af5796ec16
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3919
+
+0149-bcm2708_fb-use-IRQ-for-DMA-copies.patch
+file
+
+
+
+
+2014-09-29T22:49:13.732308Z
+6d6cebc2456afe569d386f6f0f85172e
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6675
 
 0139-V4L2-Add-support-for-inline-H264-headers.patch
 file
@@ -2916,252 +3154,14 @@ florian
 
 9051
 
-0087-dwc_otg-make-fiq_split_enable-imply-fiq_fix_enable.patch
-file
-
-
-
-
-2014-09-29T22:49:13.704308Z
-00ede555835fcb664ea1c63ef3fee4ca
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1058
-
-0099-mmc-Report-3.3V-support-in-caps.patch
-file
-
-
-
-
-2014-09-29T22:49:13.748308Z
-9c8186e5717f3cc99b7c961b3003eb03
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10724
-
-0127-config-Make-XPAD-and-USB_NET_AX88179_178A-modules.patch
-file
-
-
-
-
-2014-09-29T22:49:13.716308Z
-1d396eb2e9c637f2c72fa78cbf6a378b
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1180
-
-0114-dmaengine-Add-support-for-BCM2708.patch
-file
-
-
-
-
-2014-09-29T22:49:13.716308Z
-9772042b67b0f225d37dd9f702b03454
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-16427
-
-0004-bcm2708-framebuffer-driver.patch
-file
-
-
-
-
-2014-09-29T22:49:13.704308Z
-807b98bf3d64be586c901f29c3a6ae5e
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-139694
-
-0043-Default-to-dwc_otp.lpm_enable-0.patch
-file
-
-
-
-
-2014-09-29T22:49:13.748308Z
-4cb0fd2fb5a0822d641256f08c94d14a
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-799
-
-0113-config-Add-BCACHE.patch
-file
-
-
-
-
-2014-09-29T22:49:13.716308Z
-250f861e4da8647d5d0e8e91e23e4ada
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-652
-
-0071-dwc_otg-Call-usb_hcd_unlink_urb_from_ep-with-lock-he.patch
+0055-Add-bitbanging-pullups-use-them-for-w1-gpio.patch
 file
 
 
 
 
 2014-09-29T22:49:13.732308Z
-0c2d592ffd0009637c63adb550e07f82
+18b35ed3676a354505899059a296b914
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3186,7 +3186,7 @@ florian
 
 
 
-3483
+4618
 
 0086-dwc_otg-fix-potential-sleep-while-atomic-during-urb-.patch
 file
@@ -3222,6 +3222,40 @@ florian
 
 1130
 
+0071-dwc_otg-Call-usb_hcd_unlink_urb_from_ep-with-lock-he.patch
+file
+
+
+
+
+2014-09-29T22:49:13.732308Z
+0c2d592ffd0009637c63adb550e07f82
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3483
+
 0156-ASoC-wm8804-Implement-MCLK-configuration-options-add.patch
 file
 
@@ -3255,6 +3289,40 @@ florian
 
 
 4183
+
+0159-BCM2708-Added-HiFiBerry-Digi-configuration-option.patch
+file
+
+
+
+
+2014-09-29T22:49:13.732308Z
+d2916bb1694b45cc47b1b512493182f3
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+980
 
 0019-Backport-of-Chris-Boot-s-i2c-and-spi-drivers.patch
 file
@@ -3290,14 +3358,14 @@ florian
 
 34058
 
-0008-Allow-mac-address-to-be-set-in-smsc95xx.patch
+0119-BCM2708-Add-I2S-support-to-board-file.patch
 file
 
 
 
 
-2014-09-29T22:49:13.752308Z
-a7778ea50e6b1c574b3112b92bc0c044
+2014-09-29T22:49:13.736308Z
+3aca587711a5c99b112a8124de2469a8
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3322,7 +3390,41 @@ florian
 
 
 
-3383
+1703
+
+0072-USB-fix-using-a-FIQ-to-implement-split-transactions.patch
+file
+
+
+
+
+2014-09-29T22:49:13.736308Z
+71889c2da1f9ebe6016200995ad18b31
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+47607
 
 0131-V4L2-Fix-EV-values.-Add-manual-shutter-speed-control.patch
 file
@@ -3358,14 +3460,14 @@ florian
 
 6866
 
-0102-lirc_rpi-Fix-return-from-incompatible-pointer-type-w.patch
+0134-V4L2-Fix-ISO-controls.patch
 file
 
 
 
 
 2014-09-29T22:49:13.736308Z
-0882b8a2d56af477b47ddb82b6abc077
+d4896abf5b56a9fdec55250c81f8d644
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3390,41 +3492,7 @@ florian
 
 
 
-1509
-
-0101-sdhci-sdhci_bcm2708_uhs_broken-should-be-handled-thr.patch
-file
-
-
-
-
-2014-09-29T22:49:13.736308Z
-ec4039945e909d4e81565d825cdbf129
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2234
+1847
 
 0138-V4L2-Fix-information-advertised-through-g_vidfmt.patch
 file
@@ -3460,14 +3528,14 @@ florian
 
 1514
 
-0158-BCM2708-Added-support-for-HiFiBerry-Digi-board.patch
+0101-sdhci-sdhci_bcm2708_uhs_broken-should-be-handled-thr.patch
 file
 
 
 
 
-2014-09-29T22:49:13.704308Z
-306167b547667104dff35cf5d312054a
+2014-09-29T22:49:13.736308Z
+ec4039945e909d4e81565d825cdbf129
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3492,16 +3560,16 @@ florian
 
 
 
-1899
+2234
 
-0049-dwc_otg-Fix-unsafe-access-of-QTD-during-URB-enqueue.patch
+0102-lirc_rpi-Fix-return-from-incompatible-pointer-type-w.patch
 file
 
 
 
 
-2014-09-29T22:49:13.752308Z
-d8b4f08c540ed86b4cfd0cecc48fc350
+2014-09-29T22:49:13.736308Z
+0882b8a2d56af477b47ddb82b6abc077
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3526,16 +3594,16 @@ florian
 
 
 
-3446
+1509
 
-0151-Makefiles-change-EXTRA_CFLAGS-to-ccflags-y.patch
+0157-ASoC-BCM-Add-support-for-HiFiBerry-Digi.patch
 file
 
 
 
 
-2014-09-29T22:49:13.704308Z
-8a76d7af33be42416f1cc4cc9be7f515
+2014-09-29T22:49:13.736308Z
+755e5e8a399b7e116e26504e5cd51ab0
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3560,7 +3628,7 @@ florian
 
 
 
-6961
+6505
 
 0028-Add-non-mainline-source-for-rtl8192cu-wireless-drive.patch
 file
@@ -3596,40 +3664,6 @@ florian
 
 5636681
 
-0123-BCM2708-Add-I2S-and-DMA-support-to-default-config.patch
-file
-
-
-
-
-2014-09-29T22:49:13.720308Z
-c1eed30f266113e639e3bc22a163cfce
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1359
-
 0034-config-add-missing-options-from-3.6.y-kernel.patch
 file
 
@@ -3664,14 +3698,14 @@ florian
 
 24923
 
-0015-sdhci-bcm2708-assume-50-MHz-eMMC-clock.patch
+0074-hack-fix-for-incorrect-uart-fifo-size-detection.patch
 file
 
 
 
 
-2014-09-29T22:49:13.708308Z
-5da8a17b84a06d62c4a99003789bf57d
+2014-09-29T22:49:13.744308Z
+d63ee320183c94322ea8636de9636317
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3696,16 +3730,16 @@ florian
 
 
 
-1049
+744
 
-0039-bcm2708-Add-vc_cma-driver-to-enable-use-of-CMA.patch
+0035-Enable-multiple-ALSA-channels.patch
 file
 
 
 
 
-2014-09-29T22:49:13.708308Z
-75743a39fa9dfcfe419a540d5c19086a
+2014-09-29T22:49:13.744308Z
+352f93cf9b02c0685bddeed3852e6e15
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3730,7 +3764,7 @@ florian
 
 
 
-1641
+2071
 
 0106-dvb-Add-support-for-CableStar-Device.patch
 file
@@ -3766,14 +3800,14 @@ florian
 
 4067
 
-0047-Add-hwrng-hardware-random-number-generator-driver.patch
+0129-config-Add-CONFIG_IPV6_TUNNEL.patch
 file
 
 
 
 
-2014-09-29T22:49:13.720308Z
-9b4b98091cc1c70569bb266ed10c520c
+2014-09-29T22:49:13.744308Z
+93fee5310943fa19d854e4bdcffdb3e6
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3798,16 +3832,16 @@ florian
 
 
 
-6733
+757
 
-0121-BCM2708-Add-HifiBerry-DAC-to-board-file.patch
+0056-spi-bcm2708-add-9-bit-support-using-LoSSI-mode.patch
 file
 
 
 
 
-2014-09-29T22:49:13.696308Z
-43f7f3278010df112775a6c1ae5bfab8
+2014-09-29T22:49:13.744308Z
+11b4dcf6d4f088b4bd3cb226386258d4
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -3832,143 +3866,7 @@ florian
 
 
 
-1702
-
-0089-dwc_otg-prevent-leaking-URBs-during-enqueue.patch
-file
-
-
-
-
-2014-09-29T22:49:13.696308Z
-7bb45b37cc6962b8fdff6fae79d1c15a
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1116
-
-0160-ASoC-wm8804-Set-idle_bias_off-to-false.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-e63c700bf3b2f9548b276deb3c0f8c20
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-916
-
-0163-config-CONFIG_RT2800USB_RT55XX-for-more-RaLink-ID.patch
-file
-
-
-
-
-2014-09-29T22:49:13.720308Z
-27e20fa7743b67f2220a9a02c9ec48a7
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-899
-
-0142-V4L2-Enable-MJPEG-encoding.patch
-file
-
-
-
-
-2014-09-29T22:49:13.712308Z
-f0cf5b75a71ac95095604c0264ec3eeb
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1755
+2035
 
 0171-V4L2-Add-additional-pixel-formats.-Correct-colourspa.patch
 file
@@ -4004,74 +3902,6 @@ florian
 
 2080
 
-0020-Add-sync_after_dma-module-parameter.patch
-file
-
-
-
-
-2014-09-29T22:49:13.696308Z
-e072e271177582349f2a254b78b54622
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4085
-
-0122-ASoC-BCM2708-Add-24-bit-support.patch
-file
-
-
-
-
-2014-09-29T22:49:13.700308Z
-12669669ef214d7f4b18bf732211a206
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2562
-
 0079-dwc_otg-fiq-prevent-FIQ-thrash-and-incorrect-state-p.patch
 file
 
@@ -4106,14 +3936,14 @@ florian
 
 2245
 
-0076-sdhci-bcm2807-Increase-sync_after_dma-timeout.patch
+0051-Added-inverted-transmitter-support.patch
 file
 
 
 
 
-2014-09-29T22:49:13.728308Z
-9aa46069d441d80cf13e2ef1a6194d66
+2014-09-29T22:49:13.744308Z
+c0b572032cc4e5f0232fb6bcae98b08d
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4138,16 +3968,16 @@ florian
 
 
 
-1133
+2833
 
-0097-wifi-Update-to-newer-rtl8192cu-driver-release.patch
+0117-BCM2708-Extend-mach-header.patch
 file
 
 
 
 
-2014-09-29T22:49:13.728308Z
-9e35852154ebd3bf25ca441d3e96dfe0
+2014-09-29T22:49:13.748308Z
+7baae1949a872c4e5dd349fa97ce67ac
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4172,7 +4002,41 @@ florian
 
 
 
-4767292
+2251
+
+0137-V4L2-Improve-G_FBUF-handling-so-we-pass-conformance.patch
+file
+
+
+
+
+2014-09-29T22:49:13.748308Z
+7d997d402ab3882d92997a2e3b472d51
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1635
 
 0065-rtl8192cu-select-required-config-options-to-allow-bu.patch
 file
@@ -4208,14 +4072,14 @@ florian
 
 884
 
-0057-dwc_otg-implement-tasklet-for-returning-URBs-to-usbc.patch
+0154-gpio-support-low-and-high-level-interrupts.patch
 file
 
 
 
 
 2014-09-29T22:49:13.748308Z
-7dadcd2ba2448c69df0b9613a4675c45
+6a1bec49e0fbdceb84f1d6e9c0c17e7e
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4240,7 +4104,7 @@ florian
 
 
 
-8791
+4217
 
 0077-dcw_otg-avoid-logging-function-that-can-cause-panics.patch
 file
@@ -4276,14 +4140,14 @@ florian
 
 902
 
-0111-bcm2835-add-v4l2-camera-device.patch
+0057-dwc_otg-implement-tasklet-for-returning-URBs-to-usbc.patch
 file
 
 
 
 
-2014-09-29T22:49:13.712308Z
-b67275c77f5f2e44177b750b5d4eb838
+2014-09-29T22:49:13.748308Z
+7dadcd2ba2448c69df0b9613a4675c45
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4308,7 +4172,41 @@ florian
 
 
 
-178742
+8791
+
+0070-bcm2708_fb-DMA-acceleration-for-fb_copyarea.patch
+file
+
+
+
+
+2014-09-29T22:49:13.748308Z
+06a7773e67a8347d69649ae27e0231e8
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8184
 
 0130-1-wire-Add-support-for-configuring-pin-for-w1-gpio-k.patch
 file
@@ -4378,14 +4276,14 @@ florian
 
 1261
 
-0145-vc_mem-tidy-up-debug-printing.patch
+0133-V4L2-Fix-issue-of-driver-jamming-if-STREAMON-failed.patch
 file
 
 
 
 
-2014-09-29T22:49:13.732308Z
-6f5a9b474e0d7b0e95765e82bca938f2
+2014-09-29T22:49:13.748308Z
+6c0e185788b3220af9e37c2851f66764
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4410,16 +4308,16 @@ florian
 
 
 
-6096
+1382
 
-0013-sdhci-bcm2708-add-additional-quirks.patch
+0143-i2c-bcm2708-fixed-baudrate.patch
 file
 
 
 
 
-2014-09-29T22:49:13.700308Z
-a47cb26bdfc6a40d034cba61bcef1e95
+2014-09-29T22:49:13.748308Z
+5e02b6bc63ed688c75782302dc31ce38
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4444,16 +4342,16 @@ florian
 
 
 
-1226
+2063
 
-0007-bcm2708-alsa-sound-driver.patch
+0031-Add-cpufreq-driver.patch
 file
 
 
 
 
-2014-09-29T22:49:13.732308Z
-0a1b6dda8534bdb755bf5aa598aafd9d
+2014-09-29T22:49:13.748308Z
+7b5ae8595cdc8a2a5e1e12cc6d1c67f0
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4478,7 +4376,7 @@ florian
 
 
 
-65025
+10635
 
 0036-set-i2c-speed-via-module-parameter-or-menuconfig.-Th.patch
 file
@@ -4514,14 +4412,14 @@ florian
 
 2482
 
-0042-lirc-added-support-for-RaspberryPi-GPIO.patch
+0140-V4L2-Fix-JPEG-timestamp-issue.patch
 file
 
 
 
 
-2014-09-29T22:49:13.700308Z
-45c29133d555e8fc8139a7da2db721ef
+2014-09-29T22:49:13.748308Z
+2e571c87cb41bbf7dfb5afba095cf461
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4546,41 +4444,7 @@ florian
 
 
 
-18803
-
-0040-Make-sure-we-wait-for-the-reset-to-finish.patch
-file
-
-
-
-
-2014-09-29T22:49:13.732308Z
-130eac4ff0a1e8c2409bdd8b61ccb132
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-839
+1462
 
 0128-config-Enable-CONFIG_MEMCG-but-leave-it-disabled-due.patch
 file
@@ -4616,14 +4480,14 @@ florian
 
 2115
 
-0141-V4L2-Fix-issue-when-switching-down-JPEG-resolution.patch
+0108-vchiq-create_pagelist-copes-with-vmalloc-memory.patch
 file
 
 
 
 
-2014-09-29T22:49:13.716308Z
-945afe1204feaecad1106bbd217ebffd
+2014-09-29T22:49:13.748308Z
+d66a0a89e759af19eb767fbd074b0bd7
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4648,41 +4512,7 @@ florian
 
 
 
-5166
-
-0149-bcm2708_fb-use-IRQ-for-DMA-copies.patch
-file
-
-
-
-
-2014-09-29T22:49:13.732308Z
-6d6cebc2456afe569d386f6f0f85172e
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6675
+4861
 
 0088-dwc_otg-prevent-crashes-on-host-port-disconnects.patch
 file
@@ -4718,14 +4548,14 @@ florian
 
 5627
 
-0068-Speed-up-console-framebuffer-imageblit-function.patch
+0099-mmc-Report-3.3V-support-in-caps.patch
 file
 
 
 
 
-2014-09-29T22:49:13.704308Z
-551708dfbf5ae3d976e21b2dca2711d3
+2014-09-29T22:49:13.748308Z
+9c8186e5717f3cc99b7c961b3003eb03
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4750,7 +4580,7 @@ florian
 
 
 
-6820
+10724
 
 0073-dwc_otg-fix-device-attributes-and-avoid-kernel-warni.patch
 file
@@ -4786,14 +4616,14 @@ florian
 
 2420
 
-0107-sdhci-Only-do-one-iteration-of-PIO-reading-loop.patch
+0043-Default-to-dwc_otp.lpm_enable-0.patch
 file
 
 
 
 
-2014-09-29T22:49:13.704308Z
-08589f8e763e8325123e20ae9dc382e4
+2014-09-29T22:49:13.748308Z
+4cb0fd2fb5a0822d641256f08c94d14a
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4818,7 +4648,7 @@ florian
 
 
 
-724
+799
 
 0069-fbdev-add-FBIOCOPYAREA-ioctl.patch
 file
@@ -4888,14 +4718,14 @@ florian
 
 1626
 
-0159-BCM2708-Added-HiFiBerry-Digi-configuration-option.patch
+0147-V4L2-Correct-flag-settings-for-compressed-formats.patch
 file
 
 
 
 
-2014-09-29T22:49:13.732308Z
-d2916bb1694b45cc47b1b512493182f3
+2014-09-29T22:49:13.752308Z
+c0b202c38d2e1e998c057a50c0c299c8
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4920,16 +4750,16 @@ florian
 
 
 
-980
+3138
 
-0002-Add-dwc_otg-driver.patch
+0008-Allow-mac-address-to-be-set-in-smsc95xx.patch
 file
 
 
 
 
-2014-09-29T22:49:13.716308Z
-5051a520af1bfce5c11adf2585a4b69e
+2014-09-29T22:49:13.752308Z
+a7778ea50e6b1c574b3112b92bc0c044
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -4954,41 +4784,7 @@ florian
 
 
 
-1692506
-
-0119-BCM2708-Add-I2S-support-to-board-file.patch
-file
-
-
-
-
-2014-09-29T22:49:13.736308Z
-3aca587711a5c99b112a8124de2469a8
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1703
+3383
 
 0169-V4L2-H264-profile-level-ctrls-FPS-control-and-auto-e.patch
 file
@@ -5024,14 +4820,14 @@ florian
 
 22892
 
-0134-V4L2-Fix-ISO-controls.patch
+0049-dwc_otg-Fix-unsafe-access-of-QTD-during-URB-enqueue.patch
 file
 
 
 
 
-2014-09-29T22:49:13.736308Z
-d4896abf5b56a9fdec55250c81f8d644
+2014-09-29T22:49:13.752308Z
+d8b4f08c540ed86b4cfd0cecc48fc350
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -5056,7 +4852,75 @@ florian
 
 
 
-1847
+3446
+
+0024-Fix-spinlock-recursion-in-sdhci-bcm2708.c.patch
+file
+
+
+
+
+2014-09-29T22:49:13.752308Z
+eba6d04d4ad288eb5abaacd77348f805
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2040
+
+0126-config-recreate-with-savedefconfig.patch
+file
+
+
+
+
+2014-09-29T22:49:13.752308Z
+a4f12378a06b0cac5fe06185fa6cf266
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1159
 
 0164-video-relax-the-dimensions-check-for-rotated-display.patch
 file
@@ -5092,14 +4956,14 @@ florian
 
 1383
 
-0120-ASoC-Add-support-for-HifiBerry-DAC.patch
+0152-V4L2-Increase-the-MMAL-timeout-to-3sec.patch
 file
 
 
 
 
-2014-09-29T22:49:13.720308Z
-651ad6c09f388ecb85264230337528d2
+2014-09-29T22:49:13.752308Z
+ca520874bd04b6522378303064a796c6
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -5124,75 +4988,7 @@ florian
 
 
 
-4853
-
-0001-Main-bcm2708-linux-port.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-424a52a9a26d8f31ee402a9cf604a892
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-262596
-
-0118-ASoC-Add-support-for-PCM5102A-codec.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-4953918764d295a0e96e7136538ec7c7
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4009
+1154
 
 0041-Add-Simon-Hall-s-dma-helper-module-useful-in-future-.patch
 file
@@ -5228,74 +5024,6 @@ florian
 
 35008
 
-0110-vchiq-export-additional-symbols.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-4f15c961603d71b0f3a4b4c8f5728cdc
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1119
-
-0050-dwc_otg-Fix-incorrect-URB-allocation-error-handling.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-8701bbc2ab47bd27bd9278a1def7ed39
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1521
-
 0033-Added-hwmon-thermal-driver-for-reporting-core-temper.patch
 file
 
@@ -5329,40 +5057,6 @@ florian
 
 
 16992
-
-0066-Only-init-gpio-pins-of-selected-i2c-bus.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-b168d3bcfe7267e777be3d38a247f009
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1539
 
 0025-enabling-the-realtime-clock-1-wire-chip-DS1307-and-1.patch
 file
@@ -5432,14 +5126,14 @@ florian
 
 955
 
-0153-bcm2708-fix-gpio_to_irq-name-clash.patch
+0146-fixes-a-bug-in-the-snd-bcm2835-driver.patch
 file
 
 
 
 
-2014-09-29T22:49:13.720308Z
-c1021c52d5feef08a7fbfc7c77de99b1
+2014-09-29T22:49:13.696308Z
+73e2f00e916b4a51500d2a0b6f361ca0
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -5464,16 +5158,16 @@ florian
 
 
 
-4177
+1251
 
-0035-Enable-multiple-ALSA-channels.patch
+0089-dwc_otg-prevent-leaking-URBs-during-enqueue.patch
 file
 
 
 
 
-2014-09-29T22:49:13.744308Z
-352f93cf9b02c0685bddeed3852e6e15
+2014-09-29T22:49:13.696308Z
+7bb45b37cc6962b8fdff6fae79d1c15a
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -5498,16 +5192,16 @@ florian
 
 
 
-2071
+1116
 
-0162-bcm2708-select-NEED_MACH_GPIO_H.patch
+0121-BCM2708-Add-HifiBerry-DAC-to-board-file.patch
 file
 
 
 
 
-2014-09-29T22:49:13.708308Z
-c3c155a7f6a254f9da9607b3981898e5
+2014-09-29T22:49:13.696308Z
+43f7f3278010df112775a6c1ae5bfab8
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -5532,16 +5226,16 @@ florian
 
 
 
-1224
+1702
 
-0029-Add-device-ID-330d.patch
+0081-dwc_otg-whitespace-cleanup-in-dwc_otg_urb_enqueue.patch
 file
 
 
 
 
-2014-09-29T22:49:13.720308Z
-0ced49783018c0886f95f7070f00de51
+2014-09-29T22:49:13.696308Z
+e1159dca404341bf8a7d09ae2413640c
 2014-09-27T19:13:32.503049Z
 42682
 florian
@@ -5566,75 +5260,7 @@ florian
 
 
 
-1734
-
-0129-config-Add-CONFIG_IPV6_TUNNEL.patch
-file
-
-
-
-
-2014-09-29T22:49:13.744308Z
-93fee5310943fa19d854e4bdcffdb3e6
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-757
-
-0085-dwc_otg-fiq_split-use-TTs-with-more-granularity.patch
-file
-
-
-
-
-2014-09-29T22:49:13.708308Z
-a073662c727a1bf3690f6b85ce85690f
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4359
+3528
 
 0054-dwc_otg-add-handling-of-SPLIT-transaction-data-toggl.patch
 file
@@ -5670,6 +5296,40 @@ florian
 
 2159
 
+0020-Add-sync_after_dma-module-parameter.patch
+file
+
+
+
+
+2014-09-29T22:49:13.696308Z
+e072e271177582349f2a254b78b54622
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4085
+
 0046-spi-spi-bcm2708-respect-per-transfer-SPI-clock-speed.patch
 file
 
@@ -5703,6 +5363,74 @@ florian
 
 
 1576
+
+0122-ASoC-BCM2708-Add-24-bit-support.patch
+file
+
+
+
+
+2014-09-29T22:49:13.700308Z
+12669669ef214d7f4b18bf732211a206
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2562
+
+0006-cma-Add-vc_cma-driver-to-enable-use-of-CMA.patch
+file
+
+
+
+
+2014-09-29T22:49:13.696308Z
+45542d1b2d9887f01b0e587e63afb036
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+35688
 
 0059-Add-v6wbi_flush_kern_tlb_range-to-allow-zsmalloc-to-.patch
 file
@@ -5738,40 +5466,6 @@ florian
 
 724
 
-0009-possible-fix-for-sdcard-missing-status.-Thank-naren.patch
-file
-
-
-
-
-2014-09-29T22:49:13.712308Z
-537ada83a418fe513c864769f4af5c21
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1279
-
 0021-sdhci-bcm2708-use-extension-FIFO-to-buffer-DMA-trans.patch
 file
 
@@ -5805,40 +5499,6 @@ florian
 
 
 2038
-
-0014-sdhci-bcm2708-add-allow_highspeed-parameter.patch
-file
-
-
-
-
-2014-09-29T22:49:13.712308Z
-5659ad7e7f768b36f6c043505b060d0e
-2014-09-27T19:13:32.503049Z
-42682
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1678
 
 0083-dwc_otg-prevent-BUG-in-TT-allocation-if-hub-address-.patch
 file
@@ -5907,4 +5567,344 @@ florian
 
 
 2201
+
+0105-config-Add-CONFIG_IFB.patch
+file
+
+
+
+
+2014-09-29T22:49:13.700308Z
+bbc815f9e22a97d4b096b82355269674
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+640
+
+0148-bcm2708_fb-report-number-of-dma-copies.patch
+file
+
+
+
+
+2014-09-29T22:49:13.700308Z
+9bd9f2602c5b8f7171346e0503be692e
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3247
+
+0010-sdcard-patch-improvements-from-naren.patch
+file
+
+
+
+
+2014-09-29T22:49:13.700308Z
+67c83ed9c6c9f8ff083c98a567128c83
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2006
+
+0013-sdhci-bcm2708-add-additional-quirks.patch
+file
+
+
+
+
+2014-09-29T22:49:13.700308Z
+a47cb26bdfc6a40d034cba61bcef1e95
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1226
+
+0005-bcm2708-vchiq-driver.patch
+file
+
+
+
+
+2014-09-29T22:49:13.700308Z
+77a3d25b8f9cfcca7a8a2e51cbf33d27
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+395324
+
+0174-alsa-Make-alsa-work-queue-high-priority.-Fixes-under.patch
+file
+
+
+
+
+2014-09-29T22:49:13.700308Z
+aef5617cf2f6dc04bc810c72c58a4e08
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+813
+
+0042-lirc-added-support-for-RaspberryPi-GPIO.patch
+file
+
+
+
+
+2014-09-29T22:49:13.700308Z
+45c29133d555e8fc8139a7da2db721ef
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+18803
+
+0026-Add-low-latency-mode-to-sdcard-driver.-Disable-with-.patch
+file
+
+
+
+
+2014-09-29T22:49:13.704308Z
+71b26326fd75eaf73c8e42646c63bf09
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+16467
+
+0012-sdhci-bcm2708-remove-custom-clock-handling.patch
+file
+
+
+
+
+2014-09-29T22:49:13.704308Z
+a10f560e575381874377bdec7724873d
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3097
+
+0023-Add-module-parameter-for-missing_status-quirk.-sdhci.patch
+file
+
+
+
+
+2014-09-29T22:49:13.704308Z
+1e1af1c28424222bf4b0806dcc8b4acf
+2014-09-27T19:13:32.503049Z
+42682
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2206
 

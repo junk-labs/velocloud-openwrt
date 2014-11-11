@@ -1,14 +1,14 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/lantiq/ltq-vmmc
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-07-02T16:33:20.809122Z
-41473
+2014-11-03T08:32:50.487041Z
+43161
 blogic
 
 
@@ -26,6 +26,9 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+files
+dir
+
 patches
 dir
 
@@ -35,10 +38,10 @@ file
 
 
 
-2014-06-03T20:17:37.654341Z
-7b9fa0d4f09904dfbb5a1a4ce9db833d
-2013-06-21T16:54:37.987982Z
-37007
+2014-11-09T00:21:05.548657Z
+a50e7e9122c62ed019333cda3c2d1707
+2014-11-03T08:32:50.487041Z
+43161
 blogic
 
 
@@ -61,7 +64,7 @@ blogic
 
 
 
-2865
+2864
 
 Makefile
 file
@@ -69,10 +72,10 @@ file
 
 
 
-2014-08-06T22:43:07.293831Z
-4b249276d167dea1c987131cf607ac8e
-2014-07-02T16:33:20.809122Z
-41473
+2014-11-09T00:21:05.572657Z
+f42a28509b0dc61732b203a9606eea69
+2014-11-03T08:32:50.487041Z
+43161
 blogic
 
 
@@ -95,8 +98,5 @@ blogic
 
 
 
-5178
-
-files
-dir
+5639
 

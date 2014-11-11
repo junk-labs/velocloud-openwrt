@@ -1,7 +1,7 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/ncurses/patches
 svn://svn.openwrt.org/openwrt
 
@@ -25,6 +25,40 @@ jogo
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+200-fix_missing_include.patch
+file
+
+
+
+
+2014-06-03T20:17:37.698341Z
+fdf637b7adaeced46f443f619b1784a7
+2013-02-26T16:40:07.984842Z
+35811
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+266
 
 100-ncurses-5.6-20080112-urxvt.patch
 file
@@ -161,38 +195,4 @@ has-props
 
 
 420
-
-200-fix_missing_include.patch
-file
-
-
-
-
-2014-06-03T20:17:37.698341Z
-fdf637b7adaeced46f443f619b1784a7
-2013-02-26T16:40:07.984842Z
-35811
-florian
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-266
 

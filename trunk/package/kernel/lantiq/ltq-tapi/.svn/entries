@@ -1,14 +1,14 @@
 10
 
 dir
-42701
+43223
 svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/lantiq/ltq-tapi
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-07-02T16:33:20.809122Z
-41473
+2014-11-03T08:32:46.208039Z
+43160
 blogic
 
 
@@ -66,10 +66,10 @@ file
 
 
 
-2014-08-06T22:43:07.289831Z
-2f60b8b6c6b5858db4e910b76f888315
-2014-07-02T16:33:20.809122Z
-41473
+2014-11-09T00:21:05.592657Z
+9e577fece237491fe94bfbd2cecb18f3
+2014-11-03T08:32:46.208039Z
+43160
 blogic
 
 
@@ -92,7 +92,7 @@ blogic
 
 
 
-2317
+2345
 
 patches
 dir

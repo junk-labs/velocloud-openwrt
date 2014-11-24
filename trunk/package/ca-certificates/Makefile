@@ -11,14 +11,14 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=ca-certificates
 # NOTE: This version keeps changing. If the build fails, check the contents
 # of http://ftp.debian.org/debian/pool/main/c/ca-certificates/ and update it.
-PKG_VERSION:=20130119
+PKG_VERSION:=20141019
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)_$(PKG_VERSION)_all.deb
 PKG_SOURCE_URL:=http://ftp.debian.org/debian/pool/main/c/ca-certificates
-PKG_MD5SUM:=c8262d0bd2639706375cabb34f1b0458
+PKG_MD5SUM:=cbac2b1e7259c11571ad4393ee84a190
 
-UNPACK_CMD=ar -p "$(DL_DIR)/$(PKG_SOURCE)" data.tar.gz | ( cd $(1) && tar -xzf - )
+UNPACK_CMD=ar -p "$(DL_DIR)/$(PKG_SOURCE)" data.tar.xz | ( cd $(1) && tar -xJf - )
 
 include $(INCLUDE_DIR)/package.mk
 

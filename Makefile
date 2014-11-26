@@ -8,7 +8,7 @@ OPENWRT_ARCH = x64
 
 # name of all supported target systems;
 OPENWRT_CONFIG = openwrt.config
-OPENWRT_VC_VERSION = 1
+OPENWRT_VC_VERSION = $(shell git describe --tags)
 ifeq ($(OPENWRT_ARCH),x86)
 OPENWRT_CPUARCH=i386
 # Supported subtargets
@@ -186,7 +186,7 @@ define OpenwrtConfig
 		-e '$$ aCONFIG_ARCH="$(OPENWRT_CPUARCH)"' \
 		-e '$$ aCONFIG_GRUB_IMAGES=y' \
 		-e '$$ aCONFIG_GRUB_TIMEOUT="2"' \
-		-e '$$ aCONFIG_VERSION_NICK="OpenWRT $(1)"' \
+		-e '$$ aCONFIG_VERSION_NICK="VeloCloud $(1)"' \
 		-e '$$ aCONFIG_VERSION_NUMBER="$(OPENWRT_VC_VERSION)"' \
 	$(OPENWRT_CONFIG) > $(OPENWRT_ROOT)/.config
 	make -C $(OPENWRT_ROOT) defconfig

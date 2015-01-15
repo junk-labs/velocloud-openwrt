@@ -22,7 +22,7 @@
  endif # X86_PLATFORM_DEVICES
 --- /dev/null
 +++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,1921 @@
+@@ -0,0 +1,1926 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -1692,6 +1692,11 @@
 +	},
 +	{ .ident = "edge-nexcom",
 +	  { DMI_MATCH(DMI_PRODUCT_UUID, "00020003-0004-0005-0006-000700080009"),
++	  },
++	  .driver_data = &vc_hw_none,
++	},
++	{ .ident = "edge1000",
++	  { DMI_MATCH(DMI_BOARD_NAME, "S1600JP"), // preliminary
 +	  },
 +	  .driver_data = &vc_hw_none,
 +	},

@@ -517,6 +517,38 @@ endef
 
 $(eval $(call KernelPackage,igb))
 
+define KernelPackage/mdio
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=Generic MDIO Transceiver support
+  KCONFIG:=CONFIG_MDIO
+  FILES:=$(LINUX_DIR)/drivers/net/mdio.ko
+  AUTOLOAD:=$(call AutoLoad,30,mdio)
+endef
+
+define KernelPackage/mdio/description
+ Kernel driver for generic support of MDIO-compatible transceivers
+endef
+
+$(eval $(call KernelPackage,mdio))
+
+define KernelPackage/ixgbe
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=Intel(R) 82598/82599 10GbE PCI Express adapters support
+  DEPENDS:=@PCIE_SUPPORT +kmod-i2c-algo-bit +kmod-ptp +kmod-mdio
+  KCONFIG:=CONFIG_IXGBE \
+    CONFIG_IXGBE_HWMON=n \
+    CONFIG_IXGBE_DCA=n \
+    CONFIG_IXGBE_DCB=n
+  FILES:=$(LINUX_DIR)/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+  AUTOLOAD:=$(call AutoLoad,35,ixgbe)
+endef
+
+define KernelPackage/ixgbe/description
+ Kernel modules for Intel(R) 82598/82599 10GbE PCI Express adapters.
+endef
+
+$(eval $(call KernelPackage,ixgbe))
+
 
 define KernelPackage/b44
   TITLE:=Broadcom 44xx driver

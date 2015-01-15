@@ -14,7 +14,7 @@ GRUB2_MODULES_ISO = biosdisk boot chain configfile iso9660 linux ls part_msdos r
 GRUB_TERMINALS =
 GRUB_SERIAL_CONFIG =
 GRUB_TERMINAL_CONFIG =
-GRUB_CONSOLE_CMDLINE = maxcpus=2
+GRUB_CONSOLE_CMDLINE =
 
 USE_ATKBD = kvm_guest
 

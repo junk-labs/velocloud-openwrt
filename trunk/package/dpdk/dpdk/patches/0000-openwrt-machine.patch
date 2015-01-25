@@ -1,0 +1,165 @@
+diff -uNr /dev/null b/mk/machine/openwrt/rte.vars.mk
+--- /dev/null	1969-12-31 16:00:00.000000000 -0800
++++ b/mk/machine/openwrt/rte.vars.mk	2015-01-22 17:09:21.376529388 -0800
+@@ -0,0 +1,60 @@
++#   BSD LICENSE
++#
++#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
++#   All rights reserved.
++#
++#   Redistribution and use in source and binary forms, with or without
++#   modification, are permitted provided that the following conditions
++#   are met:
++#
++#     * Redistributions of source code must retain the above copyright
++#       notice, this list of conditions and the following disclaimer.
++#     * Redistributions in binary form must reproduce the above copyright
++#       notice, this list of conditions and the following disclaimer in
++#       the documentation and/or other materials provided with the
++#       distribution.
++#     * Neither the name of Intel Corporation nor the names of its
++#       contributors may be used to endorse or promote products derived
++#       from this software without specific prior written permission.
++#
++#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++#   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++#   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++#   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++#   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++#   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++#   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++#   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++#   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++#   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++#   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++#
++# machine:
++#
++#   - can define ARCH variable (overriden by cmdline value)
++#   - can define CROSS variable (overriden by cmdline value)
++#   - define MACHINE_CFLAGS variable (overriden by cmdline value)
++#   - define MACHINE_LDFLAGS variable (overriden by cmdline value)
++#   - define MACHINE_ASFLAGS variable (overriden by cmdline value)
++#   - can define CPU_CFLAGS variable (overriden by cmdline value) that
++#     overrides the one defined in arch.
++#   - can define CPU_LDFLAGS variable (overriden by cmdline value) that
++#     overrides the one defined in arch.
++#   - can define CPU_ASFLAGS variable (overriden by cmdline value) that
++#     overrides the one defined in arch.
++#   - may override any previously defined variable
++#
++
++# ARCH =
++# CROSS =
++# MACHINE_CFLAGS =
++# MACHINE_LDFLAGS =
++# MACHINE_ASFLAGS =
++# CPU_CFLAGS =
++# CPU_LDFLAGS =
++# CPU_ASFLAGS =
++
++MACHINE_CFLAGS = $(OPENWRT_CFLAGS)
++MACHINE_LDFLAGS = $(OPENWRT_LDFLAGS)
++MACHINE_ASFLAGS = $(OPENWRT_ASFLAGS)
+diff -uNr /dev/null b/config/defconfig_i686-openwrt-linuxapp-gcc
+--- /dev/null	1969-12-31 16:00:00.000000000 -0800
++++ b/config/defconfig_i686-openwrt-linuxapp-gcc	2015-01-22 17:26:49.940531874 -0800
+@@ -0,0 +1,51 @@
++#   BSD LICENSE
++#
++#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
++#   All rights reserved.
++#
++#   Redistribution and use in source and binary forms, with or without
++#   modification, are permitted provided that the following conditions
++#   are met:
++#
++#     * Redistributions of source code must retain the above copyright
++#       notice, this list of conditions and the following disclaimer.
++#     * Redistributions in binary form must reproduce the above copyright
++#       notice, this list of conditions and the following disclaimer in
++#       the documentation and/or other materials provided with the
++#       distribution.
++#     * Neither the name of Intel Corporation nor the names of its
++#       contributors may be used to endorse or promote products derived
++#       from this software without specific prior written permission.
++#
++#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++#   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++#   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++#   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++#   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++#   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++#   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++#   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++#   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++#   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++#   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++#
++
++#include "common_linuxapp"
++
++CONFIG_RTE_MACHINE="openwrt"
++
++CONFIG_RTE_ARCH="i686"
++CONFIG_RTE_ARCH_I686=y
++
++CONFIG_RTE_TOOLCHAIN="gcc"
++CONFIG_RTE_TOOLCHAIN_GCC=y
++
++#
++# KNI is not supported on 32-bit
++#
++CONFIG_RTE_LIBRTE_KNI=n
++
++#
++# Vectorized PMD is not supported on 32-bit
++#
++CONFIG_RTE_IXGBE_INC_VECTOR=n
+diff -uNr /dev/null b/config/defconfig_x86_64-openwrt-linuxapp-gcc
+--- /dev/null	1969-12-31 16:00:00.000000000 -0800
++++ b/config/defconfig_x86_64-openwrt-linuxapp-gcc	2015-01-22 17:26:55.128531886 -0800
+@@ -0,0 +1,42 @@
++#   BSD LICENSE
++#
++#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
++#   All rights reserved.
++#
++#   Redistribution and use in source and binary forms, with or without
++#   modification, are permitted provided that the following conditions
++#   are met:
++#
++#     * Redistributions of source code must retain the above copyright
++#       notice, this list of conditions and the following disclaimer.
++#     * Redistributions in binary form must reproduce the above copyright
++#       notice, this list of conditions and the following disclaimer in
++#       the documentation and/or other materials provided with the
++#       distribution.
++#     * Neither the name of Intel Corporation nor the names of its
++#       contributors may be used to endorse or promote products derived
++#       from this software without specific prior written permission.
++#
++#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++#   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++#   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++#   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++#   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++#   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++#   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++#   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++#   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++#   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++#   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++#
++
++#include "common_linuxapp"
++
++CONFIG_RTE_MACHINE="openwrt"
++
++CONFIG_RTE_ARCH="x86_64"
++CONFIG_RTE_ARCH_X86_64=y
++CONFIG_RTE_ARCH_64=y
++
++CONFIG_RTE_TOOLCHAIN="gcc"
++CONFIG_RTE_TOOLCHAIN_GCC=y

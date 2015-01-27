@@ -5,26 +5,13 @@
 
 # x86 or x64
 OPENWRT_ARCH = x64
+ifeq ($(OPENWRT_ARCH),x86)
+$(error x86 toolchain no longer supported)
+endif
 
 # name of all supported target systems;
 OPENWRT_CONFIG = openwrt.config
 OPENWRT_VC_VERSION = $(shell git describe --tags)
-ifeq ($(OPENWRT_ARCH),x86)
-OPENWRT_CPUARCH=i386
-# Supported subtargets
-OPENWRT_TSYS = \
-	vc-vmdk \
-	vc-xen-aws \
-	sb-itc \
-	pw-dev \
-
-# Default subtargets
-DEFAULT_OPENWRT_TSYS = \
-	vc-vmdk \
-	vc-xen-aws \
-	sb-itc \
-
-else
 OPENWRT_CPUARCH=x86_64
 # Supported subtargets
 OPENWRT_TSYS = \
@@ -42,18 +29,12 @@ DEFAULT_OPENWRT_TSYS = \
 	pw-dev \
 	edge500 \
 
-endif
-
-
 # name can be changed to pull a specific branch;
 OPENWRT_NAME ?= trunk
 OPENWRT_SVN = svn://svn.openwrt.org/openwrt/$(OPENWRT_NAME)
 
 # common shared download directory;
 OPENWRT_DL ?= /eng/openwrt/dl
-
-# force a certain rev;
-OPENWRT_REV ?= 38900
 
 # root of openwrt tree;
 OPENWRT_ROOT = $(OPENWRT_NAME)
@@ -67,24 +48,6 @@ default: $(DEFAULT_OPENWRT_TSYS)
 # --------------------------------------------------
 # for whoever pulls specific or latest openwrt tree;
 # most people do not need this;
-
-# checkout openwrt specific version;
-
-.PHONY: checkout
-openwrt-checkout:
-	svn co $(OPENWRT_SVN)/@$(OPENWRT_REV) $(OPENWRT_ROOT)
-
-# checkout openwrt latest;
-
-.PHONY: checkout-head
-openwrt-checkout-head:
-	svn co $(OPENWRT_SVN)/@HEAD $(OPENWRT_ROOT)
-
-# update openwrt to top-of-tree;
-
-.PHONY: update
-openwrt-update:
-	svn update $(OPENWRT_ROOT)
 
 .PHONY: openwrt-fix-svn
 # Git does not check in empty directories. Make sure that these are

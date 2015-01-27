@@ -3,4 +3,10 @@
 # CONFIG_PARAVIRT is not set
 # CONFIG_PARAVIRT_CLOCK is not set
 # CONFIG_XEN is not set
+# CONFIG_XEN_BLKDEV_BACKEND is not set
+# CONFIG_XEN_DEBUG_FS is not set
+# CONFIG_XEN_MCE_LOG is not set
+# CONFIG_XEN_NETDEV_BACKEND is not set
 # CONFIG_XEN_PRIVILEGED_GUEST is not set
+# CONFIG_XEN_PVH is not set
+# CONFIG_XEN_WDT is not set

@@ -1,0 +1,2197 @@
+diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/drivers/i2c/busses/i2c-ltc4266.c
+--- linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-3.14.29/drivers/i2c/busses/i2c-ltc4266.c	2015-01-30 14:15:57.534915887 -0800
+@@ -0,0 +1,2165 @@
++/*
++ * (c) Jordan Rhody (jordan@velocloud.net)
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/jiffies.h>
++#include <linux/i2c-gpio.h>
++#include <linux/i2c.h>
++#include <linux/gpio.h>
++#include <linux/err.h>
++#include <linux/mutex.h>
++#include <linux/sysfs.h>
++#include <linux/printk.h>
++#include <linux/delay.h>
++#include <linux/eventfd.h>
++#include <linux/file.h>
++#include <linux/fs.h>
++#include <asm/uaccess.h>
++
++#define LTC_SET_EVENTFD 1
++#define LTC_RESET_EVENTFD 2
++
++#define EDGE500_GPIO_RANGELEY 0
++#define EDGE500_GPIO_SMB_CLK (EDGE500_GPIO_RANGELEY + 14)
++#define EDGE500_GPIO_SMB_DATA (EDGE500_GPIO_RANGELEY + 13)
++
++#define LTC4266_NAME		"ltc4266"
++
++#define LTC4266_CHIPSET_MONITOR_MS	250 /* In ms resolution. */
++#define LTC_PORT_PWR_ON_TIMEOUT		500 /* In MS resolution. */
++
++#define LTC_PORTS_COUNT		4    /* LTC4266 controls 4 ports per chipset. */
++
++#define VELO_PWRDFLT_mA_AVAIL	700
++
++#define LTC_FW_REV_STRING      "0x80"/* LTC4266 FW Rev. */
++
++#define LTC_FW_REV_REG		0x41
++
++#define LTC_INTSTAT_REG		0x0  /* Interrupt Status Register. */
++#define LTC_INTMASK_REG		0x1  /* Interrupt Mask Register. */
++
++#define LTC_PWRENA_INT		0x1  /* bit(0) Power Enable Interrupt. */
++#define LTC_PWRGD_INT		0x2  /* bit(1) Power Good Interrupt. */
++#define LTC_DIS_INT		0x4  /* bit(2) Disconnect Interrupt. */
++#define LTC_DET_INT		0x8  /* bit(3) Detect Interrupt. */
++#define LTC_CLASS_INT		0x10 /* bit(4) Class Interrupt. */
++#define	LTC_tCUT_INT		0x20 /* bit(5) tCUT Interrupt. */
++#define LTC_tSTART_INT		0x40 /* bit(6) tSTART Interrupt. */
++#define LTC_SUPPLY_INT		0x80 /* bit(7) Supply Interrupt. */
++
++#define LTC_INTERRUPT_MASK_ALL  0xff
++
++#define LTC_PWREVN_REG		0x02 /* LTC4266 Power Event Register. */
++
++#define LTC_PWREVN_COR_REG	0x03 /* LTC4266 Power Event Register,
++				      * Clear on Read. 
++				      */
++
++#define LTC_PWRGD4_EVENT	0x80 /* bit(7) Port 4 Power Good Change. */
++#define LTC_PWRGD3_EVENT	0x40 /* bit(6) Port 3 Power Good Change. */
++#define LTC_PWRGD2_EVENT	0x20 /* bit(5) Port 2 Power Good Change. */
++#define LTC_PWRGD1_EVENT	0x10 /* bit(4) Port 1 Power Good Change. */
++#define LTC_PWRENA4_PWRGD_EVENT	0x08 /* bit(3) Port 4 Power Status Change. */
++#define LTC_PWRENA3_PWRGD_EVENT	0x04 /* bit(2) Port 3 Power Status Change. */
++#define LTC_PWRENA2_PWRGD_EVENT	0x02 /* bit(1) Port 2 Power Status Change. */
++#define LTC_PWRENA1_PWRGD_EVENT	0x01 /* bit(0) Port 1 Power Status Change. */
++
++#define LTC_DETEVN_REG		0x04 /* Detect/Classification Event Register. */
++
++#define LTC_DETEVN_COR_REG	0x05 /* detect/classify event register,
++				      * Clear on Read.
++				      */
++#define LTC_CLASS4_EVENT        0x80 /* port 4 classify complete. */
++#define LTC_CLASS3_EVENT        0x40 /* port 3 classify complete. */
++#define LTC_CLASS2_EVENT        0x20 /* port 2 classify complete. */
++#define LTC_CLASS1_EVENT        0x10 /* port 1 classify complete. */
++#define LTC_DET4_EVENT 		0x08 /* port 4 Detection Complete. */
++#define LTC_DET3_EVENT 		0x04 /* port 3 Detection Complete. */
++#define LTC_DET2_EVENT 		0x02 /* port 2 Detection Complete. */
++#define LTC_DET1_EVENT 		0x01 /* port 1 Detection Complete. */
++
++#define LTC_FLTEVN_REG		0x06 /* Fault Event Register, Read Only. */
++
++#define LTC_FLTEVN_COR_REG	0x07 /* Fault Event Register, Clear on Read. */
++
++#define LTC_DIS4_EVENT        0x80 /* Port 4 disconnect time out (tDIS). */
++#define LTC_DIS3_EVENT        0x40 /* Port 3 disconnect time out (tDIS). */
++#define LTC_DIS2_EVENT        0x20 /* Port 2 disconnect time out (tDIS). */
++#define LTC_DIS1_EVENT        0x10 /* Port 1 disconnect time out (tDIS). */
++#define LTC_tCUT4_EVENT       0x08 /* Port 4 overcurrent time out. */
++#define LTC_tCUT3_EVENT       0x04 /* Port 3 overcurrent time out. */
++#define LTC_tCUT2_EVENT       0x02 /* Port 2 overcurrent time out. */
++#define LTC_tCUT1_EVENT       0x01 /* Port 1 overcurrent time out. */
++
++#define LTC_TSEVN_REG	      0x08 /* tSTART Event Register. */
++
++#define LTC_TSEVN_COR_REG     0x09 /* tSTART Event Register, Clear on Read. */
++
++#define LTC_tLIM4_EVENT	      0x80 /* Port 4 current limit time out. */
++#define LTC_tLIM3_EVENT	      0x40 /* Port 3 current limit time out. */
++#define LTC_tLIM2_EVENT	      0x20 /* Port 2 current limit time out. */
++#define LTC_tLIM1_EVENT	      0x10 /* Port 1 current limit time out. */
++
++#define LTC_tSTART4_EVENT     0x08 /* Port 4 startup overcurrent timeout 
++				    * (tSTART). 
++				    */
++#define LTC_tSTART3_EVENT     0x04 /* Port 3 startup overcurrent timeout 
++				    * (tSTART). 
++				    */ 
++#define LTC_tSTART2_EVENT     0x02 /* Port 2 startup overcurrent timeout 
++				    * (tSTART). 
++				    */
++#define LTC_tSTART1_EVENT     0x01 /* Port 1 startup overcurrent time out 
++				    * (tSTART). 
++				    */
++
++#define LTC_SUPEVN_REG	      0x0a /* Supply Event Register. */
++
++#define LTC_SUPEVN_COR_REG    0x0b /* Supply Event Register, Clear on Read. */
++
++#define LTC_OVERTEMP_EVENT    0x80 /* Over Temperature.  Set when 
++				    * die temperature is too high and
++				    * condition of most functions are disabled. 
++				    */
++#define LTC_FETBAD_EVENT      0x40 /* An external FET has likely failed. */
++#define LTC_UVLO3_EVENT	      0x20 /* Digital Supply (Vdd) UVLO. Set when the 
++				    * PSE comes out of
++				    * Undervoltage Lockout (UVLO).
++				    */
++#define LTC_UVLO48_EVENT      0x10  /* Analog Supply (Vee) 
++				     * Undervoltage Lockout (UVLO).
++				     * Set when the 48V supply is too low 
++				     * for the PSE to operate properly.
++				     * Cannot be cleared while the condition
++				     * persists.
++				     */
++
++#define LTC_STATP_BASE_REG    0x0c   /* Port 1 Status. Show the result of detect
++				      * and classify measurements. Use this as 
++				      * base address register when accessing
++				      * ports 2 - 4, i.e 
++				      * LTC_STATP_BASE_REG + port.
++				      */
++#define LTC_POEPP_EVENT	      0x80    /* If set, redefines the last 
++				       * classification result for port(x)
++				       * as PoE++ result. 
++				       */
++#define LTC_CLASS_EVENT	      0x70    /* Last classify result for port(x). */
++
++/* LTC4266 Class Encoding for classification event. */
++#define LTC_STATp_CLASS_UNKNOWN	0x0
++#define LTC_STATp_CLASS_1	0x1
++#define LTC_STATp_CLASS_2	0x2
++#define LTC_STATp_CLASS_3	0x3
++#define LTC_STATp_CLASS_4	0x4
++#define LTC_STATp_CLASS_RESERVED 0x5
++#define LTC_STATp_CLASS_0	0x6
++#define LTC_STATp_CLASS_OVERCURRENT 0x7
++
++#define LTC_STATp_CLASS_MASK	0x7
++
++#define LTC_STATp_CLASS(a) ((a >> 4) & LTC_STATp_CLASS_MASK)
++
++#define LTC_DETECT_EVENT	 0x7    /* Last detection result for port(x). */
++
++/* LTC4266 Detect Encoding for detection event. */
++#define LTC_DETECTp_UNKNOWN	0x0
++#define LTC_DETECTp_SHORT	0x1
++#define LTC_DETECTp_CPD_TOO_HI	0x2
++#define LTC_DETECTp_RLOW	0x3
++#define LTC_DETECTp_GOOD	0x4
++#define LTC_DETECTp_RSIG_HIGH	0x5
++#define LTC_DETECTp_OPEN	0x6
++#define LTC_DETECTp_RESERVED	0x7
++
++#define LTC_DETECTp_MASK	0x7
++
++#define LTC_STATp_DETECT(a) ((a) & LTC_DETECTp_MASK)
++
++#define LTC_STATPWR_REG	      0x10   /* Power Status, indicates the power
++				      * status of each port. 
++				      */
++
++
++#define LTC_OPMD_REG	      0x12   /* Operating Mode. Selects the mode of
++				      * operation for each of the ports.
++				      */
++
++#define LTC_DISENA_REG	      0x13
++
++
++#define LTC_DETENA_REG	      0x14    /* Detect and Class Enable. Enables PD 
++				       * detection and classification on each
++				       * port.
++				       */
++#define LTC_MCONF_REG	      0x17
++
++
++#define LTC_PWRPB_REG	      0x19    /* Power On/Off Pushbutton. Force port to
++				       * power on or off regardless of status
++				       * of the port.
++				       */	
++#define LTC_PWRPB_ON	      0x1     /* Port pwr on flag. */
++#define LTC_PWRPB_OFF	      0x2     /* Port pwr off flag. */
++
++#define LTC_RSTPB_REG         0x1A    /* Reset Pushbutton.  
++				       * Clear interrupts, reset
++				       * the PSE or individual ports.
++				       */
++#define LTC_ID_REG		0x1B
++
++#define LTC_DEV_ID_MASK		0xf8
++#define LTC_REV_MASK		0x7
++
++#define LTC_DEV_ID_EXPECTED	0x60
++#define LTC_REV_EXPECTED	0x4
++
++#define LTC_FIRMWARE_REG	0x41
++
++#define LTC_HPEN_REG		0x44
++#define LTC_CUT1_REG		0x47
++#define LTC_CUT2_REG		0x4C
++#define LTC_CUT3_REG		0x51
++#define LTC_CUT4_REG		0x56
++#define LTC_LIM1_REG		0x48
++#define LTC_LIM2_REG		0x4D
++#define LTC_LIM3_REG		0x52
++#define LTC_LIM4_REG		0x57
++
++#define LTC_LIM_BASE_REG        0x48
++
++#define LTC_mA_LSB_BASE_REG     0x30
++#define LTC_mA_MSB_BASE_REG	0x31
++#define LTC_VOLTS_LSB_BASE_REG	0x32
++#define LTC_VOLTS_MSB_BASE_REG	0x33
++
++
++#define LTC_FIRMWARE_EXPECTED	0x6
++				     
++/* LTC4266 Port Mode Encoding. */
++#define LTC_CONFIG_SHUTDOWN	0x0
++#define LTC_CONFIG_MANUAL	0x1
++#define LTC_CONFIG_SEMIAUTO        0x2
++#define LTC_CONFIG_AUTO		   0x3
++
++#define LTC_CONFIG_MASK		   0x3
++
++#define LTC_PORT_OP_MODE(reg, port) ((reg >> (2*port)) & LTC_CONFIG_MASK)
++
++#define LTC_PPOE_mA_CLASS_0    375
++#define LTC_PPOE_mA_CLASS_1    112
++#define LTC_PPOE_mA_CLASS_2    206
++#define LTC_PPOE_mA_CLASS_3    375
++#define LTC_PPOE_mA_CLASS_4    638
++
++
++enum vc_ltc4266_i2c_idx {
++	VC_I2C_NONE = -1,
++        VC_I2C_0 = 0,
++        VC_I2C_1,
++        N_VC_I2C_DEVS,
++};
++
++enum ltc4266_ports_idx {
++        VC_I2C_PORT_NONE = -1,
++        VC_I2C_PORT1 = 0,
++        VC_I2C_PORT2,
++        VC_I2C_PORT3,
++        VC_I2C_PORT4,
++        N_VC_I2C_PORTS,
++};
++
++enum ltc4266_chipset_mode {
++        VC_I2C_CHIPSET_MANUAL_MODE = 0,
++        VC_I2C_CHIPSET_AUTO_MODE,
++};
++
++enum ltc4266_port_state {
++	PORT_STATE_CLASSIFY,
++	PORT_STATE_MONITOR,
++};
++
++enum ltc4266_intstat_summary {
++	POWER_ENABLE_INTERRUPT = (1 << 0),
++	POWER_GOOD_INTERRUPT   = (1 << 1),
++	DISCONNECT_INTERRUPT   = (1 << 2),
++	DETECT_INTERRUPT       = (1 << 3),
++	CLASS_INTERRUPT        = (1 << 4),
++	tCUT_INTERRUPT         = (1 << 5),
++	tSTART_INTERRUPT       = (1 << 6),
++	UVLO48_INTERRUPT       = (1 << 7),
++	UVLO3_INTERRUPT        = (1 << 8),
++	FETBAD_INTERRUPT       = (1 << 9),
++	OVERTEMP_INTERRUPT     = (1 << 10),
++	POWER_OFF_INTERRUPT    = (1 << 11), /* This is not a real hw interrupt
++					     * however, we want notification
++					     * about this manual event.
++					     */
++};
++
++struct ltc_icut_lim {
++	int ilim;
++	int icut;
++};
++
++static const struct ltc_icut_lim ltc_clspwr_settings[] = {
++	{0, 0},       /* CLASS UNKNOWN */
++	{0x80, 0x06}, /* CLASS 1 LIM=425mA; CUT=112mA */
++	{0x80, 0x0B}, /* CLASS 2 LIM=425mA; CUT=206mA */
++	{0x80, 0x14}, /* CLASS 3 LIM=425mA; CUT=375mA */
++	{0xC0, 0x22}, /* CLASS 4 LIM=850mA; CUT=638mA */
++	{0, 0},	      /* RESERVED */
++	{0x80, 0x14}, /* CLASS 0 LIM=425mA; CUT=375mA */
++	{0, 0}        /* CLASS OVERCURRENT */
++};
++
++struct i2c_ltc4266_chipset; // Forward declaration
++
++struct ltc4266_port {
++	int port_state;
++	int port_event;
++	int last_port_event;
++        int device_class;
++        int device_mA;
++	struct mutex port_lock;
++        struct timer_list port_pwr_on_timer;
++	struct work_struct port_work;
++        struct workqueue_struct *port_wq;
++	struct i2c_ltc4266_chipset *cookie;
++};
++
++struct i2c_ltc4266_chipset {
++        struct ltc4266_port port_dev[LTC_PORTS_COUNT];
++        struct timer_list       ltc_chip_monitor_timer;
++	int chip_event;
++	struct i2c_client *client;
++	char fw_rev[8];
++        int total_mA_avail;
++	int mode;
++	struct mutex glbl_lock;
++        struct workqueue_struct *chip_wq;
++	struct work_struct chip_work;
++	struct eventfd_ctx *eventfd;
++};
++
++struct ltc4266_softc {
++        struct i2c_ltc4266_chipset *i2c_dev[N_VC_I2C_DEVS];
++};
++
++static struct ltc4266_softc ltc4266_dev;
++
++static struct i2c_gpio_platform_data vc_gpio_ltc4266_i2c = {
++        .sda_pin                = EDGE500_GPIO_SMB_DATA,
++        .sda_is_open_drain      = 0,
++        .scl_pin                = EDGE500_GPIO_SMB_CLK,
++        .scl_is_open_drain      = 0,
++        .udelay                 = 5,            /* ~100 kHz */
++};
++
++static struct platform_device vc_poe_device = {
++        .name                   = "i2c-gpio",
++        .id                     = 1,
++        .dev.platform_data      = &vc_gpio_ltc4266_i2c,
++};
++
++static int ltc_i2c_major = -1;
++
++
++static const unsigned short ltc4266_i2c_addr[] = { 0x20, I2C_CLIENT_END };
++
++static int ltc4266_default_iCUT(__u8 class_code)
++{
++        int mA;
++        switch (class_code) {
++
++        case LTC_STATp_CLASS_0:
++        	pr_debug("Class 0 POE device\n");
++                mA = LTC_PPOE_mA_CLASS_0;
++		break;
++
++	case LTC_STATp_CLASS_1:
++		pr_debug("Class 1 POE device\n");
++		mA = LTC_PPOE_mA_CLASS_1;
++		break;
++
++	case LTC_STATp_CLASS_2:
++		pr_debug("Class 2 POE device\n");
++		mA = LTC_PPOE_mA_CLASS_2;
++		break;
++
++	case LTC_STATp_CLASS_3:
++		pr_debug("Class 3 POE device\n");
++		mA = LTC_PPOE_mA_CLASS_3;
++                break;
++
++	case LTC_STATp_CLASS_4:
++		pr_debug("Class 4 POE device\n");
++		mA = LTC_PPOE_mA_CLASS_4;
++                break;
++
++	case LTC_STATp_CLASS_UNKNOWN:
++	case LTC_STATp_CLASS_RESERVED:
++	case LTC_STATp_CLASS_OVERCURRENT:
++		mA = 0;
++                break;
++        };
++
++        return mA;
++}
++
++static inline int ltc4266_detena_port(__u8 port_id, __u8 detena)
++{
++        detena |= ((1 << (4+port_id)) | (1 << port_id));
++        return detena;
++}
++
++static inline __u8 xlt_bitpos_to_count(__u8 bitpos)
++{
++	switch(bitpos) {
++	case 1:
++		return 1;
++	case 2:
++		return 2;
++	case 4:
++		return 3;
++	case 8:
++		return 4;
++	default:
++		pr_warn("bit position only supported\n");
++		break;
++	}
++	panic("Impossible count.\n");
++
++	return 0xff;
++}
++
++static inline void bitshift_and_store_port_event(
++	struct i2c_ltc4266_chipset *chipset, 
++				__u8 bitmask,
++				int port_event)
++{
++	__u8 port_id;
++	while (bitmask){
++		port_id = bitmask & -bitmask;
++		bitmask ^= port_id;
++		port_id = xlt_bitpos_to_count(port_id);
++		mutex_lock(&chipset->port_dev[port_id-1].port_lock);
++		chipset->port_dev[port_id-1].port_event |= port_event;
++		mutex_unlock(&chipset->port_dev[port_id-1].port_lock);
++	}
++}
++
++static inline int find_port_bit(struct i2c_ltc4266_chipset *chipset, 
++			__u8 bitmask, __u8 port_id)
++{
++	__u8 val;
++	while (bitmask){
++		val = bitmask & -bitmask;
++		bitmask ^= val;
++		if (xlt_bitpos_to_count(val) == port_id) {
++			return 1;
++		}
++	}
++	return 0;
++}
++
++
++static int ltc4266_port_pwr(struct i2c_ltc4266_chipset *chipset,
++                			__u8 port_id, int flags)
++{
++        int err, pwrpb;
++
++        /* Upper nibble turns off port pwr. */
++        if (flags == LTC_PWRPB_OFF)
++            pwrpb = (1 << (4 + port_id));
++        else if (flags == LTC_PWRPB_ON)
++             pwrpb = (1 << port_id);
++        else
++             return -EINVAL;
++
++        err = i2c_smbus_write_byte_data(chipset->client, LTC_PWRPB_REG,
++                                                        (__u8)pwrpb);
++        if (err < 0) {
++		dev_err(&chipset->client->dev,
++			"Port %d power off failed\n", port_id);
++        }
++
++        return (err);
++}
++
++
++static int ltc4266_enable_detect_classify(struct i2c_ltc4266_chipset *chipset,
++							int detena_cfg)
++{
++        int err, detena;
++
++	if (i2c_smbus_write_byte_data(chipset->client, 
++			LTC_DISENA_REG, 0xf0) < 0) {
++		dev_warn(&chipset->client->dev, "Cannot read detena reg\n");
++		return -EIO;
++	}
++
++        detena = i2c_smbus_read_byte_data(chipset->client, LTC_DETENA_REG);
++        if (detena < 0) {
++		dev_warn(&chipset->client->dev, "Cannot read detena reg\n");
++		return detena;
++        }
++
++        detena |= detena_cfg;
++
++        err = i2c_smbus_write_byte_data(chipset->client,
++				LTC_DETENA_REG, detena);
++        if (err < 0)
++		dev_warn(&chipset->client->dev, "Cannot write detena reg\n");
++
++        return err;
++}
++
++
++static int ltc4266_calculate_total_mA(struct i2c_ltc4266_chipset *chipset, 
++					__u8 port_id, int statp)
++{
++	int iCUT, clsdev;
++
++	clsdev = LTC_STATp_CLASS(statp);
++
++	iCUT = ltc4266_default_iCUT(clsdev);
++	
++	dev_dbg(&chipset->client->dev, "Power available: %d, class_dev: 0x%x\n",
++			 chipset->total_mA_avail, clsdev);
++
++	if ((chipset->total_mA_avail - iCUT) >= 0) {
++
++		chipset->total_mA_avail -= iCUT;
++
++		chipset->port_dev[port_id].device_class = clsdev;
++
++		chipset->port_dev[port_id].device_mA = iCUT;
++
++		return (0);
++	} 
++	dev_dbg(&chipset->client->dev, "Power requirements unavailable for "
++			"class device %d on port %d\n", clsdev, port_id);
++
++	return (-EINVAL);
++}
++
++
++static int ltc4266_port_reset(struct i2c_ltc4266_chipset *chipset, __u8 port_id)
++{
++        int err;
++
++	err = ltc4266_port_pwr(chipset, port_id, LTC_PWRPB_OFF);
++	if (err < 0)
++		return err;
++	msleep(15);
++	err = ltc4266_port_pwr(chipset, port_id, LTC_PWRPB_ON);
++
++        return (err);
++}
++
++
++static int ltc4266_chip_reset(struct i2c_ltc4266_chipset *chipset)
++{
++        int rstpb, err;
++
++        rstpb = (1 << 4);
++
++        err = i2c_smbus_write_byte_data(chipset->client, LTC_RSTPB_REG, rstpb);
++        if (err < 0) {
++                dev_err(&chipset->client->dev, 
++			"I2C write failed to reset PSE\n");
++        }
++	msleep(15);
++        return (err);
++}
++
++static int ltc4266_check_firmware_revision(struct i2c_ltc4266_chipset *chipset)
++{
++        int fw_rev;
++
++        fw_rev = i2c_smbus_read_byte_data(chipset->client, LTC_ID_REG);
++        if (fw_rev < 0) {
++		dev_warn(&chipset->client->dev, "Could not read device ID "
++			"and revision from I2C bus\n");
++		return fw_rev;
++        }
++
++	if ((fw_rev & LTC_DEV_ID_MASK) != LTC_DEV_ID_EXPECTED ||
++	    (fw_rev & LTC_REV_MASK) != LTC_REV_EXPECTED) {
++		
++		dev_warn(&chipset->client->dev, "Expected LTC4266 "
++			"device ID: 0x%2X and revision: 0x%1X\n",
++					LTC_DEV_ID_EXPECTED,
++					LTC_REV_EXPECTED);
++        
++		dev_warn(&chipset->client->dev, "Actual LTC4266 "
++			"device ID: 0x%2X and revision: 0x%1X\n",
++					fw_rev & LTC_DEV_ID_MASK,
++					fw_rev & LTC_REV_MASK);
++		return -EINVAL;
++        }
++
++        fw_rev = i2c_smbus_read_byte_data(chipset->client, LTC_FIRMWARE_REG);
++        if (fw_rev < 0) {
++		dev_warn(&chipset->client->dev, "Could not read firmware "
++			"revision from I2C bus\n");
++		return fw_rev;
++        }
++
++	if (fw_rev != LTC_FIRMWARE_EXPECTED) {
++
++		dev_warn(&chipset->client->dev, "Expected LTC4266 "
++			"firmware revision: 0x%2X\n", LTC_FIRMWARE_EXPECTED);
++
++		dev_warn(&chipset->client->dev, "Actual LTC4266 "
++			"firmware revision: 0x%2X\n", fw_rev);
++
++		return -EINVAL;
++	}
++
++        sprintf(chipset->fw_rev, "0x%X", LTC_FIRMWARE_EXPECTED);
++
++        dev_info(&chipset->client->dev, "LTC4266 fw revision: %s, "
++		"device ID: 0x%2X, revision: 0x%1X\n", chipset->fw_rev,
++				LTC_DEV_ID_EXPECTED, LTC_REV_EXPECTED);
++						
++	return 0;
++}
++
++static int ltc4266_interrupt(struct i2c_ltc4266_chipset *chipset)
++{
++        int intmask, err, reg, val;
++
++	/* Read interrupt mask register and save. */
++        intmask = i2c_smbus_read_byte_data(chipset->client, LTC_INTMASK_REG);
++	if (intmask < 0) {
++		dev_err(&chipset->client->dev, "INTMASK read failed\n");
++		return intmask;
++	}
++
++	/* Disable all interrupt bits. */
++        err = i2c_smbus_write_byte_data(chipset->client, LTC_INTMASK_REG, 0);
++	if (err < 0) {
++		dev_err(&chipset->client->dev, "INTMASK write failed\n");
++		return err;
++	}
++
++	err = i2c_smbus_write_byte_data(chipset->client, LTC_RSTPB_REG, 0x40);
++        if (err < 0) {
++                dev_err(&chipset->client->dev, "I2C write failed "
++                     			"to clear INT pin.\n");
++        }
++
++	/* bit positions represent the registers that may be read for 
++	 * port events.
++	 */
++	reg = i2c_smbus_read_byte_data(chipset->client,
++				   LTC_PWREVN_COR_REG);
++
++	bitshift_and_store_port_event(chipset, 
++		(reg & 0xf), POWER_ENABLE_INTERRUPT);
++	bitshift_and_store_port_event(chipset, 
++		((reg >> 4) & 0xf), POWER_GOOD_INTERRUPT);
++
++	reg = i2c_smbus_read_byte_data(chipset->client,
++				   LTC_FLTEVN_COR_REG);
++	 
++	bitshift_and_store_port_event(chipset,
++		(reg & 0xf), tCUT_INTERRUPT);
++	bitshift_and_store_port_event(chipset,
++		((reg >> 4) & 0xf), DISCONNECT_INTERRUPT);
++		
++	reg = i2c_smbus_read_byte_data(chipset->client,
++				LTC_DETEVN_COR_REG);
++
++	bitshift_and_store_port_event(chipset,
++                       (reg & 0xf), DETECT_INTERRUPT);
++        bitshift_and_store_port_event(chipset,
++                 ((reg >> 4) & 0xf), CLASS_INTERRUPT);
++	
++	reg = i2c_smbus_read_byte_data(chipset->client,
++                                     LTC_TSEVN_COR_REG);
++
++	bitshift_and_store_port_event(chipset,
++                  ((reg >> 4) & 0xf), tSTART_INTERRUPT);
++
++	reg = i2c_smbus_read_byte_data(chipset->client,
++                                    LTC_SUPEVN_COR_REG);
++	reg = ((reg >> 4));
++
++	while (reg) {
++               	val = reg & -reg;
++               	reg ^= val;
++		val = xlt_bitpos_to_count(val);
++
++		switch (val) {
++		case 1: 
++			chipset->chip_event = UVLO48_INTERRUPT;
++			break;
++		case 2: 
++			chipset->chip_event = UVLO3_INTERRUPT;
++			break; 
++		case 3: 
++			chipset->chip_event = FETBAD_INTERRUPT;
++			break; 
++		case 4:
++			chipset->chip_event = OVERTEMP_INTERRUPT;
++			break;
++		}
++       	}
++
++	/* Enable interrupts. */
++        err = i2c_smbus_write_byte_data(chipset->client, 
++				LTC_INTMASK_REG, intmask);
++        if (err < 0) {
++                dev_err(&chipset->client->dev, "INTMASK write failed\n");
++                return err;
++        }
++	return 0;
++}
++
++static int ltc4266_configure_mode(struct i2c_ltc4266_chipset *chipset, 
++					__u8 port_id, int flags)
++{
++        int opmd, mode, detena, err;
++
++	opmd = i2c_smbus_read_byte_data(chipset->client, LTC_OPMD_REG);
++        if (opmd < 0) {
++                dev_warn(&chipset->client->dev,
++			"Cannot read port %d mode", port_id);
++
++                return (-EINVAL);
++        }
++
++	mode = LTC_PORT_OP_MODE(opmd, port_id);
++
++	/* If already configured, return with error code. */
++	if (mode == flags)
++		return -EINVAL;
++
++	opmd |= flags << (port_id * 2);
++
++	err = i2c_smbus_write_byte_data(chipset->client, LTC_OPMD_REG, opmd);
++        if (err < 0) {
++		dev_warn(&chipset->client->dev, "Enabling semi-auto " 
++				"mode failed when writing to I2C bus\n");
++                return err;
++        }
++
++	if (i2c_smbus_write_byte_data(chipset->client, LTC_HPEN_REG, 0xf) < 0) {
++                dev_warn(&chipset->client->dev,
++                        "Writing interrupt mask failed\n");
++                return -EINVAL;
++        }
++
++	if (! LTC_CONFIG_AUTO) {
++		detena = ltc4266_detena_port(port_id, 0);
++        	ltc4266_enable_detect_classify(chipset, detena);
++	}
++
++        return (0);
++}
++
++
++/** 
++ * ltc4266_config_semiauto_mode_from_pwr_on - Configures ports on the LTC4266.
++ *
++ * This function is supposed to be called from a global reset condition or
++ * driver init to scan all ports for currently powered PD taking those as 
++ * priority (auto mode) and any unpowered ports are then monitored by the state
++ * machine for plug/unplug events for a PD. Setting up ports depends on the
++ * previous/current hardware state independent of the host processor.
++ */
++static int ltc4266_config_semiauto_mode_from_pwr_on(
++	struct i2c_ltc4266_chipset *chipset)
++{
++        int i, opmd, statpwr, statp, mode;
++        struct ltc4266_port *port;
++
++	int wmode = 0, detena = 0;
++
++	/* Enable all interrupt mask bits. */
++        if (i2c_smbus_write_byte_data(chipset->client, 
++			LTC_INTMASK_REG, 0xff) < 0) {
++
++		dev_warn(&chipset->client->dev, 
++			"Writing interrupt mask failed\n");
++		return -EINVAL;
++	}
++
++	/* Enable high power devices (class 4). Disable is deprecated in
++	 * LTC4266A/LTC4266C.  
++	 */
++        if (i2c_smbus_write_byte_data(chipset->client, LTC_HPEN_REG, 0xf) < 0) {
++
++		dev_warn(&chipset->client->dev, 
++			"Writing interrupt mask failed\n");
++		return -EINVAL;
++	}
++        opmd = i2c_smbus_read_byte_data(chipset->client, LTC_OPMD_REG);
++
++	for (i = 0; i < LTC_PORTS_COUNT; i++) {
++	
++		port = &chipset->port_dev[i];
++
++		mode = LTC_PORT_OP_MODE(opmd, i);
++                        
++		detena |= ltc4266_detena_port(i, detena);
++
++		/* Determine our current mode of operation per port. */
++		if (mode == LTC_CONFIG_SHUTDOWN ||
++		    mode == LTC_CONFIG_MANUAL   || 
++		    mode == LTC_CONFIG_AUTO) {  
++
++			wmode |= (LTC_CONFIG_SEMIAUTO << (i * 2));
++
++                        detena |= ltc4266_detena_port(i, detena);
++					
++			port->port_state = PORT_STATE_CLASSIFY;
++			port->last_port_event = DETECT_INTERRUPT;
++
++		} else if (mode == LTC_CONFIG_SEMIAUTO) {
++			
++			statpwr = i2c_smbus_read_byte_data(chipset->client, 
++						LTC_STATPWR_REG);
++
++			/* Power good on port and it's configured in semi-auto
++			 * mode.  Thus, we've maintained hardware PoE power on
++			 * despite the driver initializating.
++			 */
++			if (find_port_bit(chipset, 
++			    ((statpwr >> 4) & 0xf), i+1)) {
++				
++				/* XXX TBD If already powered, get class device
++				 * to calculate mA requirements against
++			 	 * pwrsupply.
++				 */
++				statp = i2c_smbus_read_byte_data(
++					chipset->client, 
++					(LTC_STATP_BASE_REG + i));
++
++				if (! ltc4266_calculate_total_mA(
++				    chipset, i, statp)) {
++
++					port->last_port_event = 
++						POWER_GOOD_INTERRUPT;
++
++					port->port_state = PORT_STATE_MONITOR;
++				}
++			}
++		}
++	}
++	
++	if (wmode) {
++
++		if (i2c_smbus_write_byte_data(chipset->client, 
++					LTC_OPMD_REG, wmode) < 0) {
++			dev_warn(&chipset->client->dev, "Enabling semi-auto " 
++				"mode failed when writing to I2C bus\n");
++			return -EINVAL;
++		}
++
++        	opmd = i2c_smbus_read_byte_data(chipset->client, LTC_OPMD_REG);
++
++		if (opmd != wmode) {
++			dev_warn(&chipset->client->dev, "Not configured " 
++				"correctly for semi-auto mode\n");
++
++			return -EINVAL;
++		}
++
++		ltc4266_enable_detect_classify(chipset, detena);
++	}
++
++	return 0;
++}
++
++
++static int ltc4266_detect_classify_cycle(struct i2c_ltc4266_chipset *chipset, 
++							__u8 port_id)
++{
++        int statp;
++        struct ltc4266_port *port = &chipset->port_dev[port_id];
++
++	(void) ltc4266_configure_mode(chipset, port_id, LTC_CONFIG_SEMIAUTO);
++
++	if (port->port_event & (DETECT_INTERRUPT|CLASS_INTERRUPT)) {
++
++		statp = i2c_smbus_read_byte_data(chipset->client,
++                		(LTC_STATP_BASE_REG + port_id));
++			
++		if (LTC_STATp_DETECT(statp) != LTC_DETECTp_GOOD) {
++
++			port->port_event &= ~(DETECT_INTERRUPT|
++						CLASS_INTERRUPT);
++			return (1);
++		}
++
++		if (LTC_STATp_CLASS(statp) == LTC_STATp_CLASS_0 ||
++		    LTC_STATp_CLASS(statp) == LTC_STATp_CLASS_1 ||
++		    LTC_STATp_CLASS(statp) == LTC_STATp_CLASS_2 ||
++		    LTC_STATp_CLASS(statp) == LTC_STATp_CLASS_3 ||
++		    LTC_STATp_CLASS(statp) == LTC_STATp_CLASS_4) {
++
++			port->device_class = LTC_STATp_CLASS(statp);
++				
++			port->last_port_event = port->port_event;
++			
++			mutex_lock(&chipset->glbl_lock);
++			if (chipset->eventfd)
++                               	eventfd_signal(chipset->eventfd,
++                                    (port->last_port_event<<16)|
++                                    (1 << port_id));  
++			mutex_unlock(&chipset->glbl_lock);
++
++			if (chipset->mode == VC_I2C_CHIPSET_MANUAL_MODE)
++				return (1);
++
++			port->port_event &= ~(DETECT_INTERRUPT|
++				               CLASS_INTERRUPT);
++
++			if (! ltc4266_calculate_total_mA(chipset, 
++			    port_id, statp)) {
++
++				i2c_smbus_write_byte_data(
++					chipset->client, LTC_CUT1_REG+
++							 (port_id*5),
++					ltc_clspwr_settings[LTC_STATp_CLASS(
++							statp)].icut | 0xC0);
++
++				i2c_smbus_write_byte_data(
++					chipset->client, LTC_LIM1_REG+
++							 (port_id*5),
++					ltc_clspwr_settings[LTC_STATp_CLASS(
++								statp)].ilim);
++
++				/* Fire off a timer event.  It could be the 
++				 * port never powers on with an incorrect
++				 * iCUT set.  If so, we want to know if
++				 * the timer pops and if it does, 
++				 * simply reset the port back
++				 * to a detect/classify state.  We don't 
++				 * expect an interrupt if port fails to
++				 * power on.
++				 */
++
++				mod_timer(&port->port_pwr_on_timer,
++					msecs_to_jiffies(
++					    LTC_PORT_PWR_ON_TIMEOUT) + jiffies);
++
++				return ltc4266_port_pwr(chipset, 
++					port_id, LTC_PWRPB_ON);
++			}
++
++			return -EINVAL;
++		} else {
++			(void) ltc4266_port_reset(chipset, port_id);
++
++			ltc4266_configure_mode(chipset, 
++				port_id, LTC_CONFIG_SEMIAUTO);
++		}
++	}
++
++	port->last_port_event = 0;
++	port->device_class = LTC_STATp_CLASS_RESERVED;
++
++        return (-EINVAL);
++}
++
++static int ltc4266_port_monitor(struct i2c_ltc4266_chipset *chipset, 
++							__u8 port_id)
++{
++	int err = 0;
++        struct ltc4266_port *port;
++	static int last_change[LTC_PORTS_COUNT] = { 0, };
++
++	port = &chipset->port_dev[port_id];
++
++	if (port->port_event & tCUT_INTERRUPT) {
++
++		err = 1;
++
++		dev_dbg(&chipset->client->dev,
++                      "Port %d device TCUT detected\n", port_id);
++
++		if (port->last_port_event & POWER_GOOD_INTERRUPT)
++                	chipset->total_mA_avail += port->device_mA;
++
++		port->port_event &= ~(tCUT_INTERRUPT|
++				      POWER_ENABLE_INTERRUPT|
++				      POWER_GOOD_INTERRUPT);
++
++		port->last_port_event = tCUT_INTERRUPT;
++        }
++
++        if (port->port_event & tSTART_INTERRUPT) {
++
++		port->port_event &= ~tSTART_INTERRUPT;
++
++		dev_dbg(&chipset->client->dev,
++                     "Port %d device TSTART detected\n", port_id);
++        }
++
++        if (port->port_event & DISCONNECT_INTERRUPT) {
++		
++		err = 1;
++
++                dev_dbg(&chipset->client->dev,
++		    "Port %d class %d device disconnect detected\n",
++                    port_id, port->device_class);
++
++		if (port->last_port_event & POWER_GOOD_INTERRUPT) 
++                	chipset->total_mA_avail += port->device_mA;
++
++
++		port->port_event &= ~(DISCONNECT_INTERRUPT|
++				    POWER_ENABLE_INTERRUPT|
++				     POWER_GOOD_INTERRUPT);
++
++		port->last_port_event = DISCONNECT_INTERRUPT;
++        }
++
++        if (port->port_event & POWER_ENABLE_INTERRUPT) {
++
++		/* It could be that we're scheduled later than 250ms so 
++		 * accordingingly, another detect/classify cycle may take
++		 * place.  If that is true, simply clear it here.
++		 */
++		port->port_event &= ~(POWER_ENABLE_INTERRUPT|
++					   DETECT_INTERRUPT| 
++                                            CLASS_INTERRUPT);
++		dev_dbg(&chipset->client->dev,
++                    "Port %d device power enable detected\n", port_id+1);
++        }
++
++        if (port->port_event & POWER_GOOD_INTERRUPT) {
++
++		port->port_event &= ~(DETECT_INTERRUPT|
++				  POWER_GOOD_INTERRUPT|
++                                       CLASS_INTERRUPT);
++		
++		port->last_port_event = POWER_GOOD_INTERRUPT;
++
++                dev_dbg(&chipset->client->dev,
++                    "Port %d device power good detected\n", port_id+1);
++
++		del_timer_sync(&port->port_pwr_on_timer);
++        }
++
++
++	if (last_change[port_id] != port->last_port_event) {
++                
++		dev_dbg(&chipset->client->dev, 
++		    "Port %d event detected\n", port_id+1);
++
++                mutex_lock(&chipset->glbl_lock);
++		if (chipset->eventfd)
++			eventfd_signal(chipset->eventfd, 
++                            (port->last_port_event << 16) | (1 << port_id));
++                mutex_unlock(&chipset->glbl_lock);
++
++		last_change[port_id] = port->last_port_event;
++	}
++
++        return err;
++}
++
++
++static void ltc4266_timer_function(unsigned long arg)
++{
++	struct i2c_ltc4266_chipset *chip = (struct i2c_ltc4266_chipset *)arg;
++
++        queue_work(chip->chip_wq, &chip->chip_work);
++		
++        mod_timer(&chip->ltc_chip_monitor_timer, 
++		msecs_to_jiffies(LTC4266_CHIPSET_MONITOR_MS) + jiffies);
++}
++
++static void port_pwr_on_timer_function(unsigned long arg)
++{
++	struct ltc4266_port *port = (struct ltc4266_port *)arg;
++
++	queue_work(port->port_wq, &port->port_work);
++}
++
++static void port_pwr_on_work_fn(struct work_struct *work)
++{
++	struct ltc4266_port *port =
++                container_of(work, struct ltc4266_port, port_work);
++
++	mutex_lock(&port->port_lock);
++
++	port->cookie->total_mA_avail += port->device_mA;
++
++	port->port_state = PORT_STATE_CLASSIFY;	
++
++	mutex_unlock(&port->port_lock);
++}
++
++static void ltc4266_port_work_fn(struct work_struct *work)
++{
++	int i;
++	struct ltc4266_port *port;
++
++	struct i2c_ltc4266_chipset *chipset = 
++                container_of(work, struct i2c_ltc4266_chipset, chip_work);
++
++	if (ltc4266_interrupt(chipset) < 0)
++		return;
++
++	for (i = 0; i < LTC_PORTS_COUNT; i++) {
++
++		port = &chipset->port_dev[i];
++			
++		/* Decide on the state we should transition to
++		 * given the current port configuration.
++		 */
++		mutex_lock(&port->port_lock);
++
++		switch (port->port_state) {
++
++		case PORT_STATE_CLASSIFY:
++			if (ltc4266_detect_classify_cycle(chipset, i) == 0) 
++				port->port_state = PORT_STATE_MONITOR;
++			break;
++
++		case PORT_STATE_MONITOR:
++			if (ltc4266_port_monitor(chipset, i))
++				port->port_state = PORT_STATE_CLASSIFY;
++			break;
++		}
++		mutex_unlock(&port->port_lock);
++	}
++}
++
++static ssize_t show_fw_rev(struct device *dev,
++                 struct device_attribute *attr, char *buf)
++{
++	struct i2c_ltc4266_chipset *chipset;
++	struct i2c_client *client = to_i2c_client(dev);
++
++	chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++	
++	return sprintf(buf, "%s\n", chipset->fw_rev);
++}
++
++static DEVICE_ATTR(fw_rev, S_IRUGO, show_fw_rev, NULL);
++
++static ssize_t set_chip_reset(struct device *dev,
++             struct device_attribute *attr, const char *buf, size_t size)
++{
++	int i, err;
++	unsigned long val;
++	struct i2c_ltc4266_chipset *chipset;
++        struct ltc4266_port *port;
++
++	struct i2c_client *client = to_i2c_client(dev);
++
++	chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	err = kstrtoul(buf, 10, &val);
++        if (err)
++                return err;
++        
++	if (val) {
++                err = ltc4266_chip_reset(chipset);
++
++		if (ltc4266_config_semiauto_mode_from_pwr_on(chipset) < 0) {
++                
++			dev_warn(&chipset->client->dev,
++				"chip reset and configuration failed\n");
++		}
++
++		chipset->mode = VC_I2C_CHIPSET_MANUAL_MODE;
++                chipset->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
++
++                for (i = 0; i < LTC_PORTS_COUNT; i++) {
++
++			port = &chipset->port_dev[i];
++
++			mutex_lock(&port->port_lock);
++			port->port_event = 0;
++			mutex_unlock(&port->port_lock);
++		}
++        }
++
++        return err < 0 ? err : size;
++}
++
++static DEVICE_ATTR(chip_reset, S_IWUSR, NULL, set_chip_reset);
++
++static ssize_t show_total_mA(struct device *dev,
++                 struct device_attribute *attr, char *buf)
++{
++        struct i2c_ltc4266_chipset *chipset;
++        struct i2c_client *client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	return sprintf(buf, "mA available: %d\n", chipset->total_mA_avail);
++}
++
++static ssize_t set_total_mA(struct device *dev,
++             struct device_attribute *attr, const char *buf, size_t size)
++{
++        int err;
++        unsigned long val;
++        struct i2c_ltc4266_chipset *chipset;
++
++        struct i2c_client *client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	if (chipset->mode != VC_I2C_CHIPSET_MANUAL_MODE)
++                return -EINVAL;
++
++        err = kstrtoul(buf, 10, &val);
++        if (err)
++                return err;
++	
++	chipset->total_mA_avail = val;
++
++	return size;
++}
++
++static DEVICE_ATTR(total_mA, S_IRUGO|S_IWUSR, show_total_mA, set_total_mA);
++
++static ssize_t show_chip_mode(struct device *dev,
++                 struct device_attribute *attr, char *buf)
++{
++        struct i2c_ltc4266_chipset *chipset;
++        struct i2c_client *client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++        return sprintf(buf, "mode: %s\n", 
++		(chipset->mode == VC_I2C_CHIPSET_MANUAL_MODE) ? 
++						"manual" : "auto");
++}
++
++static ssize_t set_chip_mode(struct device *dev,
++             struct device_attribute *attr, const char *buf, size_t size)
++{
++        struct i2c_ltc4266_chipset *chipset;
++
++        struct i2c_client *client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++	
++	if (strstr(buf, "auto")) {
++		chipset->mode = VC_I2C_CHIPSET_AUTO_MODE;
++	} else if (strstr(buf, "manual")) {
++		chipset->mode = VC_I2C_CHIPSET_MANUAL_MODE;
++	} else {
++		return -EINVAL;
++	}
++
++        return size;
++}
++
++static DEVICE_ATTR(chip_mode, S_IRUGO|S_IWUSR, show_chip_mode, set_chip_mode);
++
++static ssize_t show_event_notify(struct device *dev,
++             struct device_attribute *attr, char *buf)
++{
++        int i, len = 0;
++        struct i2c_ltc4266_chipset *chipset;
++	struct ltc4266_port *port;
++	char *class, *action;
++
++        struct i2c_client *client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	for (i = 0; i < LTC_PORTS_COUNT; i++) {
++
++		port = &chipset->port_dev[i];
++
++		switch (port->device_class) {
++		case LTC_STATp_CLASS_UNKNOWN:
++			class = "unknown";
++		    	break;
++		case LTC_STATp_CLASS_1:
++			class = "class 1";
++			break;
++		case LTC_STATp_CLASS_2:
++			class = "class 2";
++			break;
++		case LTC_STATp_CLASS_3:
++			class = "class 3";
++			break;
++		case LTC_STATp_CLASS_4:
++			class = "class 4";
++			break;
++		case LTC_STATp_CLASS_0:
++			class = "class 0";
++			break;
++		case LTC_STATp_CLASS_OVERCURRENT:
++			class = "overcurrent";
++			break;
++		default:
++			class = 0;
++			break;
++		}
++
++		if (port->last_port_event & POWER_GOOD_INTERRUPT)
++			action = "pwr good";
++		else if (port->last_port_event & tCUT_INTERRUPT)
++			action = "tcut";
++		else if (port->last_port_event & DISCONNECT_INTERRUPT)
++			action = "disconnected";
++		else if (port->last_port_event & DETECT_INTERRUPT)
++			action = "detected";
++		else 
++			action = 0;
++		
++		len += sprintf(buf+len, "Port %d PD: %s %s\n", 
++					i+1, class, action);
++	}
++
++	return len;
++}
++
++static DEVICE_ATTR(chip_notify, S_IRUGO, show_event_notify, NULL);
++
++
++static ssize_t
++show_power(struct device *dev, char *buf, unsigned index)
++{
++        int ret, statpwr;
++	struct i2c_client *client;
++        struct i2c_ltc4266_chipset *chipset;
++
++	if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	statpwr = i2c_smbus_read_byte_data(chipset->client,
++                        LTC_STATPWR_REG + index);
++
++	/* Upper nibble is pwrgd status for port. */
++	statpwr = ((statpwr >> 4) & (1 << index));
++
++        ret = scnprintf(buf, PAGE_SIZE, "%s\n", (statpwr)? "on" : "off");
++
++        return(ret);
++}
++
++static int
++store_power(struct device *dev, const char *buf, size_t len, unsigned index)
++{
++        int detena, statp, err;
++	struct i2c_client *client;
++        struct i2c_ltc4266_chipset *chipset;
++	struct ltc4266_port *port;
++
++        if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	if (chipset->mode != VC_I2C_CHIPSET_MANUAL_MODE)
++		return -EINVAL;
++
++	port = &chipset->port_dev[index];
++
++	if (strstr(buf, "on")) {
++
++		mutex_lock(&port->port_lock);
++
++		if ((port->port_event & (DETECT_INTERRUPT|CLASS_INTERRUPT)) &&
++		     (port->port_state != PORT_STATE_MONITOR)) {
++
++			statp = i2c_smbus_read_byte_data(chipset->client,
++                                (LTC_STATP_BASE_REG + index));
++
++			if (ltc4266_calculate_total_mA(chipset, index, statp)) {
++				mutex_unlock(&port->port_lock);
++				return -EINVAL;
++			}
++
++			err = ltc4266_port_pwr(chipset, index, LTC_PWRPB_ON);
++			if (err < 0) {
++				mutex_unlock(&port->port_lock);
++                		dev_err(dev, "port %d pwr on error\n", index);
++			}
++
++			port->port_state = PORT_STATE_MONITOR;
++		} else {
++			if (port->port_state == PORT_STATE_MONITOR) {
++				err = -EINVAL;
++				dev_err(dev, "Device already powered on "
++							"port %d\n", index+1);
++			} else {
++				err = -ENODEV;
++				dev_err(dev, "No device detected on "
++							"port %d\n", index+1);
++			}
++		}
++		mutex_unlock(&port->port_lock);
++	
++	} else if (strstr(buf, "off")) {
++
++		mutex_lock(&port->port_lock);
++		if (port->port_state != PORT_STATE_MONITOR) {
++			mutex_unlock(&port->port_lock);
++                	dev_err(dev, "Invald operation on port %d\n", index+1);
++			return -ENODEV;
++		}
++	
++		err = ltc4266_port_pwr(chipset, index, LTC_PWRPB_OFF);
++		if (err < 0) {
++                	dev_err(dev, "port %d pwr off error\n", index);
++		}
++
++		detena = ltc4266_detena_port(index, 0);
++
++                ltc4266_enable_detect_classify(chipset, detena);
++
++               	chipset->total_mA_avail += 
++			chipset->port_dev[index].device_mA;
++
++                port->port_state = PORT_STATE_CLASSIFY;
++
++		port->port_event &= ~(DETECT_INTERRUPT|CLASS_INTERRUPT);
++		
++		port->last_port_event = POWER_OFF_INTERRUPT;
++
++		mutex_unlock(&port->port_lock);
++
++		mutex_lock(&chipset->glbl_lock);	
++		if (chipset->eventfd)
++                	eventfd_signal(chipset->eventfd, 
++				(port->last_port_event<<16)| (1 << index));
++		mutex_unlock(&chipset->glbl_lock);	
++
++		dev_dbg(&chipset->client->dev,
++                        "Port %d event detected\n", index);
++	} else {
++                dev_err(dev, "vc-poe: bad value: %s\n", buf);
++		err = -EINVAL;
++	}
++
++        if(err < 0)
++                return (err);
++
++        return(len);
++}
++                    
++
++#define SHOW_POWER(name,index) \
++static ssize_t show_power_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                char *buf) \
++{ \
++        return(show_power(dev, buf, index)); \
++}
++
++SHOW_POWER(pwr_p1, VC_I2C_PORT1)
++SHOW_POWER(pwr_p2, VC_I2C_PORT2)
++SHOW_POWER(pwr_p3, VC_I2C_PORT3)
++SHOW_POWER(pwr_p4, VC_I2C_PORT4)
++
++#define STORE_POWER(name,index) \
++static ssize_t store_power_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                const char *buf, size_t len) \
++{ \
++        return(store_power(dev, buf, len, index)); \
++}
++
++STORE_POWER(pwr_p1, VC_I2C_PORT1)
++STORE_POWER(pwr_p2, VC_I2C_PORT2)
++STORE_POWER(pwr_p3, VC_I2C_PORT3)
++STORE_POWER(pwr_p4, VC_I2C_PORT4)
++
++#define ATTR_POWER(name) \
++static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_power_##name, \
++					    store_power_##name);
++
++ATTR_POWER(pwr_p1);
++ATTR_POWER(pwr_p2);
++ATTR_POWER(pwr_p3);
++ATTR_POWER(pwr_p4);
++
++static ssize_t
++show_ilim(struct device *dev, char *buf, unsigned index)
++{
++        int ret, val;
++        struct i2c_client *client;
++        struct i2c_ltc4266_chipset *chipset;
++
++        if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	val = i2c_smbus_read_byte_data(chipset->client, 
++				LTC_LIM_BASE_REG+(index*5));
++
++	return sprintf(buf, "port: %d iLIM: 0x%2X\n", index+1, val);
++
++        return(ret);
++}
++
++static int
++store_ilim(struct device *dev, const char *buf, size_t len, unsigned index)
++{
++        int err, val;
++        struct i2c_client *client;
++        struct i2c_ltc4266_chipset *chipset;
++
++        if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++        err = kstrtouint(buf, 0, &val);
++        if (err) {
++                dev_err(dev, "bad value\n");
++                return err;
++        }
++
++        err = i2c_smbus_write_byte_data(chipset->client,
++                LTC_LIM_BASE_REG + (index*5), val);
++
++        return(len);
++}
++
++#define SHOW_ILIM(name,index) \
++static ssize_t show_ilim_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                char *buf) \
++{ \
++        return(show_ilim(dev, buf, index)); \
++}
++
++SHOW_ILIM(ilim_p1, VC_I2C_PORT1)
++SHOW_ILIM(ilim_p2, VC_I2C_PORT2)
++SHOW_ILIM(ilim_p3, VC_I2C_PORT3)
++SHOW_ILIM(ilim_p4, VC_I2C_PORT4)
++
++#define STORE_ILIM(name,index) \
++static ssize_t store_ilim_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                const char *buf, size_t len) \
++{ \
++        return(store_ilim(dev, buf, len, index)); \
++}
++
++STORE_ILIM(ilim_p1, VC_I2C_PORT1)
++STORE_ILIM(ilim_p2, VC_I2C_PORT2)
++STORE_ILIM(ilim_p3, VC_I2C_PORT3)
++STORE_ILIM(ilim_p4, VC_I2C_PORT4)
++
++
++#define ATTR_ILIM(name) \
++static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_ilim_##name, \
++					  store_ilim_##name);
++
++ATTR_ILIM(ilim_p1);
++ATTR_ILIM(ilim_p2);
++ATTR_ILIM(ilim_p3);
++ATTR_ILIM(ilim_p4);
++
++
++static ssize_t
++show_icut(struct device *dev, char *buf, unsigned index)
++{
++        int ret, val;
++        struct i2c_client *client;
++        struct i2c_ltc4266_chipset *chipset;
++
++        if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++        val = i2c_smbus_read_byte_data(chipset->client, LTC_CUT1_REG+(index*5));
++
++        val &= ~0xC0;
++
++        return sprintf(buf, "port: %d iCUT: 0x%2X\n", index+1, val);
++
++        return(ret);
++}
++
++static int
++store_icut(struct device *dev, const char *buf, size_t len, unsigned index)
++{
++        int err, val;
++        struct i2c_client *client;
++        struct i2c_ltc4266_chipset *chipset;
++
++        if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	err = kstrtouint(buf, 0, &val);
++        if (err) {
++                dev_err(dev, "bad value\n");
++                return err;
++	}
++	
++	val = i2c_smbus_write_byte_data(chipset->client, 
++		LTC_CUT1_REG+(index*5), val | 0xC0);
++
++        return(len);
++}
++
++#define SHOW_ICUT(name,index) \
++static ssize_t show_icut_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                char *buf) \
++{ \
++        return(show_icut(dev, buf, index)); \
++}
++
++SHOW_ICUT(icut_p1, VC_I2C_PORT1)
++SHOW_ICUT(icut_p2, VC_I2C_PORT2)
++SHOW_ICUT(icut_p3, VC_I2C_PORT3)
++SHOW_ICUT(icut_p4, VC_I2C_PORT4)
++
++#define STORE_ICUT(name,index) \
++static ssize_t store_icut_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                const char *buf, size_t len) \
++{ \
++        return(store_icut(dev, buf, len, index)); \
++}
++
++STORE_ICUT(icut_p1, VC_I2C_PORT1)
++STORE_ICUT(icut_p2, VC_I2C_PORT2)
++STORE_ICUT(icut_p3, VC_I2C_PORT3)
++STORE_ICUT(icut_p4, VC_I2C_PORT4)
++
++#define ATTR_ICUT(name) \
++static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_icut_##name, \
++					  store_icut_##name);
++
++ATTR_ICUT(icut_p1);
++ATTR_ICUT(icut_p2);
++ATTR_ICUT(icut_p3);
++ATTR_ICUT(icut_p4);
++
++static ssize_t
++show_mA(struct device *dev, char *buf, unsigned index)
++{
++        int val, lsb, msb;
++        struct i2c_client *client;
++        struct i2c_ltc4266_chipset *chipset;
++
++        if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++        lsb = i2c_smbus_read_byte_data(chipset->client,
++                        LTC_mA_LSB_BASE_REG+(index*4));
++
++        msb = i2c_smbus_read_byte_data(chipset->client,
++                        LTC_mA_MSB_BASE_REG+(index*4));
++
++        val = ((msb << 8) | lsb);
++
++        return sprintf(buf, "port: %d mA: 0x%x\n", index, val);
++}
++
++
++#define SHOW_mA(name,index) \
++static ssize_t show_mA_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                char *buf) \
++{ \
++        return(show_mA(dev, buf, index)); \
++}
++
++SHOW_mA(mA_p1, VC_I2C_PORT1)
++SHOW_mA(mA_p2, VC_I2C_PORT2)
++SHOW_mA(mA_p3, VC_I2C_PORT3)
++SHOW_mA(mA_p4, VC_I2C_PORT4)
++
++#define ATTR_mA(name) \
++static DEVICE_ATTR(name, S_IRUGO , show_mA_##name, NULL);
++
++ATTR_mA(mA_p1);
++ATTR_mA(mA_p2);
++ATTR_mA(mA_p3);
++ATTR_mA(mA_p4);
++
++static ssize_t
++show_volts(struct device *dev, char *buf, unsigned index)
++{
++        int ret, val, lsb, msb;
++        struct i2c_client *client;
++        struct i2c_ltc4266_chipset *chipset;
++
++        if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	lsb = i2c_smbus_read_byte_data(chipset->client, 
++			LTC_VOLTS_LSB_BASE_REG+(index*4));
++
++        msb = i2c_smbus_read_byte_data(chipset->client, 
++			LTC_VOLTS_MSB_BASE_REG+(index*4));
++
++	val = ((msb << 8) | lsb);
++
++        return sprintf(buf, "port: %d volts: 0x%x\n", index, val);
++
++        return(ret);
++}
++
++
++#define SHOW_VOLTS(name,index) \
++static ssize_t show_volts_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                char *buf) \
++{ \
++        return(show_volts(dev, buf, index)); \
++}
++
++SHOW_VOLTS(volts_p1, VC_I2C_PORT1)
++SHOW_VOLTS(volts_p2, VC_I2C_PORT2)
++SHOW_VOLTS(volts_p3, VC_I2C_PORT3)
++SHOW_VOLTS(volts_p4, VC_I2C_PORT4)
++
++#define ATTR_VOLTS(name) \
++static DEVICE_ATTR(name, S_IRUGO , show_volts_##name, NULL);
++
++ATTR_VOLTS(volts_p1);
++ATTR_VOLTS(volts_p2);
++ATTR_VOLTS(volts_p3);
++ATTR_VOLTS(volts_p4);
++
++static int 
++store_port_reset(struct device *dev, const char *buf, size_t len, 
++						unsigned index)
++{
++	int val, detena, err;
++        struct i2c_ltc4266_chipset *chipset;
++	struct ltc4266_port *port;
++
++        struct i2c_client *client = to_i2c_client(dev);
++
++        if(index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++	port = &chipset->port_dev[index];
++
++	err = kstrtouint(buf, 0, &val);
++        if (err) {
++                dev_err(dev, "bad value\n");
++                return err;
++        }
++
++        if (val) {
++		mutex_lock(&port->port_lock);
++
++		ltc4266_port_pwr(chipset, index, LTC_PWRPB_OFF);
++
++		detena = ltc4266_detena_port(index, 0);
++
++                ltc4266_enable_detect_classify(chipset, detena);
++
++		if (port->port_state == PORT_STATE_MONITOR)
++                	chipset->total_mA_avail += port->device_mA;
++
++                port->port_state = PORT_STATE_CLASSIFY;
++		ltc4266_port_pwr(chipset, index, LTC_PWRPB_ON);
++		mutex_unlock(&port->port_lock);
++        }
++	
++	return len;
++}
++
++#define STORE_PORT_RESET(name,index) \
++static ssize_t store_port_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                const char *buf, size_t len) \
++{ \
++        return(store_port_reset(dev, buf, len, index)); \
++}
++
++STORE_PORT_RESET(reset_p1, VC_I2C_PORT1)
++STORE_PORT_RESET(reset_p2, VC_I2C_PORT2)
++STORE_PORT_RESET(reset_p3, VC_I2C_PORT3)
++STORE_PORT_RESET(reset_p4, VC_I2C_PORT4)
++
++#define ATTR_RESET(name) \
++static DEVICE_ATTR(name, S_IWUSR, NULL, store_port_##name);
++
++ATTR_RESET(reset_p1);
++ATTR_RESET(reset_p2);
++ATTR_RESET(reset_p3);
++ATTR_RESET(reset_p4);
++
++static struct attribute *vc_ltc4266_port_attrs[] = {
++        &dev_attr_pwr_p1.attr,
++        &dev_attr_pwr_p2.attr,
++        &dev_attr_pwr_p3.attr,
++        &dev_attr_pwr_p4.attr,
++        &dev_attr_icut_p1.attr,
++        &dev_attr_icut_p2.attr,
++        &dev_attr_icut_p3.attr,
++        &dev_attr_icut_p4.attr,
++        &dev_attr_ilim_p1.attr,
++        &dev_attr_ilim_p2.attr,
++        &dev_attr_ilim_p3.attr,
++        &dev_attr_ilim_p4.attr,
++        &dev_attr_volts_p1.attr,
++        &dev_attr_volts_p2.attr,
++        &dev_attr_volts_p3.attr,
++        &dev_attr_volts_p4.attr,
++        &dev_attr_mA_p1.attr,
++        &dev_attr_mA_p2.attr,
++        &dev_attr_mA_p3.attr,
++        &dev_attr_mA_p4.attr,
++        &dev_attr_reset_p1.attr,
++        &dev_attr_reset_p2.attr,
++        &dev_attr_reset_p3.attr,
++        &dev_attr_reset_p4.attr,
++        NULL,
++};
++
++static struct attribute_group port_attr_group = {
++        .name = "port_attr",
++        .attrs = vc_ltc4266_port_attrs,
++};
++
++static int
++ltc4266_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
++{
++        int i, err, chip = 0;
++	struct ltc4266_port *port;
++
++        // only probe for devices we'd expect;
++        for(i = VC_I2C_0; i < N_VC_I2C_DEVS; i++) {
++                if(ltc4266_i2c_addr[i] == I2C_CLIENT_END)
++                        return(-ENODEV);
++                if(client->addr == ltc4266_i2c_addr[i]) {
++			chip = i;
++                        break;
++		}
++        }
++
++	ltc4266_dev.i2c_dev[chip] =  kmalloc(sizeof(struct i2c_ltc4266_chipset),
++				    			GFP_KERNEL|__GFP_ZERO);
++
++        if (!ltc4266_dev.i2c_dev[chip])
++                return -ENOMEM;
++
++	ltc4266_dev.i2c_dev[chip]->client = client;
++
++	i2c_set_clientdata(client, (void *)ltc4266_dev.i2c_dev[chip]);
++
++	ltc4266_dev.i2c_dev[chip]->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
++
++	ltc4266_dev.i2c_dev[chip]->mode = VC_I2C_CHIPSET_AUTO_MODE;
++
++	if (ltc4266_check_firmware_revision(ltc4266_dev.i2c_dev[chip]) < 0) {
++		kfree(ltc4266_dev.i2c_dev[chip]);
++		return (-EINVAL);
++	}
++
++	if (ltc4266_config_semiauto_mode_from_pwr_on(
++			ltc4266_dev.i2c_dev[chip]) < 0) {
++		kfree(ltc4266_dev.i2c_dev[chip]);
++		return (-EINVAL);
++	}
++
++	ltc4266_dev.i2c_dev[chip]->chip_wq = 
++		alloc_workqueue("ltc4266-monitor-thread", 0, 0);
++
++	if (!ltc4266_dev.i2c_dev[chip]->chip_wq)
++		return (-ENOMEM);
++
++	INIT_WORK(&ltc4266_dev.i2c_dev[chip]->chip_work, ltc4266_port_work_fn);
++
++	ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer.function = 
++		ltc4266_timer_function;
++        ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer.data = 
++		(unsigned long)ltc4266_dev.i2c_dev[chip];
++	init_timer(&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer);
++
++	mutex_init(&ltc4266_dev.i2c_dev[chip]->glbl_lock);
++
++	/* Reset initial state to power on.  State machine will detect hardware
++	 * state and put in the correct state.
++	 */
++	for (i = 0; i < LTC_PORTS_COUNT; i++) {
++	
++		port = &ltc4266_dev.i2c_dev[chip]->port_dev[i];
++
++		port->cookie = ltc4266_dev.i2c_dev[chip];
++
++		port->port_event = 0;
++
++		mutex_init(&port->port_lock);
++
++		port->port_wq = alloc_workqueue("ltc4266-monitor-thread", 0, 0);
++
++		INIT_WORK(&port->port_work, port_pwr_on_work_fn);
++
++		port->port_pwr_on_timer.function = port_pwr_on_timer_function;
++		port->port_pwr_on_timer.data = (unsigned long)port;
++
++		init_timer(&port->port_pwr_on_timer);
++	}
++
++	device_create_file(&client->dev, &dev_attr_fw_rev);	
++	device_create_file(&client->dev, &dev_attr_chip_reset);	
++	device_create_file(&client->dev, &dev_attr_total_mA);
++	device_create_file(&client->dev, &dev_attr_chip_notify);
++	device_create_file(&client->dev, &dev_attr_chip_mode);
++
++	err = sysfs_create_group(&client->dev.kobj, &port_attr_group);
++        if(err < 0) {
++                dev_err(&client->dev, "couldn't register chipset %s\n",
++					port_attr_group.name);
++		return (err);
++        }
++
++	mod_timer(&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer, 
++		msecs_to_jiffies(LTC4266_CHIPSET_MONITOR_MS) + jiffies);
++
++	return (0);
++}
++
++
++static int
++ltc4266_i2c_remove(struct i2c_client *client)
++{
++        int i, chip = 0;
++        struct ltc4266_port *port;
++
++	for(i = VC_I2C_0; i < N_VC_I2C_DEVS; i++) {
++                if(ltc4266_i2c_addr[i] == I2C_CLIENT_END)
++                        return(-ENODEV);
++                if(client->addr == ltc4266_i2c_addr[i]) {
++                        chip = i;
++                        break;
++                }
++        }
++
++	if (ltc4266_dev.i2c_dev[chip]->eventfd) {
++	    eventfd_ctx_put(ltc4266_dev.i2c_dev[chip]->eventfd);
++	    ltc4266_dev.i2c_dev[chip]->eventfd = 0;
++	}
++
++	device_remove_file(&client->dev, &dev_attr_fw_rev);
++	device_remove_file(&client->dev, &dev_attr_chip_reset);
++	device_remove_file(&client->dev, &dev_attr_total_mA);
++	device_remove_file(&client->dev, &dev_attr_chip_notify);
++	device_remove_file(&client->dev, &dev_attr_chip_mode);
++
++	sysfs_remove_group(&client->dev.kobj, &port_attr_group);
++
++	/* delete timer */
++	del_timer_sync(&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer);
++
++	/* flush all queue instances. */
++	flush_workqueue(ltc4266_dev.i2c_dev[chip]->chip_wq);
++
++       /* destroy work queue. */
++        destroy_workqueue(ltc4266_dev.i2c_dev[chip]->chip_wq);
++
++	for (i = 0; i < LTC_PORTS_COUNT; i++) {
++
++	    port = &ltc4266_dev.i2c_dev[chip]->port_dev[i];
++            destroy_workqueue(port->port_wq);
++	}
++
++	kfree(ltc4266_dev.i2c_dev[chip]);
++
++	ltc4266_dev.i2c_dev[chip] = NULL;
++
++	return (0);
++}
++
++static int
++ltc4266_i2c_detect(struct i2c_client *client, struct i2c_board_info *info)
++{
++        struct i2c_adapter *adapter = client->adapter;
++	
++        if( !i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA
++            | I2C_FUNC_SMBUS_WORD_DATA | I2C_FUNC_SMBUS_WRITE_BYTE)) {
++                pr_err("vc-poe: adaptor does not smbus\n");
++                return(-ENODEV);
++        }
++
++	strlcpy(info->type, LTC4266_NAME, I2C_NAME_SIZE);
++
++	return (0);
++}
++
++static const struct i2c_device_id ltc4266_i2c_id[] = {
++        { LTC4266_NAME, 0 },
++        {},
++};
++
++MODULE_DEVICE_TABLE(i2c, vc_ltc4266_i2c_id);
++
++static struct i2c_driver ltc4266_i2c_driver = {
++        .class = I2C_CLASS_HWMON,
++        .driver = {
++                .name = LTC4266_NAME,
++		.owner  = THIS_MODULE,
++        },
++        .probe = ltc4266_i2c_probe,
++        .remove = ltc4266_i2c_remove,
++        .id_table = ltc4266_i2c_id,
++        .detect = ltc4266_i2c_detect,
++	.address_list = ltc4266_i2c_addr,
++};
++
++static int
++i2c_open(struct inode *inode, struct file *file)
++{
++        unsigned int minor_number;
++
++        minor_number = iminor(inode);
++        if (minor_number)
++            return -ENODEV;
++
++        return 0;
++}
++
++/* This function handles ioctl for the character device */
++static long ltc_chrdev_ioctl(struct file *file,
++			     unsigned int cmd,
++			     unsigned long efd) 
++{
++	struct fd efile;
++
++	switch (cmd) {
++
++	case LTC_SET_EVENTFD: {
++        	efile = fdget(efd);
++
++        	if (!efile.file)
++                    return -EBADF;
++
++		if (mutex_lock_interruptible(
++			&ltc4266_dev.i2c_dev[0]->glbl_lock))
++			return -ERESTARTSYS;
++
++		ltc4266_dev.i2c_dev[0]->eventfd = 
++			eventfd_ctx_fileget(efile.file);
++		
++		mutex_unlock(&ltc4266_dev.i2c_dev[0]->glbl_lock);
++
++		if (IS_ERR(ltc4266_dev.i2c_dev[0]->eventfd))
++                	return PTR_ERR(ltc4266_dev.i2c_dev[0]->eventfd);
++
++		fdput(efile);
++		
++		return 0;
++	}
++
++	case LTC_RESET_EVENTFD:
++		if (ltc4266_dev.i2c_dev[0]->eventfd) {
++			eventfd_ctx_put(ltc4266_dev.i2c_dev[0]->eventfd);
++			ltc4266_dev.i2c_dev[0]->eventfd = 0;
++			return 0;
++		}
++		break;
++	}
++
++	return -EINVAL;
++}
++
++static const struct file_operations i2c_fops = {
++        .owner          = THIS_MODULE,
++        .unlocked_ioctl = ltc_chrdev_ioctl,
++        .open           = i2c_open,
++        .release        = NULL,
++        .llseek         = noop_llseek,
++};
++
++
++static int __init ltc4266_init(void)
++{
++	int err;
++
++	err = platform_device_register(&vc_poe_device);
++        if (err < 0) {
++            pr_err("couldn't register i2c-gpio\n");
++	    return err;
++        }
++
++	err = i2c_add_driver(&ltc4266_i2c_driver);
++	if (err < 0) {
++		platform_device_unregister(&vc_poe_device);
++		pr_err("Couldn't add I2C LTC4266 driver\n");
++		return err;
++	}
++
++        if ((ltc_i2c_major = register_chrdev (0, "vc-poe", &i2c_fops)) < 0)
++		printk(KERN_WARNING "ltc: Failed to register character device.");
++
++	printk(KERN_INFO "VC POE I2C driver v0.1, "
++		"(c) 2014-2015 VeloCloud, Inc.\n");
++	
++	return (err);
++}
++
++static void __exit
++ltc4266_exit(void)
++{
++	i2c_del_driver(&ltc4266_i2c_driver);
++
++	platform_device_unregister(&vc_poe_device);
++
++	if (ltc_i2c_major >= 0)
++		unregister_chrdev(ltc_i2c_major, "vc-poe");
++}
++
++module_init(ltc4266_init);
++module_exit(ltc4266_exit);
++
++MODULE_AUTHOR("Jordan Rhody <jordan@velocloud.net>");
++MODULE_DESCRIPTION("Velocloud POE Driver");
++MODULE_LICENSE("GPL");
+diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/Kconfig linux-3.14.29/drivers/i2c/busses/Kconfig
+--- linux-3.14.29.ORIG/drivers/i2c/busses/Kconfig	2015-01-30 14:37:59.546954292 -0800
++++ linux-3.14.29/drivers/i2c/busses/Kconfig	2015-01-30 14:13:50.642912201 -0800
+@@ -1021,4 +1021,13 @@
+           Silicon Image Si3452 I2C chipset on Velocloud platforms.
+           Say Y to enable support for POE on Velocloud.
+ 
++config I2C_LTC4266
++	tristate "Support for LTC4266 Power over Ethernet (POE) chipset"
++	depends on I2C_GPIO
++	default n 
++	help
++	  This option enables support for Power Over Ethernet (POE)
++	  Linear Technology 4266 I2C chipset on Velocloud platforms.
++	  Say Y to enable support for POE on Velocloud.
++
+ endmenu
+diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/Makefile linux-3.14.29/drivers/i2c/busses/Makefile
+--- linux-3.14.29.ORIG/drivers/i2c/busses/Makefile	2015-01-30 14:38:09.766954588 -0800
++++ linux-3.14.29/drivers/i2c/busses/Makefile	2015-01-30 14:14:31.234913380 -0800
+@@ -49,6 +49,7 @@
+ obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
+ obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o
+ obj-$(CONFIG_I2C_KEMPLD)	+= i2c-kempld.o
++obj-$(CONFIG_I2C_LTC4266)	+= i2c-ltc4266.o
+ obj-$(CONFIG_I2C_MPC)		+= i2c-mpc.o
+ obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
+ obj-$(CONFIG_I2C_MXS)		+= i2c-mxs.o

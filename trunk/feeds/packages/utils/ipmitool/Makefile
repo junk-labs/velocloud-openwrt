@@ -34,8 +34,7 @@ CONFIGURE_ARGS += \
 	--enable-internal-md5 \
 	--enable-intf-lan=yes \
 	--enable-intf-lanplus=no \
-	--enable-intf-free=no \
-	--enable-intf-open=no \
+	--enable-intf-open=yes \
 	--enable-intf-imb=no \
 	--enable-intf-lipmi=no \
 	--enable-intf-bmc=no

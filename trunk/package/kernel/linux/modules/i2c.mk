@@ -170,6 +170,54 @@ endef
 
 $(eval $(call KernelPackage,i2c-tiny-usb))
 
+I2C_I801_MODULES:= \
+  CONFIG_I2C_I801:drivers/i2c/busses/i2c-i801
+
+define KernelPackage/i2c-i801
+  $(call i2c_defaults,$(I2C_I801_MODULES),59)
+  TITLE:=I801 (ICH*) adapter
+  DEPENDS:=@TARGET_x86||TARGET_x64 kmod-i2c-core
+endef
+
+define KernelPackage/i2c-i801/description
+ Kernel module for the I2C ICH (82801AA), ICH0 (82801AB),
+ ICH2 (82801BA), ICH3 (82801CA/CAM) and later devices (PCH)
+ that are part of the 810 Chipset from Intel.
+endef
+
+$(eval $(call KernelPackage,i2c-i801))
+
+I2C_SI3452_MODULES:= \
+  CONFIG_I2C_SI3452:drivers/i2c/busses/i2c-si3452
+
+define KernelPackage/i2c-si3452
+  $(call i2c_defaults,$(I2C_SI3452_MODULES),59)
+  TITLE:=SI3452 PoE adapter
+  DEPENDS:=@TARGET_x86||TARGET_x64 kmod-i2c-core
+endef
+
+define KernelPackage/i2c-si3452/description
+ Kernel module for the SI3452 Power over Ethernet Adapter.
+endef
+
+$(eval $(call KernelPackage,i2c-si3452))
+
+I2C_LTC4266_MODULES:= \
+  CONFIG_I2C_LTC4266:drivers/i2c/busses/i2c-ltc4266
+
+define KernelPackage/i2c-ltc4266
+  $(call i2c_defaults,$(I2C_LTC4266_MODULES),59)
+  TITLE:=LTC4266 PoE adapter
+  DEPENDS:=@TARGET_x86||TARGET_x64 kmod-i2c-core
+endef
+
+define KernelPackage/i2c-ltc4266/description
+ Kernel module for the Linear Technologies
+ LTC4266 Power over Ethernet Adapter.
+endef
+
+$(eval $(call KernelPackage,i2c-ltc4266))
+
 I2C_MUX_MODULES:= \
   CONFIG_I2C_MUX:drivers/i2c/i2c-mux
 

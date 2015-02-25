@@ -9,6 +9,7 @@ __quilt_inc:=1
 
 ifeq ($(TARGET_BUILD),1)
   PKG_BUILD_DIR:=$(LINUX_DIR)
+  PKG_KDUMP_BUILD_DIR:=$(LINUX_KDUMP_DIR)
 endif
 PATCH_DIR?=./patches
 FILES_DIR?=./files
@@ -88,6 +89,12 @@ define Build/Patch/Default
 	$(if $(QUILT),touch $(PKG_BUILD_DIR)/.quilt_used)
 endef
 
+define Kernel/Copy/Default
+	mkdir -p $(LINUX_KDUMP_DIR)
+	$(CP) -r  $(LINUX_DIR)/. $(LINUX_KDUMP_DIR)
+	$(CP) $(TOPDIR)/target/linux/x64/config-3.14.KDUMP $(LINUX_KDUMP_DIR)/.config
+endef
+
 kernel_files=$(foreach fdir,$(GENERIC_FILES_DIR) $(FILES_DIR),$(fdir)/.)
 define Kernel/Patch/Default
 	rm -rf $(PKG_BUILD_DIR)/patches; mkdir -p $(PKG_BUILD_DIR)/patches
@@ -95,6 +102,11 @@ define Kernel/Patch/Default
 	find $(LINUX_DIR)/ -name \*.rej -or -name \*.orig | $(XARGS) rm -f
 	$(call PatchDir,$(PKG_BUILD_DIR),$(GENERIC_PATCH_DIR),generic/)
 	$(call PatchDir,$(PKG_BUILD_DIR),$(PATCH_DIR),platform/)
+	rm -rf $(LINUX_KDUMP_DIR)/patches; mkdir -p $(LINUX_KDUMP_DIR)/patches
+	$(if $(kernel_files),$(CP) $(kernel_files) $(LINUX_KDUMP_DIR)/)
+	find $(LINUX_KDUMP_DIR)/ -name \*.rej -or -name \*.orig | $(XARGS) rm -f
+	$(call PatchDir,$(LINUX_KDUMP_DIR),$(GENERIC_PATCH_DIR),generic/)
+	$(call PatchDir,$(LINUX_KDUMP_DIR),$(PATCH_DIR),platform/)
 endef
 
 define Quilt/RefreshDir
@@ -122,6 +134,13 @@ define Quilt/Refresh/Kernel
 	}
 	$(call Quilt/RefreshDir,$(PKG_BUILD_DIR),$(GENERIC_PATCH_DIR),generic/)
 	$(call Quilt/RefreshDir,$(PKG_BUILD_DIR),$(PATCH_DIR),platform/)
+
+	@[ -z "$$(grep -v '^generic/' $(PKG_KDUMP_BUILD_DIR)/patches/series | grep -v '^platform/')" ] || { \
+		echo "All kernel patches must start with either generic/ or platform/"; \
+		false; \
+	}
+	$(call Quilt/RefreshDir,$(PKG_KDUMP_BUILD_DIR),$(GENERIC_PATCH_DIR),generic/)
+	$(call Quilt/RefreshDir,$(PKG_KDUMP_BUILD_DIR),$(PATCH_DIR),platform/)
 endef
 
 define Quilt/Template

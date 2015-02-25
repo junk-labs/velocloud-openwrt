@@ -77,6 +77,15 @@ define prepare_generic_squashfs
 	$(STAGING_DIR_HOST)/bin/padjffs2 $(1) 4 8 16 64 128 256
 endef
 
+define Image/KInitramfs
+	$(CP) -r $(TARGET_DIR)/bin/. $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump/bin
+	$(CP) -r $(TARGET_DIR)/sbin/. $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump/sbin
+	$(CP) -r $(TARGET_DIR)/etc/. $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump/etc/
+	$(CP) -r $(TARGET_DIR)/lib/. $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump/lib/
+	$(CP) $(TOPDIR)/target/linux/x64/init.kdump $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump/init
+	find $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump/. | cpio -o -H newc | gzip -9 > $(TARGET_DIR)/myinitramfs.igz
+endef
+
 define Image/BuildKernel/Initramfs
 	cp $(KDIR)/vmlinux-initramfs.elf $(BIN_DIR)/$(IMG_PREFIX)-vmlinux-initramfs.elf
 	$(call Image/Build/Initramfs)
@@ -273,6 +282,7 @@ define BuildImage
 		$(call Image/BuildKernel)
 		$(if $(CONFIG_TARGET_ROOTFS_INITRAMFS),$(call Image/BuildKernel/Initramfs))
 		$(call Image/InstallKernel)
+		$(call Image/KInitramfs)
 		$(call Image/mkfs/cpiogz)
 		$(call Image/mkfs/targz)
 		$(call Image/mkfs/tarbz2)
@@ -288,6 +298,7 @@ define BuildImage
 		$(call Image/BuildKernel)
 		$(if $(CONFIG_TARGET_ROOTFS_INITRAMFS),$(call Image/BuildKernel/Initramfs))
 		$(call Image/InstallKernel)
+		$(call Image/KInitramfs)
 		$(call Image/mkfs/cpiogz)
 		$(call Image/mkfs/targz)
 		$(call Image/mkfs/tarbz2)

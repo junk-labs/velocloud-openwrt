@@ -35,6 +35,7 @@ else
   endif
   KERNEL_BUILD_DIR ?= $(BUILD_DIR)/linux-$(BOARD)$(if $(SUBTARGET),_$(SUBTARGET))
   LINUX_DIR ?= $(KERNEL_BUILD_DIR)/linux-$(LINUX_VERSION)
+  LINUX_KDUMP_DIR ?= $(KERNEL_BUILD_DIR)/linux-$(LINUX_VERSION).kdump
   ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),ge,3.7.0)),1)
     LINUX_UAPI_DIR=uapi/
   endif

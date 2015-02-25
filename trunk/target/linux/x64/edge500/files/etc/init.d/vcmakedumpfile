@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2008 OpenWrt.org
+
+START=01
+
+boot() {
+        if [ -e /proc/vmcore ] ; then
+                mkdir -p /velocloud
+                mount /dev/sda6 /velocloud
+                mkdir -p /velocloud/core
+                echo "Starting makedumpfile."
+                /sbin/makedumpfile -c -d 22 /proc/vmcore /velocloud/core/kernel_dump
+                if [ $? -eq 0 ] ; then
+                        reboot
+                fi
+        fi
+}

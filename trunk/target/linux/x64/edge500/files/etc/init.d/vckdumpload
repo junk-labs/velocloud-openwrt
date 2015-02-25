@@ -1,0 +1,11 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2008 OpenWrt.org
+
+START=94
+
+start() {
+
+	[ -e /usr/sbin/kexec ] && {
+		/usr/sbin/./kexec -p /vmlinuz.kdump --initrd=/myinitramfs.igz --command-line="maxcpus=1 debug init=/sbin/init root=/dev/sda3 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200n8"
+	}
+}

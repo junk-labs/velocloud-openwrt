@@ -13,8 +13,18 @@ KERNEL_MAKEOPTS := -C $(LINUX_DIR) \
 	CONFIG_SHELL="$(BASH)" \
 	$(if $(findstring c,$(OPENWRT_VERBOSE)),V=1,V='')
 
+KERNEL_KDUMP_MAKEOPTS := -C $(LINUX_KDUMP_DIR) \
+	HOSTCFLAGS="$(HOST_CFLAGS) -Wall -Wmissing-prototypes -Wstrict-prototypes" \
+	CROSS_COMPILE="$(KERNEL_CROSS)" \
+	ARCH="$(LINUX_KARCH)" \
+	KBUILD_HAVE_NLS=no \
+	CONFIG_SHELL="$(BASH)" \
+	$(if $(findstring c,$(OPENWRT_VERBOSE)),V=1,V='')
+
 ifdef CONFIG_STRIP_KERNEL_EXPORTS
   KERNEL_MAKEOPTS += \
+	EXTRA_LDSFLAGS="-I$(KERNEL_BUILD_DIR) -include symtab.h"
+  KERNEL_KDUMP_MAKEOPTS += \
 	EXTRA_LDSFLAGS="-I$(KERNEL_BUILD_DIR) -include symtab.h"
 endif
 
@@ -22,16 +32,19 @@ INITRAMFS_EXTRA_FILES ?= $(GENERIC_PLATFORM_DIR)/image/initramfs-base-files.txt
 
 ifneq (,$(KERNEL_CC))
   KERNEL_MAKEOPTS += CC="$(KERNEL_CC)"
+  KERNEL_KDUMP_MAKEOPTS += CC="$(KERNEL_CC)"
 endif
 
 ifdef CONFIG_USE_SPARSE
   KERNEL_MAKEOPTS += C=1 CHECK=$(STAGING_DIR_HOST)/bin/sparse
+  KERNEL_KDUMP_MAKEOPTS += C=1 CHECK=$(STAGING_DIR_HOST)/bin/sparse
 endif
 
 export HOST_EXTRACFLAGS=-I$(STAGING_DIR_HOST)/include
 
 # defined in quilt.mk
 Kernel/Patch:=$(Kernel/Patch/Default)
+Kernel/Copy:=$(Kernel/Copy/Default)
 
 KERNEL_GIT_OPTS:=
 ifneq ($(strip $(CONFIG_KERNEL_GIT_LOCAL_REPOSITORY)),"")
@@ -46,8 +59,10 @@ ifeq ($(strip $(CONFIG_EXTERNAL_KERNEL_TREE)),"")
   ifeq ($(strip $(CONFIG_KERNEL_GIT_CLONE_URI)),"")
     define Kernel/Prepare/Default
 	xzcat $(DL_DIR)/$(LINUX_SOURCE) | $(TAR) -C $(KERNEL_BUILD_DIR) $(TAR_OPTIONS)
+	$(Kernel/Copy)
 	$(Kernel/Patch)
 	touch $(LINUX_DIR)/.quilt_used
+	touch $(LINUX_KDUMP_DIR)/.quilt_used
     endef
   else
     define Kernel/Prepare/Default
@@ -70,6 +85,9 @@ ifeq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),y)
 	grep -v -e INITRAMFS -e CONFIG_RD_ -e CONFIG_BLK_DEV_INITRD $(LINUX_DIR)/.config.old > $(LINUX_DIR)/.config
 	echo 'CONFIG_BLK_DEV_INITRD=y' >> $(LINUX_DIR)/.config
 	echo 'CONFIG_INITRAMFS_SOURCE="$(strip $(TARGET_DIR) $(INITRAMFS_EXTRA_FILES))"' >> $(LINUX_DIR)/.config
+	grep -v -e INITRAMFS -e CONFIG_RD_ -e CONFIG_BLK_DEV_INITRD $(LINUX_KDUMP_DIR)/.config.old > $(LINUX_KDUMP_DIR)/.config
+	echo 'CONFIG_BLK_DEV_INITRD=y' >> $(LINUX_KDUMP_DIR)/.config
+	echo 'CONFIG_INITRAMFS_SOURCE="$(strip $(TARGET_DIR) $(INITRAMFS_EXTRA_FILES))"' >> $(LINUX_KDUMP_DIR)/.config
     endef
   else
     define Kernel/SetInitramfs/PreConfigure
@@ -154,6 +172,18 @@ define Kernel/CompileImage/Default
 	#")
 	$(call Kernel/CopyImage)
 endef
+
+define Kernel/CompileKdumpImage/Default
+	echo "Compiling DUMP build"
+	+$(MAKE) $(KERNEL_KDUMP_MAKEOPTS) $(subst ",,$(KERNELNAME))
+	$(CP) $(LINUX_KDUMP_DIR)/arch/x86/boot/bzImage $(TARGET_DIR)/vmlinuz.kdump
+	$(CP) $(LINUX_DIR)/vmlinux $(TARGET_DIR)/vmlinux.kdump
+	mkdir -p $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump
+	mkdir -p $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump/{bin,sbin,etc,proc,sys,lib}
+	echo "DUMP build compile complete"
+	#")
+endef
+
 
 ifneq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),)
 define Kernel/CompileImage/Initramfs

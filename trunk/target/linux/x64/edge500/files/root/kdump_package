@@ -1,0 +1,18 @@
+#!/bin/sh
+
+CURR_DATE=`date +%Y-%m-%d:%H:%M:%S`
+COREDUMP_TMP_PATH=/tmp
+COREDUMP_PATH=/velocloud/core
+
+/usr/sbin/./crash /vmlinux.kdump ${COREDUMP_PATH}/kernel_dump < /root/crash_exec > ${COREDUMP_TMP_PATH}/kernel-core.${CURR_DATE}.txt 2> /dev/null
+
+if [ $? -eq 0 ] ; then
+	rm -f kernel-core.*.tgz
+	tar cvzf ${COREDUMP_TMP_PATH}/kernel-core.${CURR_DATE}.tgz ${COREDUMP_TMP_PATH}/kernel-core.${CURR_DATE}.txt ${COREDUMP_PATH}/kernel_dump
+	rm -f ${COREDUMP_TMP_PATH}/kernel-core.${CURR_DATE}.txt
+	mv ${COREDUMP_TMP_PATH}/kernel-core.${CURR_DATE}.tgz ${COREDUMP_PATH}/kernel-core.${CURR_DATE}.tgz
+	touch ${COREDUMP_PATH}/.kernel-core-new.${CURR_DATE}
+	sync
+	rm -f ${COREDUMP_PATH}/kernel_dump
+	sync
+fi

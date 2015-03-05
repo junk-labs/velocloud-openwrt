@@ -217,7 +217,7 @@
  
  	bool disable_polarity_correction;
  	bool is_mdix;
-@@ -538,6 +551,17 @@
+@@ -538,6 +551,24 @@
  	bool mas_capable;
  };
  
@@ -232,10 +232,17 @@
 +	u32 autoneg_advertised;
 +};
 +
++enum e1000_vcid {
++	e1000_non_vc = 0,
++	e1000_vc500,
++	e1000_vc5x0,
++	e1000_vcid_max,
++};
++
  struct e1000_hw {
  	void *back;
  
-@@ -552,6 +576,7 @@
+@@ -552,6 +583,7 @@
  	struct e1000_bus_info  bus;
  	struct e1000_mbx_info mbx;
  	struct e1000_host_mng_dhcp_cookie mng_cookie;
@@ -243,6 +250,16 @@
  
  	union {
  		struct e1000_dev_spec_82575	_82575;
+@@ -562,7 +594,8 @@
+ 	u16 subsystem_device_id;
+ 	u16 vendor_id;
+ 
+-	u8  revision_id;
++	u8 revision_id;
++	u8 vc_id;
+ };
+ 
+ struct net_device *igb_get_hw_dev(struct e1000_hw *hw);
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
 @@ -91,6 +91,7 @@
@@ -253,7 +270,7 @@
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_COPPER), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_FIBER), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_82580_QUAD_FIBER), board_82575 },
-@@ -185,6 +186,11 @@
+@@ -185,6 +186,13 @@
  static int igb_pci_enable_sriov(struct pci_dev *dev, int num_vfs);
  #endif
  
@@ -261,11 +278,13 @@
 +extern void igb_vc_i2c_exit(struct igb_adapter *);
 +extern int igb_vc_dsa_init(struct igb_adapter *);
 +extern void igb_vc_dsa_exit(struct igb_adapter *);
++extern void igb_vc_dsa_register(void);
++extern void igb_vc_dsa_unregister(void);
 +
  #ifdef CONFIG_PM
  #ifdef CONFIG_PM_SLEEP
  static int igb_suspend(struct device *);
-@@ -253,6 +259,10 @@
+@@ -253,6 +261,10 @@
  MODULE_LICENSE("GPL");
  MODULE_VERSION(DRV_VERSION);
  
@@ -276,7 +295,23 @@
  #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
  static int debug = -1;
  module_param(debug, int, 0);
-@@ -2183,6 +2193,18 @@
+@@ -690,6 +702,7 @@
+ #ifdef CONFIG_IGB_DCA
+ 	dca_register_notify(&dca_notifier);
+ #endif
++	igb_vc_dsa_register();
+ 	ret = pci_register_driver(&igb_driver);
+ 	return ret;
+ }
+@@ -708,6 +721,7 @@
+ 	dca_unregister_notify(&dca_notifier);
+ #endif
+ 	pci_unregister_driver(&igb_driver);
++	igb_vc_dsa_unregister();
+ }
+ 
+ module_exit(igb_exit_module);
+@@ -2185,6 +2205,18 @@
  	return status;
  }
  
@@ -295,7 +330,7 @@
  /**
   *  igb_probe - Device Initialization Routine
   *  @pdev: PCI device information struct
-@@ -2286,6 +2308,8 @@
+@@ -2288,6 +2320,8 @@
  	memcpy(&hw->nvm.ops, ei->nvm_ops, sizeof(hw->nvm.ops));
  	/* Initialize skew-specific constants */
  	err = ei->get_invariants(hw);
@@ -304,7 +339,7 @@
  	if (err)
  		goto err_sw_init;
  
-@@ -2365,18 +2389,17 @@
+@@ -2367,18 +2401,17 @@
  	case e1000_i211:
  		if (igb_get_flash_presence_i210(hw)) {
  			if (hw->nvm.ops.validate(hw) < 0) {
@@ -329,7 +364,7 @@
  		}
  		break;
  	}
-@@ -2389,8 +2412,11 @@
+@@ -2391,8 +2424,11 @@
  
  	if (!is_valid_ether_addr(netdev->dev_addr)) {
  		dev_err(&pdev->dev, "Invalid MAC Address\n");
@@ -343,7 +378,7 @@
  	}
  
  	/* get firmware version for ethtool -i */
-@@ -2486,6 +2512,10 @@
+@@ -2488,6 +2524,10 @@
  		dev_err(&pdev->dev, "failed to init i2c interface\n");
  		goto err_eeprom;
  	}
@@ -354,7 +389,7 @@
  
  	/* let the f/w know that the h/w is now under the control of the
  	 * driver. */
-@@ -2496,6 +2526,11 @@
+@@ -2498,6 +2538,11 @@
  	if (err)
  		goto err_register;
  
@@ -366,7 +401,7 @@
  	/* carrier off reporting is important to ethtool even BEFORE open */
  	netif_carrier_off(netdev);
  
-@@ -2710,6 +2745,8 @@
+@@ -2712,6 +2757,8 @@
  {
  	/* free the adapter bus structure */
  	i2c_del_adapter(&adapter->i2c_adap);
@@ -375,7 +410,7 @@
  }
  
  /**
-@@ -2751,6 +2788,8 @@
+@@ -2753,6 +2800,8 @@
  		wr32(E1000_DCA_CTRL, E1000_DCA_CTRL_DCA_MODE_DISABLE);
  	}
  #endif
@@ -384,7 +419,7 @@
  
  	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
  	 * would have already happened in close and is redundant.
-@@ -2897,7 +2936,7 @@
+@@ -2899,7 +2948,7 @@
  	adapter->tx_work_limit = IGB_DEFAULT_TX_WORK;
  
  	adapter->max_frame_size = netdev->mtu + ETH_HLEN + ETH_FCS_LEN +
@@ -393,7 +428,7 @@
  	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
  
  	spin_lock_init(&adapter->stats64_lock);
-@@ -4055,6 +4094,8 @@
+@@ -4057,6 +4106,8 @@
  	case e1000_media_type_copper:
  		if (!hw->mac.get_link_status)
  			return true;
@@ -402,7 +437,7 @@
  	case e1000_media_type_internal_serdes:
  		hw->mac.ops.check_for_link(hw);
  		link_active = !hw->mac.get_link_status;
-@@ -5054,7 +5095,7 @@
+@@ -5056,7 +5107,7 @@
  {
  	struct igb_adapter *adapter = netdev_priv(netdev);
  	struct pci_dev *pdev = adapter->pdev;
@@ -411,7 +446,7 @@
  
  	if ((new_mtu < 68) || (max_frame > MAX_JUMBO_FRAME_SIZE)) {
  		dev_err(&pdev->dev, "Invalid MTU setting\n");
-@@ -6676,6 +6717,7 @@
+@@ -6678,6 +6729,7 @@
  		unsigned char *network;
  		/* l2 headers */
  		struct ethhdr *eth;
@@ -419,7 +454,7 @@
  		struct vlan_hdr *vlan;
  		/* l3 headers */
  		struct iphdr *ipv4;
-@@ -6696,6 +6738,15 @@
+@@ -6698,6 +6750,15 @@
  	protocol = hdr.eth->h_proto;
  	hdr.network += ETH_HLEN;
  
@@ -437,7 +472,7 @@
  		if ((hdr.network - data) > (max_len - VLAN_HLEN))
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,3087 @@
+@@ -0,0 +1,3255 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -529,6 +564,7 @@
 +#define M88E6320_ID ((M88_VENDOR << 16) | 0x1150)
 +#define M88E6176_ID ((M88_VENDOR << 16) | 0x1760)
 +#define M88E1112_ID ((M88_VENDOR << 16) | 0x0c90)
++#define M88E1514_ID ((M88_VENDOR << 16) | 0x0141)
 +
 +#define M88_SW_PORT_BASE 0x10		// base of port registers;
 +#define M88_SW_PORT_STATUS 0x00		// port status reg;
@@ -643,21 +679,38 @@
 +
 +// DSA specific;
 +
++// module param to disable dsa;
++
++enum dsa_flags {
++	DSA_DISABLE = 0,
++	DSA_ENABLE = 0x01,	// enable DSA;
++	DSA_NOSWBR = 0x02,	// do not bring up switch(es) in LAN bridging mode;
++};
++
++static int dsa = 0;
++module_param(dsa, int, 0);
++MODULE_PARM_DESC(dsa, "Enable DSA on switch.");
++
 +#define VC_NAME "vc"
 +#define VC_DSA "dsa"
 +
-+#define IGB_VC_DSA_BUS_FUNC	1
-+
 +// switch tree;
++
++static char vc_sw_cpu[] = "cpu";
++static char vc_sw_name[] = "sw%d";
++static char vc_sw0_name[] = "sw0p%d";
++static char vc_sw1_name[] = "sw1p%d";
++
++// edge500;
 +
 +static struct dsa_chip_data vc_switch = {
 +	.sw_addr = 0,
 +	.port_names = {
-+		"sw%d",         // 0
-+		"sw%d",         // 1
-+		"sw%d",         // 2
-+		"sw%d",         // 3
-+		"cpu",          // 4
++		vc_sw_name,	// 0
++		vc_sw_name,	// 1
++		vc_sw_name,	// 2
++		vc_sw_name,	// 3
++		vc_sw_cpu,	// 4
 +	},
 +};
 +
@@ -665,6 +718,52 @@
 +	.nr_chips = 1,
 +	.chip = &vc_switch,
 +};
++
++// edge520/540;
++// ports 5/6 are rgmii cross connects;
++
++static struct dsa_chip_data vc_sw0 = {
++	.sw_addr = 0,
++	.port_names = {
++		vc_sw0_name,	// 0 rj45
++		vc_sw0_name,	// 1 rj45
++		vc_sw0_name,	// 2 rj45
++		vc_sw0_name,	// 3 rj45
++		vc_sw_cpu,	// 4
++		vc_sw0_name,	// 5 rgmii
++		vc_sw0_name,	// 6 rgmii
++	},
++};
++
++static struct dsa_chip_data vc_sw1 = {
++	.sw_addr = 0,
++	.port_names = {
++		vc_sw1_name,	// 0 rj45
++		vc_sw1_name,	// 1 rj45
++		vc_sw1_name,	// 2 rj45
++		vc_sw1_name,	// 3 rj45
++		vc_sw_cpu,	// 4
++		vc_sw1_name,	// 5 rgmii
++		vc_sw1_name,	// 6 rgmii
++	},
++};
++
++static struct dsa_platform_data vc_sw0_data = {
++	.nr_chips = 1,
++	.chip = &vc_sw0,
++};
++
++static struct dsa_platform_data vc_sw1_data = {
++	.nr_chips = 1,
++	.chip = &vc_sw1,
++};
++
++// dsa config per platform;
++
++static struct dsa_platform_data *vc_dsa_500[IGB_VC_N_BUS_FUNC] = { NULL, &vc_switch_data, NULL, NULL };
++static struct dsa_platform_data *vc_dsa_5x0[IGB_VC_N_BUS_FUNC] = { &vc_sw0_data, &vc_sw1_data, NULL, NULL };
++
++// dsa private;
 +
 +struct vc_dsa_priv {
 +	struct e1000_hw *hw;
@@ -765,7 +864,7 @@
 +
 +	ret = igb_vc_mdio_wait(hw);
 +fail:
-+        hw->phy.ops.release(hw);
++	hw->phy.ops.release(hw);
 +	if(ret < 0)
 +		goto out;
 +	*data = ret;
@@ -825,7 +924,7 @@
 +
 +	ret = igb_vc_mdio_wait(hw);
 +fail:
-+        hw->phy.ops.release(hw);
++	hw->phy.ops.release(hw);
 +	if(ret < 0)
 +		goto out;
 +	ret = 0;
@@ -1196,12 +1295,12 @@
 +		M88_SW_REG(M88_SW_GLOBAL1, M88_SW_GL1_CTRL),
 +		sw_ctrl);
 +	udelay(1);
-+out:    
++out:
 +	return(ret);
 +}
 +
 +#endif
-+        
++
 +// extra info for edge500;
 +
 +struct igb_vc_info {
@@ -1245,7 +1344,7 @@
 +{
 +	struct e1000_phy_info *phy = &hw->phy;
 +	s32 ret;
-+        u16 phy_id;
++	u16 phy_id;
 +
 +	// use standard phy access functions;
 +
@@ -1271,16 +1370,39 @@
 +
 +// extra info to handle special PHYs;
 +// unfortunatedly, we need to make this link dependent;
++
++// edge500;
 +// 0: 88e6320 port 0 (WAN0);
 +// 1: 88e6176 port 4 (LAN switch);
 +// 2: 88e6320 port 1 (WAN1);
 +// 3: 88e1112 PHY (SFP);
 +
-+static struct igb_vc_info igb_vc_infos[] = {
++static struct igb_vc_info igb_vc500_info[] = {
 +	{ { 0, 0xc, 3 }, igb_vc_m88sw_id, },
 +	{ { 4, 0xf, 0 }, igb_vc_m88sw_id, },
 +	{ { 1, 0xd, 4 }, igb_vc_m88sw_id, },
 +	{ { 0, 0, 0 }, igb_vc_phy_id },
++};
++
++// edge520/540;
++// 0: 88e6176 port 4 (lan0 switch);
++// 1: 88e6176 port 4 (lan1 switch);
++// 2: 88e1514 PHY (WAN0);
++// 3: 88e1514 PHY (WAN1);
++
++static struct igb_vc_info igb_vc5x0_info[] = {
++	{ { 4, 0xf, 0 }, igb_vc_m88sw_id, },
++	{ { 4, 0xf, 0 }, igb_vc_m88sw_id, },
++	{ { 0, 0, 0 }, igb_vc_phy_id },
++	{ { 0, 0, 0 }, igb_vc_phy_id },
++};
++
++// indexed by e1000_hw.vc_id;
++
++static struct igb_vc_info *igb_vc_infos[] = {
++	NULL,
++	igb_vc500_info,
++	igb_vc5x0_info,
 +};
 +
 +// get PHY id/rev;
@@ -1299,8 +1421,11 @@
 +
 +	if(hw->bus.func >= IGB_VC_N_BUS_FUNC)
 +		return(-E1000_ERR_CONFIG);
-+
-+	info = igb_vc_infos + hw->bus.func;
++	if(hw->vc_id >= e1000_vcid_max)
++		return(-E1000_ERR_CONFIG);
++	info = igb_vc_infos[hw->vc_id] + hw->bus.func;
++	if( !info)
++		return(-E1000_ERR_CONFIG);
 +
 +	phy->ports[e1000_port_cpu] = info->ports[e1000_port_cpu];
 +	phy->ports[e1000_port_sgmii] = info->ports[e1000_port_sgmii];
@@ -1330,7 +1455,7 @@
 +	ctrl |= (MII_CR_RESET | MII_CR_FULL_DUPLEX);
 +	ctrl &= ~(MII_CR_AUTO_NEG_EN | MII_CR_POWER_DOWN);
 +	ret = igb_vc_m88sw_sgmii_mdio_write(hw, PHY_CONTROL, ctrl);
-+        udelay(1);
++	udelay(1);
 +out:
 +	return(ret);
 +}
@@ -1373,7 +1498,7 @@
 +	ctrl |= MII_CR_RESET;
 +
 +	ret = igb_vc_m88sw_phy_mdio_write(hw, PHY_CONTROL, ctrl);
-+        udelay(1);
++	udelay(1);
 +out:
 +	return(ret);
 +}
@@ -2254,6 +2379,7 @@
 +
 +#define VC_ID 0x5663	// "Vc"
 +#define VC_ID_EDGE500 0x6535 // "e5" - edge500;
++#define VC_ID_EDGE5X0 0x3558 // "5X" - edge520/edge540;
 +
 +s32
 +igb_vc_probe(struct e1000_hw *hw)
@@ -2270,7 +2396,7 @@
 +
 +	if(hw->mac.type != e1000_i354)
 +		goto out;
-+        if( !igb_sgmii_active_82575(hw))
++	if( !igb_sgmii_active_82575(hw))
 +		goto out;
 +	if( !igb_sgmii_uses_mdio_82575(hw))
 +		goto out;
@@ -2284,6 +2410,10 @@
 +
 +	switch(eeprom[1]) {
 +	case VC_ID_EDGE500:
++		hw->vc_id = e1000_vc500;
++		break;
++	case VC_ID_EDGE5X0:
++		hw->vc_id = e1000_vc5x0;
 +		break;
 +	default:
 +		goto out;
@@ -2292,7 +2422,9 @@
 +
 +	// do all the work of init_phy_param() here;
 +
-+        hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >> E1000_STATUS_FUNC_SHIFT;
++	hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >> E1000_STATUS_FUNC_SHIFT;
++
++	//XXX bring up bitbang MDIO for func 2/3 to 88e1514;
 +
 +	// get PHY address from MDICNFG;
 +	// this assumes the EEPROM has valid config data;
@@ -2313,6 +2445,8 @@
 +	phy->reset_delay_us = 100;
 +
 +	switch(phy->id) {
++
++	// edge500 only;
 +	case M88E6320_ID:
 +		mac->autoneg = false;
 +		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e6320;
@@ -2343,6 +2477,8 @@
 +		hw->swphy.duplex = FULL_DUPLEX;
 +		break;
 +
++	// edge500 one switch;
++	// edge520/540 two switches;
 +	case M88E6176_ID:
 +		mac->autoneg = false;
 +		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e6176;
@@ -2362,6 +2498,7 @@
 +		phy->ops.get_phy_info = NULL;
 +		break;
 +
++	// edge500 only, sfp;
 +	case M88E1112_ID:
 +		mac->autoneg = true;
 +		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e1112;
@@ -2381,6 +2518,26 @@
 +		phy->ops.get_phy_info = NULL;
 +		break;
 +
++	// edge520/540 only;
++	case M88E1514_ID:
++		mac->autoneg = true;
++		mac->ops.setup_physical_interface = igb_vc_setup_link_m88e1112; //XXX
++		mac->ops.check_for_link = igb_vc_m88phy_check_for_link_m88e1112; //XXX
++		mac->ops.get_speed_and_duplex = igb_get_pcs_speed_and_duplex_82575;
++
++		phy->media_type = e1000_media_type_copper;
++		phy->autoneg_mask = AUTONEG_ADVERTISE_SPEED_DEFAULT;
++		phy->type = e1000_phy_m88;
++
++		phy->ops.read_reg = igb_vc_m88phy_sfp_mdio_read; //XXX
++		phy->ops.write_reg = igb_vc_m88phy_sfp_mdio_write; //XXX
++		phy->ops.reset = igb_vc_m88phy_sfp_reset; //XXX
++		phy->ops.check_polarity = NULL; //XXX
++		phy->ops.get_cable_length = NULL; //XXX
++		phy->ops.force_speed_duplex = igb_vc_bugon_phy_force_speed_duplex; //XXX
++		phy->ops.get_phy_info = igb_get_phy_info_m88;
++		break;
++
 +	default:
 +		ret = -E1000_ERR_PHY;
 +	}
@@ -2398,7 +2555,7 @@
 +
 +	if(sfp->client[SFP_EEPROM] && sfp->plugged)
 +		ret = scnprintf(buf, PAGE_SIZE, "%s\n", sfp->vendor);
-+        return(ret);
++	return(ret);
 +}
 +
 +static ssize_t
@@ -2409,7 +2566,7 @@
 +
 +	if(sfp->client[SFP_EEPROM] && sfp->plugged)
 +		ret = scnprintf(buf, PAGE_SIZE, "%02x:%02x:%02x\n", sfp->oui[0], sfp->oui[1], sfp->oui[2]);
-+        return(ret);
++	return(ret);
 +}
 +
 +static ssize_t
@@ -2420,7 +2577,7 @@
 +
 +	if(sfp->client[SFP_EEPROM] && sfp->plugged)
 +		ret = scnprintf(buf, PAGE_SIZE, "%s\n", sfp->partnum);
-+        return(ret);
++	return(ret);
 +}
 +
 +// all sfp attributes;
@@ -2480,8 +2637,8 @@
 +	if(client->addr == igb_vc_i2c_addrs[0]) {
 +		sfp->client[SFP_EEPROM] = client;
 +		ret = sysfs_create_group(&pdev->dev.kobj, &igb_vc_sfp_group);
-+        	if(ret < 0)
-+                	dev_err(&pdev->dev, "couldn't register sfp sysfs group\n");
++		if(ret < 0)
++			dev_err(&pdev->dev, "couldn't register sfp sysfs group\n");
 +	}
 +
 +	// DMI probe;
@@ -2535,6 +2692,7 @@
 +
 +// init i2c to sfp;
 +// sfp is on port 3;
++// only on edge500;
 +
 +s32
 +igb_vc_i2c_init(struct igb_adapter *adapter)
@@ -2542,6 +2700,9 @@
 +	struct vc_i2c_sfp *sfp = &igb_vc_i2c_sfp;
 +	struct e1000_hw *hw = &adapter->hw;
 +	int ret;
++
++	if(hw->vc_id != e1000_vc500)
++		return(0);
 +
 +	if(hw->bus.func != IGB_VC_SFP_BUS_FUNC)
 +		return(0);
@@ -2553,11 +2714,15 @@
 +}
 +
 +// free i2c to sfp;
++// only on edge500;
 +
 +void
 +igb_vc_i2c_exit(struct igb_adapter *adapter)
 +{
 +	struct e1000_hw *hw = &adapter->hw;
++
++	if(hw->vc_id != e1000_vc500)
++		return;
 +
 +	if(hw->bus.func != IGB_VC_SFP_BUS_FUNC)
 +		return;
@@ -2976,7 +3141,7 @@
 +		ret = m88e6176_reg_read(ds, REG_PORT(i), 0x04);
 +		if(ret >= 0)
 +			m88e6176_reg_write(ds, REG_PORT(i), 0x04, ret & 0xfffc);
-+        }
++	}
 +
 +	// wait for tx queues to drain;
 +
@@ -3032,6 +3197,8 @@
 +m88e6176_setup_global(struct dsa_switch *ds)
 +{
 +	int ret, i;
++	int bren = !(dsa & DSA_NOSWBR);
++	u16 val;
 +
 +	// bit 14 was PE (PPU enable) on m88e6165;
 +	// it must be set, otherwise PHY regs are inaccessible;
@@ -3046,12 +3213,14 @@
 +	// disable address learn messages to be sent to all message ports;
 +	// For info: To enable address learn messages set 0x0149
 +	// configure the priority mapping registers;
++	// use longer age time if bridging is enabled;
 +
-+	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0a, 0x0141);
++	val = bren? 0x0141 : 0x0011;
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x0a, val);
 +	if(ret)
 +		goto out;
-+        ret = m88e6176_config_prio(ds);
-+        if(ret < 0)
++	ret = m88e6176_config_prio(ds);
++	if(ret < 0)
 +		goto out;
 +
 +	// configure the upstream port as the port to which
@@ -3064,7 +3233,7 @@
 +	// disable remote management;
 +	// set the switch's DSA device number.
 +
-+        ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1c, ds->index & 0x1f);
++	ret = m88e6176_reg_write(ds, REG_GLOBAL, 0x1c, ds->index & 0x1f);
 +	if(ret)
 +		goto out;
 +
@@ -3153,6 +3322,7 @@
 +{
 +	int ret = 0;
 +	int addr = REG_PORT(p);
++	int bren = !(dsa & DSA_NOSWBR);
 +	u16 val;
 +
 +	// do not enable port if not in switch config;
@@ -3186,10 +3356,13 @@
 +	// if this is the CPU link, use DSA or EDSA tagging;
 +	// if this is a link to another switch, use DSA tagging mode;
 +	// if this is the upstream port for this switch,
-+	// then enable forwarding of unknown unicasts and multicasts.
++	// then enable forwarding of unknown unicasts and multicasts for:
++	// bridged: all;
++	// not bridged: only the CPU port, other ports remain blocked;
 +
-+	val = 0x0433;
++	val = bren? 0x0433 : 0x0430;
 +	if(dsa_is_cpu_port(ds, p)) {
++		val |= 0x0003;
 +		if (ds->dst->tag_protocol == htons(ETH_P_EDSA))
 +			val |= 0x3300;
 +		else
@@ -3215,13 +3388,18 @@
 +	// port based VLAN map;
 +	// all ports use same address database;
 +	// allow the CPU port to talk to each of the 'real' ports;
-+	// allow each of the 'real' ports to talk to each other and the upstream port;
++	// bridged: allow each of the 'real' ports to talk to each other and the upstream port;
++	// not bridged: allow each of the 'real' ports to talk to just the upstream port;
 +	// set FID[3:0] = 0;
 +
-+	val = ds->phys_port_mask;
-+	if( !dsa_is_cpu_port(ds, p)) {
++	if(dsa_is_cpu_port(ds, p)) {
++		val = ds->phys_port_mask;
++	} else if(bren) {
++		val = ds->phys_port_mask;
 +		val |= 1 << dsa_upstream_port(ds);
 +		val &= ~(1 << p);
++	} else {
++		val = 1 << dsa_upstream_port(ds);
 +	}
 +	ret = m88e6176_reg_write(ds, addr, 0x06, val);
 +	if(ret)
@@ -3427,12 +3605,6 @@
 +	return(ret);
 +}
 +
-+// module param to disable dsa;
-+
-+static int dsa = 0;
-+module_param(dsa, int, 0);
-+MODULE_PARM_DESC(dsa, "Enable DSA on switch.");
-+
 +// init dsa interface;
 +
 +s32
@@ -3443,13 +3615,29 @@
 +	struct mii_bus *bus;
 +	struct vc_dsa_priv *priv;
 +	struct platform_device *pdev;
++	struct dsa_platform_data *dpd;
++	struct dsa_chip_data *dcd;
 +	s32 ret;
 +	int i;
 +
-+	if( !dsa)
++	if( !(dsa & DSA_ENABLE))
 +		return(0);
-+	if(hw->bus.func != IGB_VC_DSA_BUS_FUNC)
-+		return(0);
++
++	// get per-platform config;
++
++	switch(hw->vc_id) {
++	case e1000_vc500:
++		dpd = vc_dsa_500[hw->bus.func];
++		break;
++	case e1000_vc5x0:
++		dpd = vc_dsa_5x0[hw->bus.func];
++		break;
++	default:
++		dpd = NULL;
++		break;
++	}
++	if( !dpd)
++		return(0);		// no dsa switch;
 +
 +	// allocate and register mdio bus;
 +
@@ -3465,7 +3653,7 @@
 +	pdev->name = VC_DSA;
 +	pdev->id = 0;
 +	pdev->num_resources = 0;
-+	pdev->dev.platform_data = &vc_switch_data;
++	pdev->dev.platform_data = dpd;
 +
 +	bus->name = "mdio-dsa";
 +	bus->phy_mask = ~0;
@@ -3487,10 +3675,9 @@
 +
 +	// register dsa switch;
 +
-+	register_switch_driver(&m88e6176_switch_driver);
-+
-+	vc_switch_data.netdev = &netdev->dev;
-+	vc_switch.mii_bus = &bus->dev;
++	dcd = dpd->chip;
++	dpd->netdev = &netdev->dev;
++	dcd->mii_bus = &bus->dev;
 +	ret = platform_device_register(pdev);
 +	if(ret < 0)
 +		goto fail_dsa_reg;
@@ -3512,18 +3699,33 @@
 +	struct mii_bus *bus = adapter->mii_dsa;
 +	struct vc_dsa_priv *priv;
 +
-+	if( !dsa)
-+		return;
 +	if( !bus)
 +		return;
 +
 +	priv = bus->priv;
 +
 +	platform_device_unregister(&priv->pdev);
-+	unregister_switch_driver(&m88e6176_switch_driver);
 +
 +	mdiobus_unregister(bus);
 +	mdiobus_free(bus);
++}
++
++// register dsa switch driver;
++
++void
++igb_vc_dsa_register(void)
++{
++	if(dsa & DSA_ENABLE)
++		register_switch_driver(&m88e6176_switch_driver);
++}
++
++// unregister dsa switch driver;
++
++void
++igb_vc_dsa_unregister(void)
++{
++	if(dsa & DSA_ENABLE)
++		unregister_switch_driver(&m88e6176_switch_driver);
 +}
 +
 --- a/drivers/net/ethernet/intel/igb/igb.h

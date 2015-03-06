@@ -42,6 +42,9 @@ CONFIGURE_ARGS += \
 define Package/ipmitool/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ipmitool $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ipmievd $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/ipmievd.init $(1)/etc/init.d/ipmievd
 endef
 
 $(eval $(call BuildPackage,ipmitool))

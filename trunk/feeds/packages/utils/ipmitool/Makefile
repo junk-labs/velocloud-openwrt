@@ -29,6 +29,7 @@ define Package/ipmitool/description
   (IPMI) version 1.5 and version 2.0 specifications.
 endef
 
+TARGET_CFLAGS += -g
 CONFIGURE_ARGS += \
 	--enable-static=no \
 	--enable-internal-md5 \

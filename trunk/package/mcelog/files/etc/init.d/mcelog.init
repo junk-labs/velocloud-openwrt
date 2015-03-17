@@ -1,0 +1,47 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2013 Julius Schulz-Zander
+# Startup script for mcelog
+# 
+# This should be customized for distribution standards
+# (using rc_status etc.)
+# The paths are hardcoded and are not automatically adjusted
+# for different prefix
+#
+### BEGIN INIT INFO
+# Provides:		mcelog 
+# Default-Start:	3 5
+# Default-Stop:		0 1 2 6
+# Short-Description:	mcelog hardware error logging
+# Description:          Start the mcelog hardware error logging. 
+#                       This logs and handles CPU hardware errors on x86 systems.
+### END INIT INFO
+
+# put this is sysconfig
+
+# mcelog mode
+# valid values: daemon, trigger, cron
+# Recommended value daemon
+
+START=80
+STOP=80
+
+# additional options to pass to the daemon
+# this only works in daemon mode
+# see the manpage for details. settings can be also
+# set in /etc/mcelog.conf
+MCELOG_OPTIONS=""
+
+start() {
+	/usr/sbin/mcelog --daemon
+}
+
+stop() {
+	killall mcelog
+}
+
+restart() {
+        stop
+        start
+}
+
+

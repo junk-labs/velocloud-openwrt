@@ -1,0 +1,29 @@
+#!/bin/bash
+
+cd /sys/devices/platform/w83627ehf.2560
+echo "starting fan monitor"
+
+echo " temp1" $(cat temp1_input)
+echo " temp2" $(cat temp2_input)
+echo " temp3" $(cat temp3_input)
+fan=$(cat pwm4)
+if [ "$fan" = "0" ]; then
+	echo " fan is off"
+else
+	echo " fan at $fan"
+fi
+
+while true; do
+	temp1=$(cat temp1_input)
+	temp2=$(cat temp2_input)
+	temp3=$(cat temp3_input)
+	spin=$(cat pwm4)
+	if [ "$fan" = "0" ] && [ "$spin" != "0" ]; then
+		echo " fan turned on at $temp1 $temp2 $temp3"
+	elif [ "$fan" != "0" ] && [ "$spin" = "0" ]; then
+		echo " fan turned off at $temp1 $temp2 $temp3"
+	fi
+	fan=$spin
+	sleep 1
+done
+

@@ -19,6 +19,7 @@ OPENWRT_TSYS = \
 	vc-vmdk \
 	vc-xen-aws \
 	pw-dev \
+	edge5x0 \
 	edge500 \
 
 # Default subtargets
@@ -27,6 +28,7 @@ DEFAULT_OPENWRT_TSYS = \
 	vc-vmdk \
 	vc-xen-aws \
 	pw-dev \
+	edge5x0 \
 	edge500 \
 
 # name can be changed to pull a specific branch;

@@ -169,7 +169,7 @@
  	ctags $(SRC)
 --- a/test/Makefile
 +++ b/test/Makefile
-@@ -129,7 +129,7 @@ install:
+@@ -130,7 +130,7 @@
  tags:
  	ctags $(SRC)
  
@@ -178,7 +178,7 @@
  
  apps:
  	@(cd ..; $(MAKE) DIRS=apps all)
-@@ -384,109 +384,109 @@ BUILD_CMD_STATIC=shlib_target=; \
+@@ -388,112 +388,112 @@
  		link_app.$${shlib_target}
  
  $(RSATEST)$(EXE_EXT): $(RSATEST).o $(DLIBCRYPTO)
@@ -297,6 +297,10 @@
 -	@target=$(EVPTEST); $(BUILD_CMD)
 +	+@target=$(EVPTEST); $(BUILD_CMD)
  
+ $(EVPEXTRATEST)$(EXE_EXT): $(EVPEXTRATEST).o $(DLIBCRYPTO)
+-	@target=$(EVPEXTRATEST); $(BUILD_CMD)
++	+@target=$(EVPEXTRATEST); $(BUILD_CMD)
+ 
  $(ECDSATEST)$(EXE_EXT): $(ECDSATEST).o $(DLIBCRYPTO)
 -	@target=$(ECDSATEST); $(BUILD_CMD)
 +	+@target=$(ECDSATEST); $(BUILD_CMD)
@@ -323,7 +327,7 @@
  
  $(HEARTBEATTEST)$(EXE_EXT): $(HEARTBEATTEST).o $(DLIBCRYPTO)
  	@target=$(HEARTBEATTEST); $(BUILD_CMD_STATIC)
-@@ -505,7 +505,7 @@ $(CONSTTIMETEST)$(EXE_EXT): $(CONSTTIMET
+@@ -512,7 +512,7 @@
  #	fi
  
  dummytest$(EXE_EXT): dummytest.o $(DLIBCRYPTO)

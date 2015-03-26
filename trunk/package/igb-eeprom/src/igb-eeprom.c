@@ -15,12 +15,18 @@
 
 // manufacturing run data;
 
+#define MAX_CHIPS 2
+
 typedef struct mfg mfg_t;
 struct mfg {
-	char *name;		// name of run;
-	char *board;		// name of board;
-	char *tmp;		// template file;
-	unsigned bnums[2];
+	char *name;				// name of run;
+	char *board;			// name of board;
+	char *ifs[MAX_CHIPS];	// interfaces of chips;
+	char *tmp[MAX_CHIPS];	// template files;
+	unsigned short pciid0[MAX_CHIPS];
+	unsigned short pciid1[MAX_CHIPS];
+	unsigned bnums[3];		// min/max/base;
+	unsigned nmacs;			// # of macs;
 	unsigned char mac_min[6];
 	unsigned char mac_max[6];
 };
@@ -34,28 +40,69 @@ mfg_t Mfg[] = {
 #ifdef IGB_EEPROM_BUGGY_MACS
 	{ "pw-pilot",
 	  "edge500",
-	  "atom-c2000-igb-sgmii.bin",
-	  { 1, 50 },
+	  { "eth0", },
+	  { "atom-c2000-igb-sgmii.bin", },
+	  { 0x8086, },
+	  { 0x1f41, },
+	  { 1, 50 }, 4,
 	  { 0xF0,0x8E,0xDB,0x01,0x00,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x00,0xC7 }, },
 	{ "pw-pilot2",
 	  "edge500",
-	  "atom-c2000-igb-sgmii.bin",
-	  { 51, 99 },
+	  { "eth0", },
+	  { "atom-c2000-igb-sgmii.bin", },
+	  { 0x8086, },
+	  { 0x1f41, },
+	  { 51, 99 }, 4,
 	  { 0xF0,0x8E,0xDB,0x01,0x00,0xC8 }, { 0xF0,0x8E,0xDB,0x01,0x01,0x8f }, },
 	{ "pw-prod",
 	  "edge500",
-	  "atom-c2000-igb-sgmii.bin",
-	  { 100, 599 },
+	  { "eth0", },
+	  { "atom-c2000-igb-sgmii.bin", },
+	  { 0x8086, },
+	  { 0x1f41, },
+	  { 100, 599 }, 4,
 	  { 0xF0,0x8E,0xDB,0x01,0x01,0x90 }, { 0xF0,0x8E,0xDB,0x01,0x09,0x5f }, },
 #endif // IGB_EEPROM_BUGGY_MACS
+
 	// all above squeezed into 01:0x:xx 4k block;
 	// start a new 4k block 01:1x:xx for pw-mp for units 200..2047;
 	{ "pw-mp",
 	  "edge500",
-	  "atom-c2000-igb-sgmii.bin",
-	  { 200, 2047 },
-	  { 0xF0,0x8E,0xDB,0x01,0x10,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x09,0x5f }, },
+	  { "eth0", },
+	  { "atom-c2000-igb-sgmii.bin", },
+	  { 0x8086, },
+	  { 0x1f41, },
+	  { 200, 2047, 0 }, 4,
+	  { 0xF0,0x8E,0xDB,0x01,0x10,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x2f,0xff }, },
+
+// 520/540 need 6 MACs: 4 (igb), 2 (i350);
+	// adi/cm proto;
+	{ "520-pilot",
+	  "edge520",
+	  { "eth0", "eth4", },
+	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
+	  { 0x8086, 0x8086, },
+	  { 0x1f41, 0x1522, },
+	  { 1, 679, 0 }, 6,
+	  { 0xF0,0x8E,0xDB,0x01,0x30,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x3f,0xff }, },
+	{ "540-pilot",
+	  "edge540",
+	  { "eth0", "eth4", },
+	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
+	  { 0x8086, 0x8086, },
+	  { 0x1f41, 0x1522, },
+	  { 1, 679, 0 }, 6,
+	  { 0xF0,0x8E,0xDB,0x01,0x40,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x4f,0xff }, },
+
 	{ 0 },
+};
+
+// pair of mac address and string version of it;
+
+typedef struct macns macns_t;
+struct macns {
+	unsigned char mac[6];	// address;
+	char str[20];			// as string;
 };
 
 // global data;
@@ -68,6 +115,7 @@ struct g {
 	char opt_mac;
 	char opt_bid;
 	char opt_pciid;
+	char opt_x;
 	char opt_dry;
 	char nmacs;
 	char *bid;
@@ -75,13 +123,11 @@ struct g {
 	char *umac;
 	unsigned short pciid[2];
 	unsigned char mac[6];
-	unsigned char mac0[6];
-	unsigned char mac1[6];
-	unsigned char mac2[6];
-	unsigned char mac3[6];
+	macns_t macs[6];
 	unsigned int bnum;
 	char *ifname;
 	char *tmp;
+	void (*map)(g_t *g, unsigned char *eeprom, int size);
 	void (*extra)(g_t *g, unsigned char *eeprom, int size);
 };
 
@@ -89,7 +135,7 @@ g_t G;
 
 // null MAC;
 
-unsigned char null_mac[6];
+unsigned char mac_null[6];
 
 // bitmap template;
 // several things need to be filled in;
@@ -121,10 +167,20 @@ Msg(char *fmt, ...)
 // MDIO[0] shared among eth0 (88e1112) and eth2,eth3 (88e6320 single-chip addressing);
 // MDIO[1] directly to 88e6176, single-chip addressing;
 
-#define PHY0_ADDR_6320 0	// shared MDIO[0];
-#define PHY1_ADDR_6176 0	// full bus decode, MDIO[1];
-#define PHY2_ADDR_6320 0	// shared MDIO[0];
-#define PHY3_ADDR_1112 0x7	// shared MDIO[0];
+#define E500_PHY0_ADDR_6320 0	// shared MDIO[0];
+#define E500_PHY1_ADDR_6176 0	// full bus decode, MDIO[1];
+#define E500_PHY2_ADDR_6320 0	// shared MDIO[0];
+#define E500_PHY3_ADDR_1112 0x7	// shared MDIO[0];
+
+// edge520/540 board specifics;
+// MDIO[0] eth0 to 88e6176 switch, single-chip addressing);
+// MDIO[1] eth1 to 88e6176 switch, single-chip addressing);
+// MDIO bitbang to eth2,eth3 88e1514 phys;
+
+#define E5X0_PHY0_ADDR_6176 0	// full bus decode, MDIO[0];
+#define E5X0_PHY1_ADDR_6176 0	// full bus decode, MDIO[1];
+#define E5X0_PHY2_ADDR_1514 0	// mdio bitbang, not assigned here;
+#define E5X0_PHY3_ADDR_1514 0	// mdio bitbang, not assigned here;
 
 // initialization control 4;
 // set phy address;
@@ -172,6 +228,54 @@ igb_word(unsigned char *p, unsigned int word, unsigned short data)
 	Msg("word %d: 0x%x -> 0x%x\n", word, old, data);
 }
 
+// map edge500 macs;
+
+void
+igb_c2000_map(g_t *g, unsigned char *eeprom, int size)
+{
+	bcopy(g->macs[0].mac, eeprom + 0x0, 6);
+	bcopy(g->macs[1].mac, eeprom + 0x100, 6);
+	bcopy(g->macs[2].mac, eeprom + 0x180, 6);
+	bcopy(g->macs[3].mac, eeprom + 0x200, 6);
+}
+
+// map ve1000 i350 macs;
+
+void
+igb_i350_ve_map(g_t *g, unsigned char *eeprom, int size)
+{
+	bcopy(g->macs[0].mac, eeprom + 0x0, 6);
+	bcopy(g->macs[1].mac, eeprom + 0x100, 6);
+	bcopy(mac_null, eeprom + 0x180, 6);
+	bcopy(mac_null, eeprom + 0x200, 6);
+}
+
+// map 520/540 i350 macs;
+
+void
+igb_i350_5x_map(g_t *g, unsigned char *eeprom, int size)
+{
+	bcopy(g->macs[4].mac, eeprom + 0x0, 6);
+	bcopy(g->macs[5].mac, eeprom + 0x100, 6);
+	bcopy(mac_null, eeprom + 0x180, 6);
+	bcopy(mac_null, eeprom + 0x200, 6);
+}
+
+// map edge520/540;
+
+void
+edge5x0_map(g_t *g, unsigned char *eeprom, int size)
+{
+	switch(g->opt_x) {
+	case 0:
+		igb_c2000_map(g, eeprom, size);
+		break;
+	case 1:
+		igb_i350_5x_map(g, eeprom, size);
+		break;
+	}
+}
+
 // edge500 igb board specifics;
 
 void
@@ -184,10 +288,10 @@ edge500_extra(g_t *g, unsigned char *eeprom, int size)
 
 	// set phy mdio addresses;
 
-	igb_ic4(eeprom + 0x000, PHY0_ADDR_6320);
-	igb_ic4(eeprom + 0x100, PHY1_ADDR_6176);
-	igb_ic4(eeprom + 0x180, PHY2_ADDR_6320);
-	igb_ic4(eeprom + 0x200, PHY3_ADDR_1112);
+	igb_ic4(eeprom + 0x000, E500_PHY0_ADDR_6320);
+	igb_ic4(eeprom + 0x100, E500_PHY1_ADDR_6176);
+	igb_ic4(eeprom + 0x180, E500_PHY2_ADDR_6320);
+	igb_ic4(eeprom + 0x200, E500_PHY3_ADDR_1112);
 
 	// set MDICNFG.COM_MDIO based on ports;
 
@@ -195,6 +299,43 @@ edge500_extra(g_t *g, unsigned char *eeprom, int size)
 	igb_ic3(eeprom + 0x100, 0);
 	igb_ic3(eeprom + 0x180, 1);
 	igb_ic3(eeprom + 0x200, 1);
+}
+
+// edge520/540 igb board specifics;
+
+void
+edge5x0_extra_c2000(g_t *g, unsigned char *eeprom, int size)
+{
+	// program OEM specific words;
+
+	igb_word(eeprom, 0x06, 0x5663);	// "Vc";
+	igb_word(eeprom, 0x07, 0x3558);	// "5X";
+
+	// set phy mdio addresses;
+
+	igb_ic4(eeprom + 0x000, E5X0_PHY0_ADDR_6176);
+	igb_ic4(eeprom + 0x100, E5X0_PHY1_ADDR_6176);
+	igb_ic4(eeprom + 0x180, E5X0_PHY2_ADDR_1514);
+	igb_ic4(eeprom + 0x200, E5X0_PHY3_ADDR_1514);
+
+	// set MDICNFG.COM_MDIO based on ports;
+
+	igb_ic3(eeprom + 0x000, 1);
+	igb_ic3(eeprom + 0x100, 0);
+	igb_ic3(eeprom + 0x180, 1);
+	igb_ic3(eeprom + 0x200, 1);
+}
+
+// edge520/540 igb specifics;
+// opt_x indexes template to use;
+
+void
+edge5x0_extra(g_t *g, unsigned char *eeprom, int size)
+{
+	// no extra changes for sfp i350;
+
+	if(g->opt_x == 0)
+		edge5x0_extra_c2000(g, eeprom, size);
 }
 
 // get a number of given size;
@@ -294,6 +435,29 @@ mac_str(char *d, unsigned char *mac)
 		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
+// add to mac address;
+// does work in place;
+
+void
+mac_add(unsigned char *dst, unsigned char *src, unsigned add)
+{
+	unsigned long long mac;
+
+	mac = ((unsigned long long)src[0] << 40)
+		| ((unsigned long long)src[1] << 32)
+		| ((unsigned long long)src[2] << 24)
+		| ((unsigned long long)src[3] << 16)
+		| ((unsigned long long)src[4] << 8)
+		| ((unsigned long long)src[5] << 0);
+	mac += add;
+	dst[0] = mac >> 40;
+	dst[1] = mac >> 32;
+	dst[2] = mac >> 24;
+	dst[3] = mac >> 16;
+	dst[4] = mac >> 8;
+	dst[5] = mac >> 0;
+}
+
 // get baord name;
 
 char *
@@ -326,10 +490,11 @@ mfg_list(g_t *g)
 
 	Msg("list of mfg runs (for -u):\n");
 	for(mfg = Mfg; p = mfg->name; mfg++) {
-		Msg(" %s board ids %d..%d base %02x:%02x:%02x:%02x:%02x:%02x\n",
+		Msg(" %s board ids %d..%d base %02x:%02x:%02x:%02x:%02x:%02x macs %u\n",
 			p, mfg->bnums[0], mfg->bnums[1],
 			mfg->mac_min[0], mfg->mac_min[1], mfg->mac_min[2],
-			mfg->mac_min[3], mfg->mac_min[4], mfg->mac_min[5]);
+			mfg->mac_min[3], mfg->mac_min[4], mfg->mac_min[5],
+			mfg->nmacs);
 	}
 }
 
@@ -373,23 +538,20 @@ mfg_init(g_t *g)
 
 	// init MAC addresses;
 
-	mac = ((unsigned long long)mfg->mac_min[0] << 40)
-		| ((unsigned long long)mfg->mac_min[1] << 32)
-		| ((unsigned long long)mfg->mac_min[2] << 24)
-		| ((unsigned long long)mfg->mac_min[3] << 16)
-		| ((unsigned long long)mfg->mac_min[4] << 8)
-		| ((unsigned long long)mfg->mac_min[5] << 0);
-	mac += (bnum * g->nmacs);
-	g->mac[0] = (mac >> 40) & 0xff;
-	g->mac[1] = (mac >> 32) & 0xff;
-	g->mac[2] = (mac >> 24) & 0xff;
-	g->mac[3] = (mac >> 16) & 0xff;
-	g->mac[4] = (mac >> 8) & 0xff;
-	g->mac[5] = (mac >> 0) & 0xff;
+	bnum -= mfg->bnums[2];
+	g->nmacs = mfg->nmacs;
+	mac_add(g->mac, mfg->mac_min, bnum * g->nmacs);
 
-	// init template file;
+	// init interface and template file;
+	// opt_x indexes template to use;
 
-	g->tmp = mfg->tmp;
+	g->ifname = mfg->ifs[g->opt_x];
+	g->tmp = mfg->tmp[g->opt_x];
+
+	// init pci ids;
+
+	g->pciid[0] = mfg->pciid0[g->opt_x];
+	g->pciid[1] = mfg->pciid1[g->opt_x];
 
 	return(0);
 }
@@ -403,10 +565,7 @@ main(int argc, char **argv)
 	int c, fd, n, nb;
 	unsigned short pciid;
 	char *msg;
-	char mac0str[20];
-	char mac1str[20];
-	char mac2str[20];
-	char mac3str[20];
+	macns_t *macns;
 	char magic[16];
 	char bid[20];
 	char file[50];
@@ -429,7 +588,7 @@ main(int argc, char **argv)
 
 	// get options;
 
-	while((c = getopt(argc, argv, "o:N:m:B:b:p:i:t:u:nh")) != EOF) {
+	while((c = getopt(argc, argv, "o:N:m:B:b:p:i:t:u:xnh")) != EOF) {
 		switch(c) {
 		case 'o' :
 			if( !get_num(optarg, &g->mac[0], 3))
@@ -470,6 +629,9 @@ main(int argc, char **argv)
 		case 'u' :
 			g->umac = optarg;
 			break;
+		case 'x' :
+			g->opt_x = 1;
+			break;
 		case 'n' :
 			g->opt_dry = 1;
 			break;
@@ -479,12 +641,13 @@ main(int argc, char **argv)
 				"  [-o OUI]       (DEC, 0xHEX, ab:cd:ef)\n"
 				"  [-N NIC]       (DEC, 0xHEX, ab:cd:ef)\n"
 				"  [-m MAC]       (00:11:22:33:44:55)\n"
-				"  [-B board]     (force board: ve1000, edge500)\n"
+				"  [-B board]     (force board: ve1000, edge500, ...)\n"
 				"  [-b board-id]  (DEC, 0xHEX)\n"
 				"  [-p pci-id]    (8086:1509)\n"
 				"  [-i if]        (eth0)\n"
 				"  [-t intel-tmp] (intel template file)\n"
 				"  [-u mfg:id]    (unique MAC from pool with board id)\n"
+				"  [-x]           (program i350-sfp on edge520/540)\n"
 				"  [-n]           (dry run, do not program)\n"
 				"  [-h]           (this help)\n",
 				g->cmd);
@@ -506,10 +669,22 @@ main(int argc, char **argv)
 	if( !strcmp(g->board, "ve1000")) {
 		pciid = 0x1509;
 		g->nmacs = 2;
+		g->map = igb_i350_ve_map;
 	} else if( !strcmp(g->board, "edge500")) {
 		pciid = 0x1f41;
 		g->nmacs = 4;
+		g->map = igb_c2000_map;
 		g->extra = edge500_extra;
+	} else if( !strcmp(g->board, "edge520")) {
+		pciid = 0x1f41;
+		g->nmacs = 6;
+		g->map = edge5x0_map;
+		g->extra = edge5x0_extra;
+	} else if( !strcmp(g->board, "edge540")) {
+		pciid = 0x1f41;
+		g->nmacs = 6;
+		g->map = edge5x0_map;
+		g->extra = edge5x0_extra;
 	} else
 		Msg("@board '%s' not supported\n", g->board);
 	if( !g->opt_pciid)
@@ -532,30 +707,19 @@ main(int argc, char **argv)
 
 	// make default macs;
 
-	bcopy(g->mac, g->mac0, sizeof(g->mac));
-	bcopy(g->mac, g->mac1, sizeof(g->mac));
-	bcopy(g->mac, g->mac2, sizeof(g->mac));
-	bcopy(g->mac, g->mac3, sizeof(g->mac));
-	g->mac0[5] ^= 0x00;
-	g->mac1[5] ^= 0x01;
-	g->mac2[5] ^= 0x02;
-	g->mac3[5] ^= 0x03;
+	for(n = 0; n < g->nmacs; n++) {
+		macns = g->macs + n;
+		mac_add(macns->mac, g->mac, n);
+		mac_str(macns->str, macns->mac);
+	}
 
 	// report config;
 
-	mac_str(mac0str, g->mac0);
-	mac_str(mac1str, g->mac1);
-	mac_str(mac2str, g->mac2);
-	mac_str(mac3str, g->mac3);
-
 	Msg("using interface %s\n", g->ifname);
-	Msg("mac address 0: %s\n", mac0str);
-	Msg("mac address 1: %s\n", mac1str);
-	if(g->nmacs == 4) {
-		Msg("mac address 2: %s\n", mac2str);
-		Msg("mac address 3: %s\n", mac3str);
+	for(n = 0; n < g->nmacs; n++) {
+		macns = g->macs + n;
+		Msg("mac address %d: %s\n", n, macns->str);
 	}
-
 	sprintf(magic, "0x%04x%04x", g->pciid[1], g->pciid[0]);
 	Msg("using magic %s\n", magic);
 
@@ -574,26 +738,19 @@ main(int argc, char **argv)
 	Msg("read %d bytes from intel template\n", n);
 	close(fd);
 
-	// make EEPROM bitmap;
-
-	bcopy(g->mac0, eeprom + 0x0, sizeof(g->mac0));
-	bcopy(g->mac1, eeprom + 0x100, sizeof(g->mac1));
-	if(g->nmacs == 4) {
-		bcopy(g->mac2, eeprom + 0x180, sizeof(g->mac2));
-		bcopy(g->mac3, eeprom + 0x200, sizeof(g->mac3));
-	} else {
-		bcopy(null_mac, eeprom + 0x180, sizeof(null_mac));
-		bcopy(null_mac, eeprom + 0x200, sizeof(null_mac));
-	}
-
+	// make EEPROM bitmap mods;
+	// map mac addresses to chips;
 	// call board specific checks and changes;
 
+	if(g->map)
+		g->map(g, eeprom, n);
 	if(g->extra)
 		g->extra(g, eeprom, n);
 
 	// write it out to bitmap;
 
-	sprintf(file, "igb-eeprom-%s.bin", g->opt_mac? mac0str : g->bid);
+	macns = g->macs;
+	sprintf(file, "igb-eeprom-%d-%s.bin", g->opt_x, g->opt_mac? macns->str : g->bid);
 	fd = open(file, O_RDWR | O_CREAT | O_TRUNC, 0600);
 	if(fd < 0)
 		Msg("@cannot open bitmap file '%s'\n", file);

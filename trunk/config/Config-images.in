@@ -226,7 +226,7 @@ menu "Target Images"
 		default 19200 if TARGET_x86_generic_Soekris45xx || TARGET_x86_generic_Soekris48xx || TARGET_x86_net5501
 		default 38400 if TARGET_x86_alix2
 		default 115200 if TARGET_x86_geos || TARGET_x86_kvm_guest
-		default 115200 if TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0
+		default 115200 if TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge1000
 		default 38400
 
 	config GRUB_BOOTOPTS
@@ -234,8 +234,8 @@ menu "Target Images"
 		depends on GRUB_IMAGES
 		default "xencons=hvc" if TARGET_x86_xen_domu
 		default "earlyprintk=pch,0x3058,115200" if TARGET_x86_sb_itc
-		default "earlyprintk=serial,ttyS1,115200" if (TARGET_x64_pw_dev || TARGET_x64_edge5x0)
-		default "earlyprintk=serial,ttyS0,115200" if TARGET_x64_edge500
+		default "earlyprintk=serial,ttyS1,115200" if TARGET_x64_pw_dev || TARGET_x64_edge5x0
+		default "earlyprintk=serial,ttyS0,115200" if TARGET_x64_edge500 || TARGET_x64_edge1000
 		help
 		  If you don't know, just leave it blank.
 
@@ -258,14 +258,14 @@ menu "Target Images"
 		depends on GRUB_IMAGES
 		depends on TARGET_x86 || TARGET_x64
 		depends on TARGET_ROOTFS_EXT4FS
-		default y if (TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0)
+		default y if TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge1000
 
 	config VELOCLOUD_MANUFACTURING_INSTALLER
 		bool "Build Velocloud manufacturing installer image"
 		depends on GRUB_IMAGES
 		depends on VELOCLOUD_INSTALLER
 		depends on TARGET_ROOTFS_EXT4FS
-		default y if TARGET_x64_edge500 || TARGET_x64_edge5x0
+		#default y if TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge1000
 
 	config VMDK_IMAGES
 		bool "Build VMware image files (VMDK)"
@@ -319,7 +319,7 @@ menu "Target Images"
 		string "Root partition on target device"
 		depends on OLPC_BOOTSCRIPT_IMAGES || GRUB_IMAGES
 		default "/dev/xvda2" if TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
-		default "/dev/sdb2" if TARGET_x64_pw_dev || TARGET_x64_edge500 
+		default "/dev/sdb2" if TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge1000
 		default "/dev/sda2" if ! TARGET_x86_xen_domu
 		help
 		  The root partition on the final device.  If you don't know,
@@ -327,7 +327,7 @@ menu "Target Images"
 
 	config TARGET_ROOTFS_INSTSIZE
 		int "Installed root partition size (in MB)"
-		depends on GRUB_IMAGES && (TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0)
+		depends on GRUB_IMAGES && TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge1000
 		default 1024
 
 	menuconfig TARGET_ROOTFS_INCLUDE_KERNEL

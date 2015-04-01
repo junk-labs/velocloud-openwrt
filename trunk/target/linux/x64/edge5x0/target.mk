@@ -20,6 +20,7 @@ DEFAULT_PACKAGES += \
 	kmod-igb \
 	igb-eeprom \
 	kmod-dsa-velocloud \
+	kmod-i2c-i801 \
 
 define Target/Description
 	Build firmware images for the Edge 520/540 and similar boards

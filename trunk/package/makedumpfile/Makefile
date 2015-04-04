@@ -47,7 +47,8 @@ define Build/Compile
 	$(MAKE) -C "$(PKG_BUILD_DIR)" \
 		CC="$(TARGET_CC)" \
 		CFLAGS="$(CROSS_CFLAGS)" \
-		CFLAGS_ARCH="$(CROSS_CFLAGS_ARCH)"
+		CFLAGS_ARCH="$(CROSS_CFLAGS_ARCH)" \
+		LINKTYPE="dynamic"
 endef
 
 define Package/makedumpfile/install

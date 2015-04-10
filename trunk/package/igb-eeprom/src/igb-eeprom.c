@@ -82,7 +82,7 @@ mfg_t Mfg[] = {
 	  { "eth0", "eth4", },
 	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
 	  { 0x8086, 0x8086, },
-	  { 0x1f41, 0x1522, },
+	  { 0x1f41, 0x151f, },
 	  { 1, 679, 0 }, 6,
 	  { 0xF0,0x8E,0xDB,0x01,0x30,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x3f,0xff }, },
 	{ "540-pilot",
@@ -90,7 +90,7 @@ mfg_t Mfg[] = {
 	  { "eth0", "eth4", },
 	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
 	  { 0x8086, 0x8086, },
-	  { 0x1f41, 0x1522, },
+	  { 0x1f41, 0x151f, },
 	  { 1, 679, 0 }, 6,
 	  { 0xF0,0x8E,0xDB,0x01,0x40,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x4f,0xff }, },
 
@@ -563,7 +563,7 @@ main(int argc, char **argv)
 {
 	g_t *g = &G;
 	int c, fd, n, nb;
-	unsigned short pciid;
+	unsigned short pciid[2];
 	char *msg;
 	macns_t *macns;
 	char magic[16];
@@ -577,7 +577,6 @@ main(int argc, char **argv)
 	g->mac[0] = 'V';
 	g->mac[1] = 'C';
 	g->mac[2] = '1';
-	g->pciid[0] = 0x8086;
 
 	// get board name;
 
@@ -616,7 +615,7 @@ main(int argc, char **argv)
 			g->bid = optarg;
 			break;
 		case 'p' :
-			if( !get_pciid(optarg, g->pciid))
+			if( !get_pciid(optarg, pciid))
 				Msg("@bad PCI ID: %s\n", optarg);
 			g->opt_pciid = 1;
 			break;
@@ -667,28 +666,30 @@ main(int argc, char **argv)
 	// check board;
 
 	if( !strcmp(g->board, "ve1000")) {
-		pciid = 0x1509;
+		g->pciid[0] = 0x8086;
+		g->pciid[1] = 0x1509;
 		g->nmacs = 2;
 		g->map = igb_i350_ve_map;
 	} else if( !strcmp(g->board, "edge500")) {
-		pciid = 0x1f41;
+		g->pciid[0] = 0x8086;
+		g->pciid[1] = 0x1f41;
 		g->nmacs = 4;
 		g->map = igb_c2000_map;
 		g->extra = edge500_extra;
 	} else if( !strcmp(g->board, "edge520")) {
-		pciid = 0x1f41;
+		g->pciid[0] = 0x8086;
+		g->pciid[1] = 0x1f41;
 		g->nmacs = 6;
 		g->map = edge5x0_map;
 		g->extra = edge5x0_extra;
 	} else if( !strcmp(g->board, "edge540")) {
-		pciid = 0x1f41;
+		g->pciid[0] = 0x8086;
+		g->pciid[1] = 0x1f41;
 		g->nmacs = 6;
 		g->map = edge5x0_map;
 		g->extra = edge5x0_extra;
 	} else
 		Msg("@board '%s' not supported\n", g->board);
-	if( !g->opt_pciid)
-		g->pciid[1] = pciid;
 
 	// setup defaults for manufacturing;
 
@@ -698,6 +699,14 @@ main(int argc, char **argv)
 		msg = mfg_init(g);
 		if(msg)
 			Msg("@%s: %s\n", g->umac, msg);
+	}
+
+	// allow pciid overwrite;
+	// for eeproms that change pciid after flashing;
+
+	if(g->opt_pciid) {
+		g->pciid[0] = pciid[0];
+		g->pciid[1] = pciid[1];
 	}
 
 	// require template file;

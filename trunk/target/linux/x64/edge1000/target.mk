@@ -1,4 +1,4 @@
-BOARDNAME:=edge5x0
+BOARDNAME:=edge500
 
 FEATURES:=ext4 pci usb
 # Common packages:
@@ -15,7 +15,7 @@ DEFAULT_PACKAGES += \
 	openssh-client \
 	openssl-util \
 
-# edge520/540-specific packages:
+# edge500-specific packages:
 DEFAULT_PACKAGES += \
 	kmod-igb \
 	igb-eeprom \
@@ -23,6 +23,6 @@ DEFAULT_PACKAGES += \
 	kmod-i2c-i801 \
 
 define Target/Description
-	Build firmware images for the Edge 520/540 and similar boards
+	Build firmware images for the Edge 500 and similar boards
 endef
 

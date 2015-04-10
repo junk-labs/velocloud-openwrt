@@ -214,7 +214,7 @@ menu "Target Images"
 	config GRUB_SERIAL_UNIT
 		string "Serial port grub unit"
 		depends on GRUB_IMAGES
-		default "1" if (TARGET_x86_pw_dev || TARGET_x64_pw_dev)
+		default "1" if (TARGET_x86_pw_dev || TARGET_x64_pw_dev || TARGET_x64_edge5x0)
 		default "0"
 		help
 		  Unit name of serial port device for grub itself.

@@ -14,8 +14,8 @@ config zone
 	option forward 'REJECT'
 
 config zone
-	option name 'dsl'
-	option network 'dsl'
+	option name 'wan0'
+	option network 'wan0'
 	option input 'REJECT'
 	option output 'ACCEPT'
 	option forward 'REJECT'
@@ -23,8 +23,8 @@ config zone
 	option mtu_fix '1'
 
 config zone
-	option name 'cm'
-	option network 'cm'
+	option name 'wan1'
+	option network 'wan1'
 	option input 'REJECT'
 	option output 'ACCEPT'
 	option forward 'REJECT'
@@ -41,8 +41,8 @@ config zone
 	option mtu_fix '1'
 
 config zone
-	option name 'wan'
-	option network 'wan'
+	option name 'cell0'
+	option network 'cell0'
 	option input 'REJECT'
 	option output 'ACCEPT'
 	option forward 'REJECT'
@@ -50,11 +50,11 @@ config zone
 
 config forwarding
 	option src 'lan'
-	option dest 'dsl'
+	option dest 'wan0'
 
 config forwarding
 	option src 'lan'
-	option dest 'cm'
+	option dest 'wan1'
 
 config forwarding
 	option src 'lan'
@@ -62,11 +62,11 @@ config forwarding
 
 config forwarding
 	option src 'lan'
-	option dest 'wan'
+	option dest 'cell0'
 
 config rule
 	option name 'Allow-DHCP-Renew'
-	option src 'dsl'
+	option src 'wan0'
 	option proto 'udp'
 	option dest_port '68'
 	option target 'ACCEPT'
@@ -74,7 +74,7 @@ config rule
 
 config rule
 	option name 'Allow-DHCP-Renew'
-	option src 'cm'
+	option src 'wan1'
 	option proto 'udp'
 	option dest_port '68'
 	option target 'ACCEPT'
@@ -90,7 +90,7 @@ config rule
 
 config rule
 	option name 'Allow-Ping'
-	option src 'dsl'
+	option src 'wan0'
 	option proto 'icmp'
 	option icmp_type 'echo-request'
 	option family 'ipv4'
@@ -98,7 +98,7 @@ config rule
 
 config rule
 	option name 'Allow-Ping'
-	option src 'cm'
+	option src 'wan1'
 	option proto 'icmp'
 	option icmp_type 'echo-request'
 	option family 'ipv4'
@@ -114,7 +114,7 @@ config rule
 
 config rule
 	option name 'Allow-Ping'
-	option src 'wan'
+	option src 'cell0'
 	option proto 'icmp'
 	option icmp_type 'echo-request'
 	option family 'ipv4'
@@ -122,7 +122,7 @@ config rule
 
 config rule
 	option name 'wan-icmp-rate-limit'
-	option src 'wan'
+	option src 'cell0'
 	option proto 'icmp'
 	list icmp_type 'echo-request'
 	list icmp_type 'destination-unreachable'

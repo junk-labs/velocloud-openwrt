@@ -26,19 +26,27 @@ config dhcp lan
 	option limit 150
 	option leasetime 1h
 
-config dhcp dsl
-	option interface dsl
+config dhcp wan0
+	option interface wan0
 	option ignore 1
 
-config dhcp cm
-	option interface cm
+config dhcp wan1
+	option interface wan1
+	option ignore 1
+
+config dhcp sfp0
+	option interface sfp0
+	option ignore 1
+
+config dhcp sfp1
+	option interface sfp1
 	option ignore 1
 
 config dhcp sta
 	option interface sta
 	option ignore 1
 
-config dhcp wan
-	option interface wan
+config dhcp cell0
+	option interface cell0
 	option ignore 1
 

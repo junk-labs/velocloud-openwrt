@@ -26,7 +26,7 @@
  	depends on PCI
 --- /dev/null
 +++ b/drivers/gpio/gpio-pcu.c
-@@ -0,0 +1,572 @@
+@@ -0,0 +1,796 @@
 +/*
 + * Copyright (C) 2014 Velocloud Inc.
 + *
@@ -52,9 +52,11 @@
 +#include <linux/irq.h>
 +#include <linux/mfd/core.h>
 +#include <linux/mfd/lpc_ich.h>
++#include <linux/dmi.h>
 +
-+//#define DEBUG_GPIO_PCU		// define for debug;
-+#define DEBUG_WDT_PCU		// define for debug;
++#undef DEBUG_GPIO_PCU		// define for debug;
++#undef DEBUG_WDT_PCU		// define for debug;
++#define PCU_FIX_DMI //XXX
 +
 +// interrupt handling not supported;
 +
@@ -83,6 +85,11 @@
 +// core well: GBASE + 0x00;
 +// suspend well: GBASE + 0x80;
 +
++// gp_lvl is BROKEN! in hardware;
++// when in output mode, previously written bits read back as 0;
++// need to cache all output writes in memory;
++// this creates issues with firmware!
++
 +typedef struct pcu_gpio_regs pcu_gpio_regs_t;
 +struct pcu_gpio_regs {
 +	u32 use_sel;		// use select;
@@ -105,10 +112,33 @@
 +// GPIOs that we can touch;
 +// the rest is likely under firmware control or the native function;
 +
-+#define PCU_GPIO_MASK_SC ((1 << 13) | (1 << 14))
-+#define PCU_GPIO_MASK_SUS 0
-+#define PCU_GPIO_CLEAR_SC 0
-+#define PCU_GPIO_CLEAR_SUS ((1 << 26) | (1 << 27))
++// edge500;
++
++#define EDGE500_BB_I2C ((1<<13) | (1<<14))
++
++#define EDGE500_PCU_GPIO_MASK_SC 0 | EDGE500_BB_I2C
++#define EDGE500_PCU_GPIO_CLEAR_SC 0
++#define EDGE500_PCU_GPIO_IOSEL_SC 0x00028401 | EDGE500_BB_I2C
++#define EDGE500_PCU_GPIO_OUT_SC 0 | EDGE500_BB_I2C
++
++#define EDGE500_PCU_GPIO_MASK_SUS 0
++#define EDGE500_PCU_GPIO_CLEAR_SUS ((1<<24) | (1<<25) |(1<<26) | (1<<27))
++#define EDGE500_PCU_GPIO_IOSEL_SUS 0x00f80016
++#define EDGE500_PCU_GPIO_OUT_SUS 0
++
++// edge520/540;
++
++#define EDGE5X0_BB_I2C ((1<<13) | (1<<14)) //XXX
++
++#define EDGE5X0_PCU_GPIO_MASK_SC (1<<4) | (1<<5) | (1<<11) | (1<<12) | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_I2C
++#define EDGE5X0_PCU_GPIO_CLEAR_SC 0
++#define EDGE5X0_PCU_GPIO_IOSEL_SC (1<<4) | (1<<5) | (1<<11) | (1<<12) | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_I2C
++#define EDGE5X0_PCU_GPIO_OUT_SC 0 | EDGE5X0_BB_I2C
++
++#define EDGE5X0_PCU_GPIO_MASK_SUS (1<<2) | (1<<6) | (1<<7) | (1<<17) | (1<<18)
++#define EDGE5X0_PCU_GPIO_CLEAR_SUS (1<<24) | (1<<25) | (1<<26) | (1<<27)
++#define EDGE5X0_PCU_GPIO_IOSEL_SUS (1<<17) | (1<<18)
++#define EDGE5X0_PCU_GPIO_OUT_SUS 0
 +
 +// private data;
 +// core well: ids 0..31;
@@ -130,6 +160,9 @@
 +	u32 clear[N_PCU_GPIO];
 +	u32 use_sel_bios[N_PCU_GPIO];
 +	u32 use_sel_fixed[N_PCU_GPIO];
++	u32 iosel[N_PCU_GPIO];
++	u32 io_sel_bios[N_PCU_GPIO];
++	u32 out[N_PCU_GPIO];
 +	struct gpio_chip gpio[N_PCU_GPIO];
 +};
 +
@@ -166,13 +199,16 @@
 +// dump registers;
 +
 +static void
-+pcu_dump_regs(pcu_gpio_regs_t __iomem *regs, char *name)
++pcu_dump_regs(pcu_gpio_t *chip, int which)
 +{
-+	printk("%s: %s use_sel 0x%x, io_sel 0x%x, gp_lvl 0x%x, tpe 0x%x, tne 0x%x, ts 0x%x\n",
-+		__func__, name,
++	pcu_gpio_regs_t __iomem *regs;
++
++	regs = chip->regs[which];
++	printk("%s: %s use_sel 0x%x, io_sel 0x%x, gp_lvl [0x%x]0x%x, tpe 0x%x, tne 0x%x, ts 0x%x\n",
++		__func__, which? "sus" : "sc",
 +		ioread32(&regs->use_sel),
 +		ioread32(&regs->io_sel),
-+		ioread32(&regs->gp_lvl),
++		chip->out[which], ioread32(&regs->gp_lvl),
 +		ioread32(&regs->tpe),
 +		ioread32(&regs->tne),
 +		ioread32(&regs->ts));
@@ -181,6 +217,7 @@
 +#endif // DEBUG_GPIO_PCU
 +
 +// set gpio output;
++// atom c2000 bug: gp_lvl cannot be read back;
 +
 +static void
 +pcu_gpio_set(struct gpio_chip *gpio, unsigned nr, int val)
@@ -188,40 +225,55 @@
 +	struct pcu_gpio *chip;
 +	pcu_gpio_regs_t __iomem *regs;
 +	unsigned long flags;
-+	u32 idx, reg_val;
++	u32 idx, mask, lvl;
 +
 +	idx = (gpio->base >= 32);
 +	chip = container_of(gpio, struct pcu_gpio, gpio[idx]);
-+	if( !(chip->mask[idx] & (1 << nr)))
-+		return;
++	mask = 1 << nr;
++	if( !(chip->mask[idx] & mask))
++		return;			// not a gpio;
 +	regs = chip->regs[idx];
 +
 +	spin_lock_irqsave(&chip->spinlock, flags);
-+	reg_val = ioread32(&regs->gp_lvl);
++
++	lvl = chip->out[idx];
 +	if(val)
-+		reg_val |= (1 << nr);
++		lvl |= mask;
 +	else
-+		reg_val &= ~(1 << nr);
-+	iowrite32(reg_val, &regs->gp_lvl);
++		lvl &= ~mask;
++	chip->out[idx] = lvl;
++	iowrite32(lvl, &regs->gp_lvl);
++
 +	spin_unlock_irqrestore(&chip->spinlock, flags);
 +}
 +
 +// get current value;
++// atom c2000 bug: gp_lvl cannot be read back;
 +
 +static int
 +pcu_gpio_get(struct gpio_chip *gpio, unsigned nr)
 +{
 +	struct pcu_gpio *chip;
 +	pcu_gpio_regs_t __iomem *regs;
-+	u32 idx;
++	unsigned long flags;
++	u32 idx, dir, lvl;
 +
 +	idx = (gpio->base >= 32);
 +	chip = container_of(gpio, struct pcu_gpio, gpio[idx]);
 +	regs = chip->regs[idx];
-+	return(ioread32(&regs->gp_lvl) & (1 << nr));
++
++	spin_lock_irqsave(&chip->spinlock, flags);
++
++	lvl = ioread32(&regs->gp_lvl);
++	dir = chip->iosel[idx];
++	lvl = (lvl & dir) | (chip->out[idx] & ~dir);
++
++	spin_unlock_irqrestore(&chip->spinlock, flags);
++	return((lvl >> nr) & 1);
 +}
 +
 +// set direction to output;
++// atom c2000 bug: gp_lvl cannot be read back;
 +
 +static int
 +pcu_gpio_direction_output(struct gpio_chip *gpio, unsigned nr, int val)
@@ -229,25 +281,29 @@
 +	struct pcu_gpio *chip;
 +	pcu_gpio_regs_t __iomem *regs;
 +	unsigned long flags;
-+	u32 idx, reg_val;
++	u32 idx, mask, dir, lvl;
 +
 +	idx = (gpio->base >= 32);
 +	chip = container_of(gpio, struct pcu_gpio, gpio[idx]);
-+	if( !(chip->mask[idx] & (1 << nr)))
++	mask = 1 << nr;
++	if( !(chip->mask[idx] & mask))
 +		return(-EPERM);
 +	regs = chip->regs[idx];
 +
 +	spin_lock_irqsave(&chip->spinlock, flags);
-+	reg_val = ioread32(&regs->io_sel);
-+	reg_val &= ~(PCU_IO_SEL_IN << nr);
-+	iowrite32(reg_val, &regs->io_sel);
 +
-+	reg_val = ioread32(&regs->gp_lvl);
++	dir = ioread32(&regs->io_sel);
++	dir &= ~(PCU_IO_SEL_IN << nr);
++	iowrite32(dir, &regs->io_sel);
++
++	lvl = chip->out[idx];
 +	if(val)
-+		reg_val |= (1 << nr);
++		lvl |= mask;
 +	else
-+		reg_val &= ~(1 << nr);
-+	iowrite32(reg_val, &regs->gp_lvl);
++		lvl &= ~mask;
++	chip->out[idx] = lvl;
++	iowrite32(lvl, &regs->gp_lvl);
++
 +	spin_unlock_irqrestore(&chip->spinlock, flags);
 +
 +	return(0);
@@ -261,18 +317,21 @@
 +	struct pcu_gpio *chip;
 +	pcu_gpio_regs_t __iomem *regs;
 +	unsigned long flags;
-+	u32 idx, reg_val;
++	u32 idx, mask, dir;
 +
 +	idx = (gpio->base >= 32);
 +	chip = container_of(gpio, struct pcu_gpio, gpio[idx]);
-+	if( !(chip->mask[idx] & (1 << nr)))
++	mask = 1 << nr;
++	if( !(chip->mask[idx] & mask))
 +		return(-EPERM);
 +	regs = chip->regs[idx];
 +
 +	spin_lock_irqsave(&chip->spinlock, flags);
-+	reg_val = ioread32(&regs->io_sel);
-+	reg_val |= (PCU_IO_SEL_IN << nr);
-+	iowrite32(reg_val, &regs->io_sel);
++
++	dir = ioread32(&regs->io_sel);
++	dir |= (PCU_IO_SEL_IN << nr);
++	iowrite32(dir, &regs->io_sel);
++
 +	spin_unlock_irqrestore(&chip->spinlock, flags);
 +
 +	return(0);
@@ -282,7 +341,7 @@
 +// returns mask of bad bits;
 +
 +static u32
-+pcu_check_fw_setup(struct pcu_gpio *chip, int idx)
++pcu_check_use_sel(struct pcu_gpio *chip, int idx)
 +{
 +	u32 val, bad, mask;
 +
@@ -310,10 +369,46 @@
 +// warn about bad firmware setup;
 +
 +static inline void
-+pcu_warn_fw_setup(struct device *dev, char *name, struct pcu_gpio *chip, int idx, u32 bad)
++pcu_warn_use_sel(struct device *dev, char *name, struct pcu_gpio *chip, int idx, u32 bad)
 +{
 +	dev_err(dev, "%s use_sel bios=0x%x, should be 0x%x, FIX bits 0x%x\n", name,
 +		chip->use_sel_bios[idx], chip->use_sel_fixed[idx], bad);
++}
++
++// check bios sanity io_sel;
++// returns mask of bad bits;
++
++static u32
++pcu_check_io_sel(struct pcu_gpio *chip, int idx)
++{
++	u32 val, bad, cfg;
++
++	val = ioread32(&chip->regs[idx]->io_sel);
++	chip->io_sel_bios[idx] = val;
++
++	cfg = chip->iosel[idx];
++	bad = val ^ cfg;
++	if(bad)
++		iowrite32(cfg, &chip->regs[idx]->io_sel);
++	return(bad);
++}
++
++// warn about bad firmware setup;
++
++static inline void
++pcu_warn_io_sel(struct device *dev, char *name, struct pcu_gpio *chip, int idx, u32 bad)
++{
++	dev_err(dev, "%s io_sel bios=0x%x, should be 0x%x, FIX bits 0x%x\n", name,
++		chip->io_sel_bios[idx], chip->iosel[idx], bad);
++}
++
++// write initial gp_lvl bits;
++// all written bits must be cached in chip->out[];
++
++static inline void
++pcu_gp_lvl(struct pcu_gpio *chip, int idx)
++{
++	iowrite32(chip->out[idx], &chip->regs[idx]->gp_lvl);
 +}
 +
 +// setup gpio pins;
@@ -416,6 +511,80 @@
 +	mfd_remove_devices(&pdev->dev);
 +}
 +
++#ifdef PCU_FIX_DMI
++
++static char *bname = "";
++
++static const struct dmi_system_id *
++pcu_fix_board(const struct dmi_system_id *dmi, char *name)
++{
++	const char *id;
++
++	for(; (id = dmi->ident); dmi++) {
++		if( !strcmp(id, name))
++			return(dmi);
++	}
++	return(NULL);
++}
++
++module_param(bname,charp,S_IRUGO);
++
++#endif // PCU_FIX_DMI
++
++// per-device use_sel configs;
++
++typedef struct pcu_hwcfg pcu_hwcfg_t;
++struct pcu_hwcfg {
++	u32 mask[N_PCU_GPIO];
++	u32 clear[N_PCU_GPIO];
++	u32 iosel[N_PCU_GPIO];
++	u32 out[N_PCU_GPIO];
++};
++
++static pcu_hwcfg_t pcu_hw_edge500 = {
++	.mask[PCU_GPIO_SC] = EDGE500_PCU_GPIO_MASK_SC,
++	.mask[PCU_GPIO_SUS] = EDGE500_PCU_GPIO_MASK_SUS,
++	.clear[PCU_GPIO_SC] = EDGE500_PCU_GPIO_CLEAR_SC,
++	.clear[PCU_GPIO_SUS] = EDGE500_PCU_GPIO_CLEAR_SUS,
++	.iosel[PCU_GPIO_SC] = EDGE500_PCU_GPIO_IOSEL_SC,
++	.iosel[PCU_GPIO_SUS] = EDGE500_PCU_GPIO_IOSEL_SUS,
++	.out[PCU_GPIO_SC] = EDGE500_PCU_GPIO_OUT_SC,
++	.out[PCU_GPIO_SUS] = EDGE500_PCU_GPIO_OUT_SUS,
++};
++
++static pcu_hwcfg_t pcu_hw_edge5x0 = {
++	.mask[PCU_GPIO_SC] = EDGE5X0_PCU_GPIO_MASK_SC,
++	.mask[PCU_GPIO_SUS] = EDGE5X0_PCU_GPIO_MASK_SUS,
++	.clear[PCU_GPIO_SC] = EDGE5X0_PCU_GPIO_CLEAR_SC,
++	.clear[PCU_GPIO_SUS] = EDGE5X0_PCU_GPIO_CLEAR_SUS,
++	.iosel[PCU_GPIO_SC] = EDGE5X0_PCU_GPIO_IOSEL_SC,
++	.iosel[PCU_GPIO_SUS] = EDGE5X0_PCU_GPIO_IOSEL_SUS,
++	.out[PCU_GPIO_SC] = EDGE5X0_PCU_GPIO_OUT_SC,
++	.out[PCU_GPIO_SUS] = EDGE5X0_PCU_GPIO_OUT_SUS,
++};
++
++// per-board dmi matching info;
++// unfortunatedly, the edge-portwell has identical dmi info to edge-nexcom;
++
++static struct dmi_system_id pcu_dmi_table[] = {
++	{ .ident = "edge500",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE500"),
++	  },
++	  .driver_data = &pcu_hw_edge500,
++	},
++	{ .ident = "edge520",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
++	  },
++	  .driver_data = &pcu_hw_edge5x0,
++	},
++	{ .ident = "edge540",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE540"),
++	  },
++	  .driver_data = &pcu_hw_edge5x0,
++	},
++	{ 0 },
++};
++
 +// probe pcu gpio;
 +
 +static int
@@ -425,6 +594,9 @@
 +	struct pcu_gpio *chip;
 +	u32 gbase;
 +	u32 bad;
++	pcu_gpio_regs_t __iomem *sc, *sus;
++	const struct dmi_system_id *dmi;
++	pcu_hwcfg_t *hw;
 +
 +	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
 +	ret = -ENOMEM;
@@ -467,12 +639,45 @@
 +		goto err_iomap;
 +	}
 +
-+	chip->regs[PCU_GPIO_SC] = chip->base + 0x00;
-+	chip->regs[PCU_GPIO_SUS] = chip->base + 0x80;
-+	chip->mask[PCU_GPIO_SC] = PCU_GPIO_MASK_SC;
-+	chip->mask[PCU_GPIO_SUS] = PCU_GPIO_MASK_SUS;
-+	chip->clear[PCU_GPIO_SC] = PCU_GPIO_CLEAR_SC;
-+	chip->clear[PCU_GPIO_SUS] = PCU_GPIO_CLEAR_SUS;
++	sc = chip->base + 0x00;
++	sus = chip->base + 0x80;
++	chip->regs[PCU_GPIO_SC] = sc;
++	chip->regs[PCU_GPIO_SUS] = sus;
++
++	// per-system GPIO configuration;
++	// use BIOS programmed default for unknown boards;
++	// unfortunately, have to use dmi info;
++
++	dmi = dmi_first_match(pcu_dmi_table);
++#ifdef PCU_FIX_DMI
++	dev_info(&pdev->dev, "board overwrite '%s'\n", bname);
++	if(bname[0])
++		dmi = pcu_fix_board(pcu_dmi_table, bname);
++#endif // PCU_FIX_DMI
++	hw = NULL;
++	if(dmi)
++		hw = dmi->driver_data;
++	if(hw) {
++		dev_info(&pdev->dev, "board: %s\n", dmi->ident);
++		chip->mask[PCU_GPIO_SC] = hw->mask[PCU_GPIO_SC];
++		chip->mask[PCU_GPIO_SUS] = hw->mask[PCU_GPIO_SUS];
++		chip->clear[PCU_GPIO_SC] = hw->clear[PCU_GPIO_SC];
++		chip->clear[PCU_GPIO_SUS] = hw->clear[PCU_GPIO_SUS];
++		chip->iosel[PCU_GPIO_SC] = hw->iosel[PCU_GPIO_SC];
++		chip->iosel[PCU_GPIO_SUS] = hw->iosel[PCU_GPIO_SUS];
++		chip->out[PCU_GPIO_SC] = hw->out[PCU_GPIO_SC];
++		chip->out[PCU_GPIO_SUS] = hw->out[PCU_GPIO_SUS];
++	} else {
++		dev_info(&pdev->dev, "using BIOS setup\n");
++		chip->mask[PCU_GPIO_SC] = ioread32(&sc->use_sel);
++		chip->mask[PCU_GPIO_SUS] = ioread32(&sus->use_sel);
++		chip->clear[PCU_GPIO_SC] = 0;
++		chip->clear[PCU_GPIO_SUS] = 0;
++		chip->iosel[PCU_GPIO_SC] = ioread32(&sc->io_sel);
++		chip->iosel[PCU_GPIO_SUS] = ioread32(&sus->io_sel);
++		chip->out[PCU_GPIO_SC] = 0;
++		chip->out[PCU_GPIO_SUS] = 0;
++	}
 +
 +	pci_set_drvdata(pdev, chip);
 +	spin_lock_init(&chip->spinlock);
@@ -480,21 +685,40 @@
 +	// check sanity of firmware;
 +
 +	ret = -EINVAL;
-+	bad = pcu_check_fw_setup(chip, PCU_GPIO_SC);
++
++	// check use_sel programming;
++
++	bad = pcu_check_use_sel(chip, PCU_GPIO_SC);
 +	if(bad)
-+		pcu_warn_fw_setup(&pdev->dev, "sc", chip, PCU_GPIO_SC, bad);
-+	bad = pcu_check_fw_setup(chip, PCU_GPIO_SUS);
++		pcu_warn_use_sel(&pdev->dev, "sc", chip, PCU_GPIO_SC, bad);
++	bad = pcu_check_use_sel(chip, PCU_GPIO_SUS);
 +	if(bad)
-+		pcu_warn_fw_setup(&pdev->dev, "sus", chip, PCU_GPIO_SUS, bad);
++		pcu_warn_use_sel(&pdev->dev, "sus", chip, PCU_GPIO_SUS, bad);
++
++	// check io_sel programming;
++
++	bad = pcu_check_io_sel(chip, PCU_GPIO_SC);
++	if(bad)
++		pcu_warn_io_sel(&pdev->dev, "sc", chip, PCU_GPIO_SC, bad);
++	bad = pcu_check_io_sel(chip, PCU_GPIO_SUS);
++	if(bad)
++		pcu_warn_io_sel(&pdev->dev, "sus", chip, PCU_GPIO_SUS, bad);
++
++	// the output register is broken;
++	// need to remember all writes to it;
++	// do initial output value assignment here;
++
++	pcu_gp_lvl(chip, PCU_GPIO_SC);
++	pcu_gp_lvl(chip, PCU_GPIO_SUS);
 +
 +#ifdef DEBUG_GPIO_PCU
-+	pcu_dump_regs(chip->regs[PCU_GPIO_SC], "sc");
-+	pcu_dump_regs(chip->regs[PCU_GPIO_SUS], "sus");
++	pcu_dump_regs(chip, PCU_GPIO_SC);
++	pcu_dump_regs(chip, PCU_GPIO_SUS);
 +#endif // DEBUG_GPIO_PCU
 +
 +	// register gpio ressources;
 +
-+	pcu_gpio_setup(chip,PCU_GPIO_SC, 0, 31);
++	pcu_gpio_setup(chip, PCU_GPIO_SC, 0, 31);
 +	ret = gpiochip_add(chip->gpio + PCU_GPIO_SC);
 +	if(ret) {
 +		dev_err(&pdev->dev, "%s: failed to register SC GPIO: %d\n", __func__, ret);

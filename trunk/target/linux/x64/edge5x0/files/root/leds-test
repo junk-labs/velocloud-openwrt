@@ -13,7 +13,7 @@ ve1000)
 edge500)
   order=$order_edge500
   ;;
-edge5x0)
+edge520|edge540)
   order=$order_edge5x0
   ;;
 edge-portwell|edge-nexcom)
@@ -61,6 +61,7 @@ do
   for i in $order
   do
     echo $bgr > $i
+    sleep 0.1
   done
 done
 # all green intensity;
@@ -71,6 +72,7 @@ do
   for i in $order
   do
     echo $bgr > $i
+    sleep 0.1
   done
 done
 # all blue intensity;
@@ -81,6 +83,7 @@ do
   for i in $order
   do
     echo $bgr > $i
+    sleep 0.1
   done
 done
 # all white intensity;
@@ -91,6 +94,7 @@ do
   for i in $order
   do
     echo $bgr > $i
+    sleep 0.1
   done
 done
 

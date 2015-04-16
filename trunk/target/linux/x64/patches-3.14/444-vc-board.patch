@@ -1,29 +1,32 @@
---- a/drivers/platform/x86/Makefile
-+++ b/drivers/platform/x86/Makefile
+diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
+--- a/drivers/platform/x86/Makefile	2015-03-26 07:07:23.000000000 -0700
++++ b/drivers/platform/x86/Makefile	2015-04-15 16:22:12.446613176 -0700
 @@ -55,4 +55,5 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
  obj-$(CONFIG_PVPANIC)           += pvpanic.o
-+obj-$(CONFIG_VELOCLOUD_VC)	+= velocloud-vc.o
++obj-$(CONFIG_VELOCLOUD_VC)      += velocloud-vc.o
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -819,4 +819,12 @@
- 	  a paravirtualized device provided by QEMU; it lets a virtual machine
- 	  (guest) communicate panic events to the host.
+diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+--- a/drivers/platform/x86/Kconfig	2015-03-26 07:07:23.000000000 -0700
++++ b/drivers/platform/x86/Kconfig	2015-04-15 16:23:08.326616143 -0700
+@@ -827,4 +827,12 @@
+ 	  Interface. This is a requirement for systems that need to configure
+ 	  the PUNIT for power management features such as RAPL.
  
 +config VELOCLOUD_VC
-+	tristate "Support for the Velocloud boards"
-+	depends on I2C && GPIO_PCH
-+	help
-+	  This option enables support for the Velocloud GPIO,
-+	  RGB LEDs and PWM fan on I2C.
-+	  Say Y to enable support for the Velocloud boards.
++       tristate "Support for the Velocloud boards"
++       depends on I2C && GPIO_PCH
++       help
++         This option enables support for the Velocloud GPIO,
++         RGB LEDs and PWM fan on I2C.
++         Say Y to enable support for the Velocloud boards.
 +
  endif # X86_PLATFORM_DEVICES
---- /dev/null
-+++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,3124 @@
+diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
+--- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/platform/x86/velocloud-vc.c	2015-04-15 16:29:53.098637636 -0700
+@@ -0,0 +1,3348 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -60,10 +63,12 @@
 +#include <linux/dmi.h>
 +#include <linux/phy.h>
 +#include <linux/mdio-gpio.h>
++#include <linux/reboot.h>
 +
 +#define VC_NAME "vc"
 +#define VC_LEDS "leds"
 +#define VC_FAN "fan"
++#define VC_PWM "pwm"
 +#define VC_I2C "vc-i2c"
 +
 +#define VC_FIX_DMI //XXX
@@ -223,6 +228,24 @@
 +#define PCA9634_REG_I2C_SA2 15
 +#define PCA9634_REG_I2C_SA3 16
 +#define PCA9634_REG_LED_ALL 17
++
++#define EMC2104_FAN1_PWM_DIVIDE 0x41
++#define EMC2104_FAN1_CONFIG     0x42
++#define EMC2104_FAN1_LUT_OFFSET 0x50
++#define EMC2104_FAN1_LUT_TEMP_HYSTERESIS 0x79
++#define EMC2104_FAN1_TACH_READ_HI 0x4E
++#define EMC2104_FAN1_TACH_READ_LO 0x4F
++
++#define EMC2104_VELOCLOUD_FAN_MULTI   5898240
++
++
++#define FAN_LUT_MAX_TABLE_ENTRIES     0x8
++#define FAN_LUT_MAX_ROW_LEN           0x5
++
++#define FAN_CONFIG_EN_ALGO            0x80
++#define FAN_CONFIG_RANGE_MIN_RPM_500  0
++#define FAN_CONFIG_MIN_TACH_7EDGES    0x10
++#define FAN_LUT_OFFSET_LUT_LOCK       0x20
 +
 +// mfg eeprom;
 +//XXX
@@ -401,6 +424,41 @@
 +	.ctrl.reset = vc_5x0_mdio_reset,
 +};
 +
++// edge5x0: fan controller;
++
++struct emc2104_fan_lookup_table {
++	u8 LUT_drive_setting;
++	u8 LUT_temp1;
++	u8 LUT_temp2;
++	u8 LUT_temp3;
++	u8 LUT_temp4;
++};
++
++/* RPM is calculated by the following formula:
++ * 
++ * RPM = 1 / (poles) * (n - 1)/(COUNT * 1/m) * tach * 60
++ *
++ * where poles = 4, n = 7 (fan edges), m(range multiplier) = 1
++ * side note: range multiplier is the minimum RPM, in our case 1000RPM.
++ * COUNT = TACH reading register, tachometer freq = 32.768kHz
++ * simplifies to:
++ * RPM = 5898240/COUNT thus COUNT = 5898240/RPM. The VeloCloud fan rated
++ * speed is 5500RPM and we start with a low speed of 40% of rated speed.
++ * Below this threshold, the fan simply shuts off.
++ *
++ */
++static const struct emc2104_fan_lookup_table vc_fan_lut[] = {
++	{ 0x56, 0x32, 0x32, 0x32, 0xff }, // (2132RPM) 2767 COUNT, 50.0C
++	{ 0x46, 0x35, 0x35, 0x35, 0xff }, // (2614RPM) 2256 COUNT, 53.0C
++	{ 0x3b, 0x38, 0x38, 0x38, 0xff }, // (3096RPM) 1905 COUNT, 56.0C
++	{ 0x33, 0x3B, 0x3B, 0x3B, 0xff }, // (3578RPM) 1648 COUNT, 59.0C
++	{ 0x2d, 0x3E, 0x3E, 0x3E, 0xff }, // (4060RPM) 1453 COUNT, 62.0C
++	{ 0x28, 0x41, 0x41, 0x41, 0xff }, // (4542RPM) 1299 COUNT, 65.0C
++	{ 0x24, 0x44, 0x44, 0x44, 0xff }, // (5024RPM) 1174 COUNT, 68.0C
++	{ 0x21, 0x47, 0x47, 0x47, 0xff }, // (5506RPM) 1071 COUNT, 71.0C
++};
++
++
 +// export mdio bus to network drivers;
 +
 +struct mii_bus *vc_mdio_bus;
@@ -461,6 +519,7 @@
 +		vc_led_off_f off;
 +	} led;
 +	struct {
++		const unsigned short addr;
 +		struct attribute_group *sysfs_group;
 +	} fan;
 +	vc_mdiobb_t *mdio;
@@ -526,7 +585,10 @@
 +static void vc_5x0_remove_gpio(vc_hw_t *hw, struct i2c_client *client, int index);
 +static int vc_5x0_probe_led(vc_hw_t *hw, struct i2c_client *client, int index);
 +static void vc_5x0_remove_led(vc_hw_t *hw, struct i2c_client *client, int index);
++static int vc_5x0_probe_fan(vc_hw_t *hw, struct i2c_client *client, int index);
++static void vc_5x0_remove_fan(vc_hw_t *hw, struct i2c_client *client, int index);
 +static struct attribute_group vc_5x0_led_group;
++static struct attribute_group vc_5x0_fan_group;
 +static int vc_5x0_led_set(vc_data_t *vcd, unsigned index, u32 value);
 +static int vc_5x0_led_off(vc_data_t *vcd);
 +static vc_gpio_t *vc_5x0_gpio_direct[];
@@ -564,18 +626,22 @@
 +		.probe[VC_I2C_1] = vc_5x0_probe_gpio,
 +		.probe[VC_I2C_2] = vc_5x0_probe_led,
 +		.probe[VC_I2C_3] = NULL, //XXX mfg eeprom
-+		.probe[VC_I2C_4] = NULL, //XXX fan ctrl
++		.probe[VC_I2C_4] = vc_5x0_probe_fan, //XXX fan ctrl
 +		.remove[VC_I2C_0] = vc_5x0_remove_gpio,
 +		.remove[VC_I2C_1] = vc_5x0_remove_gpio,
 +		.remove[VC_I2C_2] = vc_5x0_remove_led,
 +		.remove[VC_I2C_3] = NULL, //XXX mfg eeprom
-+		.remove[VC_I2C_4] = NULL, //XXX fan ctrl
++		.remove[VC_I2C_4] = vc_5x0_remove_fan, //XXX fan ctrl
 +	},
 +	.led = {
 +		.cfg = NULL,
 +		.sysfs_group = &vc_5x0_led_group,
 +		.set = vc_5x0_led_set,
 +		.off = vc_5x0_led_off,
++	},
++	.fan = {
++		.addr = EDGE5X0_FAN_CTRL,
++		.sysfs_group = &vc_5x0_fan_group,
 +	},
 +	// XXX add fan state;
 +};
@@ -1493,6 +1559,75 @@
 +	.attrs = vc_fan_attrs,
 +};
 +
++static ssize_t show_vc_5x0_fan_rpm(struct device *dev,
++                 struct device_attribute *attr, char *buf)
++{
++	int reg_val, tach_reading;
++	vc_data_t *vcd = &vc_data;
++	struct i2c_client *client = vcd->i2c.client[VC_I2C_4];
++
++        reg_val = vc_read_byte(client, EMC2104_FAN1_TACH_READ_HI);
++        if (reg_val < 0)
++                return (reg_val);
++
++	if (reg_val == 0xff)
++		reg_val = 0;
++
++	tach_reading = (reg_val << 8);
++        
++	reg_val = vc_read_byte(client, EMC2104_FAN1_TACH_READ_LO);
++        if (reg_val < 0)
++                return (reg_val);
++
++	if (reg_val == 0xf8)
++		reg_val = 0;
++	
++	tach_reading |= reg_val;
++
++	/* Three LSB are insignificant for measurement. */
++	tach_reading >>= 3;
++
++	if (tach_reading == 0)
++        	return sprintf(buf, "%d\n", 0);
++
++        return sprintf(buf, "%d\n", EMC2104_VELOCLOUD_FAN_MULTI / tach_reading);
++}
++
++static DEVICE_ATTR(fan_rpm, S_IRUGO, show_vc_5x0_fan_rpm, NULL);
++
++static ssize_t show_vc_5x0_fan_lut(struct device *dev,
++                 struct device_attribute *attr, char *buf)
++{
++	int i;
++	u8 *lut_settings;
++	ssize_t size = 0;
++
++	lut_settings = (u8 *)&vc_fan_lut[0];
++	for (i = 0; i < FAN_LUT_MAX_TABLE_ENTRIES * FAN_LUT_MAX_ROW_LEN; i++) {
++
++		size += sprintf(buf + size, "0x%x ", *(lut_settings+i));
++
++		if (((i+1) % FAN_LUT_MAX_ROW_LEN) == 0) {
++			size += sprintf(buf + size, "\n");
++		}
++	}
++
++	return size;
++}
++
++static DEVICE_ATTR(fan_lut, S_IRUGO, show_vc_5x0_fan_lut, NULL);
++
++static struct attribute *vc_5x0_fan_attrs[] = {
++	&dev_attr_fan_rpm.attr,
++	&dev_attr_fan_lut.attr,
++	NULL,
++};
++
++static struct attribute_group vc_5x0_fan_group = {
++	.name = VC_FAN,
++	.attrs = vc_5x0_fan_attrs,
++};
++
 +// create low-pulse on i2c ctrl reset pin;
 +// keep BLINK input low;
 +
@@ -2227,7 +2362,7 @@
 +};
 +
 +static struct attribute_group vc_5x0_38_group = {
-+	.name = VC_FAN,
++	.name = VC_PWM,
 +	.attrs = vc_5x0_38_attrs,
 +};
 +
@@ -2503,6 +2638,98 @@
 +	vc_5x0_led_rgb(client, vc_rgb_off);
 +	vc_sysfs_led_exit(hw);
 +	vc_gpio_release(&vc_5x0_led_oe);
++}
++
++static int vc5x0_fan_reboot(struct notifier_block *n, unsigned long code, void *x)
++{
++	vc_data_t *vcd = &vc_data;
++        vc_hw_t *hw = vcd->hw;
++
++	/* Force fan to full on. */
++	gpio_set_value(hw->gpio.pwm_power, 0);
++	 
++	gpio_set_value(hw->gpio.pwm_pin, 0);
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block fan_reboot = {
++        .notifier_call  = vc5x0_fan_reboot,
++        .priority       = INT_MAX, /* before any real devices */
++};
++
++static int
++vc_5x0_probe_fan(vc_hw_t *hw, struct i2c_client *client, int index)
++{
++	int i, err;
++	u8 *lut_settings;
++
++#ifdef VC_DEBUG_GPIO
++	pr_info("vc: probe %d\n", index);
++#endif // VC_DEBUG_GPIO
++
++	/* Set final frequency based on default PWM. */	
++	err = vc_write_byte(client, EMC2104_FAN1_PWM_DIVIDE, 0x80);
++	if(err < 0)
++		return(err);
++
++	/* Set defaults for FAN1 LUT config. */
++        err = vc_write_byte(client, EMC2104_FAN1_LUT_OFFSET, 0);
++        if (err < 0) 
++                return (err);
++
++	lut_settings = (u8 *)&vc_fan_lut[0];
++        for (i = 0; i < FAN_LUT_MAX_TABLE_ENTRIES * FAN_LUT_MAX_ROW_LEN; i++) {
++
++                err = vc_write_byte(client, EMC2104_FAN1_LUT_OFFSET + (i + 1),
++							*(lut_settings + i));
++                if (err < 0)
++                        return err;
++        }
++
++	err = vc_write_byte(client, EMC2104_FAN1_CONFIG, FAN_CONFIG_EN_ALGO |
++						 FAN_CONFIG_RANGE_MIN_RPM_500 |
++						 FAN_CONFIG_MIN_TACH_7EDGES);
++	if (err < 0) 
++		return err;
++
++	/* Hysteresis value is picked by observation -- that is, allow
++	 * the fan to turn off completely if at the lower temp threshold
++	 * before starting again.  Avoid sudden start/stop of the fan when
++	 * temperature straddles the threshold value.
++	 */
++	err = vc_write_byte(client, EMC2104_FAN1_LUT_TEMP_HYSTERESIS, 2);
++        if (err < 0)
++                return err;                      
++      
++	/* Enable the FSC/LUT algorithm. */ 
++        err = vc_write_byte(client,
++                EMC2104_FAN1_LUT_OFFSET, FAN_LUT_OFFSET_LUT_LOCK);
++        if (err < 0)
++                return err;
++
++	gpio_set_value(hw->gpio.pwm_power, 1);
++	 
++	gpio_set_value(hw->gpio.pwm_pin, 1);
++
++	err = vc_sysfs_fan_init(hw);
++
++	register_reboot_notifier(&fan_reboot);
++
++	return (err);
++}
++
++static void
++vc_5x0_remove_fan(vc_hw_t *hw, struct i2c_client *client, int index)
++{
++	/* Force fan to full on. */
++	gpio_set_value(hw->gpio.pwm_power, 0);
++	 
++	gpio_set_value(hw->gpio.pwm_pin, 0);
++
++	vc_sysfs_fan_exit(hw);
++
++	unregister_reboot_notifier(&fan_reboot);
 +}
 +
 +// detect i2c gpio expanders;

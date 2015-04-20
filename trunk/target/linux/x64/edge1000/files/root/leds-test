@@ -1,92 +1,58 @@
 #!/bin/bash
-#
-order_ve1000="logo bar5 bar4 bar3 bar2 bar1 wifi usb_left usb_top usb_bottom usb_right"
-order_edge500="logo bar5 bar4 bar3 bar2 bar1 wifi ap2 sta1 sta2 sta3 usb_left usb_top usb_bottom usb_right"
-# determine board type
-board="`cat /sys/devices/platform/vc/board`"
-echo $0: board: $board
-case "$board" in
-ve1000)
-  order=$order_ve1000
-  ;;
-edge500)
-  order=$order_edge500
-  ;;
-edge-portwell|edge-nexcom)
-  echo $0: no leds
-  exit 2
-  ;;
-*)
-  echo $0: unknown board
-  exit 1
-  ;;
-esac
-cd /sys/devices/platform/vc/leds
-# all off
-echo $0: all off
-echo 0 > off
+
+USB=/dev/ttyUSB0
+DEFCOL="FF0000"
+
+stty -F $USB speed 115200
+
+echo 'setting default to' $DEFCOL
+echo "E$DEFCOL" > $USB
+
+echo 'all OFF'
+echo 'S000000' > $USB
 sleep 1
-if [ "$1" != "-i" ]; then
-  # sequence all red
-  echo $0: sequence reds
-  for i in $order
-  do
-    echo 0xff > $i
-    sleep 1
-  done
-  # sequence all green
-  echo $0: sequence greens
-  for i in $order
-  do
-    echo 0xff00 > $i
-    sleep 1
-  done
-  # sequence all blue
-  echo $0: sequence blues
-  for i in $order
-  do
-    echo 0xff0000 > $i
-    sleep 1
-  done
-fi
-# all red intensity;
-echo $0: red intensity up/down
-for v in {0..15} {15..0}
+echo 'full red'
+echo 'SFF0000' > $USB
+sleep 1
+echo 'full green'
+echo 'S00FF00' > $USB
+sleep 1
+echo 'full blue'
+echo 'S0000FF' > $USB
+sleep 1
+echo 'full white'
+echo 'SFFFFFF' > $USB
+sleep 1
+
+echo "red intensity"
+for v in {0..9} {A..F} {F..A} {9..0}
 do
-  bgr=$(($v << 4))
-  for i in $order
-  do
-    echo $bgr > $i
-  done
+  rgb=S${v}00000
+  echo "$rgb" > $USB
+  sleep 0.1
 done
-# all green intensity;
-echo $0: green intensity up/down
-for v in {0..15} {15..0}
+
+echo "green intensity"
+for v in {0..9} {A..F} {F..A} {9..0}
 do
-  bgr=$(($v << 12))
-  for i in $order
-  do
-    echo $bgr > $i
-  done
+  rgb=S00${v}000
+  echo "$rgb" > $USB
+  sleep 0.1
 done
-# all blue intensity;
-echo $0: blue intensity up/down
-for v in {0..15} {15..0}
+
+echo "blue intensity"
+for v in {0..9} {A..F} {F..A} {9..0}
 do
-  bgr=$(($v << 20))
-  for i in $order
-  do
-    echo $bgr > $i
-  done
+  rgb=S0000${v}0
+  echo "$rgb" > $USB
+  sleep 0.1
 done
-# all white intensity;
-echo $0: white intensity up/down
-for v in {0..15} {15..0}
+
+echo "white intensity"
+for v in {0..9} {A..F} {F..A} {9..0}
 do
-  bgr=$((($v << 20) | ($v << 12) | ($v << 4)))
-  for i in $order
-  do
-    echo $bgr > $i
-  done
+  rgb=S${v}0${v}0${v}0
+  echo "$rgb" > $USB
+  sleep 0.1
 done
 

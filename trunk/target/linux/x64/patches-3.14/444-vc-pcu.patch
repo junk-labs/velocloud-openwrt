@@ -137,8 +137,8 @@
 +
 +#define EDGE5X0_PCU_GPIO_MASK_SUS (1<<2) | (1<<6) | (1<<7) | (1<<17) | (1<<18)
 +#define EDGE5X0_PCU_GPIO_CLEAR_SUS (1<<24) | (1<<25) | (1<<26) | (1<<27)
-+#define EDGE5X0_PCU_GPIO_IOSEL_SUS (1<<17) | (1<<18)
-+#define EDGE5X0_PCU_GPIO_OUT_SUS 0
++#define EDGE5X0_PCU_GPIO_IOSEL_SUS (1<<2) | (1<<17) | (1<<18)
++#define EDGE5X0_PCU_GPIO_OUT_SUS (1<<2)
 +
 +// private data;
 +// core well: ids 0..31;

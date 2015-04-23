@@ -1,7 +1,7 @@
-diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/drivers/i2c/busses/i2c-ltc4266.c
---- linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-3.14.29/drivers/i2c/busses/i2c-ltc4266.c	2015-01-30 14:15:57.534915887 -0800
-@@ -0,0 +1,2165 @@
+diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
+--- a/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-04-23 12:41:50.542613561 -0700
+@@ -0,0 +1,2289 @@
 +/*
 + * (c) Jordan Rhody (jordan@velocloud.net)
 + *
@@ -22,7 +22,7 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +#include <linux/module.h>
 +#include <linux/init.h>
-+#include <linux/platform_device.h>
++#include <linux/atomic.h>
 +#include <linux/slab.h>
 +#include <linux/jiffies.h>
 +#include <linux/i2c-gpio.h>
@@ -339,7 +339,8 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +struct i2c_ltc4266_chipset; // Forward declaration
 +
 +struct ltc4266_port {
-+	int port_state;
++	volatile int port_state;
++	volatile int cancel_timer;
 +	int port_event;
 +	int last_port_event;
 +        int device_class;
@@ -357,7 +358,7 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +	int chip_event;
 +	struct i2c_client *client;
 +	char fw_rev[8];
-+        int total_mA_avail;
++        volatile int total_mA_avail;
 +	int mode;
 +	struct mutex glbl_lock;
 +        struct workqueue_struct *chip_wq;
@@ -369,26 +370,14 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +        struct i2c_ltc4266_chipset *i2c_dev[N_VC_I2C_DEVS];
 +};
 +
-+static struct ltc4266_softc ltc4266_dev;
-+
-+static struct i2c_gpio_platform_data vc_gpio_ltc4266_i2c = {
-+        .sda_pin                = EDGE500_GPIO_SMB_DATA,
-+        .sda_is_open_drain      = 0,
-+        .scl_pin                = EDGE500_GPIO_SMB_CLK,
-+        .scl_is_open_drain      = 0,
-+        .udelay                 = 5,            /* ~100 kHz */
-+};
-+
-+static struct platform_device vc_poe_device = {
-+        .name                   = "i2c-gpio",
-+        .id                     = 1,
-+        .dev.platform_data      = &vc_gpio_ltc4266_i2c,
++static struct ltc4266_softc ltc4266_dev = {
++	.i2c_dev = {0, 0},
 +};
 +
 +static int ltc_i2c_major = -1;
 +
 +
-+static const unsigned short ltc4266_i2c_addr[] = { 0x20, I2C_CLIENT_END };
++static const unsigned short ltc4266_i2c_addr[] = { 0x21, I2C_CLIENT_END };
 +
 +static int ltc4266_default_iCUT(__u8 class_code)
 +{
@@ -548,12 +537,16 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +	iCUT = ltc4266_default_iCUT(clsdev);
 +	
++	mutex_lock(&chipset->glbl_lock);	
++
 +	dev_dbg(&chipset->client->dev, "Power available: %d, class_dev: 0x%x\n",
 +			 chipset->total_mA_avail, clsdev);
 +
 +	if ((chipset->total_mA_avail - iCUT) >= 0) {
-+
++	
 +		chipset->total_mA_avail -= iCUT;
++
++		mutex_unlock(&chipset->glbl_lock);	
 +
 +		chipset->port_dev[port_id].device_class = clsdev;
 +
@@ -561,6 +554,9 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +		return (0);
 +	} 
++		
++	mutex_unlock(&chipset->glbl_lock);	
++
 +	dev_dbg(&chipset->client->dev, "Power requirements unavailable for "
 +			"class device %d on port %d\n", clsdev, port_id);
 +
@@ -942,8 +938,9 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +			port->port_event &= ~(DETECT_INTERRUPT|
 +				               CLASS_INTERRUPT);
 +
-+			if (! ltc4266_calculate_total_mA(chipset, 
-+			    port_id, statp)) {
++			if (ltc4266_calculate_total_mA(chipset,
++							port_id,
++			    				statp) == 0) {
 +
 +				i2c_smbus_write_byte_data(
 +					chipset->client, LTC_CUT1_REG+
@@ -995,7 +992,7 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +{
 +	int err = 0;
 +        struct ltc4266_port *port;
-+	static int last_change[LTC_PORTS_COUNT] = { 0, };
++	static int last_change[LTC_PORTS_COUNT] = { 0, 0, 0, 0};
 +
 +	port = &chipset->port_dev[port_id];
 +
@@ -1006,8 +1003,18 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +		dev_dbg(&chipset->client->dev,
 +                      "Port %d device TCUT detected\n", port_id);
 +
-+		if (port->last_port_event & POWER_GOOD_INTERRUPT)
-+                	chipset->total_mA_avail += port->device_mA;
++		/* A race w/timer is possible if timer is waiting on the
++		 * port mutex.  If it is, cancel the current timer and
++		 * continue with 'total_mA_avail' pool.
++		 */
++		del_timer_sync(&port->port_pwr_on_timer);
++
++		if (timer_pending(&port->port_pwr_on_timer))
++			port->cancel_timer += 1;
++
++		mutex_lock(&chipset->glbl_lock);
++               	chipset->total_mA_avail += port->device_mA;
++		mutex_unlock(&chipset->glbl_lock);	
 +
 +		port->port_event &= ~(tCUT_INTERRUPT|
 +				      POWER_ENABLE_INTERRUPT|
@@ -1032,9 +1039,18 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +		    "Port %d class %d device disconnect detected\n",
 +                    port_id, port->device_class);
 +
-+		if (port->last_port_event & POWER_GOOD_INTERRUPT) 
-+                	chipset->total_mA_avail += port->device_mA;
++		/* A race w/timer is possible if timer is waiting on the
++		 * port mutex.  If it is, cancel the current timer and
++		 * continue with 'total_mA_avail' pool.
++		 */
++		del_timer_sync(&port->port_pwr_on_timer);
 +
++		if (timer_pending(&port->port_pwr_on_timer))
++			port->cancel_timer += 1;
++
++		mutex_lock(&chipset->glbl_lock);	
++               	chipset->total_mA_avail += port->device_mA;
++		mutex_unlock(&chipset->glbl_lock);	
 +
 +		port->port_event &= ~(DISCONNECT_INTERRUPT|
 +				    POWER_ENABLE_INTERRUPT|
@@ -1066,8 +1082,15 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +                dev_dbg(&chipset->client->dev,
 +                    "Port %d device power good detected\n", port_id+1);
-+
++	
++		/* Do our best to delete any pending timers.  This doesn't
++		 * guarantee the timer is deleted if a currently pending
++		 * timer is waiting on a lock.
++		 */
 +		del_timer_sync(&port->port_pwr_on_timer);
++			
++		if (timer_pending(&port->port_pwr_on_timer))
++			port->cancel_timer += 1;
 +        }
 +
 +
@@ -1110,13 +1133,19 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +{
 +	struct ltc4266_port *port =
 +                container_of(work, struct ltc4266_port, port_work);
-+
++	
 +	mutex_lock(&port->port_lock);
 +
-+	port->cookie->total_mA_avail += port->device_mA;
++	if (port->cancel_timer == 0) {	
 +
-+	port->port_state = PORT_STATE_CLASSIFY;	
++		mutex_lock(&port->cookie->glbl_lock);	
++		port->cookie->total_mA_avail += port->device_mA;
++		mutex_unlock(&port->cookie->glbl_lock);	
 +
++		port->port_state = PORT_STATE_CLASSIFY;
++	} else
++		port->cancel_timer -= 1;
++		
 +	mutex_unlock(&port->port_lock);
 +}
 +
@@ -1195,7 +1224,9 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +		}
 +
 +		chipset->mode = VC_I2C_CHIPSET_MANUAL_MODE;
++		mutex_lock(&chipset->glbl_lock);	
 +                chipset->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
++		mutex_unlock(&chipset->glbl_lock);	
 +
 +                for (i = 0; i < LTC_PORTS_COUNT; i++) {
 +
@@ -1215,12 +1246,17 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +static ssize_t show_total_mA(struct device *dev,
 +                 struct device_attribute *attr, char *buf)
 +{
++	int available_pwr;
 +        struct i2c_ltc4266_chipset *chipset;
 +        struct i2c_client *client = to_i2c_client(dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
-+	return sprintf(buf, "mA available: %d\n", chipset->total_mA_avail);
++	mutex_lock(&chipset->glbl_lock);	
++	available_pwr = chipset->total_mA_avail;
++	mutex_unlock(&chipset->glbl_lock);	
++
++	return sprintf(buf, "mA available: %d\n", available_pwr);
 +}
 +
 +static ssize_t set_total_mA(struct device *dev,
@@ -1241,7 +1277,9 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +        if (err)
 +                return err;
 +	
++	mutex_lock(&chipset->glbl_lock);	
 +	chipset->total_mA_avail = val;
++	mutex_unlock(&chipset->glbl_lock);	
 +
 +	return size;
 +}
@@ -1409,7 +1447,6 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +			err = ltc4266_port_pwr(chipset, index, LTC_PWRPB_ON);
 +			if (err < 0) {
-+				mutex_unlock(&port->port_lock);
 +                		dev_err(dev, "port %d pwr on error\n", index);
 +			}
 +
@@ -1444,9 +1481,13 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +		detena = ltc4266_detena_port(index, 0);
 +
 +                ltc4266_enable_detect_classify(chipset, detena);
++		
++		mutex_lock(&chipset->glbl_lock);
 +
 +               	chipset->total_mA_avail += 
 +			chipset->port_dev[index].device_mA;
++
++		mutex_unlock(&chipset->glbl_lock);	
 +
 +                port->port_state = PORT_STATE_CLASSIFY;
 +
@@ -1684,6 +1725,7 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +show_mA(struct device *dev, char *buf, unsigned index)
 +{
 +        int val, lsb, msb;
++	int dec, cent;
 +        struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
@@ -1702,7 +1744,48 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +        val = ((msb << 8) | lsb);
 +
-+        return sprintf(buf, "port: %d mA: 0x%x\n", index, val);
++	/* Resolution is 122.07uA/1 LSB. Multiply to 122070nV to do the
++	 * calculation. 
++	 */
++	val = val * 122070;
++
++	/* Convert to mA and strip out whole number. */
++	msb = val / (1000 * 1000);
++
++	/* If no whole number simply show the decimal portion. */
++	if (msb == 0) {
++		/* This is our resolution. */
++		lsb = val / 1000;
++
++		cent = lsb / 100;
++
++		lsb = lsb - cent * 100;
++
++		dec = lsb / 10;
++
++		lsb = lsb - dec * 10;
++
++        	return sprintf(buf, "port %d: 0.%d%d%dmA\n", index, cent, dec, lsb);
++	}
++
++	/* Else strip out whole number to show both whole number +
++	 * mantissa.
++	 */
++	lsb = val - msb * 1000 * 1000;
++
++	/* This is our resolution. */
++	lsb = lsb / 1000;
++
++	cent = lsb / 100;
++
++	lsb = lsb - cent * 100;
++
++	dec = lsb / 10;
++
++	lsb = lsb - dec * 10;
++
++	/* Resolution only to three decimal places. */
++        return sprintf(buf, "port %d: %d.%d%d%d mA\n", index, msb, cent, dec, lsb);
 +}
 +
 +
@@ -1730,7 +1813,8 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +static ssize_t
 +show_volts(struct device *dev, char *buf, unsigned index)
 +{
-+        int ret, val, lsb, msb;
++        int val, lsb, msb;
++	int dec, cent;
 +        struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
@@ -1749,9 +1833,48 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +	val = ((msb << 8) | lsb);
 +
-+        return sprintf(buf, "port: %d volts: 0x%x\n", index, val);
++	/* Resolution is 5.835mV/1 LSB. Convert to 5835uV to do the
++	 * calculation. 
++	 */
++	val = val * 5835;
 +
-+        return(ret);
++	/* Convert to V and strip out whole number. */
++	msb = val / (1000 * 1000);
++
++	/* If no whole number simply show the decimal portion. */
++	if (msb == 0) {
++		
++		/* This is our resolution. */
++		lsb = val / 1000;
++
++		cent = lsb / 100;
++
++		lsb = lsb - cent * 100;
++
++		dec = lsb / 10;
++
++		lsb = lsb - dec * 10;
++
++        	return sprintf(buf, "port %d: 0.%d%d%dV\n", index, cent, dec, lsb);
++	}
++
++	/* Else strip out whole number to show both whole number +
++	 * mantissa.
++	 */
++	lsb = val - msb * 1000 * 1000;
++	
++	/* This is our resolution. */
++	lsb = lsb / 1000;
++
++	cent = lsb / 100;
++
++	lsb = lsb - cent * 100;
++
++	dec = lsb / 10;
++
++	lsb = lsb - dec * 10;
++
++        return sprintf(buf, "port %d: %d.%d%d%d V\n", index, msb, cent, dec, lsb);
 +}
 +
 +
@@ -1808,8 +1931,12 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +                ltc4266_enable_detect_classify(chipset, detena);
 +
-+		if (port->port_state == PORT_STATE_MONITOR)
++		if (port->port_state == PORT_STATE_MONITOR) {
++		
++			mutex_lock(&chipset->glbl_lock);	
 +                	chipset->total_mA_avail += port->device_mA;
++			mutex_unlock(&chipset->glbl_lock);	
++		}
 +
 +                port->port_state = PORT_STATE_CLASSIFY;
 +		ltc4266_port_pwr(chipset, index, LTC_PWRPB_ON);
@@ -1873,8 +2000,9 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +        .attrs = vc_ltc4266_port_attrs,
 +};
 +
++
 +static int
-+ltc4266_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
++ltc4266_i2c_probe(struct i2c_client *client)
 +{
 +        int i, err, chip = 0;
 +	struct ltc4266_port *port;
@@ -1888,10 +2016,8 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +                        break;
 +		}
 +        }
-+
 +	ltc4266_dev.i2c_dev[chip] =  kmalloc(sizeof(struct i2c_ltc4266_chipset),
 +				    			GFP_KERNEL|__GFP_ZERO);
-+
 +        if (!ltc4266_dev.i2c_dev[chip])
 +                return -ENOMEM;
 +
@@ -1941,6 +2067,8 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +		port->port_event = 0;
 +
++		port->cancel_timer = 0;
++
 +		mutex_init(&port->port_lock);
 +
 +		port->port_wq = alloc_workqueue("ltc4266-monitor-thread", 0, 0);
@@ -1978,20 +2106,9 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +{
 +        int i, chip = 0;
 +        struct ltc4266_port *port;
++        struct i2c_ltc4266_chipset *chipset;
 +
-+	for(i = VC_I2C_0; i < N_VC_I2C_DEVS; i++) {
-+                if(ltc4266_i2c_addr[i] == I2C_CLIENT_END)
-+                        return(-ENODEV);
-+                if(client->addr == ltc4266_i2c_addr[i]) {
-+                        chip = i;
-+                        break;
-+                }
-+        }
-+
-+	if (ltc4266_dev.i2c_dev[chip]->eventfd) {
-+	    eventfd_ctx_put(ltc4266_dev.i2c_dev[chip]->eventfd);
-+	    ltc4266_dev.i2c_dev[chip]->eventfd = 0;
-+	}
++	chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +	device_remove_file(&client->dev, &dev_attr_fw_rev);
 +	device_remove_file(&client->dev, &dev_attr_chip_reset);
@@ -2001,10 +2118,14 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +	sysfs_remove_group(&client->dev.kobj, &port_attr_group);
 +
-+	/* delete timer */
++	/* delete any scheduled timer */
 +	del_timer_sync(&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer);
 +
-+	/* flush all queue instances. */
++	/* Stall waiting for any current timers to complete. */
++	while (timer_pending(
++		&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer));
++
++	/* flush all queue instances including any possible current. */
 +	flush_workqueue(ltc4266_dev.i2c_dev[chip]->chip_wq);
 +
 +       /* destroy work queue. */
@@ -2012,29 +2133,26 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +
 +	for (i = 0; i < LTC_PORTS_COUNT; i++) {
 +
-+	    port = &ltc4266_dev.i2c_dev[chip]->port_dev[i];
-+            destroy_workqueue(port->port_wq);
++		port = &chipset->port_dev[i];
++		
++		flush_workqueue(port->port_wq);
++
++		destroy_workqueue(port->port_wq);
++
++		del_timer_sync(&port->port_pwr_on_timer);
++
++		mutex_lock(&port->port_lock);
++		port->cancel_timer += 1;
++		mutex_unlock(&port->port_lock);
++
++		/* Flush any remaining timers. */
++		while (timer_pending(&port->port_pwr_on_timer));
 +	}
 +
-+	kfree(ltc4266_dev.i2c_dev[chip]);
-+
-+	ltc4266_dev.i2c_dev[chip] = NULL;
-+
-+	return (0);
-+}
-+
-+static int
-+ltc4266_i2c_detect(struct i2c_client *client, struct i2c_board_info *info)
-+{
-+        struct i2c_adapter *adapter = client->adapter;
-+	
-+        if( !i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA
-+            | I2C_FUNC_SMBUS_WORD_DATA | I2C_FUNC_SMBUS_WRITE_BYTE)) {
-+                pr_err("vc-poe: adaptor does not smbus\n");
-+                return(-ENODEV);
-+        }
-+
-+	strlcpy(info->type, LTC4266_NAME, I2C_NAME_SIZE);
++	if (chipset->eventfd) {
++	    eventfd_ctx_put(chipset->eventfd);
++	    chipset->eventfd = 0;
++	}
 +
 +	return (0);
 +}
@@ -2045,19 +2163,6 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +};
 +
 +MODULE_DEVICE_TABLE(i2c, vc_ltc4266_i2c_id);
-+
-+static struct i2c_driver ltc4266_i2c_driver = {
-+        .class = I2C_CLASS_HWMON,
-+        .driver = {
-+                .name = LTC4266_NAME,
-+		.owner  = THIS_MODULE,
-+        },
-+        .probe = ltc4266_i2c_probe,
-+        .remove = ltc4266_i2c_remove,
-+        .id_table = ltc4266_i2c_id,
-+        .detect = ltc4266_i2c_detect,
-+	.address_list = ltc4266_i2c_addr,
-+};
 +
 +static int
 +i2c_open(struct inode *inode, struct file *file)
@@ -2123,39 +2228,58 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +        .llseek         = noop_llseek,
 +};
 +
-+
 +static int __init ltc4266_init(void)
 +{
-+	int err;
++	struct i2c_adapter *adapter;
++	struct i2c_client *ltc4266_client;
++	struct i2c_board_info info;
 +
-+	err = platform_device_register(&vc_poe_device);
-+        if (err < 0) {
-+            pr_err("couldn't register i2c-gpio\n");
-+	    return err;
++	adapter = i2c_get_adapter(2);
++	if (!adapter) {
++                pr_err("%s: i2c_get_adapter(%d) failed\n", __func__, 2);
++                return -EINVAL;
 +        }
 +
-+	err = i2c_add_driver(&ltc4266_i2c_driver);
-+	if (err < 0) {
-+		platform_device_unregister(&vc_poe_device);
-+		pr_err("Couldn't add I2C LTC4266 driver\n");
-+		return err;
-+	}
++	memset(&info, 0, sizeof(struct i2c_board_info));
++        strlcpy(info.type, "VC POE: ltc4266a", I2C_NAME_SIZE);
++
++        ltc4266_client = i2c_new_probed_device(adapter, &info, 
++		ltc4266_i2c_addr, NULL);
++
++	if (ltc4266_client == NULL)
++		return -ENODEV;
++
++	ltc4266_i2c_probe(ltc4266_client);
 +
 +        if ((ltc_i2c_major = register_chrdev (0, "vc-poe", &i2c_fops)) < 0)
 +		printk(KERN_WARNING "ltc: Failed to register character device.");
 +
 +	printk(KERN_INFO "VC POE I2C driver v0.1, "
 +		"(c) 2014-2015 VeloCloud, Inc.\n");
++
++	i2c_put_adapter(adapter);
 +	
-+	return (err);
++	return (0);
 +}
 +
 +static void __exit
 +ltc4266_exit(void)
 +{
-+	i2c_del_driver(&ltc4266_i2c_driver);
++	int i;
 +
-+	platform_device_unregister(&vc_poe_device);
++	for (i = 0; i < N_VC_I2C_DEVS; i++) {
++
++		if (ltc4266_dev.i2c_dev[i] == NULL)
++			continue;
++
++		ltc4266_i2c_remove(ltc4266_dev.i2c_dev[i]->client);
++
++		i2c_unregister_device(ltc4266_dev.i2c_dev[i]->client);
++		
++		kfree(ltc4266_dev.i2c_dev[i]);
++	
++		ltc4266_dev.i2c_dev[i] = NULL;
++	}
 +
 +	if (ltc_i2c_major >= 0)
 +		unregister_chrdev(ltc_i2c_major, "vc-poe");
@@ -2167,16 +2291,16 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/i2c-ltc4266.c linux-3.14.29/dri
 +MODULE_AUTHOR("Jordan Rhody <jordan@velocloud.net>");
 +MODULE_DESCRIPTION("Velocloud POE Driver");
 +MODULE_LICENSE("GPL");
-diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/Kconfig linux-3.14.29/drivers/i2c/busses/Kconfig
---- linux-3.14.29.ORIG/drivers/i2c/busses/Kconfig	2015-01-30 14:37:59.546954292 -0800
-+++ linux-3.14.29/drivers/i2c/busses/Kconfig	2015-01-30 14:13:50.642912201 -0800
-@@ -1021,4 +1021,13 @@
-           Silicon Image Si3452 I2C chipset on Velocloud platforms.
-           Say Y to enable support for POE on Velocloud.
+diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+--- a/drivers/i2c/busses/Kconfig	2015-03-26 07:07:23.000000000 -0700
++++ b/drivers/i2c/busses/Kconfig	2015-04-23 12:28:55.354572399 -0700
+@@ -1012,4 +1012,13 @@
+ 	  This support is also available as a module.  If so, the module
+ 	  will be called scx200_acb.
  
 +config I2C_LTC4266
 +	tristate "Support for LTC4266 Power over Ethernet (POE) chipset"
-+	depends on I2C_GPIO
++	depends on I2C_GPIO && VELOCLOUD_VC
 +	default n 
 +	help
 +	  This option enables support for Power Over Ethernet (POE)
@@ -2184,9 +2308,9 @@ diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/Kconfig linux-3.14.29/drivers/i
 +	  Say Y to enable support for POE on Velocloud.
 +
  endmenu
-diff -Naur linux-3.14.29.ORIG/drivers/i2c/busses/Makefile linux-3.14.29/drivers/i2c/busses/Makefile
---- linux-3.14.29.ORIG/drivers/i2c/busses/Makefile	2015-01-30 14:38:09.766954588 -0800
-+++ linux-3.14.29/drivers/i2c/busses/Makefile	2015-01-30 14:14:31.234913380 -0800
+diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+--- a/drivers/i2c/busses/Makefile	2015-03-26 07:07:23.000000000 -0700
++++ b/drivers/i2c/busses/Makefile	2015-04-23 12:26:35.966564998 -0700
 @@ -49,6 +49,7 @@
  obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
  obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o

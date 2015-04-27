@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flashrom
-PKG_VERSION:=0.9.7
+PKG_VERSION:=0.9.8
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=http://download.flashrom.org/releases
-PKG_MD5SUM:=d239bafa1b46619d851f70f84a5b122a
+PKG_MD5SUM:=ac513076b63ab7eb411a7694bb8f6fda
 
 PKG_INSTALL:=1
 

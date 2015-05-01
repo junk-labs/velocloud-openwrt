@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# First, a simple check.
+# If already set in velocloud_vc to one of our customized systems, accept it.
+VC_BOARD=`cat /sys/devices/platform/vc/board 2>/dev/null`
+if [ -z "${VC_BOARD//edge[0-9][0-9]*}" -o "$VC_BOARD" = "ve1000" ]; then
+    echo $VC_BOARD
+    exit 0
+fi
+
+# Now, more complicated checks
+# DMI_BOARD=`cat /sys/class/dmi/id/board_name`
+# DMI_PRODUCT=`cat /sys/class/dmi/id/product_name`
+
+# PORTWELL_UNSET="To be filled by O.E.M."
+
+# For edge-nexcom, it could be either an old nexcom, or a prototype edge300
+if [ "$VC_BOARD" = "edge-nexcom" ]; then
+    ETH0_VENDOR=`ethtool -P eth0 | sed -e 's/^.* //' -e 's/\(........\).*$/\1/'`
+    NIC_NEXCOM="00:10:f3"
+    NIC_CASWELL="08:35:71"
+    # nexcom or portwell device?
+    if [ "$ETH0_VENDOR" = "$NIC_NEXCOM" ]; then
+        echo "edge-nexcom"
+    elif [ "$ETH0_VENDOR" = "$NIC_CASWELL" ]; then
+        echo "edge300"
+    else
+        echo "edge-nexcom"   # give up?
+    fi
+    exit 0
+fi
+
+# Prototype 520/540 checks, and 800
+# TBD
+
+# vmware, xen, ec2, etc.
+ROOT=`readlink /dev/root`
+if [ "$ROOT" = "/dev/xvda1" ]; then
+    echo ec2
+    exit 0
+fi
+
+SYSVENDOR=`cat /sys/class/dmi/id/sys_vendor | tr A-Z a-z`
+if [ "${SYSVENDOR//vmware}" != "$SYSVENDOR" ]; then
+    echo vmware
+    exit 0
+elif [ "$SYSVENDOR" = "xen" ]; then
+    echo xen
+    exit 0
+fi
+
+exit 1

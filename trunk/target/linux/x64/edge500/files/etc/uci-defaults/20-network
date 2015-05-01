@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# base-files sticks in an /etc/config/network that is useless for us.
+# we depend on this file being removed after first boot, so that we
+# only clobber the default /etc/config/network on the very first boot.
+# [ -r /etc/config/network ] && exit 0
+
+EDGETYPE=`/etc/edgetype`
+
+case "$EDGETYPE" in
+    edge300)
+        cp /etc/config-defaults/edge300/network /etc/config/network
+        ;;
+    *)  # edge500 or anything else
+        cp /etc/config-defaults/edge500/network /etc/config/network
+        cp /etc/config-defaults/edge500/wireless /etc/config/wireless
+        ;;
+esac

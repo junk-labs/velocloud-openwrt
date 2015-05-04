@@ -26,7 +26,7 @@
  	depends on PCI
 --- /dev/null
 +++ b/drivers/gpio/gpio-pcu.c
-@@ -0,0 +1,796 @@
+@@ -0,0 +1,807 @@
 +/*
 + * Copyright (C) 2014 Velocloud Inc.
 + *
@@ -128,6 +128,7 @@
 +
 +// edge520/540;
 +
++#define EDGE5X0_FW_I2C ((1<<8) | (1<<9)) //XXX
 +#define EDGE5X0_BB_I2C ((1<<13) | (1<<14)) //XXX
 +
 +#define EDGE5X0_PCU_GPIO_MASK_SC (1<<4) | (1<<5) | (1<<11) | (1<<12) | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_I2C
@@ -528,8 +529,13 @@
 +}
 +
 +module_param(bname,charp,S_IRUGO);
++MODULE_PARM_DESC(bname, "overwrite board name");
 +
 +#endif // PCU_FIX_DMI
++
++static int bbfw = 0;
++module_param(bbfw,int,S_IRUGO);
++MODULE_PARM_DESC(bbfw, "create i2c-bb for smb0");
 +
 +// per-device use_sel configs;
 +
@@ -677,6 +683,11 @@
 +		chip->iosel[PCU_GPIO_SUS] = ioread32(&sus->io_sel);
 +		chip->out[PCU_GPIO_SC] = 0;
 +		chip->out[PCU_GPIO_SUS] = 0;
++	}
++	if(bbfw) {
++		chip->mask[PCU_GPIO_SC] |= EDGE5X0_FW_I2C;
++		chip->iosel[PCU_GPIO_SC] |= EDGE5X0_FW_I2C;
++		chip->out[PCU_GPIO_SC] |= EDGE5X0_FW_I2C;
 +	}
 +
 +	pci_set_drvdata(pdev, chip);

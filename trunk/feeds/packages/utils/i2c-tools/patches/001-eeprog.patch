@@ -1,0 +1,55 @@
+--- a/eepromer/24cXX.c
++++ b/eepromer/24cXX.c
+@@ -151,35 +151,24 @@
+ {
+ 	int r;
+ 	ioctl(e->fd, BLKFLSBUF); // clear kernel read buffer
+-	if(e->type == EEPROM_TYPE_8BIT_ADDR)
+-	{
+-		__u8 buf =  mem_addr & 0x0ff;
+-		r = i2c_write_1b(e, buf);
+-	} else if(e->type == EEPROM_TYPE_16BIT_ADDR) {
+-		__u8 buf[2] = { (mem_addr >> 8) & 0x0ff, mem_addr & 0x0ff };
+-		r = i2c_write_2b(e, buf);
++	if(e->type == EEPROM_TYPE_8BIT_ADDR) {
++		r = i2c_smbus_read_byte_data(e->fd, mem_addr & 0xff);
+ 	} else {
+ 		fprintf(stderr, "ERR: unknown eeprom type\n");
+-		return -1;
++		r = -1;
+ 	}
+-	if (r < 0)
+-		return r;
+-	r = i2c_smbus_read_byte(e->fd);
+ 	return r;
+ }
+ 
+ int eeprom_write_byte(struct eeprom *e, __u16 mem_addr, __u8 data)
+ {
++	int r;
+ 	if(e->type == EEPROM_TYPE_8BIT_ADDR) {
+-		__u8 buf[2] = { mem_addr & 0x00ff, data };
+-		return i2c_write_2b(e, buf);
+-	} else if(e->type == EEPROM_TYPE_16BIT_ADDR) {
+-		__u8 buf[3] = 
+-			{ (mem_addr >> 8) & 0x00ff, mem_addr & 0x00ff, data };
+-		return i2c_write_3b(e, buf);
++		r = i2c_smbus_write_byte_data(e->fd, mem_addr & 0xff, data);
+ 	} else {
+ 		fprintf(stderr, "ERR: unknown eeprom type\n");
+-		return -1;
++		r = -1;
+ 	}
++	return r;
+ }
+ 
+--- a/eepromer/eeprog.c
++++ b/eepromer/eeprog.c
+@@ -160,6 +160,7 @@
+ 		print_info(".");
+ 		fflush(stdout);
+ 		die_if(eeprom_write_byte(e, addr++, c), "write error");
++		usleep(10000);
+ 	}
+ 	print_info("\n\n");
+ 	return 0;

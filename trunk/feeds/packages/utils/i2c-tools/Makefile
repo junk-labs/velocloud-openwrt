@@ -79,6 +79,11 @@ define Build/Compile
 		STAGING_DIR="$(STAGING_DIR)" \
 		LDFLAGS="$(TARGET_LDFLAGS)" \
 		CFLAGS="$(TARGET_CFLAGS)"
+	$(MAKE) -C $(PKG_BUILD_DIR)/eepromer \
+		CC="$(TARGET_CC)" \
+		LDFLAGS="$(TARGET_LDFLAGS) ../lib/smbus.o" \
+		CFLAGS="$(TARGET_CFLAGS) -I../include" \
+		eeprog
 	$(Build/Compile/python-smbus)
 endef
 
@@ -98,6 +103,7 @@ define Package/i2c-tools/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tools/i2cdump $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tools/i2cset $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tools/i2cget $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/eepromer/eeprog $(1)/usr/sbin/
 endef
 
 define PyPackage/python-smbus/filespec

@@ -219,7 +219,31 @@ GRUB2_MODULES="$GRUB2_MODULES test echo loadenv"
 
 mkdir -m 700 -p $MNT_ROOT
 
+KernelCmdlinForceModel()
+{
+	set -- `cat /proc/cmdline`
+	for T in "$@"; do
+		case "$T" in
+			velocloud_vc.bname=*)  echo $T ;;
+			gpio_pcu.bname=*)  echo $T ;;
+		esac
+	done
+}
+
+ForceModel()
+{
+	echo velocloud_vc.bname=$1 gpio_pcu.bname=$1
+}
+
 if [ "$inst_grub" == "1" ]; then
+	VC_DRIVER_MODEL=`cat /sys/devices/platform/vc/board`
+	FORCE_MODEL=`KernelCmdlineForceModel`
+	if [ -z "$FORCE_MODEL" ]; then
+		if [ "$VC_DRIVER_MODEL" = "edge-nexcom" ]; then
+			FORCE_MODEL=`ForceModel edge300`
+		fi
+	fi
+	
 	# configure device map;
 
 	echo "installing grub to $DEVICE ..."
@@ -236,9 +260,9 @@ if [ "$inst_grub" == "1" ]; then
 	$GRUB_BIN/grub-mkimage \
 		-d $GRUB_DIR \
 		-o $GRUB_DIR/core.img \
-        -O i386-pc \
-        -c $GRUB_DIR/grub-early.cfg \
-        $GRUB2_MODULES
+		-O i386-pc \
+		-c $GRUB_DIR/grub-early.cfg \
+		$GRUB2_MODULES
 
 	# install MBR and core.img;
 
@@ -260,6 +284,7 @@ if [ "$inst_grub" == "1" ]; then
 		-e s#@ROOT0_DEV@#PARTUUID=$ROOT0_UUID#g \
 		-e s#@ROOT1_DEV@#PARTUUID=$ROOT1_UUID#g \
 		-e s#@ROOT2_DEV@#PARTUUID=$ROOT2_UUID#g \
+		-e s#@FORCE_MODEL@#$FORCE_MODEL#g \
 		-e s#root=@PARTUUID@##g \
 		$GRUB_CFG_SRC \
 		> $GRUB_CFG

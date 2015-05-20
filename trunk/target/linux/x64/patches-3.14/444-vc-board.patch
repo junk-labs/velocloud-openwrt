@@ -26,7 +26,7 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
 --- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
 +++ b/drivers/platform/x86/velocloud-vc.c	2015-05-01 14:35:38.751678601 -0700
-@@ -0,0 +1,3385 @@
+@@ -0,0 +1,3390 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -3154,6 +3154,11 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	},
 +	{ .ident = "edge1000",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "S1600JP"), // preliminary
++	  },
++	  .driver_data = &vc_hw_none,
++	},
++	{ .ident = "edge300",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE300"),
 +	  },
 +	  .driver_data = &vc_hw_none,
 +	},

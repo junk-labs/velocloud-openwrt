@@ -80,7 +80,7 @@ endef
 
 OPENSSL_NO_CIPHERS:= no-idea no-md2 no-mdc2 no-rc5 no-sha0 no-smime \
 	no-aes192 no-camellia no-ans1 no-krb5
-OPENSSL_OPTIONS:= shared no-err no-hw zlib-dynamic
+OPENSSL_OPTIONS:= shared no-hw zlib-dynamic
 
 ifdef CONFIG_OPENSSL_ENGINE_CRYPTO
   OPENSSL_OPTIONS += -DHAVE_CRYPTODEV

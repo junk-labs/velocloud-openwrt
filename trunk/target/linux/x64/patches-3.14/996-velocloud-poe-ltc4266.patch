@@ -1,6 +1,6 @@
 diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 --- a/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-04-23 12:41:50.542613561 -0700
++++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-05-22 15:24:01.319951528 -0700
 @@ -0,0 +1,2289 @@
 +/*
 + * (c) Jordan Rhody (jordan@velocloud.net)
@@ -2028,6 +2028,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	ltc4266_dev.i2c_dev[chip]->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
 +
 +	ltc4266_dev.i2c_dev[chip]->mode = VC_I2C_CHIPSET_AUTO_MODE;
++	
++	mutex_init(&ltc4266_dev.i2c_dev[chip]->glbl_lock);
 +
 +	if (ltc4266_check_firmware_revision(ltc4266_dev.i2c_dev[chip]) < 0) {
 +		kfree(ltc4266_dev.i2c_dev[chip]);
@@ -2053,8 +2055,6 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer.data = 
 +		(unsigned long)ltc4266_dev.i2c_dev[chip];
 +	init_timer(&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer);
-+
-+	mutex_init(&ltc4266_dev.i2c_dev[chip]->glbl_lock);
 +
 +	/* Reset initial state to power on.  State machine will detect hardware
 +	 * state and put in the correct state.
@@ -2237,7 +2237,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	adapter = i2c_get_adapter(2);
 +	if (!adapter) {
 +                pr_err("%s: i2c_get_adapter(%d) failed\n", __func__, 2);
-+                return -EINVAL;
++                return -ENODEV;
 +        }
 +
 +	memset(&info, 0, sizeof(struct i2c_board_info));
@@ -2293,7 +2293,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +MODULE_LICENSE("GPL");
 diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
 --- a/drivers/i2c/busses/Kconfig	2015-03-26 07:07:23.000000000 -0700
-+++ b/drivers/i2c/busses/Kconfig	2015-04-23 12:28:55.354572399 -0700
++++ b/drivers/i2c/busses/Kconfig	2015-05-22 15:15:51.254785180 -0700
 @@ -1012,4 +1012,13 @@
  	  This support is also available as a module.  If so, the module
  	  will be called scx200_acb.
@@ -2310,7 +2310,7 @@ diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
  endmenu
 diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
 --- a/drivers/i2c/busses/Makefile	2015-03-26 07:07:23.000000000 -0700
-+++ b/drivers/i2c/busses/Makefile	2015-04-23 12:26:35.966564998 -0700
++++ b/drivers/i2c/busses/Makefile	2015-05-22 15:15:51.254785180 -0700
 @@ -49,6 +49,7 @@
  obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
  obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o

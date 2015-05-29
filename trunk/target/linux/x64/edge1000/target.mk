@@ -1,26 +1,20 @@
 BOARDNAME:=edge500
 
 FEATURES:=ext4 pci usb
+
 # Common packages:
-DEFAULT_PACKAGES += \
-	bridge \
-	ip \
-	iputils-ping \
-	iputils-ping6 \
-	net-tools-arp \
-	net-tools-ifconfig \
-	net-tools-netstat \
-	net-tools-route \
-	openssh-server \
-	openssh-client \
-	openssl-util \
+include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
 
 # edge500-specific packages:
 DEFAULT_PACKAGES += \
 	kmod-igb \
+	kmod-dsa-core \
+	kmod-ixgbe \
+	kmod-e1000e \
+	kmod-hwmon-core \
+	kmod-hwmon-coretemp \
+	kmod-hwmon-w83627ehf \
 	igb-eeprom \
-	kmod-dsa-velocloud \
-	kmod-i2c-i801 \
 
 define Target/Description
 	Build firmware images for the Edge 500 and similar boards

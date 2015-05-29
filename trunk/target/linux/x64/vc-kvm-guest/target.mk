@@ -1,22 +1,17 @@
 BOARDNAME:=KVM Guest
 
 FEATURES:=ext4 pci usb
+
 # Common packages:
+include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
+
+# vc-kvm-guest specific packages:
 DEFAULT_PACKAGES += \
-	bridge \
-	ip \
-	iputils-ping \
-	iputils-ping6 \
-	net-tools-arp \
-	net-tools-ifconfig \
-	net-tools-netstat \
-	net-tools-route \
-	openssh-server \
-	openssh-client \
-	openssl-util \
+	kmod-virtio-net \
+	kmod-virtio-random \
 
 
 define Target/Description
-	Build firmware images for VMware images.
+	Build firmware images for KVM guest images.
 endef
 

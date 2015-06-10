@@ -7,6 +7,7 @@ include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
 
 # vc-kvm-guest specific packages:
 DEFAULT_PACKAGES += \
+	kmod-e1000 \
 	kmod-virtio-net \
 	kmod-virtio-random \
 

@@ -51,14 +51,14 @@ endef
 define Build/InstallDev
 	echo FOO Build/InstallDev
 	$(INSTALL_DIR) \
-		$(1)/usr/include/dpdk \
-		$(1)/usr/lib
+		$(1)/usr/dpdk/include \
+		$(1)/usr/dpdk/lib
 	$(CP) \
 		$(PKG_INSTALL_DIR)/$(T)/include/* \
-		$(1)/usr/include/dpdk
+		$(1)/usr/dpdk/include
 	$(CP) \
 		$(PKG_INSTALL_DIR)/$(T)/lib/* \
-		$(1)/usr/lib
+		$(1)/usr/dpdk/lib
 endef
 define Package/dpdk/install
 	echo FOO Package/dpdk/install

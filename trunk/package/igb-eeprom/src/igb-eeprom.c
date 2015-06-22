@@ -83,7 +83,7 @@ mfg_t Mfg[] = {
 	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
 	  { 0x8086, 0x8086, },
 	  { 0x1f41, 0x151f, },
-	  { 1, 679, 0 }, 6,
+	  { 1, 42, 0 }, 6,
 	  { 0xF0,0x8E,0xDB,0x01,0x30,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x3f,0xff }, },
 	{ "540-pilot",
 	  "edge540",
@@ -91,8 +91,26 @@ mfg_t Mfg[] = {
 	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
 	  { 0x8086, 0x8086, },
 	  { 0x1f41, 0x151f, },
-	  { 1, 679, 0 }, 6,
+	  { 1, 42, 0 }, 6,
 	  { 0xF0,0x8E,0xDB,0x01,0x40,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x4f,0xff }, },
+// 520/540 need 6 MACs: 4 (igb), 2 (i350);
+	// adi/cm revB proto;
+	{ "520b-pilot",
+	  "edge520b",
+	  { "eth0", "eth4", },
+	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
+	  { 0x8086, 0x8086, },
+	  { 0x1f41, 0x151f, },
+	  { 1, 630, 0 }, 6,
+	  { 0xF0,0x8E,0xDB,0x01,0x31,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x3f,0xff }, },
+	{ "540b-pilot",
+	  "edge540b",
+	  { "eth0", "eth4", },
+	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
+	  { 0x8086, 0x8086, },
+	  { 0x1f41, 0x151f, },
+	  { 1, 630, 0 }, 6,
+	  { 0xF0,0x8E,0xDB,0x01,0x41,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x4f,0xff }, },
 
 	{ 0 },
 };
@@ -676,13 +694,13 @@ main(int argc, char **argv)
 		g->nmacs = 4;
 		g->map = igb_c2000_map;
 		g->extra = edge500_extra;
-	} else if( !strcmp(g->board, "edge520")) {
+	} else if( !strncmp(g->board, "edge520", 7)) {
 		g->pciid[0] = 0x8086;
 		g->pciid[1] = 0x1f41;
 		g->nmacs = 6;
 		g->map = edge5x0_map;
 		g->extra = edge5x0_extra;
-	} else if( !strcmp(g->board, "edge540")) {
+	} else if( !strncmp(g->board, "edge540", 7)) {
 		g->pciid[0] = 0x8086;
 		g->pciid[1] = 0x1f41;
 		g->nmacs = 6;

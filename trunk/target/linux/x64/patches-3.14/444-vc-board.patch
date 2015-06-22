@@ -23,10 +23,10 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 +         Say Y to enable support for the Velocloud boards.
 +
  endif # X86_PLATFORM_DEVICES
-diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
---- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2015-05-01 14:35:38.751678601 -0700
-@@ -0,0 +1,3390 @@
+diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
+--- /dev/null
++++ b/drivers/platform/x86/velocloud-vc.c
+@@ -0,0 +1,3488 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -86,13 +86,12 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +#define EDGE500_GPIO_ATOM_SC 0
 +#define EDGE500_GPIO_ATOM_SUS 32
-+#define EDGE500_GPIO_SMB_CLK (EDGE500_GPIO_ATOM_SC + 14)
-+#define EDGE500_GPIO_SMB_DATA (EDGE500_GPIO_ATOM_SC + 13)
-+
-+// overwrite to make SMB0 bit-bang;
-+
 +#define EDGE5X0_GPIO_SMB0_CLK (EDGE500_GPIO_ATOM_SC + 8)
 +#define EDGE5X0_GPIO_SMB0_DATA (EDGE500_GPIO_ATOM_SC + 9)
++#define EDGE500_GPIO_SMB1_CLK (EDGE500_GPIO_ATOM_SC + 12)
++#define EDGE500_GPIO_SMB1_DATA (EDGE500_GPIO_ATOM_SC + 11)
++#define EDGE500_GPIO_SMB2_CLK (EDGE500_GPIO_ATOM_SC + 14)
++#define EDGE500_GPIO_SMB2_DATA (EDGE500_GPIO_ATOM_SC + 13)
 +
 +// SIO GPIO bits all map to GPIO3, logical device 7;
 +// due to a schematic bug, GP32 and GP33 are swizzled;
@@ -162,8 +161,10 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +#define EDGE5X0_GPIO_TP_SC4 (EDGE500_GPIO_ATOM_SC + 4)
 +#define EDGE5X0_GPIO_TP_SC5 (EDGE500_GPIO_ATOM_SC + 5)
-+#define EDGE5X0_GPIO_PHY_MDIO (EDGE500_GPIO_ATOM_SC + 11)
-+#define EDGE5X0_GPIO_PHY_MDC (EDGE500_GPIO_ATOM_SC + 12)
++#define EDGE5X0_GPIO_PHY_MDIO_REVA (EDGE500_GPIO_ATOM_SC + 11)
++#define EDGE5X0_GPIO_PHY_MDC_REVA (EDGE500_GPIO_ATOM_SC + 12)
++#define EDGE5X0_GPIO_PHY_MDIO_REVB (EDGE500_GPIO_ATOM_SC + 13)
++#define EDGE5X0_GPIO_PHY_MDC_REVB (EDGE500_GPIO_ATOM_SC + 14)
 +#define EDGE5X0_GPIO_DYING_GASP (EDGE500_GPIO_ATOM_SC + 15)
 +#define EDGE5X0_GPIO_RESET_BTN (EDGE500_GPIO_ATOM_SC + 18)
 +
@@ -243,6 +244,9 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +#define EMC2104_VELOCLOUD_FAN_MULTI   5898240
 +
++// fan ctrl;
++
++#define EDGE5X0_FAN_CTRL (0x5e>>1)
 +
 +#define FAN_LUT_MAX_TABLE_ENTRIES     0x8
 +#define FAN_LUT_MAX_ROW_LEN           0x5
@@ -256,11 +260,6 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +//XXX
 +
 +#define EDGE5X0_MFG_EEPROM (0xa9>>1)
-+
-+// fan ctrl;
-+//XXX
-+
-+#define EDGE5X0_FAN_CTRL (0x5e>>1)
 +
 +// types;
 +
@@ -395,9 +394,9 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +// edge500 only;
 +
 +static struct i2c_gpio_platform_data edge500_i2c_bb = { 
-+	.sda_pin = EDGE500_GPIO_SMB_DATA, 
++	.sda_pin = EDGE500_GPIO_SMB2_DATA, 
 +	.sda_is_open_drain = 0,
-+	.scl_pin = EDGE500_GPIO_SMB_CLK,
++	.scl_pin = EDGE500_GPIO_SMB2_CLK,
 +	.scl_is_open_drain = 0,
 +	.udelay = 1,
 +}; 
@@ -406,6 +405,22 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	.name = "i2c-gpio", 
 +	.id = 2, 
 +	.dev.platform_data = &edge500_i2c_bb,
++}; 
++
++// edge5x0 rev B uses SMB1;
++
++static struct i2c_gpio_platform_data edge5x0b_i2c_bb = { 
++	.sda_pin = EDGE500_GPIO_SMB1_DATA, 
++	.sda_is_open_drain = 0,
++	.scl_pin = EDGE500_GPIO_SMB1_CLK,
++	.scl_is_open_drain = 0,
++	.udelay = 1,
++}; 
++
++static struct platform_device edge5x0b_i2c_device = { 
++	.name = "i2c-gpio", 
++	.id = 2, 
++	.dev.platform_data = &edge5x0b_i2c_bb,
 +}; 
 +
 +// i2c bitbang;
@@ -440,8 +455,15 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +static struct mdiobb_ops vc_5x0_mdio_ops;
 +
 +static vc_mdiobb_t vc_5x0_mdio = {
-+	.gpio_mdc = EDGE5X0_GPIO_PHY_MDC,
-+	.gpio_mdio = EDGE5X0_GPIO_PHY_MDIO,
++	.gpio_mdc = EDGE5X0_GPIO_PHY_MDC_REVA,
++	.gpio_mdio = EDGE5X0_GPIO_PHY_MDIO_REVA,
++	.ctrl.ops = &vc_5x0_mdio_ops,
++	.ctrl.reset = vc_5x0_mdio_reset,
++};
++
++static vc_mdiobb_t vc_5x0b_mdio = {
++	.gpio_mdc = EDGE5X0_GPIO_PHY_MDC_REVB,
++	.gpio_mdio = EDGE5X0_GPIO_PHY_MDIO_REVB,
 +	.ctrl.ops = &vc_5x0_mdio_ops,
 +	.ctrl.reset = vc_5x0_mdio_reset,
 +};
@@ -615,7 +637,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +static int vc_5x0_led_off(vc_data_t *vcd);
 +static vc_gpio_t *vc_5x0_gpio_direct[];
 +
-+static vc_hw_t vc_hw_edge5x0 = {
++static vc_hw_t vc_hw_edge5x0_reva = {
 +	.init = edge5x0_init,
 +	.caps = VC_CAP_RESET_BUTTON
 +		| VC_CAP_I2C_BB | VC_CAP_I2C
@@ -623,7 +645,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		,
 +	.gpio = {
 +		.reset_btn = EDGE5X0_GPIO_RESET_BTN,
-+		//XXX .msata_present = EDGE5X0_GPIO_MSATA_PRESENT,
++		//no msata presence detect
 +		.pcie_reset_a = EDGE5X0_GPIO_RST_PCIE_0,
 +		.pcie_reset_b = EDGE5X0_GPIO_RST_PCIE_1,
 +		.usb2_power_enable = EDGE5X0_GPIO_USB_PWREN,
@@ -648,12 +670,12 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		.probe[VC_I2C_1] = vc_5x0_probe_gpio,
 +		.probe[VC_I2C_2] = vc_5x0_probe_led,
 +		.probe[VC_I2C_3] = NULL, //XXX mfg eeprom
-+		.probe[VC_I2C_4] = vc_5x0_probe_fan, //XXX fan ctrl
++		.probe[VC_I2C_4] = vc_5x0_probe_fan,
 +		.remove[VC_I2C_0] = vc_5x0_remove_gpio,
 +		.remove[VC_I2C_1] = vc_5x0_remove_gpio,
 +		.remove[VC_I2C_2] = vc_5x0_remove_led,
 +		.remove[VC_I2C_3] = NULL, //XXX mfg eeprom
-+		.remove[VC_I2C_4] = vc_5x0_remove_fan, //XXX fan ctrl
++		.remove[VC_I2C_4] = vc_5x0_remove_fan,
 +	},
 +	.led = {
 +		.cfg = NULL,
@@ -665,7 +687,64 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		.addr = EDGE5X0_FAN_CTRL,
 +		.sysfs_group = &vc_5x0_fan_group,
 +	},
-+	// XXX add fan state;
++	.mdio = &vc_5x0_mdio,
++};
++
++// revB boards have:
++// - MDIO/SMB swapped, SMB uses hw controller
++// - msata presence detect
++
++static vc_hw_t vc_hw_edge5x0_revb = {
++	.init = edge5x0_init,
++	.caps = VC_CAP_RESET_BUTTON
++		| VC_CAP_I2C_BB | VC_CAP_I2C
++		| VC_CAP_MDIO_BB
++		,
++	.gpio = {
++		.reset_btn = EDGE5X0_GPIO_RESET_BTN,
++		//no msata presence detect
++		.pcie_reset_a = EDGE5X0_GPIO_RST_PCIE_0,
++		.pcie_reset_b = EDGE5X0_GPIO_RST_PCIE_1,
++		.usb2_power_enable = EDGE5X0_GPIO_USB_PWREN,
++		.sim_select = EDGE5X0_GPIO_SIM_SELECT,
++		.dying_gasp = EDGE5X0_GPIO_DYING_GASP,
++		.pwm_power = EDGE5X0_GPIO_FORCE_PWM,
++		.pwm_pin = EDGE5X0_GPIO_FORCE_12V,
++		.rfkill_a = EDGE5X0_GPIO_RFKILL_0,
++		.rfkill_b = EDGE5X0_GPIO_RFKILL_1,
++		.direct = vc_5x0_gpio_direct,
++	},
++	.i2c = {
++		.bb = &edge5x0b_i2c_device,
++		.exp = 0,
++		.addrs[VC_I2C_0] = EDGE5X0_PCA9557_30,
++		.addrs[VC_I2C_1] = EDGE5X0_PCA9557_38,
++		.addrs[VC_I2C_2] = EDGE5X0_PCA9634_ADDR,
++		.addrs[VC_I2C_3] = EDGE5X0_MFG_EEPROM,
++		.addrs[VC_I2C_4] = EDGE5X0_FAN_CTRL,
++		.addrs[N_VC_I2C_DEVS] = I2C_CLIENT_END,
++		.probe[VC_I2C_0] = vc_5x0_probe_gpio,
++		.probe[VC_I2C_1] = vc_5x0_probe_gpio,
++		.probe[VC_I2C_2] = vc_5x0_probe_led,
++		.probe[VC_I2C_3] = NULL, //XXX mfg eeprom
++		.probe[VC_I2C_4] = vc_5x0_probe_fan,
++		.remove[VC_I2C_0] = vc_5x0_remove_gpio,
++		.remove[VC_I2C_1] = vc_5x0_remove_gpio,
++		.remove[VC_I2C_2] = vc_5x0_remove_led,
++		.remove[VC_I2C_3] = NULL, //XXX mfg eeprom
++		.remove[VC_I2C_4] = vc_5x0_remove_fan,
++	},
++	.led = {
++		.cfg = NULL,
++		.sysfs_group = &vc_5x0_led_group,
++		.set = vc_5x0_led_set,
++		.off = vc_5x0_led_off,
++	},
++	.fan = {
++		.addr = EDGE5X0_FAN_CTRL,
++		.sysfs_group = &vc_5x0_fan_group,
++	},
++	.mdio = &vc_5x0b_mdio,
 +};
 +
 +// driver state;
@@ -3026,28 +3105,36 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +static void
 +vc_5x0_mdio_dir(struct mdiobb_ctrl *ctrl, int dir)
 +{
++	vc_mdiobb_t *mdio = vc_data.hw->mdio;
++
 +	if(dir)
-+		gpio_direction_output(EDGE5X0_GPIO_PHY_MDIO, 1);
++		gpio_direction_output(mdio->gpio_mdio, 1);
 +	else
-+		gpio_direction_input(EDGE5X0_GPIO_PHY_MDIO);
++		gpio_direction_input(mdio->gpio_mdio);
 +}
 +
 +static int
 +vc_5x0_mdio_get(struct mdiobb_ctrl *ctrl)
 +{
-+	return(gpio_get_value(EDGE5X0_GPIO_PHY_MDIO) != 0);
++	vc_mdiobb_t *mdio = vc_data.hw->mdio;
++
++	return(gpio_get_value(mdio->gpio_mdio) != 0);
 +}
 +
 +static void
 +vc_5x0_mdio_set(struct mdiobb_ctrl *ctrl, int val)
 +{
-+	gpio_set_value(EDGE5X0_GPIO_PHY_MDIO, val);
++	vc_mdiobb_t *mdio = vc_data.hw->mdio;
++
++	gpio_set_value(mdio->gpio_mdio, val);
 +}
 +
 +static void
 +vc_5x0_mdc_set(struct mdiobb_ctrl *ctrl, int val)
 +{
-+	gpio_set_value(EDGE5X0_GPIO_PHY_MDC, val);
++	vc_mdiobb_t *mdio = vc_data.hw->mdio;
++
++	gpio_set_value(mdio->gpio_mdc, val);
 +}
 +
 +static struct mdiobb_ops vc_5x0_mdio_ops = {
@@ -3073,7 +3160,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +static int
 +vc_5x0_mdio_init(vc_hw_t *hw, struct device *dev)
 +{
-+	vc_mdiobb_t *mdio = &vc_5x0_mdio;
++	vc_mdiobb_t *mdio = hw->mdio;
 +	struct mii_bus *bus;
 +	int i, err = -ENOMEM;
 +
@@ -3081,7 +3168,6 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	mdio->bus = bus;
 +	if( !bus)
 +		goto fail_alloc;
-+	hw->mdio = mdio;
 +
 +	bus->name = "MDIO to MV88E1514";
 +	bus->phy_mask = ~0;
@@ -3162,15 +3248,27 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	  },
 +	  .driver_data = &vc_hw_none,
 +	},
++	{ .ident = "edge520b",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
++	    DMI_MATCH(DMI_BOARD_VERSION, "2"),
++	  },
++	  .driver_data = &vc_hw_edge5x0_revb,
++	},
++	{ .ident = "edge540b",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE540"),
++	    DMI_MATCH(DMI_BOARD_VERSION, "2"),
++	  },
++	  .driver_data = &vc_hw_edge5x0_revb,
++	},
 +	{ .ident = "edge520",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
 +	  },
-+	  .driver_data = &vc_hw_edge5x0,
++	  .driver_data = &vc_hw_edge5x0_reva,
 +	},
 +	{ .ident = "edge540",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE540"),
 +	  },
-+	  .driver_data = &vc_hw_edge5x0,
++	  .driver_data = &vc_hw_edge5x0_reva,
 +	},
 +	{ 0 },
 +};

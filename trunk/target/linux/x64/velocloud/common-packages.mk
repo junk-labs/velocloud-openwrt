@@ -6,6 +6,7 @@ DEFAULT_PACKAGES += \
 	iputils-ping6 \
 	net-tools-arp \
 	net-tools-ifconfig \
+	net-tools-nameif \
 	net-tools-netstat \
 	net-tools-route \
 	openssh-server \

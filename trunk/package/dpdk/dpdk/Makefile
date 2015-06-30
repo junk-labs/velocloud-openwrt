@@ -35,14 +35,16 @@ endef
 
 TARCH=$(patsubst i386,i686,$(ARCH))
 T=$(TARCH)-openwrt-linuxapp-gcc
+DPDK_DEBUG=-g
 
 define Build/Compile
 	echo FOO Build/Compile
 	$(MAKE) -C "$(PKG_BUILD_DIR)" install \
 		T=$(T) V=$(V) \
+		CONFIG_RTE_BUILD_COMBINE_LIBS=y \
 		CROSS="$(TARGET_CROSS)" \
-		OPENWRT_CFLAGS="$(TARGET_CFLAGS) -msse3 -msse4" \
-		OPENWRT_LDFLAGS="$(TARGET_LDFLAGS)" \
+		OPENWRT_CFLAGS="$(TARGET_CFLAGS) $(DPDK_DEBUG) -msse3 -msse4" \
+		OPENWRT_LDFLAGS="$(TARGET_LDFLAGS) $(DPDK_DEBUG) " \
 		OPENWRT_LDLIBS="$(TARGET_LDLIBS)" \
 		RTE_KERNELDIR="$(LINUX_DIR)" \
 		DESTDIR="$(PKG_INSTALL_DIR)"
@@ -57,7 +59,7 @@ define Build/InstallDev
 		$(PKG_INSTALL_DIR)/$(T)/include/* \
 		$(1)/usr/dpdk/include
 	$(CP) \
-		$(PKG_INSTALL_DIR)/$(T)/lib/* \
+		$(PKG_INSTALL_DIR)/$(T)/lib/libintel_dpdk.a \
 		$(1)/usr/dpdk/lib
 endef
 define Package/dpdk/install

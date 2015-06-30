@@ -65,7 +65,7 @@ diff -uNr /dev/null b/mk/machine/openwrt/rte.vars.mk
 diff -uNr /dev/null b/config/defconfig_i686-openwrt-linuxapp-gcc
 --- /dev/null	1969-12-31 16:00:00.000000000 -0800
 +++ b/config/defconfig_i686-openwrt-linuxapp-gcc	2015-01-22 17:26:49.940531874 -0800
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,53 @@
 +#   BSD LICENSE
 +#
 +#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
@@ -108,6 +108,8 @@ diff -uNr /dev/null b/config/defconfig_i686-openwrt-linuxapp-gcc
 +CONFIG_RTE_TOOLCHAIN="gcc"
 +CONFIG_RTE_TOOLCHAIN_GCC=y
 +
++CONFIG_RTE_PKTMBUF_HEADROOM=192
++
 +#
 +# KNI is not supported on 32-bit
 +#
@@ -120,7 +122,7 @@ diff -uNr /dev/null b/config/defconfig_i686-openwrt-linuxapp-gcc
 diff -uNr /dev/null b/config/defconfig_x86_64-openwrt-linuxapp-gcc
 --- /dev/null	1969-12-31 16:00:00.000000000 -0800
 +++ b/config/defconfig_x86_64-openwrt-linuxapp-gcc	2015-01-22 17:26:55.128531886 -0800
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,44 @@
 +#   BSD LICENSE
 +#
 +#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
@@ -163,3 +165,5 @@ diff -uNr /dev/null b/config/defconfig_x86_64-openwrt-linuxapp-gcc
 +
 +CONFIG_RTE_TOOLCHAIN="gcc"
 +CONFIG_RTE_TOOLCHAIN_GCC=y
++
++CONFIG_RTE_PKTMBUF_HEADROOM=192

@@ -7,6 +7,26 @@
 
 VIRTUAL_MENU:=Virtualization Support
 
+define KernelPackage/virtio
+  SUBMENU:=$(VIRTUAL_MENU)
+  TITLE:=VirtIO settings for KVM guest
+  DEPENDS:=@TARGET_x86_kvm_guest||TARGET_x64_vc_kvm_guest
+  DEFAULT:=y if (TARGET_x64_vc_kvm_guest)
+  KCONFIG:= \
+	CONFIG_VIRTIO=y \
+	CONFIG_VIRTIO_BLK=y \
+	CONFIG_VIRTIO_CONSOLE=y \
+	CONFIG_VIRTIO_PCI=y \
+	CONFIG_SCSI_VIRTIO=y
+endef
+
+define KernelPackage/virtio/description
+ Kernel settings for KVM guests with Virtio
+endef
+
+$(eval $(call KernelPackage,virtio))
+
+
 define KernelPackage/virtio-balloon
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=VirtIO balloon driver

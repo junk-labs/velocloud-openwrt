@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dpdk
-PKG_VERSION:=1.8.0
+PKG_VERSION:=2.0.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://dpdk.org/browse/dpdk/snapshot/
-PKG_MD5SUM:=11ad8785aaa869cc87265bcb8d828f22
+PKG_MD5SUM:=e9e7935c9eec920841ad373949514934
 
 PKG_BUILD_PARALLEL:=1
 
@@ -35,14 +35,16 @@ endef
 
 TARCH=$(patsubst i386,i686,$(ARCH))
 T=$(TARCH)-openwrt-linuxapp-gcc
+DPDK_DEBUG=-g
 
 define Build/Compile
 	echo FOO Build/Compile
 	$(MAKE) -C "$(PKG_BUILD_DIR)" install \
 		T=$(T) V=$(V) \
+		CONFIG_RTE_BUILD_COMBINE_LIBS=y \
 		CROSS="$(TARGET_CROSS)" \
-		OPENWRT_CFLAGS="$(TARGET_CFLAGS) -msse3 -msse4" \
-		OPENWRT_LDFLAGS="$(TARGET_LDFLAGS)" \
+		OPENWRT_CFLAGS="$(TARGET_CFLAGS) $(DPDK_DEBUG) -msse3 -msse4" \
+		OPENWRT_LDFLAGS="$(TARGET_LDFLAGS) $(DPDK_DEBUG) " \
 		OPENWRT_LDLIBS="$(TARGET_LDLIBS)" \
 		RTE_KERNELDIR="$(LINUX_DIR)" \
 		DESTDIR="$(PKG_INSTALL_DIR)"
@@ -51,14 +53,14 @@ endef
 define Build/InstallDev
 	echo FOO Build/InstallDev
 	$(INSTALL_DIR) \
-		$(1)/usr/include/dpdk \
-		$(1)/usr/lib
+		$(1)/usr/dpdk/include \
+		$(1)/usr/dpdk/lib
 	$(CP) \
 		$(PKG_INSTALL_DIR)/$(T)/include/* \
-		$(1)/usr/include/dpdk
+		$(1)/usr/dpdk/include
 	$(CP) \
-		$(PKG_INSTALL_DIR)/$(T)/lib/* \
-		$(1)/usr/lib
+		$(PKG_INSTALL_DIR)/$(T)/lib/libintel_dpdk.a \
+		$(1)/usr/dpdk/lib
 endef
 define Package/dpdk/install
 	echo FOO Package/dpdk/install

@@ -7,10 +7,30 @@
 
 VIRTUAL_MENU:=Virtualization Support
 
+define KernelPackage/virtio
+  SUBMENU:=$(VIRTUAL_MENU)
+  TITLE:=VirtIO settings for KVM guest
+  DEPENDS:=@TARGET_x86_kvm_guest||TARGET_x64_vc_kvm_guest
+  DEFAULT:=y if (TARGET_x64_vc_kvm_guest)
+  KCONFIG:= \
+	CONFIG_VIRTIO=y \
+	CONFIG_VIRTIO_BLK=y \
+	CONFIG_VIRTIO_CONSOLE=y \
+	CONFIG_VIRTIO_PCI=y \
+	CONFIG_SCSI_VIRTIO=y
+endef
+
+define KernelPackage/virtio/description
+ Kernel settings for KVM guests with Virtio
+endef
+
+$(eval $(call KernelPackage,virtio))
+
+
 define KernelPackage/virtio-balloon
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=VirtIO balloon driver
-  DEPENDS:=@TARGET_x86_kvm_guest
+  DEPENDS:=@TARGET_x86_kvm_guest||TARGET_x64_vc_kvm_guest
   KCONFIG:=CONFIG_VIRTIO_BALLOON
   FILES:=$(LINUX_DIR)/drivers/virtio/virtio_balloon.ko
   AUTOLOAD:=$(call AutoLoad,06,virtio-balloon)
@@ -26,7 +46,8 @@ $(eval $(call KernelPackage,virtio-balloon))
 define KernelPackage/virtio-net
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=VirtIO network driver
-  DEPENDS:=@TARGET_x86_kvm_guest
+  DEPENDS:=@TARGET_x86_kvm_guest||TARGET_x64_vc_kvm_guest
+  DEFAULT:=y if (TARGET_x64_vc_kvm_guest)
   KCONFIG:=CONFIG_VIRTIO_NET
   FILES:=$(LINUX_DIR)/drivers/net/virtio_net.ko
   AUTOLOAD:=$(call AutoLoad,50,virtio_net)
@@ -42,7 +63,8 @@ $(eval $(call KernelPackage,virtio-net))
 define KernelPackage/virtio-random
   SUBMENU:=$(VIRTUAL_MENU)
   TITLE:=VirtIO Random Number Generator support
-  DEPENDS:=@TARGET_x86_kvm_guest
+  DEPENDS:=@TARGET_x86_kvm_guest||TARGET_x64_vc_kvm_guest
+  DEFAULT:=y if (TARGET_x64_vc_kvm_guest)
   KCONFIG:=CONFIG_HW_RANDOM_VIRTIO
   FILES:=$(LINUX_DIR)/drivers/char/hw_random/virtio-rng.ko
   AUTOLOAD:=$(call AutoLoad,09,virtio-rng)

@@ -1,19 +1,16 @@
 BOARDNAME:=VMware
 
 FEATURES:=ext4 pci usb
+
 # Common packages:
+include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
+
+# VMware packages:
 DEFAULT_PACKAGES += \
-	bridge \
-	ip \
-	iputils-ping \
-	iputils-ping6 \
-	net-tools-arp \
-	net-tools-ifconfig \
-	net-tools-netstat \
-	net-tools-route \
-	openssh-server \
-	openssh-client \
-	openssl-util \
+	kmod-pcnet32 \
+	kmod-e1000 \
+	kmod-e1000e \
+	kmod-vmxnet3 \
 
 
 define Target/Description

@@ -26,7 +26,7 @@
  	depends on PCI
 --- /dev/null
 +++ b/drivers/gpio/gpio-pcu.c
-@@ -0,0 +1,807 @@
+@@ -0,0 +1,844 @@
 +/*
 + * Copyright (C) 2014 Velocloud Inc.
 + *
@@ -128,18 +128,32 @@
 +
 +// edge520/540;
 +
-+#define EDGE5X0_FW_I2C ((1<<8) | (1<<9)) //XXX
-+#define EDGE5X0_BB_I2C ((1<<13) | (1<<14)) //XXX
++#define EDGE5X0_BB_SMB0 ((1<<8) | (1<<9))
++#define EDGE5X0_BB_SMB1 ((1<<11) | (1<<12))
++#define EDGE5X0_BB_SMB2 ((1<<13) | (1<<14))
 +
-+#define EDGE5X0_PCU_GPIO_MASK_SC (1<<4) | (1<<5) | (1<<11) | (1<<12) | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_I2C
++#define EDGE5X0_PCU_GPIO_MASK_SC (1<<4) | (1<<5) | EDGE5X0_BB_SMB1 | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_SMB2
 +#define EDGE5X0_PCU_GPIO_CLEAR_SC 0
-+#define EDGE5X0_PCU_GPIO_IOSEL_SC (1<<4) | (1<<5) | (1<<11) | (1<<12) | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_I2C
-+#define EDGE5X0_PCU_GPIO_OUT_SC 0 | EDGE5X0_BB_I2C
++#define EDGE5X0_PCU_GPIO_IOSEL_SC (1<<4) | (1<<5) | EDGE5X0_BB_SMB1 | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_SMB2
++#define EDGE5X0_PCU_GPIO_OUT_SC 0 | EDGE5X0_BB_SMB2
 +
 +#define EDGE5X0_PCU_GPIO_MASK_SUS (1<<2) | (1<<6) | (1<<7) | (1<<17) | (1<<18)
 +#define EDGE5X0_PCU_GPIO_CLEAR_SUS (1<<24) | (1<<25) | (1<<26) | (1<<27)
 +#define EDGE5X0_PCU_GPIO_IOSEL_SUS (1<<2) | (1<<17) | (1<<18)
 +#define EDGE5X0_PCU_GPIO_OUT_SUS (1<<2)
++
++// rev B;
++// XXX make SMB1 use hw controller;
++
++#define EDGE5X0B_PCU_GPIO_MASK_SC (1<<4) | (1<<5) | EDGE5X0_BB_SMB1 | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_SMB2
++#define EDGE5X0B_PCU_GPIO_CLEAR_SC 0
++#define EDGE5X0B_PCU_GPIO_IOSEL_SC (1<<4) | (1<<5) | EDGE5X0_BB_SMB1 | (1<<15) | (1<<17) | (1<<18) | EDGE5X0_BB_SMB2
++#define EDGE5X0B_PCU_GPIO_OUT_SC 0 | EDGE5X0_BB_SMB1
++
++#define EDGE5X0B_PCU_GPIO_MASK_SUS EDGE5X0_PCU_GPIO_MASK_SUS
++#define EDGE5X0B_PCU_GPIO_CLEAR_SUS EDGE5X0_PCU_GPIO_CLEAR_SUS
++#define EDGE5X0B_PCU_GPIO_IOSEL_SUS EDGE5X0_PCU_GPIO_IOSEL_SUS
++#define EDGE5X0B_PCU_GPIO_OUT_SUS EDGE5X0_PCU_GPIO_OUT_SUS
 +
 +// private data;
 +// core well: ids 0..31;
@@ -569,6 +583,17 @@
 +	.out[PCU_GPIO_SUS] = EDGE5X0_PCU_GPIO_OUT_SUS,
 +};
 +
++static pcu_hwcfg_t pcu_hw_edge5x0b = {
++	.mask[PCU_GPIO_SC] = EDGE5X0B_PCU_GPIO_MASK_SC,
++	.mask[PCU_GPIO_SUS] = EDGE5X0B_PCU_GPIO_MASK_SUS,
++	.clear[PCU_GPIO_SC] = EDGE5X0B_PCU_GPIO_CLEAR_SC,
++	.clear[PCU_GPIO_SUS] = EDGE5X0B_PCU_GPIO_CLEAR_SUS,
++	.iosel[PCU_GPIO_SC] = EDGE5X0B_PCU_GPIO_IOSEL_SC,
++	.iosel[PCU_GPIO_SUS] = EDGE5X0B_PCU_GPIO_IOSEL_SUS,
++	.out[PCU_GPIO_SC] = EDGE5X0B_PCU_GPIO_OUT_SC,
++	.out[PCU_GPIO_SUS] = EDGE5X0B_PCU_GPIO_OUT_SUS,
++};
++
 +// per-board dmi matching info;
 +// unfortunatedly, the edge-portwell has identical dmi info to edge-nexcom;
 +
@@ -577,6 +602,18 @@
 +	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE500"),
 +	  },
 +	  .driver_data = &pcu_hw_edge500,
++	},
++	{ .ident = "edge520b",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
++	    DMI_MATCH(DMI_BOARD_VERSION, "2"),
++	  },
++	  .driver_data = &pcu_hw_edge5x0b,
++	},
++	{ .ident = "edge540b",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE540"),
++	    DMI_MATCH(DMI_BOARD_VERSION, "2"),
++	  },
++	  .driver_data = &pcu_hw_edge5x0b,
 +	},
 +	{ .ident = "edge520",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
@@ -685,9 +722,9 @@
 +		chip->out[PCU_GPIO_SUS] = 0;
 +	}
 +	if(bbfw) {
-+		chip->mask[PCU_GPIO_SC] |= EDGE5X0_FW_I2C;
-+		chip->iosel[PCU_GPIO_SC] |= EDGE5X0_FW_I2C;
-+		chip->out[PCU_GPIO_SC] |= EDGE5X0_FW_I2C;
++		chip->mask[PCU_GPIO_SC] |= EDGE5X0_BB_SMB0;
++		chip->iosel[PCU_GPIO_SC] |= EDGE5X0_BB_SMB0;
++		chip->out[PCU_GPIO_SC] |= EDGE5X0_BB_SMB0;
 +	}
 +
 +	pci_set_drvdata(pdev, chip);

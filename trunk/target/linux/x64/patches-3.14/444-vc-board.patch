@@ -26,7 +26,7 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 --- /dev/null
 +++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,3488 @@
+@@ -0,0 +1,3536 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -194,6 +194,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +#define EDGE5X0_GPIO_PCA9557_38 80
 +#define EDGE5X0_GPIO_POE_SHUTDOWN (EDGE5X0_GPIO_PCA9557_38 + 0)
 +#define EDGE5X0_GPIO_POE_RST (EDGE5X0_GPIO_PCA9557_38 + 1)
++#define EDGE5X0_GPIO_MSATA_PRESENT (EDGE5X0_GPIO_PCA9557_38 + 2)
 +#define EDGE5X0_GPIO_TP3 (EDGE5X0_GPIO_PCA9557_38 + 3)
 +#define EDGE5X0_GPIO_TP4 (EDGE5X0_GPIO_PCA9557_38 + 5)
 +#define EDGE5X0_GPIO_FORCE_PWM (EDGE5X0_GPIO_PCA9557_38 + 6)
@@ -552,6 +553,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	struct {
 +		struct platform_device *bb;
 +		unsigned int exp;
++		u8 mode[2];
 +		const unsigned short addrs[N_VC_I2C_DEVS+1];
 +		vc_i2c_probe_f probe[N_VC_I2C_DEVS+1];
 +		vc_i2c_remove_f remove[N_VC_I2C_DEVS+1];
@@ -645,7 +647,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +		,
 +	.gpio = {
 +		.reset_btn = EDGE5X0_GPIO_RESET_BTN,
-+		//no msata presence detect
++		.msata_present = EDGE5X0_GPIO_MSATA_PRESENT,
 +		.pcie_reset_a = EDGE5X0_GPIO_RST_PCIE_0,
 +		.pcie_reset_b = EDGE5X0_GPIO_RST_PCIE_1,
 +		.usb2_power_enable = EDGE5X0_GPIO_USB_PWREN,
@@ -660,6 +662,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	.i2c = {
 +		.bb = &edge500_i2c_device,
 +		.exp = 0,
++		.mode = { 0x01, 0x00 },
 +		.addrs[VC_I2C_0] = EDGE5X0_PCA9557_30,
 +		.addrs[VC_I2C_1] = EDGE5X0_PCA9557_38,
 +		.addrs[VC_I2C_2] = EDGE5X0_PCA9634_ADDR,
@@ -702,7 +705,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +		,
 +	.gpio = {
 +		.reset_btn = EDGE5X0_GPIO_RESET_BTN,
-+		//no msata presence detect
++		.msata_present = EDGE5X0_GPIO_MSATA_PRESENT,
 +		.pcie_reset_a = EDGE5X0_GPIO_RST_PCIE_0,
 +		.pcie_reset_b = EDGE5X0_GPIO_RST_PCIE_1,
 +		.usb2_power_enable = EDGE5X0_GPIO_USB_PWREN,
@@ -717,6 +720,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	.i2c = {
 +		.bb = &edge5x0b_i2c_device,
 +		.exp = 0,
++		.mode = { 0x01, 0x14 },
 +		.addrs[VC_I2C_0] = EDGE5X0_PCA9557_30,
 +		.addrs[VC_I2C_1] = EDGE5X0_PCA9557_38,
 +		.addrs[VC_I2C_2] = EDGE5X0_PCA9634_ADDR,
@@ -1171,7 +1175,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	unsigned out;
 +	unsigned dir;
 +	vc_gpio_t **list;
-+	struct attribute_group *sysfs_group;
++	struct attribute_group **sysfs_group;
 +	struct gpio_chip gpio;
 +};
 +
@@ -2397,6 +2401,12 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	NULL,
 +};
 +
++static vc_gpio_t vc_5x0_msata_present = {
++	.gpio = EDGE5X0_GPIO_MSATA_PRESENT,
++	.name = "msata_present",
++	.flags = GPIOF_IN,
++};
++
 +static vc_gpio_t vc_5x0_tp3 = {
 +	.gpio = EDGE5X0_GPIO_TP3,
 +	.name = "tp3",
@@ -2409,6 +2419,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	.name = "tp4",
 +	.flags = GPIOF_IN,
 +};
++
 +static vc_gpio_t vc_5x0_pwm_pin = {
 +	.gpio = EDGE5X0_GPIO_FORCE_PWM,
 +	.name = "pwm-pin",
@@ -2424,6 +2435,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +};
 +
 +static vc_gpio_t *vc_5x0_38_list[] = {
++	&vc_5x0_msata_present,
 +	&vc_5x0_tp3,
 +	&vc_5x0_tp4,
 +	&vc_5x0_pwm_pin,
@@ -2445,9 +2457,14 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	NULL,
 +};
 +
-+static struct attribute_group vc_5x0_30_group = {
++static struct attribute_group vc_5x0_30_top = {
 +	.name = NULL,
 +	.attrs = vc_5x0_30_attrs,
++};
++
++static struct attribute_group *vc_5x0_30_group[] = {
++	&vc_5x0_30_top,
++	NULL,
 +};
 +
 +#define ATTR_FAN_FORCE(name) \
@@ -2456,15 +2473,45 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +ATTR_FAN_FORCE(pwm_power);
 +ATTR_FAN_FORCE(pwm_pin);
 +
-+static struct attribute *vc_5x0_38_attrs[] = {
++// show msata present;
++
++static ssize_t
++show_msata(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int gpio, ret;
++
++	gpio = gpio_get_value(hw->gpio.msata_present);
++	ret = scnprintf(buf, PAGE_SIZE, "%d\n", gpio? 0 : 1);
++	return(ret);
++}
++
++static DEVICE_ATTR(msata_present, S_IRUGO | S_IWUSR, show_msata, NULL);
++
++static struct attribute *vc_5x0_38_attrs_top[] = {
++	&dev_attr_msata_present.attr,
++	NULL,
++};
++
++static struct attribute *vc_5x0_38_attrs_pwm[] = {
 +	&dev_attr_pwm_power.attr,
 +	&dev_attr_pwm_pin.attr,
 +	NULL,
 +};
 +
-+static struct attribute_group vc_5x0_38_group = {
++static struct attribute_group vc_5x0_38_top = {
++	.attrs = vc_5x0_38_attrs_top,
++};
++
++static struct attribute_group vc_5x0_38_pwm = {
 +	.name = VC_PWM,
-+	.attrs = vc_5x0_38_attrs,
++	.attrs = vc_5x0_38_attrs_pwm,
++};
++
++static struct attribute_group *vc_5x0_38_group[] = {
++	&vc_5x0_38_top,
++	&vc_5x0_38_pwm,
++	NULL,
 +};
 +
 +// all the gpio expanders;
@@ -2486,7 +2533,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +		.set = vc_5x0_gpio_set,
 +	  },
 +	  .list = vc_5x0_30_list,
-+	  .sysfs_group = &vc_5x0_30_group,
++	  .sysfs_group = vc_5x0_30_group,
 +	},
 +
 +	// TP4 input, all others output;
@@ -2506,7 +2553,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +		.set = vc_5x0_gpio_set,
 +	  },
 +	  .list = vc_5x0_38_list,
-+	  .sysfs_group = &vc_5x0_38_group,
++	  .sysfs_group = vc_5x0_38_group,
 +	},
 +};
 +
@@ -2524,6 +2571,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	pca9557_chip_t *pca;
 +	struct gpio_chip *gpio;
 +	char *msg;
++	struct attribute_group **sfglist, *sfg;
 +
 +#ifdef VC_DEBUG_GPIO
 +	pr_info("vc: probe %d\n", index);
@@ -2594,8 +2642,8 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +
 +	// register sysfs entries;
 +
-+	if(pca->sysfs_group) {
-+		err = sysfs_create_group(&vc_pdev->dev.kobj, pca->sysfs_group);
++	for(sfglist = pca->sysfs_group; (sfg = *sfglist); sfglist++) {
++		err = sysfs_create_group(&vc_pdev->dev.kobj, sfg);
 +		msg = "failed to register sysfs";
 +		if(err < 0)
 +			goto fail;
@@ -2615,10 +2663,12 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +vc_5x0_remove_gpio(vc_hw_t *hw, struct i2c_client *client, int index)
 +{
 +	pca9557_chip_t *pca;
++	struct attribute_group **sfglist, *sfg;
 +
 +	pca = pca9557 + index;
-+	if(pca->sysfs_group)
-+		sysfs_remove_group(&vc_pdev->dev.kobj, pca->sysfs_group);
++	for(sfglist = pca->sysfs_group; (sfg = *sfglist); sfglist++) {
++		sysfs_remove_group(&vc_pdev->dev.kobj, sfg);
++	}
 +
 +	vc_gpio_release_list(pca->list);
 +}
@@ -2681,7 +2731,6 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +vc_5x0_probe_led(vc_hw_t *hw, struct i2c_client *client, int index)
 +{
 +	int ret;
-+	static u8 mode[2] = { 0x01, 0x00 };
 +	static u8 ledout[2] = { 0xaa, 0x00 };
 +	static u8 rgb[3] = { 0xff, 0xff, 0xff };
 +
@@ -2696,7 +2745,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +
 +	ret = i2c_smbus_write_i2c_block_data(client,
 +		PCA9634_AINC_ALL | PCA9634_REG_MODE1,
-+		sizeof(mode), mode);
++		2, hw->i2c.mode);
 +	if(ret < 0)
 +		goto fail;
 +
@@ -2958,7 +3007,6 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +// platform driver;
 +
 +static DEVICE_ATTR(reset, S_IRUGO | S_IWUSR, NULL, NULL);
-+static DEVICE_ATTR(msata_present, S_IRUGO | S_IWUSR, NULL, NULL);
 +
 +// show board name;
 +

@@ -23,7 +23,19 @@ if [ "$VC_BOARD" = "edge-nexcom" ]; then
     if [ "$ETH0_VENDOR" = "$NIC_NEXCOM" ]; then
         echo "edge-nexcom"
     elif [ "$ETH0_VENDOR" = "$NIC_CASWELL" ]; then
-        echo "edge300"
+        ETH7_PCI_ADDR=`ethtool -i eth7 2>/dev/null|awk '/bus-info/{print $2;}'`
+        if [ "$ETH7_PCI_ADDR" = "0000:06:00.0" ]; then
+            # Sea Lion proto
+            ETH8_DRIVER=`ethtool -i eth8 2>/dev/null|awk '/driver/{print $2;}'`
+            if [ "$ETH8_DRIVER" = "ixgbe" ]; then
+                echo "edge800p1"   # 8 GbE + 2 SFP+
+            else
+                echo "edge800p2"   # 8 GbE + 4 GbE
+            fi
+        else
+            # Dolphin proto
+            echo "edge300"
+        fi
     else
         echo "edge-nexcom"   # give up?
     fi

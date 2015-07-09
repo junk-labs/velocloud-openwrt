@@ -26,7 +26,7 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 --- /dev/null
 +++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,3488 @@
+@@ -0,0 +1,3493 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -3245,6 +3245,11 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	},
 +	{ .ident = "edge300",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE300"),
++	  },
++	  .driver_data = &vc_hw_none,
++	},
++	{ .ident = "edge800",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE800"),
 +	  },
 +	  .driver_data = &vc_hw_none,
 +	},

@@ -26,7 +26,7 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 --- /dev/null
 +++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,3536 @@
+@@ -0,0 +1,3541 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *

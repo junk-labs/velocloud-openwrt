@@ -1,7 +1,7 @@
 diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 --- a/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-05-22 15:24:01.319951528 -0700
-@@ -0,0 +1,2289 @@
++++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-07-02 11:17:04.120169167 -0700
+@@ -0,0 +1,2491 @@
 +/*
 + * (c) Jordan Rhody (jordan@velocloud.net)
 + *
@@ -48,9 +48,11 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +#define LTC4266_NAME		"ltc4266"
 +
 +#define LTC4266_CHIPSET_MONITOR_MS	250 /* In ms resolution. */
-+#define LTC_PORT_PWR_ON_TIMEOUT		500 /* In MS resolution. */
 +
-+#define LTC_PORTS_COUNT		4    /* LTC4266 controls 4 ports per chipset. */
++#define LTC_PORT_PWR_ON_TIMEOUT		500 
++
++#define LTC_PORTS_COUNT		2    /* LTC4266 controls 4 ports per chipset
++					but using first 2 ports. */
 +
 +#define VELO_PWRDFLT_mA_AVAIL	700
 +
@@ -318,6 +320,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +					     * however, we want notification
 +					     * about this manual event.
 +					     */
++	POWER_VTRANS_INTERRUPT = (1 << 12),  /* Virtual interrupt indicating
++					      * power enable/good transition.
++					      */
 +};
 +
 +struct ltc_icut_lim {
@@ -341,7 +346,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +struct ltc4266_port {
 +	volatile int port_state;
 +	volatile int cancel_timer;
-+	int port_event;
++	volatile int port_event;
++	int port_id;
 +	int last_port_event;
 +        int device_class;
 +        int device_mA;
@@ -461,21 +467,6 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	}
 +}
 +
-+static inline int find_port_bit(struct i2c_ltc4266_chipset *chipset, 
-+			__u8 bitmask, __u8 port_id)
-+{
-+	__u8 val;
-+	while (bitmask){
-+		val = bitmask & -bitmask;
-+		bitmask ^= val;
-+		if (xlt_bitpos_to_count(val) == port_id) {
-+			return 1;
-+		}
-+	}
-+	return 0;
-+}
-+
-+
 +static int ltc4266_port_pwr(struct i2c_ltc4266_chipset *chipset,
 +                			__u8 port_id, int flags)
 +{
@@ -506,8 +497,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        int err, detena;
 +
 +	if (i2c_smbus_write_byte_data(chipset->client, 
-+			LTC_DISENA_REG, 0xf0) < 0) {
-+		dev_warn(&chipset->client->dev, "Cannot read detena reg\n");
++			LTC_DISENA_REG, 0xf) < 0) {
++		dev_warn(&chipset->client->dev, "Cannot write detena reg\n");
 +		return -EIO;
 +	}
 +
@@ -542,8 +533,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	dev_dbg(&chipset->client->dev, "Power available: %d, class_dev: 0x%x\n",
 +			 chipset->total_mA_avail, clsdev);
 +
-+	if ((chipset->total_mA_avail - iCUT) >= 0) {
-+	
++	if (chipset->total_mA_avail >= iCUT) {
++
 +		chipset->total_mA_avail -= iCUT;
 +
 +		mutex_unlock(&chipset->glbl_lock);	
@@ -554,7 +545,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +		return (0);
 +	} 
-+		
++	
 +	mutex_unlock(&chipset->glbl_lock);	
 +
 +	dev_dbg(&chipset->client->dev, "Power requirements unavailable for "
@@ -675,6 +666,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	 */
 +	reg = i2c_smbus_read_byte_data(chipset->client,
 +				   LTC_PWREVN_COR_REG);
++	if (reg < 0) {
++		return reg;
++	}
 +
 +	bitshift_and_store_port_event(chipset, 
 +		(reg & 0xf), POWER_ENABLE_INTERRUPT);
@@ -683,6 +677,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +	reg = i2c_smbus_read_byte_data(chipset->client,
 +				   LTC_FLTEVN_COR_REG);
++	if (reg < 0) {
++		return reg;
++	}
 +	 
 +	bitshift_and_store_port_event(chipset,
 +		(reg & 0xf), tCUT_INTERRUPT);
@@ -691,6 +688,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		
 +	reg = i2c_smbus_read_byte_data(chipset->client,
 +				LTC_DETEVN_COR_REG);
++	if (reg < 0) {
++		return reg;
++	}
 +
 +	bitshift_and_store_port_event(chipset,
 +                       (reg & 0xf), DETECT_INTERRUPT);
@@ -699,12 +699,20 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	
 +	reg = i2c_smbus_read_byte_data(chipset->client,
 +                                     LTC_TSEVN_COR_REG);
++	if (reg < 0) {
++		return reg;
++	}
 +
 +	bitshift_and_store_port_event(chipset,
 +                  ((reg >> 4) & 0xf), tSTART_INTERRUPT);
 +
 +	reg = i2c_smbus_read_byte_data(chipset->client,
 +                                    LTC_SUPEVN_COR_REG);
++
++	if (reg < 0) {
++		return reg;
++	}
++
 +	reg = ((reg >> 4));
 +
 +	while (reg) {
@@ -834,22 +842,25 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +			wmode |= (LTC_CONFIG_SEMIAUTO << (i * 2));
 +
 +                        detena |= ltc4266_detena_port(i, detena);
-+					
++			
++			mutex_lock(&port->port_lock);		
 +			port->port_state = PORT_STATE_CLASSIFY;
 +			port->last_port_event = DETECT_INTERRUPT;
++			mutex_unlock(&port->port_lock);		
 +
 +		} else if (mode == LTC_CONFIG_SEMIAUTO) {
 +			
 +			statpwr = i2c_smbus_read_byte_data(chipset->client, 
-+						LTC_STATPWR_REG);
++							LTC_STATPWR_REG);
 +
 +			/* Power good on port and it's configured in semi-auto
 +			 * mode.  Thus, we've maintained hardware PoE power on
 +			 * despite the driver initializating.
 +			 */
-+			if (find_port_bit(chipset, 
-+			    ((statpwr >> 4) & 0xf), i+1)) {
-+				
++			/* Upper nibble is pwrgd status for port. */
++        		statpwr = ((statpwr >> 4) & (1 << i));
++
++			if (statpwr) {
 +				/* XXX TBD If already powered, get class device
 +				 * to calculate mA requirements against
 +			 	 * pwrsupply.
@@ -861,11 +872,21 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +				if (! ltc4266_calculate_total_mA(
 +				    chipset, i, statp)) {
 +
++					mutex_lock(&port->port_lock);		
++
 +					port->last_port_event = 
 +						POWER_GOOD_INTERRUPT;
 +
 +					port->port_state = PORT_STATE_MONITOR;
++
++					mutex_unlock(&port->port_lock);		
++
 +				}
++			} else {
++				mutex_lock(&port->port_lock);		
++	                        port->port_state = PORT_STATE_CLASSIFY;
++				port->last_port_event = DETECT_INTERRUPT;
++				mutex_unlock(&port->port_lock);		
 +			}
 +		}
 +	}
@@ -923,7 +944,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +			port->device_class = LTC_STATp_CLASS(statp);
 +				
-+			port->last_port_event = port->port_event;
++			port->last_port_event = (DETECT_INTERRUPT|
++						CLASS_INTERRUPT);
 +			
 +			mutex_lock(&chipset->glbl_lock);
 +			if (chipset->eventfd)
@@ -963,6 +985,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +				 * expect an interrupt if port fails to
 +				 * power on.
 +				 */
++				port->last_port_event = POWER_VTRANS_INTERRUPT;
 +
 +				mod_timer(&port->port_pwr_on_timer,
 +					msecs_to_jiffies(
@@ -987,14 +1010,74 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        return (-EINVAL);
 +}
 +
-+static int ltc4266_port_monitor(struct i2c_ltc4266_chipset *chipset, 
-+							__u8 port_id)
++static int ltc4266_port_monitor(struct i2c_ltc4266_chipset *chipset,
++						__u8 port_id)
 +{
-+	int err = 0;
++	int statpwr, detena, err = 0;
++
 +        struct ltc4266_port *port;
-+	static int last_change[LTC_PORTS_COUNT] = { 0, 0, 0, 0};
++	static int last_change[LTC_PORTS_COUNT] = { 0, 0};
 +
 +	port = &chipset->port_dev[port_id];
++
++        /* XXX We may carry multiple events in the same interrupt. 
++         * They may be contradictory events such as tCUT_INTERRUPT
++         * and POWER_GOOD_INTERRUPT. Check what our current state
++	 * is to determine what event occurred in the past.
++         */
++        statpwr = i2c_smbus_read_byte_data(chipset->client,
++                                          LTC_STATPWR_REG);
++
++        /* Upper nibble is pwrgd status for port. */
++        statpwr = ((statpwr >> 4) & (1 << port_id));
++
++	/* Do we currently have a port powered? */
++	if (statpwr) {
++
++		/* If we do, then tCUT | DISCONNECT was a past event. */
++		port->port_event &= ~(tCUT_INTERRUPT       |
++                                      DISCONNECT_INTERRUPT);
++
++		/* Did we ever reach a state of pwrgd? If no, detect/class
++		 * was a past event. 
++		 */ 
++		if (port->last_port_event != POWER_GOOD_INTERRUPT) {
++
++			port->port_event &= ~(CLASS_INTERRUPT |
++					      DETECT_INTERRUPT);
++		}
++	}
++
++	if (port->port_event & (CLASS_INTERRUPT | DETECT_INTERRUPT)) {
++
++		err = 1;
++		
++		dev_dbg(&chipset->client->dev,
++                      "Port %d detect|classify interrupt\n", port_id);
++
++		del_timer_sync(&port->port_pwr_on_timer);
++
++		if (work_busy(&port->port_work))
++                        port->cancel_timer++;
++		
++		mutex_lock(&chipset->glbl_lock);
++                chipset->total_mA_avail += port->device_mA;
++		port->device_mA = 0;
++                mutex_unlock(&chipset->glbl_lock);
++
++		ltc4266_port_pwr(chipset, port_id, LTC_PWRPB_OFF);
++
++                detena = ltc4266_detena_port(port_id, 0);
++
++                ltc4266_enable_detect_classify(chipset, detena);
++
++                port->port_event &= ~(CLASS_INTERRUPT |
++                                      DETECT_INTERRUPT |
++				      POWER_ENABLE_INTERRUPT |
++                                      POWER_GOOD_INTERRUPT);
++
++                port->last_port_event = DETECT_INTERRUPT;
++	}
 +
 +	if (port->port_event & tCUT_INTERRUPT) {
 +
@@ -1003,22 +1086,19 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		dev_dbg(&chipset->client->dev,
 +                      "Port %d device TCUT detected\n", port_id);
 +
-+		/* A race w/timer is possible if timer is waiting on the
-+		 * port mutex.  If it is, cancel the current timer and
-+		 * continue with 'total_mA_avail' pool.
-+		 */
 +		del_timer_sync(&port->port_pwr_on_timer);
 +
-+		if (timer_pending(&port->port_pwr_on_timer))
-+			port->cancel_timer += 1;
++		if (work_busy(&port->port_work)) 
++                        port->cancel_timer++;
 +
 +		mutex_lock(&chipset->glbl_lock);
-+               	chipset->total_mA_avail += port->device_mA;
++		chipset->total_mA_avail += port->device_mA;
++		port->device_mA = 0;
 +		mutex_unlock(&chipset->glbl_lock);	
 +
 +		port->port_event &= ~(tCUT_INTERRUPT|
-+				      POWER_ENABLE_INTERRUPT|
-+				      POWER_GOOD_INTERRUPT);
++			      POWER_ENABLE_INTERRUPT|
++			      POWER_GOOD_INTERRUPT);
 +
 +		port->last_port_event = tCUT_INTERRUPT;
 +        }
@@ -1038,18 +1118,15 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +                dev_dbg(&chipset->client->dev,
 +		    "Port %d class %d device disconnect detected\n",
 +                    port_id, port->device_class);
-+
-+		/* A race w/timer is possible if timer is waiting on the
-+		 * port mutex.  If it is, cancel the current timer and
-+		 * continue with 'total_mA_avail' pool.
-+		 */
++		
 +		del_timer_sync(&port->port_pwr_on_timer);
 +
-+		if (timer_pending(&port->port_pwr_on_timer))
-+			port->cancel_timer += 1;
++		if (work_busy(&port->port_work)) 
++                        port->cancel_timer++;
 +
 +		mutex_lock(&chipset->glbl_lock);	
 +               	chipset->total_mA_avail += port->device_mA;
++		port->device_mA = 0;
 +		mutex_unlock(&chipset->glbl_lock);	
 +
 +		port->port_event &= ~(DISCONNECT_INTERRUPT|
@@ -1065,35 +1142,34 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		 * accordingingly, another detect/classify cycle may take
 +		 * place.  If that is true, simply clear it here.
 +		 */
-+		port->port_event &= ~(POWER_ENABLE_INTERRUPT|
-+					   DETECT_INTERRUPT| 
-+                                            CLASS_INTERRUPT);
++		port->port_event &= ~POWER_ENABLE_INTERRUPT;
++
 +		dev_dbg(&chipset->client->dev,
 +                    "Port %d device power enable detected\n", port_id+1);
 +        }
 +
++	/* XXX We may carry POWER_GOOD_INTERRUPT and tCUT_INTERRUPT event
++	 * in the same interrupt, implying events are not atomic and can
++	 * batched with historical+current events.  Check for tCUT_INTERRUPT
++	 * before assuming power is actually "good".
++	 */
 +        if (port->port_event & POWER_GOOD_INTERRUPT) {
 +
-+		port->port_event &= ~(DETECT_INTERRUPT|
-+				  POWER_GOOD_INTERRUPT|
-+                                       CLASS_INTERRUPT);
++		err = 2;
++                
++		dev_dbg(&chipset->client->dev,
++                    "Port %d device power good detected\n", port_id+1);
++		
++		del_timer_sync(&port->port_pwr_on_timer);
++
++		if (work_busy(&port->port_work))
++                        port->cancel_timer++;
++
++		port->port_event &= ~POWER_GOOD_INTERRUPT;
 +		
 +		port->last_port_event = POWER_GOOD_INTERRUPT;
-+
-+                dev_dbg(&chipset->client->dev,
-+                    "Port %d device power good detected\n", port_id+1);
-+	
-+		/* Do our best to delete any pending timers.  This doesn't
-+		 * guarantee the timer is deleted if a currently pending
-+		 * timer is waiting on a lock.
-+		 */
-+		del_timer_sync(&port->port_pwr_on_timer);
-+			
-+		if (timer_pending(&port->port_pwr_on_timer))
-+			port->cancel_timer += 1;
 +        }
-+
-+
++	
 +	if (last_change[port_id] != port->last_port_event) {
 +                
 +		dev_dbg(&chipset->client->dev, 
@@ -1131,27 +1207,41 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +static void port_pwr_on_work_fn(struct work_struct *work)
 +{
++	int detena;
++
 +	struct ltc4266_port *port =
 +                container_of(work, struct ltc4266_port, port_work);
 +	
 +	mutex_lock(&port->port_lock);
 +
-+	if (port->cancel_timer == 0) {	
++	if (port->cancel_timer == 0 && 
++		(port->last_port_event & (POWER_VTRANS_INTERRUPT |
++					POWER_GOOD_INTERRUPT))) { 
 +
 +		mutex_lock(&port->cookie->glbl_lock);	
 +		port->cookie->total_mA_avail += port->device_mA;
 +		mutex_unlock(&port->cookie->glbl_lock);	
 +
++                ltc4266_port_pwr(port->cookie, port->port_id, LTC_PWRPB_OFF);
++
++                detena = ltc4266_detena_port(port->port_id, 0);
++
++                ltc4266_enable_detect_classify(port->cookie, detena);
++
++		port->device_mA = 0;
 +		port->port_state = PORT_STATE_CLASSIFY;
-+	} else
-+		port->cancel_timer -= 1;
++
++	} else if (port->cancel_timer != 0) {
++
++		port->cancel_timer--;
++	}
 +		
 +	mutex_unlock(&port->port_lock);
 +}
 +
 +static void ltc4266_port_work_fn(struct work_struct *work)
 +{
-+	int i;
++	int i, rc = 0;
 +	struct ltc4266_port *port;
 +
 +	struct i2c_ltc4266_chipset *chipset = 
@@ -1177,11 +1267,15 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +			break;
 +
 +		case PORT_STATE_MONITOR:
-+			if (ltc4266_port_monitor(chipset, i))
++			rc = ltc4266_port_monitor(chipset, i);
++			if (rc == 1) 
 +				port->port_state = PORT_STATE_CLASSIFY;
 +			break;
 +		}
 +		mutex_unlock(&port->port_lock);
++
++		if (rc)
++			cancel_work_sync(&port->port_work);
 +	}
 +}
 +
@@ -1204,7 +1298,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	int i, err;
 +	unsigned long val;
 +	struct i2c_ltc4266_chipset *chipset;
-+        struct ltc4266_port *port;
++	struct ltc4266_port *port;
 +
 +	struct i2c_client *client = to_i2c_client(dev);
 +
@@ -1215,26 +1309,48 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +                return err;
 +        
 +	if (val) {
-+                err = ltc4266_chip_reset(chipset);
++
++		for (i = 0; i < LTC_PORTS_COUNT; i++) {
++
++			port = &chipset->port_dev[i];
++
++			mutex_lock(&port->port_lock);
++			
++			if (port->device_class == LTC_STATp_CLASS_RESERVED)
++                        	port->last_port_event = 0;
++			else
++                        	port->last_port_event = DISCONNECT_INTERRUPT;
++		
++			del_timer_sync(&port->port_pwr_on_timer);
++
++			/* If work queue is pending or executing, signal
++			 * pwr on check is cancelled, release the mutex
++			 * and wait for work to cancel.  Since we release the
++			 * lock after incrementing cancel_timer, our ordering
++			 * guarantees that cancel_work_sync will run the
++			 * workq callback function to completion (even if
++			 * it was pending.
++			 */
++			if (work_busy(&port->port_work)) {
++                        	port->cancel_timer++;
++			
++				mutex_unlock(&port->port_lock);
++
++				cancel_work_sync(&port->port_work);
++			} else 
++				mutex_unlock(&port->port_lock);
++		}
++                
++		err = ltc4266_chip_reset(chipset);
++		
++		mutex_lock(&chipset->glbl_lock);	
++                chipset->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
++		mutex_unlock(&chipset->glbl_lock);	
 +
 +		if (ltc4266_config_semiauto_mode_from_pwr_on(chipset) < 0) {
 +                
 +			dev_warn(&chipset->client->dev,
 +				"chip reset and configuration failed\n");
-+		}
-+
-+		chipset->mode = VC_I2C_CHIPSET_MANUAL_MODE;
-+		mutex_lock(&chipset->glbl_lock);	
-+                chipset->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
-+		mutex_unlock(&chipset->glbl_lock);	
-+
-+                for (i = 0; i < LTC_PORTS_COUNT; i++) {
-+
-+			port = &chipset->port_dev[i];
-+
-+			mutex_lock(&port->port_lock);
-+			port->port_event = 0;
-+			mutex_unlock(&port->port_lock);
 +		}
 +        }
 +
@@ -1337,6 +1453,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +		port = &chipset->port_dev[i];
 +
++		mutex_lock(&port->port_lock);
++
 +		switch (port->device_class) {
 +		case LTC_STATp_CLASS_UNKNOWN:
 +			class = "unknown";
@@ -1359,6 +1477,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		case LTC_STATp_CLASS_OVERCURRENT:
 +			class = "overcurrent";
 +			break;
++		case LTC_STATp_CLASS_RESERVED:
++			class = "scanning";
++			break;
 +		default:
 +			class = 0;
 +			break;
@@ -1370,10 +1491,21 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +			action = "tcut";
 +		else if (port->last_port_event & DISCONNECT_INTERRUPT)
 +			action = "disconnected";
-+		else if (port->last_port_event & DETECT_INTERRUPT)
++		else if ((port->last_port_event & (DETECT_INTERRUPT|
++						  CLASS_INTERRUPT)) &&
++				 (port->device_class == LTC_STATp_CLASS_0 ||
++				  port->device_class == LTC_STATp_CLASS_1 ||
++				  port->device_class == LTC_STATp_CLASS_2 ||
++				  port->device_class == LTC_STATp_CLASS_3 ||
++				  port->device_class == LTC_STATp_CLASS_4))
 +			action = "detected";
-+		else 
-+			action = 0;
++		else if (port->last_port_event & POWER_VTRANS_INTERRUPT)
++			action = "pwr enable transition";
++		else {
++			action = "for device";
++		}
++
++		mutex_unlock(&port->port_lock);
 +		
 +		len += sprintf(buf+len, "Port %d PD: %s %s\n", 
 +					i+1, class, action);
@@ -1400,7 +1532,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +	statpwr = i2c_smbus_read_byte_data(chipset->client,
-+                        LTC_STATPWR_REG + index);
++					LTC_STATPWR_REG);
 +
 +	/* Upper nibble is pwrgd status for port. */
 +	statpwr = ((statpwr >> 4) & (1 << index));
@@ -1449,8 +1581,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +			if (err < 0) {
 +                		dev_err(dev, "port %d pwr on error\n", index);
 +			}
-+
++			port->last_port_event = POWER_VTRANS_INTERRUPT;
 +			port->port_state = PORT_STATE_MONITOR;
++
 +		} else {
 +			if (port->port_state == PORT_STATE_MONITOR) {
 +				err = -EINVAL;
@@ -1484,8 +1617,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		
 +		mutex_lock(&chipset->glbl_lock);
 +
-+               	chipset->total_mA_avail += 
-+			chipset->port_dev[index].device_mA;
++               	chipset->total_mA_avail += port->device_mA;
 +
 +		mutex_unlock(&chipset->glbl_lock);	
 +
@@ -1494,6 +1626,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		port->port_event &= ~(DETECT_INTERRUPT|CLASS_INTERRUPT);
 +		
 +		port->last_port_event = POWER_OFF_INTERRUPT;
++		port->device_mA = 0;
 +
 +		mutex_unlock(&port->port_lock);
 +
@@ -1515,7 +1648,12 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +        return(len);
 +}
-+                    
++
++/* XXX Fixme - We want sysfs port files under each port subdirectory
++ * instead of lumping port index named files under 'port_attr'. In the
++ * iteration of (any) bug fixes or additional features, this will be a 
++ * planned item to add.
++ */
 +
 +#define SHOW_POWER(name,index) \
 +static ssize_t show_power_##name(struct device *dev, \
@@ -1527,8 +1665,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +SHOW_POWER(pwr_p1, VC_I2C_PORT1)
 +SHOW_POWER(pwr_p2, VC_I2C_PORT2)
++#if 0
 +SHOW_POWER(pwr_p3, VC_I2C_PORT3)
 +SHOW_POWER(pwr_p4, VC_I2C_PORT4)
++#endif
 +
 +#define STORE_POWER(name,index) \
 +static ssize_t store_power_##name(struct device *dev, \
@@ -1540,8 +1680,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +STORE_POWER(pwr_p1, VC_I2C_PORT1)
 +STORE_POWER(pwr_p2, VC_I2C_PORT2)
++#if 0
 +STORE_POWER(pwr_p3, VC_I2C_PORT3)
 +STORE_POWER(pwr_p4, VC_I2C_PORT4)
++#endif
 +
 +#define ATTR_POWER(name) \
 +static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_power_##name, \
@@ -1549,8 +1691,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +ATTR_POWER(pwr_p1);
 +ATTR_POWER(pwr_p2);
++#if 0
 +ATTR_POWER(pwr_p3);
 +ATTR_POWER(pwr_p4);
++#endif
 +
 +static ssize_t
 +show_ilim(struct device *dev, char *buf, unsigned index)
@@ -1610,8 +1754,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +SHOW_ILIM(ilim_p1, VC_I2C_PORT1)
 +SHOW_ILIM(ilim_p2, VC_I2C_PORT2)
++#if 0
 +SHOW_ILIM(ilim_p3, VC_I2C_PORT3)
 +SHOW_ILIM(ilim_p4, VC_I2C_PORT4)
++#endif
 +
 +#define STORE_ILIM(name,index) \
 +static ssize_t store_ilim_##name(struct device *dev, \
@@ -1623,8 +1769,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +STORE_ILIM(ilim_p1, VC_I2C_PORT1)
 +STORE_ILIM(ilim_p2, VC_I2C_PORT2)
++#if 0
 +STORE_ILIM(ilim_p3, VC_I2C_PORT3)
 +STORE_ILIM(ilim_p4, VC_I2C_PORT4)
++#endif
 +
 +
 +#define ATTR_ILIM(name) \
@@ -1633,8 +1781,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +ATTR_ILIM(ilim_p1);
 +ATTR_ILIM(ilim_p2);
++#if 0
 +ATTR_ILIM(ilim_p3);
 +ATTR_ILIM(ilim_p4);
++#endif
 +
 +
 +static ssize_t
@@ -1696,8 +1846,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +SHOW_ICUT(icut_p1, VC_I2C_PORT1)
 +SHOW_ICUT(icut_p2, VC_I2C_PORT2)
++#if 0
 +SHOW_ICUT(icut_p3, VC_I2C_PORT3)
 +SHOW_ICUT(icut_p4, VC_I2C_PORT4)
++#endif
 +
 +#define STORE_ICUT(name,index) \
 +static ssize_t store_icut_##name(struct device *dev, \
@@ -1709,8 +1861,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +STORE_ICUT(icut_p1, VC_I2C_PORT1)
 +STORE_ICUT(icut_p2, VC_I2C_PORT2)
++#if 0
 +STORE_ICUT(icut_p3, VC_I2C_PORT3)
 +STORE_ICUT(icut_p4, VC_I2C_PORT4)
++#endif
 +
 +#define ATTR_ICUT(name) \
 +static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_icut_##name, \
@@ -1718,8 +1872,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +ATTR_ICUT(icut_p1);
 +ATTR_ICUT(icut_p2);
++#if 0
 +ATTR_ICUT(icut_p3);
 +ATTR_ICUT(icut_p4);
++#endif
 +
 +static ssize_t
 +show_mA(struct device *dev, char *buf, unsigned index)
@@ -1799,16 +1955,20 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +SHOW_mA(mA_p1, VC_I2C_PORT1)
 +SHOW_mA(mA_p2, VC_I2C_PORT2)
++#if 0
 +SHOW_mA(mA_p3, VC_I2C_PORT3)
 +SHOW_mA(mA_p4, VC_I2C_PORT4)
++#endif
 +
 +#define ATTR_mA(name) \
 +static DEVICE_ATTR(name, S_IRUGO , show_mA_##name, NULL);
 +
 +ATTR_mA(mA_p1);
 +ATTR_mA(mA_p2);
++#if 0
 +ATTR_mA(mA_p3);
 +ATTR_mA(mA_p4);
++#endif
 +
 +static ssize_t
 +show_volts(struct device *dev, char *buf, unsigned index)
@@ -1888,16 +2048,20 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +SHOW_VOLTS(volts_p1, VC_I2C_PORT1)
 +SHOW_VOLTS(volts_p2, VC_I2C_PORT2)
++#if 0
 +SHOW_VOLTS(volts_p3, VC_I2C_PORT3)
 +SHOW_VOLTS(volts_p4, VC_I2C_PORT4)
++#endif
 +
 +#define ATTR_VOLTS(name) \
 +static DEVICE_ATTR(name, S_IRUGO , show_volts_##name, NULL);
 +
 +ATTR_VOLTS(volts_p1);
 +ATTR_VOLTS(volts_p2);
++#if 0
 +ATTR_VOLTS(volts_p3);
 +ATTR_VOLTS(volts_p4);
++#endif
 +
 +static int 
 +store_port_reset(struct device *dev, const char *buf, size_t len, 
@@ -1925,22 +2089,48 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        if (val) {
 +		mutex_lock(&port->port_lock);
 +
++		if (port->last_port_event & (POWER_VTRANS_INTERRUPT|
++					    POWER_GOOD_INTERRUPT)) {
++
++			mutex_lock(&chipset->glbl_lock);
++               		chipset->total_mA_avail += port->device_mA;
++			mutex_unlock(&chipset->glbl_lock);	
++		}
++
 +		ltc4266_port_pwr(chipset, index, LTC_PWRPB_OFF);
++
++		port->device_mA = 0;
++		port->port_event = 0;
++
++		if (port->device_class == LTC_STATp_CLASS_RESERVED)
++			port->last_port_event = 0;
++		else
++			port->last_port_event = DISCONNECT_INTERRUPT;
++
++                port->port_state = PORT_STATE_CLASSIFY;
 +
 +		detena = ltc4266_detena_port(index, 0);
 +
 +                ltc4266_enable_detect_classify(chipset, detena);
 +
-+		if (port->port_state == PORT_STATE_MONITOR) {
-+		
-+			mutex_lock(&chipset->glbl_lock);	
-+                	chipset->total_mA_avail += port->device_mA;
-+			mutex_unlock(&chipset->glbl_lock);	
-+		}
++               	del_timer_sync(&port->port_pwr_on_timer);
 +
-+                port->port_state = PORT_STATE_CLASSIFY;
-+		ltc4266_port_pwr(chipset, index, LTC_PWRPB_ON);
-+		mutex_unlock(&port->port_lock);
++                /* If work queue is pending or executing, signal
++                 * pwr on check is cancelled, release the mutex
++                 * and wait for work to cancel.  Since we release the
++                 * lock after incrementing cancel_timer, our ordering
++                 * guarantees that cancel_work_sync will run the
++                 * workq callback function to completion (even if
++                 * it was pending).
++                 */
++                 if (work_busy(&port->port_work)) {
++			port->cancel_timer++;
++                        
++                        mutex_unlock(&port->port_lock);
++
++                        cancel_work_sync(&port->port_work);
++                 } else
++                        mutex_unlock(&port->port_lock);
 +        }
 +	
 +	return len;
@@ -1956,42 +2146,58 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +STORE_PORT_RESET(reset_p1, VC_I2C_PORT1)
 +STORE_PORT_RESET(reset_p2, VC_I2C_PORT2)
++#if 0
 +STORE_PORT_RESET(reset_p3, VC_I2C_PORT3)
 +STORE_PORT_RESET(reset_p4, VC_I2C_PORT4)
++#endif
 +
 +#define ATTR_RESET(name) \
 +static DEVICE_ATTR(name, S_IWUSR, NULL, store_port_##name);
 +
 +ATTR_RESET(reset_p1);
 +ATTR_RESET(reset_p2);
++#if 0
 +ATTR_RESET(reset_p3);
 +ATTR_RESET(reset_p4);
++#endif
 +
 +static struct attribute *vc_ltc4266_port_attrs[] = {
 +        &dev_attr_pwr_p1.attr,
 +        &dev_attr_pwr_p2.attr,
++#if 0
 +        &dev_attr_pwr_p3.attr,
 +        &dev_attr_pwr_p4.attr,
++#endif
 +        &dev_attr_icut_p1.attr,
 +        &dev_attr_icut_p2.attr,
++#if 0
 +        &dev_attr_icut_p3.attr,
 +        &dev_attr_icut_p4.attr,
++#endif
 +        &dev_attr_ilim_p1.attr,
 +        &dev_attr_ilim_p2.attr,
++#if 0
 +        &dev_attr_ilim_p3.attr,
 +        &dev_attr_ilim_p4.attr,
++#endif
 +        &dev_attr_volts_p1.attr,
 +        &dev_attr_volts_p2.attr,
++#if 0
 +        &dev_attr_volts_p3.attr,
 +        &dev_attr_volts_p4.attr,
++#endif
 +        &dev_attr_mA_p1.attr,
 +        &dev_attr_mA_p2.attr,
++#if 0
 +        &dev_attr_mA_p3.attr,
 +        &dev_attr_mA_p4.attr,
++#endif
 +        &dev_attr_reset_p1.attr,
 +        &dev_attr_reset_p2.attr,
++#if 0
 +        &dev_attr_reset_p3.attr,
 +        &dev_attr_reset_p4.attr,
++#endif
 +        NULL,
 +};
 +
@@ -2004,72 +2210,74 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +static int
 +ltc4266_i2c_probe(struct i2c_client *client)
 +{
-+        int i, err, chip = 0;
++        int i, err;
 +	struct ltc4266_port *port;
++        struct i2c_ltc4266_chipset *chip;
 +
 +        // only probe for devices we'd expect;
 +        for(i = VC_I2C_0; i < N_VC_I2C_DEVS; i++) {
 +                if(ltc4266_i2c_addr[i] == I2C_CLIENT_END)
 +                        return(-ENODEV);
 +                if(client->addr == ltc4266_i2c_addr[i]) {
-+			chip = i;
 +                        break;
 +		}
 +        }
-+	ltc4266_dev.i2c_dev[chip] =  kmalloc(sizeof(struct i2c_ltc4266_chipset),
-+				    			GFP_KERNEL|__GFP_ZERO);
-+        if (!ltc4266_dev.i2c_dev[chip])
++	ltc4266_dev.i2c_dev[i] =  kmalloc(sizeof(struct i2c_ltc4266_chipset),
++			    			GFP_KERNEL|__GFP_ZERO);
++
++	chip = ltc4266_dev.i2c_dev[i];
++
++        if (!chip)
 +                return -ENOMEM;
 +
-+	ltc4266_dev.i2c_dev[chip]->client = client;
++	chip->client = client;
 +
-+	i2c_set_clientdata(client, (void *)ltc4266_dev.i2c_dev[chip]);
++	i2c_set_clientdata(client, (void *)chip);
 +
-+	ltc4266_dev.i2c_dev[chip]->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
++	chip->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
 +
-+	ltc4266_dev.i2c_dev[chip]->mode = VC_I2C_CHIPSET_AUTO_MODE;
++	chip->mode = VC_I2C_CHIPSET_AUTO_MODE;
 +	
-+	mutex_init(&ltc4266_dev.i2c_dev[chip]->glbl_lock);
++	mutex_init(&chip->glbl_lock);
 +
-+	if (ltc4266_check_firmware_revision(ltc4266_dev.i2c_dev[chip]) < 0) {
-+		kfree(ltc4266_dev.i2c_dev[chip]);
++	for (i = 0; i < LTC_PORTS_COUNT; i++) {
++		port = &chip->port_dev[i];
++		mutex_init(&port->port_lock);
++		port->port_id = i;
++	}
++
++	if (ltc4266_check_firmware_revision(chip) < 0) {
++		kfree(chip);
 +		return (-EINVAL);
 +	}
 +
-+	if (ltc4266_config_semiauto_mode_from_pwr_on(
-+			ltc4266_dev.i2c_dev[chip]) < 0) {
-+		kfree(ltc4266_dev.i2c_dev[chip]);
++	if (ltc4266_config_semiauto_mode_from_pwr_on(chip) < 0) {
++		kfree(chip);
 +		return (-EINVAL);
 +	}
 +
-+	ltc4266_dev.i2c_dev[chip]->chip_wq = 
-+		alloc_workqueue("ltc4266-monitor-thread", 0, 0);
++	chip->chip_wq = alloc_workqueue("ltc4266-monitor-thread", 0, 0);
 +
-+	if (!ltc4266_dev.i2c_dev[chip]->chip_wq)
++	if (!chip->chip_wq)
 +		return (-ENOMEM);
 +
-+	INIT_WORK(&ltc4266_dev.i2c_dev[chip]->chip_work, ltc4266_port_work_fn);
++	INIT_WORK(&chip->chip_work, ltc4266_port_work_fn);
 +
-+	ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer.function = 
-+		ltc4266_timer_function;
-+        ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer.data = 
-+		(unsigned long)ltc4266_dev.i2c_dev[chip];
-+	init_timer(&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer);
++	chip->ltc_chip_monitor_timer.function = ltc4266_timer_function;
++        chip->ltc_chip_monitor_timer.data = (unsigned long)chip;
++
++	init_timer(&chip->ltc_chip_monitor_timer);
 +
 +	/* Reset initial state to power on.  State machine will detect hardware
 +	 * state and put in the correct state.
 +	 */
 +	for (i = 0; i < LTC_PORTS_COUNT; i++) {
 +	
-+		port = &ltc4266_dev.i2c_dev[chip]->port_dev[i];
++		port = &chip->port_dev[i];
 +
-+		port->cookie = ltc4266_dev.i2c_dev[chip];
-+
++		port->cookie = chip;
 +		port->port_event = 0;
-+
 +		port->cancel_timer = 0;
-+
-+		mutex_init(&port->port_lock);
 +
 +		port->port_wq = alloc_workqueue("ltc4266-monitor-thread", 0, 0);
 +
@@ -2094,7 +2302,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		return (err);
 +        }
 +
-+	mod_timer(&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer, 
++	mod_timer(&chip->ltc_chip_monitor_timer, 
 +		msecs_to_jiffies(LTC4266_CHIPSET_MONITOR_MS) + jiffies);
 +
 +	return (0);
@@ -2104,11 +2312,11 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +static int
 +ltc4266_i2c_remove(struct i2c_client *client)
 +{
-+        int i, chip = 0;
++        int i;
 +        struct ltc4266_port *port;
-+        struct i2c_ltc4266_chipset *chipset;
++        struct i2c_ltc4266_chipset *chip;
 +
-+	chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++	chip = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +	device_remove_file(&client->dev, &dev_attr_fw_rev);
 +	device_remove_file(&client->dev, &dev_attr_chip_reset);
@@ -2119,39 +2327,33 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	sysfs_remove_group(&client->dev.kobj, &port_attr_group);
 +
 +	/* delete any scheduled timer */
-+	del_timer_sync(&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer);
++	del_timer_sync(&chip->ltc_chip_monitor_timer);
 +
-+	/* Stall waiting for any current timers to complete. */
-+	while (timer_pending(
-+		&ltc4266_dev.i2c_dev[chip]->ltc_chip_monitor_timer));
-+
-+	/* flush all queue instances including any possible current. */
-+	flush_workqueue(ltc4266_dev.i2c_dev[chip]->chip_wq);
-+
-+       /* destroy work queue. */
-+        destroy_workqueue(ltc4266_dev.i2c_dev[chip]->chip_wq);
++	cancel_work_sync(&chip->chip_work);
++		
++	destroy_workqueue(chip->chip_wq);
 +
 +	for (i = 0; i < LTC_PORTS_COUNT; i++) {
 +
-+		port = &chipset->port_dev[i];
++		port = &chip->port_dev[i];
++	
++		mutex_lock(&port->port_lock);
 +		
-+		flush_workqueue(port->port_wq);
-+
-+		destroy_workqueue(port->port_wq);
-+
 +		del_timer_sync(&port->port_pwr_on_timer);
 +
-+		mutex_lock(&port->port_lock);
-+		port->cancel_timer += 1;
++		if (work_busy(&port->port_work))
++			port->cancel_timer++;
++
 +		mutex_unlock(&port->port_lock);
 +
-+		/* Flush any remaining timers. */
-+		while (timer_pending(&port->port_pwr_on_timer));
++		cancel_work_sync(&port->port_work);
++
++		destroy_workqueue(port->port_wq);
 +	}
 +
-+	if (chipset->eventfd) {
-+	    eventfd_ctx_put(chipset->eventfd);
-+	    chipset->eventfd = 0;
++	if (chip->eventfd) {
++	    eventfd_ctx_put(chip->eventfd);
++	    chip->eventfd = 0;
 +	}
 +
 +	return (0);

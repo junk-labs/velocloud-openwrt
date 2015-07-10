@@ -1,0 +1,43 @@
+config interface 'loopback'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option ifname 'eth0 eth1 eth2 eth3'
+	option proto 'static'
+	option type 'bridge'
+	option ipaddr '192.168.2.1'
+	option netmask '255.255.255.0'
+
+config interface 'GE1'
+	option ifname 'eth4'
+	option proto 'dhcp'
+	option hostname 'vc-ge1'
+
+config interface 'GE2'
+	option ifname 'eth5'
+	option proto 'dhcp'
+	option hostname 'vc-ge2'
+
+config interface 'GE3'
+	option ifname 'eth6'
+	option proto 'dhcp'
+	option hostname 'vc-ge3'
+
+config interface 'GE4'
+	option ifname 'eth7'
+	option proto 'dhcp'
+	option hostname 'vc-ge4'
+
+config interface 'SFP1'
+	option ifname 'eth8'
+	option proto 'dhcp'
+	option hostname 'vc-sfp1'
+
+config interface 'SFP2'
+	option ifname 'eth9'
+	option proto 'dhcp'
+	option hostname 'vc-sfp2'
+

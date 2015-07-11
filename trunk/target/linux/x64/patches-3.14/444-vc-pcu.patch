@@ -1,31 +1,34 @@
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -57,6 +57,7 @@
+diff -Naur a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+--- a/drivers/gpio/Kconfig      2015-05-17 09:54:01.000000000 -0700
++++ b/drivers/gpio/Kconfig      2015-07-11 09:00:26.298023827 -0700
+@@ -689,6 +689,13 @@
+          ML7223/ML7831 is companion chip for Intel Atom E6xx series.
+          ML7223/ML7831 is completely compatible for Intel EG20T PCH.
+
++config GPIO_PCU
++       tristate "Intel Atom C2000 GPIO"
++       depends on PCI && X86
++       select GENERIC_IRQ_CHIP
++       help
++         This driver is for PCU(Platform Controller Unit) GPIO of Intel Atom C2000.
++
+ config GPIO_ML_IOH
+        tristate "OKI SEMICONDUCTOR ML7213 IOH GPIO support"
+        depends on PCI
+diff -Naur a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+--- a/drivers/gpio/Makefile	2015-07-13 11:10:47.803987096 -0700
++++ b/drivers/gpio/Makefile	2015-07-13 11:11:18.546557828 -0700
+@@ -61,6 +61,7 @@
  obj-$(CONFIG_GPIO_PCA953X)	+= gpio-pca953x.o
  obj-$(CONFIG_GPIO_PCF857X)	+= gpio-pcf857x.o
  obj-$(CONFIG_GPIO_PCH)		+= gpio-pch.o
-+obj-$(CONFIG_GPIO_PCU)		+= gpio-pcu.o
++obj-$(CONFIG_GPIO_PCU)          += gpio-pcu.o
  obj-$(CONFIG_GPIO_PL061)	+= gpio-pl061.o
  obj-$(CONFIG_GPIO_PXA)		+= gpio-pxa.o
  obj-$(CONFIG_GPIO_RC5T583)	+= gpio-rc5t583.o
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -635,6 +635,13 @@
- 	  ML7223/ML7831 is companion chip for Intel Atom E6xx series.
- 	  ML7223/ML7831 is completely compatible for Intel EG20T PCH.
- 
-+config GPIO_PCU
-+	tristate "Intel Atom C2000 GPIO"
-+	depends on PCI && X86
-+	select GENERIC_IRQ_CHIP
-+	help
-+	  This driver is for PCU(Platform Controller Unit) GPIO of Intel Atom C2000.
-+
- config GPIO_ML_IOH
- 	tristate "OKI SEMICONDUCTOR ML7213 IOH GPIO support"
- 	depends on PCI
---- /dev/null
-+++ b/drivers/gpio/gpio-pcu.c
+diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
+--- a/drivers/gpio/gpio-pcu.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/gpio/gpio-pcu.c	2015-07-11 09:00:26.298023827 -0700
 @@ -0,0 +1,844 @@
 +/*
 + * Copyright (C) 2014 Velocloud Inc.
@@ -139,7 +142,7 @@
 +
 +#define EDGE5X0_PCU_GPIO_MASK_SUS (1<<2) | (1<<6) | (1<<7) | (1<<17) | (1<<18)
 +#define EDGE5X0_PCU_GPIO_CLEAR_SUS (1<<24) | (1<<25) | (1<<26) | (1<<27)
-+#define EDGE5X0_PCU_GPIO_IOSEL_SUS (1<<2) | (1<<17) | (1<<18)
++#define EDGE5X0_PCU_GPIO_IOSEL_SUS ((1<<17) | (1<<18))
 +#define EDGE5X0_PCU_GPIO_OUT_SUS (1<<2)
 +
 +// rev B;

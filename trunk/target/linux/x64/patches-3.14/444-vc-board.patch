@@ -1,15 +1,6 @@
-diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
---- a/drivers/platform/x86/Makefile	2015-03-26 07:07:23.000000000 -0700
-+++ b/drivers/platform/x86/Makefile	2015-04-15 16:22:12.446613176 -0700
-@@ -55,4 +55,5 @@
- obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
- 
- obj-$(CONFIG_PVPANIC)           += pvpanic.o
-+obj-$(CONFIG_VELOCLOUD_VC)      += velocloud-vc.o
- obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
 diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
---- a/drivers/platform/x86/Kconfig	2015-03-26 07:07:23.000000000 -0700
-+++ b/drivers/platform/x86/Kconfig	2015-04-15 16:23:08.326616143 -0700
+--- a/drivers/platform/x86/Kconfig	2015-05-17 09:54:01.000000000 -0700
++++ b/drivers/platform/x86/Kconfig	2015-07-10 16:36:14.831945007 -0700
 @@ -827,4 +827,12 @@
  	  Interface. This is a requirement for systems that need to configure
  	  the PUNIT for power management features such as RAPL.
@@ -23,10 +14,19 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 +         Say Y to enable support for the Velocloud boards.
 +
  endif # X86_PLATFORM_DEVICES
-diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
---- /dev/null
-+++ b/drivers/platform/x86/velocloud-vc.c
-@@ -0,0 +1,3541 @@
+diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
+--- a/drivers/platform/x86/Makefile	2015-05-17 09:54:01.000000000 -0700
++++ b/drivers/platform/x86/Makefile	2015-07-10 16:36:14.831945007 -0700
+@@ -55,4 +55,5 @@
+ obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
+ 
+ obj-$(CONFIG_PVPANIC)           += pvpanic.o
++obj-$(CONFIG_VELOCLOUD_VC)      += velocloud-vc.o
+ obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
+diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
+--- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/platform/x86/velocloud-vc.c	2015-07-10 16:46:05.988428625 -0700
+@@ -0,0 +1,3579 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -170,6 +170,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +
 +// rangeley sus domain;
 +
++#define EDGE5X0_GPIO_PWR_CYCLE (EDGE500_GPIO_ATOM_SUS + 2)
 +#define EDGE5X0_GPIO_SIM_SELECT (EDGE500_GPIO_ATOM_SUS + 6)
 +#define EDGE5X0_GPIO_LED_OE (EDGE500_GPIO_ATOM_SUS + 7)
 +#define EDGE5X0_GPIO_INT_SW_A (EDGE500_GPIO_ATOM_SUS + 17)
@@ -542,6 +543,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +		unsigned pcie_reset_a;
 +		unsigned pcie_reset_b;
 +		unsigned usb2_power_enable;
++		unsigned pwr_cycle;
 +		unsigned sim_select;
 +		unsigned dying_gasp;
 +		unsigned pwm_power;
@@ -651,6 +653,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +		.pcie_reset_a = EDGE5X0_GPIO_RST_PCIE_0,
 +		.pcie_reset_b = EDGE5X0_GPIO_RST_PCIE_1,
 +		.usb2_power_enable = EDGE5X0_GPIO_USB_PWREN,
++		.pwr_cycle = EDGE5X0_GPIO_PWR_CYCLE,
 +		.sim_select = EDGE5X0_GPIO_SIM_SELECT,
 +		.dying_gasp = EDGE5X0_GPIO_DYING_GASP,
 +		.pwm_power = EDGE5X0_GPIO_FORCE_PWM,
@@ -709,6 +712,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +		.pcie_reset_a = EDGE5X0_GPIO_RST_PCIE_0,
 +		.pcie_reset_b = EDGE5X0_GPIO_RST_PCIE_1,
 +		.usb2_power_enable = EDGE5X0_GPIO_USB_PWREN,
++		.pwr_cycle = EDGE5X0_GPIO_PWR_CYCLE,
 +		.sim_select = EDGE5X0_GPIO_SIM_SELECT,
 +		.dying_gasp = EDGE5X0_GPIO_DYING_GASP,
 +		.pwm_power = EDGE5X0_GPIO_FORCE_PWM,
@@ -2144,6 +2148,16 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +}
 +
 +static ssize_t
++show_pwr_cycle(struct device *dev, struct device_attribute *attr, char *buf)
++{
++        vc_hw_t *hw = vc_data.hw;
++        int gpio;
++
++        gpio = gpio_get_value(hw->gpio.pwr_cycle);
++        return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
 +show_dying_gasp(struct device *dev, struct device_attribute *attr, char *buf)
 +{
 +	vc_hw_t *hw = vc_data.hw;
@@ -2212,6 +2226,20 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	return(len);
 +}
 +
++static ssize_t
++store_pwr_cycle(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++        vc_hw_t *hw = vc_data.hw;
++
++        int ret;
++
++        ret = vc_store_un(buf, 1);
++        if(ret < 0)
++                return(ret);
++        gpio_set_value(hw->gpio.pwr_cycle, ret);
++        return(len);
++}
++
 +// fan pwm control;
 +
 +static ssize_t
@@ -2270,6 +2298,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +
 +static DEVICE_ATTR(usb2_power_enable, S_IRUGO | S_IWUSR, show_usb2_power_enable, store_usb2_power_enable);
 +static DEVICE_ATTR(sim_select, S_IRUGO | S_IWUSR, show_sim_select, store_sim_select);
++static DEVICE_ATTR(pwr_cycle, S_IRUGO | S_IWUSR, show_pwr_cycle, store_pwr_cycle);
 +static DEVICE_ATTR(dying_gasp, S_IRUGO, show_dying_gasp, NULL);
 +
 +// edge5x0 GPIOs on cpu;
@@ -2293,6 +2322,14 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	.flags = GPIOF_OUT_INIT_LOW,
 +	.relval = 0,
 +	.attr = &dev_attr_sim_select.attr,
++};
++
++static vc_gpio_t vc_5x0_pwr_cycle = {
++        .gpio = EDGE5X0_GPIO_PWR_CYCLE,
++        .name = "pwr_cyle",
++        .flags = GPIOF_OUT_INIT_HIGH,
++        .relval = 1,
++        .attr = &dev_attr_pwr_cycle.attr,
 +};
 +
 +static vc_gpio_t vc_5x0_led_oe = {
@@ -2325,6 +2362,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	&vc_5x0_tp_sc4,
 +	&vc_5x0_tp_sc5,
 +	&vc_5x0_sim_select,
++        &vc_5x0_pwr_cycle,
 +	&vc_5x0_dying_gasp,
 +	&vc_5x0_int_sw_a,
 +	&vc_5x0_int_sw_b,

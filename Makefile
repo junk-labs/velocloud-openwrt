@@ -170,6 +170,7 @@ $(OPENWRT_TSYS): $(OPENWRT_CONFIG)
 	$(call OpenwrtConfig,$@)
 	$(call CopyFiles,$@)
 	@rm -rf trunk/bin/$(OPENWRT_ARCH)-eglibc/root-$(OPENWRT_ARCH) trunk/bin/$(OPENWRT_ARCH)-eglibc/packages
+	make -C $(OPENWRT_ROOT) package/dpdk/dpdk/clean
 	make -C $(OPENWRT_ROOT) -j $(NCPU)
 	@rm -rf $(OPENWRT_ROOT)/files
 

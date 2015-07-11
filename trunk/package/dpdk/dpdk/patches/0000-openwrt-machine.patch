@@ -122,7 +122,7 @@ diff -uNr /dev/null b/config/defconfig_i686-openwrt-linuxapp-gcc
 diff -uNr /dev/null b/config/defconfig_x86_64-openwrt-linuxapp-gcc
 --- /dev/null	1969-12-31 16:00:00.000000000 -0800
 +++ b/config/defconfig_x86_64-openwrt-linuxapp-gcc	2015-01-22 17:26:55.128531886 -0800
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,54 @@
 +#   BSD LICENSE
 +#
 +#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
@@ -167,3 +167,13 @@ diff -uNr /dev/null b/config/defconfig_x86_64-openwrt-linuxapp-gcc
 +CONFIG_RTE_TOOLCHAIN_GCC=y
 +
 +CONFIG_RTE_PKTMBUF_HEADROOM=192
++
++#
++# Vectorized PMD not wanted on 64-bit
++#
++CONFIG_RTE_IXGBE_INC_VECTOR=n
++
++#
++# Turn on pcap ability
++#
++CONFIG_RTE_LIBRTE_PMD_PCAP=y

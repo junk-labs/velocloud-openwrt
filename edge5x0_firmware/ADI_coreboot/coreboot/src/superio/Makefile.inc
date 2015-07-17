@@ -1,0 +1,34 @@
+##
+## This file is part of the coreboot project.
+##
+## Copyright (C) 2009 Ronald G. Minnich
+## Copyright (C) 2013 Sage Electronic Engineering, LLC.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+##
+
+subdirs-y += fintek
+subdirs-y += intel
+subdirs-y += ite
+subdirs-y += nsc
+subdirs-y += nuvoton
+subdirs-y += renesas
+subdirs-y += serverengines
+subdirs-y += smsc
+subdirs-y += via
+subdirs-y += winbond
+subdirs-y += generic
+
+ramstage-$(CONFIG_ARCH_RAMSTAGE_X86_32) += common/conf_mode.c
+ramstage-$(CONFIG_GENERATE_SPCR_ACPI_TABLE) += acpi/spcr.c

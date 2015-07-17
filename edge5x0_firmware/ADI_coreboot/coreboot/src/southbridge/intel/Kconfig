@@ -1,0 +1,2 @@
+source src/southbridge/intel/common/Kconfig
+source src/southbridge/intel/fsp_rangeley/Kconfig

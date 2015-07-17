@@ -1,0 +1,104 @@
+##
+## This file is part of the coreboot project.
+##
+## Copyright (C) 2011 Google Inc.
+## Copyright (C) 2013-2014 Sage Electronic Engineering, LLC.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
+
+config SOUTHBRIDGE_INTEL_FSP_RANGELEY
+	bool
+
+if SOUTHBRIDGE_INTEL_FSP_RANGELEY
+
+config SOUTH_BRIDGE_OPTIONS # dummy
+	def_bool y
+	select IOAPIC
+	select HAVE_HARD_RESET
+	select HAVE_USBDEBUG
+	select HAVE_USBDEBUG_OPTIONS
+	select SOUTHBRIDGE_INTEL_COMMON
+#	select HAVE_SMI_HANDLER
+	select USE_WATCHDOG_ON_BOOT
+	select PCIEXP_ASPM
+	select PCIEXP_COMMON_CLOCK
+	select SPI_FLASH
+
+config EHCI_BAR
+	hex
+	default 0xfe700000
+
+config EHCI_DEBUG_OFFSET
+	hex
+	default 0xa0
+
+config BOOTBLOCK_SOUTHBRIDGE_INIT
+	string
+	default "southbridge/intel/fsp_rangeley/bootblock.c"
+
+config SERIRQ_CONTINUOUS_MODE
+	bool
+	default n
+	help
+	  If you set this option to y, the serial IRQ machine will be
+	  operated in continuous mode.
+
+config HPET_MIN_TICKS
+	hex
+	default 0x80
+
+config INCLUDE_ME
+	bool "Add Intel descriptor.bin file"
+	default n
+	help
+	  Include the descriptor.bin for the SOC.  This is required for the
+	  SOC to boot.
+
+config ME_PATH
+	string "Path to descriptor.bin file"
+	depends on INCLUDE_ME
+	default "../intel/mainboard/intel/rangeley"
+	help
+	  The path of the descriptor.bin file.
+
+config ACPI_INCLUDE_GPIO
+	bool
+	depends on GENERATE_ACPI_TABLES
+	default y
+	help
+	  If the LPC or GPIO driver is enabled in Linux, it will complain
+	  about the driver's IO area conflicting with the ACPI GPIO
+	  section if this is enabled:
+	  "ACPI Warning: 0x0000000000000530-0x000000000000053f SystemIO conflicts
+	  with Region \GPIO 1"
+	  "ACPI Warning: 0x0000000000000500-0x000000000000052f SystemIO conflicts
+	  with Region \GPIO 1"
+	  If ACPI does not need to access the GPIO region to look at the GPIO
+	  states, this should be safe to disable.
+
+config ACPI_INCLUDE_PMIO
+	bool
+	depends on GENERATE_ACPI_TABLES
+	default y
+	help
+	  If the LPC driver is enabled in Linux, it will complain about
+	  the driver's IO area conflicting with the ACPI GPIO section if
+	  this is enabled:
+	  "ACPI Warning: 0x0000000000000428-0x000000000000042f SystemIO conflicts
+	  with Region \PMIO 1"
+	  If ACPI does not need to access the PMIO region to look at the SCI
+	  states, this should be safe to disable.
+
+endif

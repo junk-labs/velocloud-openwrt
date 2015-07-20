@@ -142,6 +142,7 @@ define OpenwrtConfig
 		-e '/CONFIG_X\(64\|86\)_/d' \
 		-e '/CONFIG_GRUB_/d' \
 		-e '/CONFIG_VMDK_/d' \
+		-e '/CONFIG_QCOW2_/d' \
 		-e '/CONFIG.*_EC2_/d' \
 		-e '/CONFIG_VELOCLOUD_/d' \
 		-e '/CONFIG_KEXEC_TOOLS_TARGET_NAME/d' \

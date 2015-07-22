@@ -83,7 +83,8 @@ void main(void) {
                 
             case G3_IDLE:
                 // three conditions for proceeding w/ power up...
-                if (first_on == 1 || _PIC_PWR_BTN == 1 || cpu_pc == 1) {
+                //if (first_on == 1 || _PIC_PWR_BTN == 1 || cpu_pc == 1) {
+                if (first_on == 1 || cpu_pc == 1) {
                     first_on = 0;   // clear first time power up flag
                     cpu_pc = 0;     // clear auto restart flag
                     // spec calls for 3 second delay here - 
@@ -153,8 +154,7 @@ void main(void) {
                     
                 // If CPU THERMTRIP/SYS_SHDN, simply power off.
                 } else if (_SYS_SHDN_N == 1) {
-                      state = PWR_DN1;
-                      cpu_pc = 0;
+                    state = FAULT;
                       
                 // If _PIC_SLP_N, find if this is a power off request
                 // or a cold reset by timing how long the line stays

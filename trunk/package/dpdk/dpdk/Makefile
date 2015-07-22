@@ -20,7 +20,7 @@ include $(INCLUDE_DIR)/kernel.mk
 define Package/dpdk/Default
   SECTION:=devel
   CATEGORY:=Development
-  DEPENDS:=@i386||x86_64 +libpthread +librt +kmod-hwmon-core
+  DEPENDS:=@i386||x86_64 +libpcap +libpthread +librt +kmod-hwmon-core
   URL:=http://dpdk.org/
 endef
 

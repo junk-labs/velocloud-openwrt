@@ -176,6 +176,18 @@ ifneq ($(CONFIG_VMDK_IMAGES),)
   endef
 endif
 
+ifneq ($(CONFIG_QCOW2_IMAGES),)
+  define Image/Build/qcow2
+    # left here because the image builder doesnt need these
+    ifeq ($(1),ext4)
+		rm $(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).qcow2 || true
+		qemu-img convert -f raw -O qcow2 \
+			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img \
+			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).qcow2
+    endif
+  endef
+endif
+
 define Image/Build/gzip
 	gzip -f9 $(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img
 	gzip -f9 $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img
@@ -344,6 +356,7 @@ define Image/Build
     endif
 	$(call Image/Build/vdi,$(1))
 	$(call Image/Build/vmdk,$(1))
+	$(call Image/Build/qcow2,$(1))
 	$(call Image/Build/vc-ec2,$(1))
 	$(CP) $(KDIR)/root.$(1) $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img
   else

@@ -147,6 +147,8 @@ define OpenwrtConfig
 		-e '/CONFIG_VELOCLOUD_/d' \
 		-e '/CONFIG_KEXEC_TOOLS_TARGET_NAME/d' \
 		-e '/CONFIG_.*_kmod-i2c-i801/d' \
+		-e '/CONFIG_.*_kmod-i2c-ltc4266/d' \
+		-e '/CONFIG_.*_dmi-tool/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)_$(call target_conf,$(1))=y' \

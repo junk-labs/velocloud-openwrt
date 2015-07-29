@@ -4,6 +4,10 @@ DEFAULT_PACKAGES += \
 	ip \
 	iputils-ping \
 	iputils-ping6 \
+	traceroute \
+	iputils-traceroute6 \
+	iputils-tracepath \
+	iputils-tracepath6 \
 	net-tools-arp \
 	net-tools-ifconfig \
 	net-tools-netstat \

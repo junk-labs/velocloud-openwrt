@@ -1,0 +1,115 @@
+diff -r -u a/src/dnsmasq.h b/src/dnsmasq.h
+--- a/src/dnsmasq.h	2015-06-12 13:39:11.000000000 -0700
++++ b/src/dnsmasq.h	2015-07-27 13:37:12.446704546 -0700
+@@ -665,6 +665,8 @@
+   int hwaddr_len, hwaddr_type;
+   unsigned char hwaddr[DHCP_CHADDR_MAX]; 
+   struct in_addr addr, override, giaddr;
++  unsigned char *req_options;
++  int req_options_len;
+   unsigned char *extradata;
+   unsigned int extradata_len, extradata_size;
+   int last_interface;
+diff -r -u a/src/lease.c b/src/lease.c
+--- a/src/lease.c	2015-06-12 13:39:11.000000000 -0700
++++ b/src/lease.c	2015-07-27 13:37:12.446704546 -0700
+@@ -27,6 +27,9 @@
+   struct all_addr addr;
+   struct dhcp_lease *lease;
+   int clid_len, hw_len, hw_type;
++  int c;
++  char req_options[1024];
++  int req_options_len;
+   FILE *leasestream;
+   
+   leases_left = daemon->dhcp_max;
+@@ -130,6 +133,12 @@
+ 	else
+ 	  break;
+ 
++	if ((c = fgetc(leasestream)) != '\n' && c != EOF &&
++	    fscanf(leasestream, "%s", req_options) == 1) {
++	  req_options_len = parse_hex(req_options, (unsigned char *)req_options, 254, NULL, NULL);
++	  lease_set_req_options(lease, req_options, req_options_len);
++	}
++
+ 	if (!lease)
+ 	  die (_("too many stored leases"), NULL, EC_MISC);
+        	
+@@ -254,10 +263,18 @@
+ 	    {
+ 	      for (i = 0; i < lease->clid_len - 1; i++)
+ 		ourprintf(&err, "%.2x:", lease->clid[i]);
+-	      ourprintf(&err, "%.2x\n", lease->clid[i]);
++	      ourprintf(&err, "%.2x", lease->clid[i]);
+ 	    }
+ 	  else
+-	    ourprintf(&err, "*\n");	  
++	    ourprintf(&err, "*");	  
++
++	  if (lease->req_options && lease->req_options_len > 0) {
++	    ourprintf(&err, " ");	  
++	    for (i = 0; i < lease->req_options_len - 1; i++)
++	      ourprintf(&err, "%.2x:", lease->req_options[i]);
++	    ourprintf(&err, "%.2x", lease->req_options[i]);
++	  }
++	  ourprintf(&err, "\n");	  
+ 	}
+       
+ #ifdef HAVE_DHCP6  
+@@ -897,6 +914,23 @@
+   lease->hostname = lease->fqdn = NULL;
+ }
+ 
++void lease_set_req_options(struct dhcp_lease *lease, unsigned char *req_options, int req_options_len)
++{
++  if (!lease->req_options && !req_options)
++    return;
++  else if (lease->req_options_len == req_options_len &&
++	   lease->req_options && req_options &&
++	   memcmp(lease->req_options, req_options, req_options_len) == 0)
++    return;
++  if (lease->req_options)
++    free(lease->req_options);
++  lease->req_options = calloc(1, req_options_len+1);
++  memcpy(lease->req_options, req_options, req_options_len);
++  lease->req_options_len = req_options_len;
++
++  file_dirty = 1;
++}
++
+ void lease_set_hostname(struct dhcp_lease *lease, const char *name, int auth, char *domain, char *config_domain)
+ {
+   struct dhcp_lease *lease_tmp;
+diff -r -u a/src/rfc2131.c b/src/rfc2131.c
+--- a/src/rfc2131.c	2015-06-12 13:39:11.000000000 -0700
++++ b/src/rfc2131.c	2015-07-27 13:37:12.446704546 -0700
+@@ -80,6 +80,7 @@
+   char *hostname = NULL, *offer_hostname = NULL, *client_hostname = NULL, *domain = NULL;
+   int hostname_auth = 0, borken_opt = 0;
+   unsigned char *req_options = NULL;
++  int req_options_len = 0;
+   char *message = NULL;
+   unsigned int time;
+   struct dhcp_config *config;
+@@ -914,7 +915,8 @@
+     {
+       req_options = (unsigned char *)daemon->dhcp_buff2;
+       memcpy(req_options, option_ptr(opt, 0), option_len(opt));
+-      req_options[option_len(opt)] = OPTION_END;
++      req_options_len = option_len(opt);
++      req_options[req_options_len] = OPTION_END;
+     }
+   
+   switch (mess_type)
+@@ -1363,6 +1365,10 @@
+ 	  else
+ 	    override = lease->override;
+ 
++	  if (req_options_len > 0) {
++	    lease_set_req_options(lease, req_options, req_options_len);
++	  }
++
+ 	  log_packet("DHCPACK", &mess->yiaddr, emac, emac_len, iface_name, hostname, NULL, mess->xid);  
+ 	  
+ 	  clear_packet(mess, end);

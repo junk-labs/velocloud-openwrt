@@ -4,6 +4,15 @@
 iperf_int="-i 10"
 dur=360000
 #dur=60
+run_openssl=0
+
+while getopts sd: opt; do
+    case $opt in
+        d) dur=$OPTARG ;;
+        s) run_openssl=1 ;;
+        \?) exit 1 ;;
+    esac
+done
 
 iperfs=""
 openssls=""
@@ -39,6 +48,7 @@ openssls=""
 #   LAN3 to LAN7
 #
 
+export SENTINEL=/tmp/stress.$$
 
 clean_up() {
         openssls=$(pgrep openssl)
@@ -50,6 +60,8 @@ clean_up() {
         if [ -n "$iperfs" ]; then
                 kill -9 $iperfs
         fi
+
+	rm -f $SENTINEL
 }
 
 # setup a loopback pair;
@@ -125,10 +137,19 @@ setup_loopback sw1p3 sw0p1 10.0.0.12 10.0.0.22 12 13
 
 # exit 0
 
+touch $SENTINEL
+
 # start openssl stress;
-# echo "Starting openssl stress"
-# openssl speed 2>/dev/null >/tmp/x1 &
-# openssl speed 2>/dev/null >/tmp/x2 &
+if [ "$run_openssl" != "0" ]; then
+    echo "Starting openssl stress"
+    (
+    while test -r $SENTINEL ; do
+        openssl speed 2>/dev/null >/tmp/x1 &
+        openssl speed 2>/dev/null >/tmp/x2 &
+        wait
+    done
+    ) &
+fi
 
 # kill old iperfs laying around;
 # start iperfs;
@@ -149,14 +170,42 @@ iperf -p 5033 -c 10.0.0.33 $iperf_int -t $dur > /tmp/iperf.5033.out 2>&1 &
 iperf -p 5034 -c 10.0.0.34 $iperf_int -t $dur > /tmp/iperf.5034.out 2>&1 &
 iperf -p 5035 -c 10.0.0.35 $iperf_int -t $dur > /tmp/iperf.5035.out 2>&1 &
 wait
-killall top
+rm -f $SENTINEL
 ) &
 
+LINES=24
 if stty -g -F /proc/self/fd/0 > /dev/null 2>&1; then
     # stdin is a tty
     eval `resize`
+    LINES=`stty size | cut -d' ' -f1`
 fi
+TOPLINES=`expr $LINES - 9`
+
 # Run top until all iperfs finish
-top
+# top
+
+report_progress()
+{
+    clear
+    echo "IPERF runs:"
+    for F in /tmp/iperf.*.out; do
+        FN=`basename $F .out`
+	FSTATUS=`tail +6 $F | tail -1`
+	echo "    $FN: $FSTATUS"
+    done
+    echo "Processes:"
+    IPERF_PIDS=`pidof iperf openssl | sed -e 's/ /,/g'`
+    if [ -z "$IPERF_PIDS" ]; then
+        IPERF_PIDS=99999999
+    fi
+    top -b -c -n 1 -p $IPERF_PIDS | head -$TOPLINES
+}
+
+while test -e $SENTINEL ; do
+    report_progress
+    killall -0 iperf > /dev/null 2>&1 || break
+    sleep 5
+done
 
 clean_up
+report_progress

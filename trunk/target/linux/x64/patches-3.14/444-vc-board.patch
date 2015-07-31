@@ -1,6 +1,6 @@
 diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 --- a/drivers/platform/x86/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Kconfig	2015-07-10 16:36:14.831945007 -0700
++++ b/drivers/platform/x86/Kconfig	2015-07-31 15:14:31.606741803 -0700
 @@ -827,4 +827,12 @@
  	  Interface. This is a requirement for systems that need to configure
  	  the PUNIT for power management features such as RAPL.
@@ -16,7 +16,7 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
  endif # X86_PLATFORM_DEVICES
 diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 --- a/drivers/platform/x86/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Makefile	2015-07-10 16:36:14.831945007 -0700
++++ b/drivers/platform/x86/Makefile	2015-07-31 15:14:31.606741803 -0700
 @@ -55,4 +55,5 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
@@ -25,8 +25,8 @@ diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
 --- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2015-07-10 16:46:05.988428625 -0700
-@@ -0,0 +1,3579 @@
++++ b/drivers/platform/x86/velocloud-vc.c	2015-07-31 15:15:59.754636095 -0700
+@@ -0,0 +1,3661 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -237,6 +237,8 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +#define PCA9634_REG_I2C_SA3 16
 +#define PCA9634_REG_LED_ALL 17
 +
++#define EMC2104_TEMP_SENSOR_HI_BASE 0x0
++#define EMC2104_TEMP_SENSOR_LO_BASE 0x1
 +#define EMC2104_FAN1_PWM_DIVIDE 0x41
 +#define EMC2104_FAN1_CONFIG     0x42
 +#define EMC2104_FAN1_LUT_OFFSET 0x50
@@ -471,6 +473,15 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +};
 +
 +// edge5x0: fan controller;
++
++enum vc_temp_sensor_idx {
++        VC_TEMP_NONE = -1,
++        VC_TEMP_0 = 0,
++        VC_TEMP_1,
++        VC_TEMP_2,
++	VC_TEMP_3,
++        N_VC_TEMP_DEVS,
++};
 +
 +struct emc2104_fan_lookup_table {
 +	u8 LUT_drive_setting;
@@ -1702,6 +1713,73 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +        return sprintf(buf, "%d\n", EMC2104_VELOCLOUD_FAN_MULTI / tach_reading);
 +}
 +
++static ssize_t show_vc_5x0_external_temp_sensor(struct device *dev, 
++			char *buf, unsigned index)
++{
++	int i, reg_val, integer;
++        struct i2c_client *client;
++
++	static int fract_pos[] = {125, 250, 500};
++
++	int fraction = 0;
++
++	vc_data_t *vcd = &vc_data;
++
++        if(index >= N_VC_TEMP_DEVS)
++                return(-EINVAL);
++
++	client = vcd->i2c.client[VC_I2C_4];
++
++        reg_val = vc_read_byte(client, EMC2104_TEMP_SENSOR_HI_BASE + (2*index));
++	if (reg_val < 0)
++		return reg_val;
++
++	integer = reg_val & 0x7f;
++
++	if (reg_val & 0x80) 
++		integer = -integer;
++
++        reg_val = vc_read_byte(client, EMC2104_TEMP_SENSOR_LO_BASE + (2*index));
++	if (reg_val < 0)
++		return reg_val;
++
++	// Upper nibble three bits are applicable for fractional calculation */
++	reg_val = reg_val >> 5;
++
++	for (i = 0; i < 3; i++) {
++
++		reg_val = reg_val >> 1;
++		
++		if (reg_val & 1)
++			fraction += fract_pos[i];
++	}
++
++	if (fraction % 10 == 0)
++		fraction /= 10;
++        
++	return sprintf(buf, "%d.%dC\n", integer, fraction);
++}
++
++#define SHOW_5x0_TEMP(name,index) \
++static ssize_t SHOW_5x0_TEMP_##name(struct device *dev, \
++                struct device_attribute *attr, \
++                char *buf) \
++{ \
++        return(show_vc_5x0_external_temp_sensor(dev, buf, index)); \
++}
++SHOW_5x0_TEMP(internal_temp_sensor_fan_control, VC_TEMP_0)
++SHOW_5x0_TEMP(temp_sensor_under_poe, VC_TEMP_1)
++SHOW_5x0_TEMP(temp_sensor_near_board_edge, VC_TEMP_2)
++SHOW_5x0_TEMP(temp_sensor_under_soc_hs, VC_TEMP_3)
++
++#define ATTR_TEMP_SENSOR(name) \
++static DEVICE_ATTR(name, S_IRUGO, SHOW_5x0_TEMP_##name, NULL);
++
++ATTR_TEMP_SENSOR(internal_temp_sensor_fan_control);
++ATTR_TEMP_SENSOR(temp_sensor_under_poe);
++ATTR_TEMP_SENSOR(temp_sensor_near_board_edge);
++ATTR_TEMP_SENSOR(temp_sensor_under_soc_hs);
++
 +static DEVICE_ATTR(fan_rpm, S_IRUGO, show_vc_5x0_fan_rpm, NULL);
 +
 +static ssize_t show_vc_5x0_fan_lut(struct device *dev,
@@ -1729,6 +1807,10 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +static struct attribute *vc_5x0_fan_attrs[] = {
 +	&dev_attr_fan_rpm.attr,
 +	&dev_attr_fan_lut.attr,
++	&dev_attr_internal_temp_sensor_fan_control.attr,
++	&dev_attr_temp_sensor_under_poe.attr,
++	&dev_attr_temp_sensor_near_board_edge.attr,
++	&dev_attr_temp_sensor_under_soc_hs.attr,
 +	NULL,
 +};
 +

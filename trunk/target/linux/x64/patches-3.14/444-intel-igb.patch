@@ -581,7 +581,7 @@
  		if ((hdr.network - data) > (max_len - VLAN_HLEN))
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,3488 @@
+@@ -0,0 +1,3492 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -813,6 +813,7 @@
 +	DSA_DISABLE = 0,
 +	DSA_ENABLE = 0x01,	// enable DSA;
 +	DSA_NOSWBR = 0x02,	// do not bring up switch(es) in LAN bridging mode;
++	DSA_PORTEN = 0x04,	// force ports on non-bridged;
 +};
 +
 +static int dsa = 0;
@@ -3623,6 +3624,7 @@
 +	int ret = 0;
 +	int addr = REG_PORT(p);
 +	int bren = !(dsa & DSA_NOSWBR);
++	int porten = dsa & DSA_PORTEN;
 +	u16 val;
 +	u32 pmask = 1 << p;
 +
@@ -3666,6 +3668,8 @@
 +	// not bridged: only the CPU port;
 +
 +	val = bren? 0x0433 : 0x0430;
++	if(porten && (ds->phys_port_mask & pmask))
++		val |= 0x0003;
 +	if(dsa_is_cpu_port(ds, p)) {
 +		val |= 0x0003;
 +		if (ds->dst->tag_protocol == htons(ETH_P_EDSA))

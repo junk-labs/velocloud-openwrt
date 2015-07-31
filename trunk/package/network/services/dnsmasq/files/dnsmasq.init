@@ -126,13 +126,16 @@ dnsmasq() {
 	DNS_SERVERS=""
 	DOMAIN=""
 
-	CONFIGFILE="/var/etc/dnsmasq-${cfg}.conf"
-	HOSTFILE="/tmp/hosts/dhcp-${cfg}"
+	CONFIGFILE_ACT="/var/etc/dnsmasq-${cfg}.conf"
+	HOSTFILE_ACT="/tmp/hosts/dhcp-${cfg}"
 	TRUSTANCHORSFILE="/usr/share/dnsmasq/trust-anchors-${cfg}.conf"
 
+	CONFIGFILE=$CONFIGFILE_ACT.$$
+	HOSTFILE=$HOSTFILE_ACT.$$
+
 	procd_open_instance
-	procd_set_param command $PROG -C $CONFIGFILE -k
-	procd_set_param file $CONFIGFILE
+	procd_set_param command $PROG -C $CONFIGFILE_ACT -k
+	procd_set_param file $CONFIGFILE_ACT
 	procd_set_param respawn
 	procd_close_instance
 
@@ -154,7 +157,7 @@ dnsmasq() {
 	append_bool "$cfg" nohosts "--no-hosts"
 	append_bool "$cfg" nonegcache "--no-negcache"
 	append_bool "$cfg" strictorder "--strict-order"
-	append_bool "$cfg" logqueries "--log-queries"
+	append_bool "$cfg" logqueries "--log-queries=extra"
 	append_bool "$cfg" noresolv "--no-resolv"
 	append_bool "$cfg" localise_queries "--localise-queries"
 	append_bool "$cfg" readethers "--read-ethers"
@@ -286,6 +289,9 @@ dnsmasq() {
 	for DNS_SERVER in $DNS_SERVERS ; do
 		echo "nameserver $DNS_SERVER" >> /tmp/resolv.conf
 	done
+
+	mv $CONFIGFILE $CONFIGFILE_ACT
+	mv $HOSTFILE $HOSTFILE_ACT
 }
 
 dhcp_subscrid_add() {

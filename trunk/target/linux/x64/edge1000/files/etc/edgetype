@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# First, a simple check.
+# If already set in velocloud_vc to one of our customized systems, accept it.
+VC_BOARD=`cat /sys/devices/platform/vc/board 2>/dev/null`
+if [ "$VC_BOARD" = "edge1000" -o "$VC_BOARD" = "edge1000ifm" ]; then
+    echo "edge1000ifm"
+    exit 0
+elif [ -n "$VC_BOARD" -a "$VC_BOARD" != "edge1000sm" ]; then
+    echo $VC_BOARD
+    exit 1
+fi
+
+if [ -z "$VC_BOARD" ]; then
+    # Now, more complicated checks
+    DMI_BOARD=`cat /sys/class/dmi/id/board_name`
+    # DMI_PRODUCT=`cat /sys/class/dmi/id/product_name`
+
+    IFM_BOARD="S1600JP"
+    SM_BOARD="X10SRW-F"
+
+    # Could be an IFM system, or a SuperMicro system
+    # The SuperMicro system could have 8 GbE + 2 SFP, or 8 GbE + 4 GbE.
+    if [ "$DMI_BOARD" = "$IFM_BOARD" ]; then
+	echo "edge1000ifm"
+	exit 0
+    fi
+
+    if [ "$DMI_BOARD" != "$SM_BOARD" ]; then
+	# Huh?
+	echo "edge1000ifm"
+	exit 1
+    fi
+fi
+
+# A supermicro board
+ETH8_DRIVER=`ethtool -i eth8 2>/dev/null|awk '/driver/{print $2;}'`
+if [ "$ETH8_DRIVER" = "ixgbe" ]; then
+    echo "edge1000sm-sfp"   # 8 GbE + 2 SFP+
+else
+    echo "edge1000sm-gbe"   # 8 GbE + 4 GbE
+fi
+exit 0

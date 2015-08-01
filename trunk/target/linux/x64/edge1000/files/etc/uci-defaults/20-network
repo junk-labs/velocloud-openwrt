@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# base-files sticks in an /etc/config/network that is useless for us.
+# we depend on this file being removed after first boot, so that we
+# only clobber the default /etc/config/network on the very first boot.
+# [ -r /etc/config/network ] && exit 0
+
+if ! fgrep -q '### DUMMY CONFIGURATION' /etc/config/network 2>/dev/null; then
+	# Not the dummy config. All is OK; just exit and remove this script.
+	exit 0
+fi
+
+EDGETYPE=`/etc/edgetype`
+
+case "$EDGETYPE" in
+    edge1000ifm)
+        cp /etc/config-defaults/edge1000ifm/network /etc/config/network
+        ;;
+    edge1000sm-sfp)
+        cp /etc/config-defaults/edge1000sm-sfp/network /etc/config/network
+        ;;
+    edge1000sm-gbe)
+        cp /etc/config-defaults/edge1000sm-gbe/network /etc/config/network
+        ;;
+    *)  # something else?
+        cp /etc/config-defaults/edge1000ifm/network /etc/config/network
+        ;;
+esac

@@ -1,5 +1,3 @@
-### DUMMY CONFIGURATION ###
-### DO NOT REMOVE THESE COMMENTS ###
 
 config interface 'loopback'
 	option ifname 'lo'

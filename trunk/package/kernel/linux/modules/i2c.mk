@@ -174,7 +174,7 @@ I2C_I801_MODULES:= \
   CONFIG_I2C_I801:drivers/i2c/busses/i2c-i801
 
 define KernelPackage/i2c-i801
-  $(call i2c_defaults,$(I2C_I801_MODULES),59)
+  $(call i2c_defaults,$(I2C_I801_MODULES),16)
   TITLE:=I801 (ICH*) adapter
   DEPENDS:=@TARGET_x86||TARGET_x64 kmod-i2c-core
 endef
@@ -187,11 +187,27 @@ endef
 
 $(eval $(call KernelPackage,i2c-i801))
 
+I2C_ISMT_MODULES:= \
+  CONFIG_I2C_ISMT:drivers/i2c/busses/i2c-ismt
+
+define KernelPackage/i2c-ismt
+  $(call i2c_defaults,$(I2C_ISMT_MODULES),16)
+  TITLE:=Intel iSMT SMBus host controller
+  DEPENDS:=@TARGET_x86||TARGET_x64 kmod-i2c-core
+endef
+
+define KernelPackage/i2c-ismt/description
+ Kernel module for the iSMT SMBus host
+ controller interface.
+endef
+
+$(eval $(call KernelPackage,i2c-ismt))
+
 I2C_SI3452_MODULES:= \
   CONFIG_I2C_SI3452:drivers/i2c/busses/i2c-si3452
 
 define KernelPackage/i2c-si3452
-  $(call i2c_defaults,$(I2C_SI3452_MODULES),59)
+  $(call i2c_defaults,$(I2C_SI3452_MODULES),16)
   TITLE:=SI3452 PoE adapter
   DEPENDS:=@TARGET_x86||TARGET_x64 kmod-i2c-core
 endef
@@ -206,7 +222,7 @@ I2C_LTC4266_MODULES:= \
   CONFIG_I2C_LTC4266:drivers/i2c/busses/i2c-ltc4266
 
 define KernelPackage/i2c-ltc4266
-  $(call i2c_defaults,$(I2C_LTC4266_MODULES),59)
+  $(call i2c_defaults,$(I2C_LTC4266_MODULES),16)
   TITLE:=LTC4266 PoE adapter
   DEPENDS:=@TARGET_x86||TARGET_x64 kmod-i2c-core
 endef

@@ -12,6 +12,7 @@ DEFAULT_PACKAGES += \
 	kmod-dsa-core \
 	kmod-dsa-velocloud \
 	kmod-i2c-i801 \
+	kmod-i2c-ismt \
 	kmod-i2c-ltc4266 \
 	kmod-hwmon-core \
 	kmod-hwmon-coretemp \

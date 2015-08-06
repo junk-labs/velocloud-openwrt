@@ -11,6 +11,7 @@ DEFAULT_PACKAGES += \
 	kmod-ixgbe \
 	kmod-dsa-core \
 	kmod-dsa-velocloud \
+	kmod-i2c-ismt \
 	kmod-hwmon-core \
 	kmod-hwmon-coretemp \
 	kmod-hwmon-w83627ehf \

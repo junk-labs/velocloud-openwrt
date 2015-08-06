@@ -1,7 +1,35 @@
+diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+--- a/drivers/i2c/busses/Kconfig	2015-05-17 09:54:01.000000000 -0700
++++ b/drivers/i2c/busses/Kconfig	2015-08-06 12:46:54.977410314 -0700
+@@ -1012,4 +1012,13 @@
+ 	  This support is also available as a module.  If so, the module
+ 	  will be called scx200_acb.
+ 
++config I2C_LTC4266
++	tristate "Support for LTC4266 Power over Ethernet (POE) chipset"
++	depends on I2C_GPIO && VELOCLOUD_VC
++	default n 
++	help
++	  This option enables support for Power Over Ethernet (POE)
++	  Linear Technology 4266 I2C chipset on Velocloud platforms.
++	  Say Y to enable support for POE on Velocloud.
++
+ endmenu
+diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+--- a/drivers/i2c/busses/Makefile	2015-05-17 09:54:01.000000000 -0700
++++ b/drivers/i2c/busses/Makefile	2015-08-06 12:46:54.981410129 -0700
+@@ -49,6 +49,7 @@
+ obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
+ obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o
+ obj-$(CONFIG_I2C_KEMPLD)	+= i2c-kempld.o
++obj-$(CONFIG_I2C_LTC4266)	+= i2c-ltc4266.o
+ obj-$(CONFIG_I2C_MPC)		+= i2c-mpc.o
+ obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
+ obj-$(CONFIG_I2C_MXS)		+= i2c-mxs.o
 diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 --- a/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-07-02 11:17:04.120169167 -0700
-@@ -0,0 +1,2491 @@
++++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-08-06 12:49:27.426388968 -0700
+@@ -0,0 +1,2499 @@
 +/*
 + * (c) Jordan Rhody (jordan@velocloud.net)
 + *
@@ -36,6 +64,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +#include <linux/eventfd.h>
 +#include <linux/file.h>
 +#include <linux/fs.h>
++#include <linux/dmi.h>
 +#include <asm/uaccess.h>
 +
 +#define LTC_SET_EVENTFD 1
@@ -2436,7 +2465,14 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	struct i2c_client *ltc4266_client;
 +	struct i2c_board_info info;
 +
-+	adapter = i2c_get_adapter(2);
++        if ((dmi_match(DMI_BOARD_NAME, "EDGE520") && 
++               dmi_match(DMI_BOARD_VERSION, "2.0")) ||
++                (dmi_match(DMI_BOARD_NAME, "EDGE540") && 
++               dmi_match(DMI_BOARD_VERSION, "2.0")))
++		adapter = i2c_get_adapter(1);
++	else
++		adapter = i2c_get_adapter(2);
++
 +	if (!adapter) {
 +                pr_err("%s: i2c_get_adapter(%d) failed\n", __func__, 2);
 +                return -ENODEV;
@@ -2493,31 +2529,3 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +MODULE_AUTHOR("Jordan Rhody <jordan@velocloud.net>");
 +MODULE_DESCRIPTION("Velocloud POE Driver");
 +MODULE_LICENSE("GPL");
-diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
---- a/drivers/i2c/busses/Kconfig	2015-03-26 07:07:23.000000000 -0700
-+++ b/drivers/i2c/busses/Kconfig	2015-05-22 15:15:51.254785180 -0700
-@@ -1012,4 +1012,13 @@
- 	  This support is also available as a module.  If so, the module
- 	  will be called scx200_acb.
- 
-+config I2C_LTC4266
-+	tristate "Support for LTC4266 Power over Ethernet (POE) chipset"
-+	depends on I2C_GPIO && VELOCLOUD_VC
-+	default n 
-+	help
-+	  This option enables support for Power Over Ethernet (POE)
-+	  Linear Technology 4266 I2C chipset on Velocloud platforms.
-+	  Say Y to enable support for POE on Velocloud.
-+
- endmenu
-diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
---- a/drivers/i2c/busses/Makefile	2015-03-26 07:07:23.000000000 -0700
-+++ b/drivers/i2c/busses/Makefile	2015-05-22 15:15:51.254785180 -0700
-@@ -49,6 +49,7 @@
- obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
- obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o
- obj-$(CONFIG_I2C_KEMPLD)	+= i2c-kempld.o
-+obj-$(CONFIG_I2C_LTC4266)	+= i2c-ltc4266.o
- obj-$(CONFIG_I2C_MPC)		+= i2c-mpc.o
- obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
- obj-$(CONFIG_I2C_MXS)		+= i2c-mxs.o

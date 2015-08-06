@@ -39,14 +39,17 @@
 #define VC_BSN_LENGTH 14   /* length of board serial number */
 #define VC_UUID_LENGTH  16  /* length of UUID binary 16 bytes */
 #define VC_UUID_STRING_LENGTH  36  /* length of UUID string 36 bytes */
+#define VC_PNAME_LENGTH 10 /* product name string 10 bytes*/
+#define VC_BVERSION_LENGTH 4 /* board revision 4 bytes*/
 
-#define VC_DMI_TOTAL_SIZE (VC_SN_LENGTH + VC_BSN_LENGTH + VC_UUID_LENGTH  )
+
+#define VC_DMI_TOTAL_SIZE (VC_SN_LENGTH + VC_BSN_LENGTH + VC_UUID_LENGTH + VC_PNAME_LENGTH  + VC_BVERSION_LENGTH )
 
 
 #define	FLASH_FILENAME	"/tmp/flash_backup.bin"
 #define	OEM_FILENAME	"/tmp/adi_oem.bin"
 
-const unsigned char version[]="01.00.00.00";
+const unsigned char version[]="01.00.00.01";
 
 
 unsigned char read_flash_cmd[] = "flashrom -p internal -r " FLASH_FILENAME " &> /dev/null";
@@ -76,22 +79,25 @@ void check_system_retCode(int status);
 int read_dmi(unsigned char *dmi); 
 int create_oem_section_newDMI (unsigned char *dmi);
 int create_oem_section (unsigned char *sn, unsigned  char *bsn, unsigned char *uuid);
-int update_current_dmi(unsigned char *current_dmi, unsigned char *sn, unsigned char *bsn, unsigned char *uuid);
+int update_current_dmi(unsigned char *current_dmi, unsigned char *sn, unsigned char *bsn, unsigned char *uuid, unsigned char *pname, unsigned char *bversion);
 int update_dmi(void);	
 void oem_dmi_decode(unsigned char *dmi); 
 	
 
 void print_usage() {
-	printf("Usage: vc_flash_util -r -w -s [serial_number] -i [UUID] -b [board_serial_number] -u [new_flash_image] -v -h\n");
+	printf("vc_flash_util  -- version:%s \n Usage: vc_flash_util -r -w -s [serial_number] -i [UUID] -b [board_serial_number] -u [new_flash_image] -v -h\n", version);
 	printf(" -r read the OEM serial number/uuid programmed in flash\n");
 	printf(" -w write the OEM serial number/uuid into flash\n");
 	printf(" -s program the system serial number into flash\n");
 	printf(" -i program the UUID SERIAL NUMBER into flash\n");
 	printf(" -b program the board serial number into flash\n");
+	printf(" -p program product name into flash \n");
+	printf(" -v program board revision into flash \n");
+
 
 
 	printf(" -u update the flash image using the image file provided, if -s or i or b not specified, the information be retrieved from the current flash image \n");
-	printf(" -v print adi_flash_util version\n");
+	
 	printf(" -h help\n");
 
 	return;
@@ -100,10 +106,10 @@ void print_usage() {
 int main(int argc, char *argv[]) {
 
 	operations_e  my_op=UNKNOWN_OP; 
-	unsigned char *s_argv=NULL, *u_argv=NULL, *b_argv=NULL, *i_argv=NULL;
+	unsigned char *s_argv=NULL, *u_argv=NULL, *b_argv=NULL, *i_argv=NULL, *p_argv=NULL, *v_argv=NULL;
 	int option;
-	int write_sn_flag=0, write_bsn_flag=0, write_uuid_flag=0;
-	unsigned char *sn = NULL, *uuid_string=NULL, *bsn=NULL;   /* pointer to serial number string */
+	int write_sn_flag=0, write_bsn_flag=0, write_uuid_flag=0, write_pname_flag=0, write_bversion_flag=0;
+	unsigned char *sn = NULL, *uuid_string=NULL, *bsn=NULL, *product_name=NULL, *bversion=NULL;   /* pointer to serial number string */
 	unsigned char *new_flash = NULL;  /* new flash image filename */
 	unsigned char cmd[512]={0};
 	unsigned char current_dmi[VC_DMI_TOTAL_SIZE + 1], current_sn[VC_SN_LENGTH], current_uuid[VC_UUID_LENGTH], current_bsn[VC_BSN_LENGTH];
@@ -111,7 +117,7 @@ int main(int argc, char *argv[]) {
 
 
 /* parse command line arguments */
-	while ((option = getopt(argc, argv,"rwvhs:u:b:i:")) != -1) {
+	while ((option = getopt(argc, argv,"rwhs:u:b:i:v:p:")) != -1) {
 		switch (option) {
 		case 'r':	
 			my_op = READ_DMI;
@@ -162,6 +168,25 @@ int main(int argc, char *argv[]) {
                 	break;
 
 
+		case 'p' : 
+			p_argv = optarg;
+			product_name = optarg;
+			write_pname_flag = 1;
+			#ifdef ADI_FLASH_UTIL_DEBUG
+			printf("p option product_name=%s write_pname_flag = %d\n", p_argv, write_pname_flag);
+			#endif			
+                	break;
+
+		case 'v' : 
+			v_argv = optarg;
+			bversion = optarg;
+			write_bversion_flag = 1;
+			#ifdef ADI_FLASH_UTIL_DEBUG
+			printf("v option bsn=%s write_bversion_flag = %d\n", v_argv, write_bversion_flag);
+			#endif			
+                	break;
+
+
              	
 		case 'u' :
 			u_argv = optarg; 
@@ -178,10 +203,7 @@ int main(int argc, char *argv[]) {
 
                 	break;
 
-		case 'v':
-			printf("VC_FLASH_UTILITY version:%s\n",version);
-			exit(0);
-
+		
 		case 'h' :
 			printf("Help\n");
 		case '?' :
@@ -192,7 +214,11 @@ int main(int argc, char *argv[]) {
     	}
 
 	if(my_op ==  UPDATE_FLASH) {
-		if((write_sn_flag ==1) || (write_bsn_flag==1) || (write_uuid_flag == 1)) {
+		if((write_sn_flag ==1) 
+			|| (write_bsn_flag==1) 
+			|| (write_uuid_flag == 1)
+			|| (write_pname_flag ==1 )
+			|| (write_bversion_flag == 1 )) {
 			my_op =  UPDATE_FLASH_DMI;
 		}
 	}
@@ -216,11 +242,11 @@ int main(int argc, char *argv[]) {
 			/* update current dmi with the new info */
 			if(write_uuid_flag == 1)
 			{
-				update_current_dmi(current_dmi,sn,bsn,uuid_bin);
+				update_current_dmi(current_dmi,sn,bsn,uuid_bin,product_name,bversion);
 			}
 			else
 			{
-				update_current_dmi(current_dmi,sn,bsn,0);
+				update_current_dmi(current_dmi,sn,bsn,0, product_name,bversion);
 
 			}
 			create_oem_section_newDMI(current_dmi);
@@ -271,7 +297,7 @@ int main(int argc, char *argv[]) {
 			printf("updating OEM section , sn=%s\n",sn);
 			#endif
 
-			update_current_dmi(current_dmi,sn,bsn,(unsigned char *)uuid_bin);
+			update_current_dmi(current_dmi,sn,bsn,(unsigned char *)uuid_bin,product_name,bversion);
 			create_oem_section_newDMI(current_dmi);
 
 			update_dmi();
@@ -417,12 +443,12 @@ int create_oem_section (unsigned char *sn, unsigned char *bsn, unsigned char *uu
 }
 
 /* update the dmi buffer with the new DMI info. */
-int update_current_dmi(unsigned char *current_dmi, unsigned char *sn, unsigned char *bsn, unsigned char *uuid) {
+int update_current_dmi(unsigned char *current_dmi, unsigned char *sn, unsigned char *bsn, unsigned char *uuid, unsigned char *pname, unsigned char *bversion) {
 
 	
 	int i;
 	
-	if (((sn == NULL) && (bsn == NULL ) && (uuid == NULL) ) )
+	if ((sn == NULL) && (bsn == NULL ) && (uuid == NULL) && (pname == NULL) && (bversion == NULL))  
 		return -1;
 	
 	printf("Updating current DMI..\n");
@@ -482,6 +508,42 @@ int update_current_dmi(unsigned char *current_dmi, unsigned char *sn, unsigned c
 		printf("No new Board SN provided, using the current Board SN\n");
 	}
 
+		
+	if(pname) 
+	{
+		for (i=0; i< VC_PNAME_LENGTH ; i++)
+		{
+			current_dmi[i+ VC_SN_LENGTH + VC_UUID_LENGTH + VC_BSN_LENGTH] = pname[i];
+			
+		}
+
+		#ifdef ADI_FLASH_UTIL_DEBUG
+		printf("pname = %s current_dmi=%s \n", pname, current_dmi);
+		#endif
+	} 
+	else
+	{
+		printf("No new product name provided, using the current product name\n");
+	}
+
+
+
+	if(bversion) 
+	{
+		for (i=0; i< VC_BVERSION_LENGTH ; i++)
+		{
+			current_dmi[i+ VC_SN_LENGTH + VC_UUID_LENGTH + VC_BSN_LENGTH +VC_PNAME_LENGTH ] = bversion[i];
+			
+		}
+
+		#ifdef ADI_FLASH_UTIL_DEBUG
+		printf("bversion = %s current_dmi=%s \n", bversion, current_dmi);
+		#endif
+	} 
+	else
+	{
+		printf("No new board version provided, using the current product name\n");
+	}
 
 		
 
@@ -561,9 +623,12 @@ void oem_dmi_decode(unsigned char *dmi)
 {
 	int i;
 	unsigned char sn[VC_SN_LENGTH +1 ]={0}, bsn[VC_BSN_LENGTH +1]={0};
+	unsigned char pname[VC_PNAME_LENGTH + 1]={0}, bversion[VC_BVERSION_LENGTH +1]={0};
 	uuid_t uuid;
 	unsigned char uuid_str[37];
 
+	printf("decoding ...\n");
+	sleep(1);
 	for (i=0; i<VC_SN_LENGTH ; i++)
 	{
 		sn[i] = dmi[i];
@@ -576,12 +641,24 @@ void oem_dmi_decode(unsigned char *dmi)
 
 	uuid_unparse_lower(uuid,uuid_str);
 
-	for (i=0; i<VC_BSN_LENGTH +1 ; i++)
+	for (i=0; i<VC_BSN_LENGTH ; i++)
 	{
 		bsn[i] = dmi[i+VC_SN_LENGTH+VC_UUID_LENGTH  ];
 	}
 
-	printf("SN=%s, UUID_str=%s, BSN=%s\n",sn, uuid_str, bsn);
+	for (i=0; i<VC_PNAME_LENGTH ; i++)
+	{
+		pname[i] = dmi[i+VC_SN_LENGTH+VC_UUID_LENGTH +VC_BSN_LENGTH ];
+	}
+
+	for (i=0; i<VC_BVERSION_LENGTH +1 ; i++)
+	{
+		bversion[i] = dmi[i+VC_SN_LENGTH+VC_UUID_LENGTH+VC_BSN_LENGTH + VC_PNAME_LENGTH];
+	}
+
+
+	printf("SN=%s, UUID_str=%s, BSN=%s, pname=%s bversion=%s\n",
+		sn, uuid_str, bsn, pname, bversion);
 	
 	return;
 

@@ -8,6 +8,7 @@ include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
 # edge520/540-specific packages:
 DEFAULT_PACKAGES += \
 	dmi-tool \
+	flashrom \
 	kmod-igb \
 	kmod-dsa-core \
 	kmod-dsa-velocloud \

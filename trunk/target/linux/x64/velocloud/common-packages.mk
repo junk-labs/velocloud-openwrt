@@ -15,6 +15,7 @@ DEFAULT_PACKAGES += \
 	openssh-server \
 	openssh-client \
 	openssl-util \
+	uuidgen \
 
 # Common modules:
 DEFAULT_PACKAGES += \

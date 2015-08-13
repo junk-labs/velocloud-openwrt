@@ -1,0 +1,43 @@
+The absence of the calibration file is not an error, but the driver tries
+the full firmware load sequence even if the file does not exist (causing
+a 6 to 7 second delay).
+
+Check the existence of the calibration file up front, and just skip the
+firmware loading attempt if it is not present.
+
+
+--- a/drivers/net/wireless/ath/ath10k/core.c	2015-08-12 14:02:43.257496210 -0700
++++ b/drivers/net/wireless/ath/ath10k/core.c	2015-08-13 13:14:14.987033874 -0700
+@@ -468,6 +468,19 @@
+ 	ar->cal_file = NULL;
+ }
+ 
++int ath10k_fw_file_exists(const char *dir, const char *filename)
++{
++	char buf[1000];
++	struct file *fp = NULL;
++	
++	scnprintf(buf, 1000, "%s/%s", dir, filename);
++	if (!IS_ERR(fp = filp_open(buf, O_RDONLY, 0))) {
++		filp_close(fp, NULL);
++		return 1;
++	}
++	return 0;
++}
++
+ static int ath10k_fetch_cal_file(struct ath10k *ar)
+ {
+ 	char filename[100];
+@@ -476,6 +489,12 @@
+ 	scnprintf(filename, sizeof(filename), "cal-%s-%s.bin",
+ 		  ath10k_bus_str(ar->hif.bus), dev_name(ar->dev));
+ 
++	if (!ath10k_fw_file_exists(ATH10K_FW_DIR, filename)) {
++		ath10k_warn(ar, "No calibration file found %s/%s\n",
++			    ATH10K_FW_DIR, filename);
++		ar->cal_file = ERR_PTR(-ENOENT);
++		return 0;
++	}
+ 	ar->cal_file = ath10k_fetch_fw_file(ar, ATH10K_FW_DIR, filename);
+ 	if (IS_ERR(ar->cal_file))
+ 		/* calibration file is optional, don't print any warnings */

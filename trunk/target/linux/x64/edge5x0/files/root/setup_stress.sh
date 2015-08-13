@@ -9,7 +9,7 @@ config interface 'loopback'
 
 EOF
 
-for IFNAME in sw0p0 sw0p1 sw0p2 sw0p3 sw1p0 sw1p1 sw1p2 sw1p3 ge1 ge2 sfp1 sfp2 ; do
+for IFNAME in sw0p0 sw0p1 sw0p2 sw0p3 sw1p0 sw1p1 sw1p2 sw1p3 eth2 eth3 eth4 eth5 ; do
 	cat >> /etc/config/network <<-EOF
 config interface '$IFNAME'
        option ifname '$IFNAME'

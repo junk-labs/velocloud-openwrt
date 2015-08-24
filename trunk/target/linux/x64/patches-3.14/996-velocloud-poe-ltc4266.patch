@@ -27,9 +27,9 @@ diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
  obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
  obj-$(CONFIG_I2C_MXS)		+= i2c-mxs.o
 diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
---- a/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-08-06 12:49:27.426388968 -0700
-@@ -0,0 +1,2499 @@
+--- /dev/null	2015-01-29 08:57:01.314411064 -0800
++++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-08-24 08:35:21.545403436 -0700
+@@ -0,0 +1,2522 @@
 +/*
 + * (c) Jordan Rhody (jordan@velocloud.net)
 + *
@@ -66,6 +66,11 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +#include <linux/fs.h>
 +#include <linux/dmi.h>
 +#include <asm/uaccess.h>
++#include <misc/velocloud.h>
++
++// symbols provided by velocloud module;
++
++extern struct dmi_system_id *vc_dmi;
 +
 +#define LTC_SET_EVENTFD 1
 +#define LTC_RESET_EVENTFD 2
@@ -2461,18 +2466,32 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +static int __init ltc4266_init(void)
 +{
++	unsigned long id = VC_NONE;
 +	struct i2c_adapter *adapter;
 +	struct i2c_client *ltc4266_client;
 +	struct i2c_board_info info;
++	struct dmi_system_id *dmi;
++	extern struct dmi_system_id *vc_dmi;
 +
-+        if ((dmi_match(DMI_BOARD_NAME, "EDGE520") && 
-+               dmi_match(DMI_BOARD_VERSION, "2.0")) ||
-+                (dmi_match(DMI_BOARD_NAME, "EDGE540") && 
-+               dmi_match(DMI_BOARD_VERSION, "2.0")))
-+		adapter = i2c_get_adapter(1);
-+	else
++	// determine velocloud board;
++
++	dmi = vc_dmi;
++	if(dmi) {
++		pr_info("vc-poe %s\n", dmi->ident);
++		id = (unsigned long)dmi->driver_data;
++	}
++	switch(id) {
++	case VC_EDGE520:
++	case VC_EDGE540:
 +		adapter = i2c_get_adapter(2);
-+
++		break;
++	case VC_EDGE520B:
++	case VC_EDGE540B:
++		adapter = i2c_get_adapter(1);
++		break;
++	default:
++		return(0);
++	}
 +	if (!adapter) {
 +                pr_err("%s: i2c_get_adapter(%d) failed\n", __func__, 2);
 +                return -ENODEV;
@@ -2484,8 +2503,12 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        ltc4266_client = i2c_new_probed_device(adapter, &info, 
 +		ltc4266_i2c_addr, NULL);
 +
-+	if (ltc4266_client == NULL)
-+		return -ENODEV;
++	// return 0 if no poe device found, so that user land does not retry;
++
++	if (ltc4266_client == NULL) {
++		pr_info("vc-poe: no POE board found\n");
++		return 0;
++	}
 +
 +	ltc4266_i2c_probe(ltc4266_client);
 +

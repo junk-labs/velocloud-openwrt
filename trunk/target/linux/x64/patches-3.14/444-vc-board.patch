@@ -1,32 +1,256 @@
 diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 --- a/drivers/platform/x86/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Kconfig	2015-08-06 10:33:50.056829837 -0700
-@@ -827,4 +827,12 @@
++++ b/drivers/platform/x86/Kconfig	2015-08-18 15:12:56.689475694 -0700
+@@ -827,4 +827,27 @@
  	  Interface. This is a requirement for systems that need to configure
  	  the PUNIT for power management features such as RAPL.
  
++config VELOCLOUD
++	bool "Velocloud framework"
++	default n
++	depends on X86
++
 +config VELOCLOUD_VC
-+       tristate "Support for the Velocloud boards"
-+       depends on I2C && GPIO_PCH
-+       help
-+         This option enables support for the Velocloud GPIO,
-+         RGB LEDs and PWM fan on I2C.
-+         Say Y to enable support for the Velocloud boards.
++	tristate "Support for the Velocloud boards"
++	depends on I2C && GPIO_PCH
++	select VELOCLOUD
++	help
++	  This option enables support for the Velocloud GPIO,
++	  RGB LEDs and PWM fan on I2C.
++	  Say Y to enable support for the Velocloud boards.
++
++config VELOCLOUD_DSA
++	tristate "Support for the DSA on Velocloud"
++	depends on GPIO_PCH
++	depends on MDIO_BITBANG && MDIO_GPIO
++	help
++	  This option enables support for the DSA switches on GPIO on
++	  Velocloud boxes, such as Marvell 6165 managed GB switch.
++	  Say Y to enable support for DSA on Velocloud.
 +
  endif # X86_PLATFORM_DEVICES
 diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 --- a/drivers/platform/x86/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Makefile	2015-08-06 10:33:50.056829837 -0700
-@@ -55,4 +55,5 @@
++++ b/drivers/platform/x86/Makefile	2015-08-18 15:13:33.759777114 -0700
+@@ -55,4 +55,6 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
  obj-$(CONFIG_PVPANIC)           += pvpanic.o
++obj-$(CONFIG_VELOCLOUD)         += velocloud.o
 +obj-$(CONFIG_VELOCLOUD_VC)      += velocloud-vc.o
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
-diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
---- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2015-08-06 10:35:30.268225651 -0700
-@@ -0,0 +1,3665 @@
+diff -Naur /dev/null b/include/misc/velocloud.h
+--- /dev/null	2015-01-29 08:57:01.314411064 -0800
++++ b/include/misc/velocloud.h	2015-08-18 10:30:39.207338166 -0700
+@@ -0,0 +1,42 @@
++/*
++ * velocloud.h
++ * Copyright (C) 2015 VeloCloud Inc
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#ifndef _VELOCLOUD_H_
++#define _VELOCLOUD_H_
++
++// edge board enums;
++
++enum vc_edge_id {
++	VC_NONE = 0,
++	VC_EDGE500,
++	VC_EDGE_NEXCOM,
++	VC_EDGE1000IFM,
++	VC_EDGE1000SM,
++	VC_EDGE300,
++	VC_EDGE800,
++	VC_EDGE520,
++	VC_EDGE540,
++	VC_EDGE520B,
++	VC_EDGE540B,
++	// add new before here,
++	VC_N_BOARDS,
++};
++
++#endif /* _VELOCLOUD_H_ */
+diff -Naur /dev/null b/drivers/platform/x86/velocloud.c
+--- /dev/null	2015-01-29 08:57:01.314411064 -0800
++++ b/drivers/platform/x86/velocloud.c	2015-08-19 10:53:03.900651090 -0700
+@@ -0,0 +1,158 @@
++/* velocloud.c
++ * (c) Sandra Berndt (sberndt@velocloud.net)
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/dmi.h>
++#include <misc/velocloud.h>
++
++// build with force enabled;
++#define VC_FIX_DMI
++
++// per-board dmi matching info;
++// unfortunatedly, the edge-portwell has identical dmi info to edge-nexcom;
++
++#define VC_EDGE_ID(x) .driver_data = (void *)(x)
++
++static struct dmi_system_id vc_dmi_table[] = {
++	{ .ident = "edge500",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE500"),
++	  },
++	  VC_EDGE_ID(VC_EDGE500),
++	},
++	{ .ident = "edge-nexcom",
++	  { DMI_MATCH(DMI_PRODUCT_UUID, "00020003-0004-0005-0006-000700080009"),
++	  },
++	  VC_EDGE_ID(VC_EDGE_NEXCOM),
++	},
++	{ .ident = "edge1000ifm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "S1600JP"), // Interface Masters
++	  },
++	  VC_EDGE_ID(VC_EDGE1000IFM),
++	},
++	{ .ident = "edge1000sm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "X10SRW-F"), // SuperMicro
++	  },
++	  VC_EDGE_ID(VC_EDGE1000SM),
++	},
++	{ .ident = "edge300",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE300"),
++	  },
++	  VC_EDGE_ID(VC_EDGE300),
++	},
++	{ .ident = "edge800",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE800"),
++	  },
++	  VC_EDGE_ID(VC_EDGE800),
++	},
++	{ .ident = "edge520b",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
++	    DMI_MATCH(DMI_BOARD_VERSION, "2"),
++	  },
++	  VC_EDGE_ID(VC_EDGE520B),
++	},
++	{ .ident = "edge540b",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE540"),
++	    DMI_MATCH(DMI_BOARD_VERSION, "2"),
++	  },
++	  VC_EDGE_ID(VC_EDGE540B),
++	},
++	{ .ident = "edge520",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
++	  },
++	  VC_EDGE_ID(VC_EDGE520),
++	},
++	{ .ident = "edge540",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE540"),
++	  },
++	  VC_EDGE_ID(VC_EDGE540),
++	},
++	{ 0 },
++};
++
++#ifdef VC_FIX_DMI
++
++static char *board = "";
++
++static const struct dmi_system_id *
++vc_fix_board(const struct dmi_system_id *dmi, char *name)
++{
++	const char *id;
++
++	for(; (id = dmi->ident); dmi++) {
++		if( !strcmp(id, name))
++			return(dmi);
++	}
++	return(NULL);
++}
++
++module_param(board,charp,S_IRUGO);
++MODULE_PARM_DESC(board, "overwrite board name");
++
++#endif // VC_FIX_DMI
++
++// make up i2c-bb for smb0 firmware devices;
++
++int vc_bbfw = 0;
++module_param(vc_bbfw,int,S_IRUGO);
++MODULE_PARM_DESC(vc_bbfw, "create i2c bitbang driver for smb0");
++EXPORT_SYMBOL(vc_bbfw);
++
++// exports to other vc modules;
++
++const struct dmi_system_id *vc_dmi = NULL;
++EXPORT_SYMBOL(vc_dmi);
++
++// init vc dmi module;
++
++static int __init
++vc_dmi_init(void)
++{
++	// determine velocloud board;
++
++	vc_dmi = dmi_first_match(vc_dmi_table);
++
++	// allow kernel param overwrite;
++
++#ifdef VC_FIX_DMI
++	if(board[0]) {
++		pr_info("vc: board overwrite '%s'\n", board);
++		vc_dmi = vc_fix_board(vc_dmi_table, board);
++	}
++#endif // VC_FIX_DMI
++
++	if( !vc_dmi) {
++		pr_info("vc: no board found\n");
++		return(-ENODEV);
++	}
++	pr_info("vc: found %s\n", vc_dmi->ident);
++	return(0);
++}
++
++// exit vc dmi module;
++
++static void __exit
++vc_dmi_exit(void)
++{
++	pr_info("vc: exit\n");
++}
++
++subsys_initcall(vc_dmi_init);
++module_exit(vc_dmi_exit);
++
+diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
+--- /dev/null	2015-01-29 08:57:01.314411064 -0800
++++ b/drivers/platform/x86/velocloud-vc.c	2015-08-24 09:00:04.953042987 -0700
+@@ -0,0 +1,3654 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -64,14 +288,13 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +#include <linux/phy.h>
 +#include <linux/mdio-gpio.h>
 +#include <linux/reboot.h>
++#include <misc/velocloud.h>
 +
 +#define VC_NAME "vc"
 +#define VC_LEDS "leds"
 +#define VC_FAN "fan"
 +#define VC_PWM "pwm"
 +#define VC_I2C "vc-i2c"
-+
-+#define VC_FIX_DMI //XXX
 +
 +//#define VC_DEBUG_GPIO
 +//#define VC_DEBUG_I2C
@@ -328,6 +551,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +// rgb value for all off;
 +
 +static unsigned char vc_rgb_off[3] = { 0, 0, 0 };
++static unsigned int vc_rgb_notifier = 0x0000ff;
 +
 +// edge500 led mapping;
 +
@@ -576,6 +800,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		struct attribute_group *sysfs_group;
 +		vc_led_set_f set;
 +		vc_led_off_f off;
++		struct notifier_block *reboot_notifier;
 +	} led;
 +	struct {
 +		const unsigned short addr;
@@ -587,6 +812,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +static struct attribute_group vc_led_group;
 +static struct attribute_group vc_fan_group;
++static struct notifier_block vc_led_notifier_reboot;
 +static int vc_500_probe_led(vc_hw_t *hw, struct i2c_client *client, int index);
 +static int vc_500_probe_led_all(vc_hw_t *hw, struct i2c_client *client, int index);
 +static void vc_500_remove_led_all(vc_hw_t *hw, struct i2c_client *client, int index);
@@ -633,6 +859,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		.sysfs_group = &vc_led_group,
 +		.set = vc_500_led_set,
 +		.off = vc_500_led_off,
++		.reboot_notifier = &vc_led_notifier_reboot,
 +	},
 +	.fan = {
 +		.sysfs_group = &vc_fan_group,
@@ -699,6 +926,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		.sysfs_group = &vc_5x0_led_group,
 +		.set = vc_5x0_led_set,
 +		.off = vc_5x0_led_off,
++		.reboot_notifier = &vc_led_notifier_reboot,
 +	},
 +	.fan = {
 +		.addr = EDGE5X0_FAN_CTRL,
@@ -757,6 +985,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		.sysfs_group = &vc_5x0_led_group,
 +		.set = vc_5x0_led_set,
 +		.off = vc_5x0_led_off,
++		.reboot_notifier = &vc_led_notifier_reboot,
 +	},
 +	.fan = {
 +		.addr = EDGE5X0_FAN_CTRL,
@@ -2051,6 +2280,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +{
 +	vc_data_t *vcd = &vc_data;
 +	int n, ret;
++	struct notifier_block *rbn;
 +
 +	// init global led/fan state;
 +
@@ -2073,6 +2303,13 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		vc_sysfs_led_exit(hw);
 +		goto fail;
 +	}
++
++	// register reboot notifier;
++
++	rbn = hw->led.reboot_notifier;
++	if(rbn)
++		register_reboot_notifier(rbn);
++
 +	return(0);
 +
 +fail:
@@ -2085,12 +2322,41 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +static void
 +vc_500_remove_led_all(vc_hw_t *hw, struct i2c_client *client, int index)
 +{
++	struct notifier_block *rbn;
++
++	rbn = hw->led.reboot_notifier;
++	if(rbn)
++		unregister_reboot_notifier(rbn);
++
 +	if(hw->led.off)
 +		hw->led.off(&vc_data);
 +
 +	vc_sysfs_fan_exit(hw);
 +	vc_sysfs_led_exit(hw);
 +}
++
++// turn LED a certain color on reboot;
++
++static int
++vc_led_reboot(struct notifier_block *rbn, unsigned long code, void *x)
++{
++	vc_data_t *vcd = &vc_data;
++        vc_hw_t *hw = vcd->hw;
++
++#ifdef VC_DEBUG_I2C
++	pr_info("vc: led reboot notifier\n");
++#endif // VC_DEBUG_I2C
++
++	if(hw && hw->led.set)
++		hw->led.set(vcd, VC_LED_LOGO, vc_rgb_notifier);
++
++	return(NOTIFY_DONE);
++}
++
++static struct notifier_block vc_led_notifier_reboot = {
++	.notifier_call = vc_led_reboot,
++	.priority = INT_MAX,
++};
 +
 +// edge5x0: set direction to output;
 +// do not allow any direction changes;
@@ -2852,6 +3118,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	int ret;
 +	static u8 ledout[2] = { 0xaa, 0x00 };
 +	static u8 rgb[3] = { 0xff, 0xff, 0xff };
++	struct notifier_block *rbn;
 +
 +	// request LED_OE gpio;
 +	// drive it 0;
@@ -2892,6 +3159,10 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	if(ret < 0)
 +		goto fail;
 +
++	rbn = hw->led.reboot_notifier;
++	if(rbn)
++		register_reboot_notifier(rbn);
++
 +	return(ret);
 +
 +fail:
@@ -2904,10 +3175,20 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +static void
 +vc_5x0_remove_led(vc_hw_t *hw, struct i2c_client *client, int index)
 +{
-+	vc_5x0_led_rgb(client, vc_rgb_off);
++	struct notifier_block *rbn;
++
++	rbn = hw->led.reboot_notifier;
++	if(rbn)
++		unregister_reboot_notifier(rbn);
++
++	if(hw->led.off)
++		hw->led.off(&vc_data);
++
 +	vc_sysfs_led_exit(hw);
 +	vc_gpio_release(&vc_5x0_led_oe);
 +}
++
++// fan control;
 +
 +static int vc5x0_fan_reboot(struct notifier_block *n, unsigned long code, void *x)
 +{
@@ -3112,8 +3393,12 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	{},
 +};
 +
++#define I2C_ISMT (1<<1)
++#define I2C_VC_BB (1<<2)
++
 +static struct i2c_driver vc_i2c_driver = {
 +	.class = I2C_CLASS_HWMON,
++	.bound = I2C_ISMT,
 +	.driver = {
 +		.name = VC_I2C,
 +	},
@@ -3391,91 +3676,20 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	free_mdio_bitbang(mdio->bus);
 +}
 +
-+// per-board dmi matching info;
-+// unfortunatedly, the edge-portwell has identical dmi info to edge-nexcom;
++// map velocloud board id to hw data;
 +
-+static struct dmi_system_id vc_dmi_table[] = {
-+	{ .ident = "edge500",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE500"),
-+	  },
-+	  .driver_data = &vc_hw_edge500,
-+	},
-+	{ .ident = "edge-nexcom",
-+	  { DMI_MATCH(DMI_PRODUCT_UUID, "00020003-0004-0005-0006-000700080009"),
-+	  },
-+	  .driver_data = &vc_hw_none,
-+	},
-+	{ .ident = "edge1000ifm",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "S1600JP"), // Interface Masters
-+	  },
-+	  .driver_data = &vc_hw_none,
-+	},
-+	{ .ident = "edge1000sm",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "X10SRW-F"), // SuperMicro
-+	  },
-+	  .driver_data = &vc_hw_none,
-+	},
-+	{ .ident = "edge300",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE300"),
-+	  },
-+	  .driver_data = &vc_hw_none,
-+	},
-+	{ .ident = "edge800",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE800"),
-+	  },
-+	  .driver_data = &vc_hw_none,
-+	},
-+	{ .ident = "edge520b",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
-+	    DMI_MATCH(DMI_BOARD_VERSION, "2"),
-+	  },
-+	  .driver_data = &vc_hw_edge5x0_revb,
-+	},
-+	{ .ident = "edge540b",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE540"),
-+	    DMI_MATCH(DMI_BOARD_VERSION, "2"),
-+	  },
-+	  .driver_data = &vc_hw_edge5x0_revb,
-+	},
-+	{ .ident = "edge520",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
-+	  },
-+	  .driver_data = &vc_hw_edge5x0_reva,
-+	},
-+	{ .ident = "edge540",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE540"),
-+	  },
-+	  .driver_data = &vc_hw_edge5x0_reva,
-+	},
-+	{ 0 },
++static vc_hw_t *vc_board_hw[VC_N_BOARDS] = {
++	[VC_EDGE500] = &vc_hw_edge500,
++	[VC_EDGE520] = &vc_hw_edge5x0_reva,
++	[VC_EDGE540] = &vc_hw_edge5x0_reva,
++	[VC_EDGE520B] = &vc_hw_edge5x0_revb,
++	[VC_EDGE540B] = &vc_hw_edge5x0_revb,
 +};
 +
-+#ifdef VC_FIX_DMI
++// symbols provided by velocloud module;
 +
-+static char *bname = "";
-+
-+static const struct dmi_system_id *
-+vc_fix_board(const struct dmi_system_id *dmi, char *name)
-+{
-+	const char *id;
-+
-+	for(; (id = dmi->ident); dmi++) {
-+		if( !strcmp(id, name))
-+			return(dmi);
-+	}
-+	return(NULL);
-+}
-+
-+module_param(bname,charp,S_IRUGO);
-+MODULE_PARM_DESC(bname, "overwrite board name");
-+
-+#endif // VC_FIX_DMI
-+
-+// make up i2c-bb for smb0 firmware devices;
-+
-+static int bbfw = 0;
-+module_param(bbfw,int,S_IRUGO);
-+MODULE_PARM_DESC(bbfw, "create i2c-bb for smb0");
++extern struct dmi_system_id *vc_dmi;
++extern int vc_bbfw;
 +
 +// platform driver init;
 +
@@ -3483,26 +3697,24 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +vc_init(void)
 +{
 +	const struct dmi_system_id *dmi;
++	unsigned long id;
 +	vc_hw_t *hw;
 +	int err;
 +	int reset = 0;
 +
 +	// determine velocloud board;
-+	// allow kernel param overwrite until DMI is fixed;
 +
-+	dmi = dmi_first_match(vc_dmi_table);
-+#ifdef VC_FIX_DMI
-+	pr_info("vc: board overwrite '%s'\n", bname);
-+	if(bname[0])
-+		dmi = vc_fix_board(vc_dmi_table, bname);
-+#endif // VC_FIX_DMI
++	dmi = vc_dmi;
++	if( !dmi)
++		return(0);
++	pr_info("vc: platform %s\n", dmi->ident);
++	id = (unsigned long)dmi->driver_data;
 +	vc_data.dmi = dmi;
-+	if( !dmi) {
-+		pr_info("vc: no board found\n");
-+		return(-ENODEV);
-+	}
-+	pr_info("vc: found %s\n", dmi->ident);
-+	hw = dmi->driver_data;
++	if(id >= VC_N_BOARDS)
++		return(-EINVAL);
++	hw = vc_board_hw[id];
++	if( !hw)
++		hw = &vc_hw_none;
 +	vc_data.hw = hw;
 +
 +	// create platform device;
@@ -3572,7 +3784,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +	// adding i2c-fw bitbang is not fatal;
 +
-+	if(bbfw) {
++	if(vc_bbfw) {
 +		err = platform_device_register(&edge5x0_i2c_bbdev);
 +		if(err < 0)
 +			pr_err("vc: couldn't register i2c-gpio smb0\n");
@@ -3581,6 +3793,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	// add bitbang i2c driver;
 +
 +	if((hw->caps & VC_CAP_I2C_BB) && (hw->i2c.bb)) {
++		vc_i2c_driver.bound = I2C_VC_BB;
 +		err = platform_device_register(hw->i2c.bb);
 +		if(err < 0) {
 +			pr_err("vc: couldn't register i2c-gpio\n");

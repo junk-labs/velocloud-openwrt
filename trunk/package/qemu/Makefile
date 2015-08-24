@@ -33,7 +33,7 @@ endef
 CONFIGURE_ARGS = \
 	--prefix=$(CONFIGURE_PREFIX) \
 	--cross-prefix=$(GNU_TARGET_NAME) \
-	--target-list=i386-softmmu,x86_64-softmmu \
+	--target-list=x86_64-softmmu \
 	--host-cc=gcc \
 	--disable-brlapi \
 	--disable-sdl \
@@ -81,7 +81,6 @@ endef
 
 define Package/qemu/install
 	$(call Package/qemu/install-bins, $(1)/usr/bin)
-	$(call Package/qemu/install-target, $(1)/usr/bin,i386-softmmu,qemu-system-i386)
 	$(call Package/qemu/install-target, $(1)/usr/bin,x86_64-softmmu,qemu-system-x86_64)
 	$(call Package/qemu/install-bios, $(1)/usr/share/qemu)
 endef

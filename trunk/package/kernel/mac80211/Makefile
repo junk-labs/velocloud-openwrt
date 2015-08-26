@@ -10,11 +10,11 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=mac80211
 
-PKG_VERSION:=2015-03-09
-PKG_RELEASE:=3
+PKG_VERSION:=2015-07-21
+PKG_RELEASE:=1
 PKG_SOURCE_URL:=http://mirror2.openwrt.org/sources
 PKG_BACKPORT_VERSION:=
-PKG_MD5SUM:=6d4b04e4ce8a1f54dabfb04f4709453c
+PKG_MD5SUM:=ec529acfb9c942daf8116e5cff47c999
 
 PKG_SOURCE:=compat-wireless-$(PKG_VERSION)$(PKG_BACKPORT_VERSION).tar.bz2
 PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/compat-wireless-$(PKG_VERSION)
@@ -31,7 +31,7 @@ PKG_DRIVERS = \
 	mwl8k mwifiex-pcie net-hermes net-hermes-pci net-hermes-plx net-hermes-pcmcia \
 	iwl-legacy iwl3945 iwl4965 iwlagn wlcore wl12xx wl18xx lib80211 \
 	rtlwifi rtlwifi-pci rtlwifi-usb rtl8192c-common rtl8192ce rtl8192se \
-	rtl8192de rtl8192cu
+	rtl8192de rtl8192cu mt7601u
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_kmod-mac80211 \
@@ -60,7 +60,6 @@ define KernelPackage/mac80211/Default
   SUBMENU:=$(WMENU)
   URL:=https://wireless.wiki.kernel.org/
   MAINTAINER:=Felix Fietkau <nbd@openwrt.org>
-  DEPENDS:=@!TARGET_uml
 endef
 
 define KernelPackage/cfg80211
@@ -79,7 +78,7 @@ endef
 define KernelPackage/mac80211
   $(call KernelPackage/mac80211/Default)
   TITLE:=Linux 802.11 Wireless Networking Stack
-  DEPENDS+= +kmod-crypto-core +kmod-crypto-arc4 +kmod-crypto-aes +kmod-cfg80211 +hostapd-common
+  DEPENDS+= +kmod-crypto-core +kmod-crypto-arc4 +kmod-cfg80211 +hostapd-common
   KCONFIG:=\
 	CONFIG_AVERAGE=y
   FILES:= $(PKG_BUILD_DIR)/net/mac80211/mac80211.ko
@@ -128,7 +127,7 @@ endef
 $(eval $(call Download,linux-firmware))
 
 PKG_ATH10K_LINUX_FIRMWARE_NAME:=ath10k-firmware
-PKG_ATH10K_LINUX_FIRMWARE_VERSION:=da0f85d924226ee30c46e037120621c9e192b39e
+PKG_ATH10K_LINUX_FIRMWARE_VERSION:=b46f3e01a6c1f9150fb4612ef53611d714565842
 PKG_ATH10K_LINUX_FIRMWARE_SOURCE:=$(PKG_ATH10K_LINUX_FIRMWARE_NAME)-$(PKG_ATH10K_LINUX_FIRMWARE_VERSION).tar.bz2
 PKG_ATH10K_LINUX_FIRMWARE_PROTO:=git
 PKG_ATH10K_LINUX_FIRMWARE_SOURCE_URL:=https://github.com/kvalo/ath10k-firmware.git
@@ -516,7 +515,7 @@ define KernelPackage/ath/config
 		bool "Atheros wireless debugging"
 		help
 		  Say Y, if you want to debug atheros wireless drivers.
-		  Right now only ath9k makes use of this.
+		  Only ath9k & ath10k make use of this.
 
 	config PACKAGE_ATH_DFS
 		bool "Enable DFS support"
@@ -624,12 +623,12 @@ endef
 define KernelPackage/ath10k/config
   if PACKAGE_kmod-ath10k
 
-	config ATH10K_STA_FW
-		bool "Firmware optimized for STA operation"
+	config ATH10K_API2_FW
+		bool "Firmware optimized for AP operation (v10.1 / API v2)"
 		default n
 		help
-		  Use the ath10k firmware optimized for wireless client instead
-		  of access point operation.
+		  Use the ath10k firmware from the 10.1 SDK using API v2 optimized
+		  for access point operation if the default firmware keeps crashing.
 
   endif
 endef
@@ -696,10 +695,31 @@ define KernelPackage/mac80211-hwsim
   AUTOLOAD:=$(call AutoProbe,mac80211_hwsim)
 endef
 
+PKG_MT7601U_FW_NAME:=DPO_MT7601U_LinuxSTA
+PKG_MT7601U_FW_VERSION:=3.0.0.4_20130913
+PKG_MT7601U_FW_MD5SUM:=5f440dccc8bc952745a191994fc34699
+PKG_MT7601U_FW_SOURCE:=$(PKG_MT7601U_FW_NAME)_$(PKG_MT7601U_FW_VERSION).tar.bz2
+PKG_MT7601U_FW_SOURCE_URL:=http://www.mediatek.com/AmazonS3/Downloads/linux/
+define Download/mt7601u-firmware
+  FILE:=$(PKG_MT7601U_FW_SOURCE)
+  URL:=$(PKG_MT7601U_FW_SOURCE_URL)
+  MD5SUM:=$(PKG_MT7601U_FW_MD5SUM)
+  SUBDIR:=$(PKG_MT7601U_FW_NAME)_$(PKG_MT7601U_FW_VERSION)
+endef
+$(eval $(call Download,mt7601u-firmware))
+
+define KernelPackage/mt7601u
+  $(call KernelPackage/mac80211/Default)
+  TITLE:=MT7601U-based USB dongles Wireless Driver
+  DEPENDS+= +kmod-mac80211 +@DRIVER_11N_SUPPORT @USB_SUPPORT +kmod-usb-core
+  FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/mediatek/mt7601u/mt7601u.ko
+  AUTOLOAD:=$(call AutoProbe,mt7601)
+endef
+
 define KernelPackage/net-libipw
   $(call KernelPackage/mac80211/Default)
   TITLE:=libipw for ipw2100 and ipw2200
-  DEPENDS:=@PCI_SUPPORT +kmod-crypto-core +kmod-crypto-arc4 +kmod-crypto-aes +kmod-crypto-michael-mic +kmod-lib80211 +kmod-cfg80211 +@DRIVER_WEXT_SUPPORT
+  DEPENDS:=@PCI_SUPPORT +kmod-crypto-core +kmod-crypto-arc4 +kmod-crypto-michael-mic +kmod-lib80211 +kmod-cfg80211 +@DRIVER_WEXT_SUPPORT @!BIG_ENDIAN
   FILES:=$(PKG_BUILD_DIR)/drivers/net/wireless/ipw2x00/libipw.ko
   AUTOLOAD:=$(call AutoProbe,libipw)
 endef
@@ -1140,7 +1160,7 @@ config PACKAGE_B43_USE_SSB
 config PACKAGE_B43_USE_BCMA
 	select PACKAGE_kmod-bcma
 	tristate
-	depends on !TARGET_brcm47xx
+	depends on !TARGET_brcm47xx && !TARGET_bcm53xx
 	default PACKAGE_kmod-b43 if PACKAGE_B43_BUSES_BCMA_AND_SSB
 	default PACKAGE_kmod-b43 if PACKAGE_B43_BUSES_BCMA
 
@@ -1263,7 +1283,7 @@ config PACKAGE_B43_USE_BCMA
 		  This allows choosing buses that b43 should support.
 
 	config PACKAGE_B43_BUSES_BCMA_AND_SSB
-		depends on !TARGET_brcm47xx_legacy && !TARGET_brcm47xx_mips74k
+		depends on !TARGET_brcm47xx_legacy && !TARGET_brcm47xx_mips74k && !TARGET_bcm53xx
 		bool "BCMA and SSB"
 
 	config PACKAGE_B43_BUSES_BCMA
@@ -1271,7 +1291,7 @@ config PACKAGE_B43_USE_BCMA
 		bool "BCMA only"
 
 	config PACKAGE_B43_BUSES_SSB
-		depends on !TARGET_brcm47xx_mips74k
+		depends on !TARGET_brcm47xx_mips74k && !TARGET_bcm53xx
 		bool "SSB only"
 
 	endchoice
@@ -1594,6 +1614,8 @@ config-$(CONFIG_BRCMFMAC_PCIE) += BRCMFMAC_PCIE
 config-$(CONFIG_PACKAGE_BRCM80211_DEBUG) += BRCMDBG
 
 config-$(call config_package,mac80211-hwsim) += MAC80211_HWSIM
+config-$(call config_package,mt7601u) += MT7601U
+config-y += WL_MEDIATEK
 
 config-$(call config_package,rt2x00-lib) += RT2X00 RT2X00_LIB
 config-$(call config_package,rt2x00-pci) += RT2X00_LIB_PCI
@@ -1696,6 +1718,7 @@ define Build/Prepare
 	$(TAR) -C $(PKG_BUILD_DIR) -xjf $(DL_DIR)/$(ZD1211FW_NAME)-$(ZD1211FW_VERSION).tar.bz2
 	$(TAR) -C $(PKG_BUILD_DIR) -xjf $(DL_DIR)/$(PKG_LINUX_FIRMWARE_SOURCE)
 	$(TAR) -C $(PKG_BUILD_DIR) -xjf $(DL_DIR)/$(PKG_ATH10K_LINUX_FIRMWARE_SOURCE)
+	$(TAR) -C $(PKG_BUILD_DIR) -xjf $(DL_DIR)/$(PKG_MT7601U_FW_SOURCE)
 	rm -rf \
 		$(PKG_BUILD_DIR)/include/linux/ssb \
 		$(PKG_BUILD_DIR)/include/linux/bcma \
@@ -1858,15 +1881,22 @@ define KernelPackage/ath10k/install
 	$(INSTALL_DATA) \
 		$(PKG_BUILD_DIR)/$(PKG_ATH10K_LINUX_FIRMWARE_SUBDIR)/ath10k/QCA988X/hw2.0/board.bin \
 		$(1)/lib/firmware/ath10k/QCA988X/hw2.0/
-ifeq ($(CONFIG_ATH10K_STA_FW),y)
+ifeq ($(CONFIG_ATH10K_API2_FW),y)
 	$(INSTALL_DATA) \
-		$(PKG_BUILD_DIR)/$(PKG_ATH10K_LINUX_FIRMWARE_SUBDIR)/main/firmware-2.bin_999.999.0.636 \
+		$(PKG_BUILD_DIR)/$(PKG_ATH10K_LINUX_FIRMWARE_SUBDIR)/10.1/firmware-2.bin_10.1.467.2-1 \
 		$(1)/lib/firmware/ath10k/QCA988X/hw2.0/firmware-2.bin
 else
 	$(INSTALL_DATA) \
-		$(PKG_BUILD_DIR)/$(PKG_ATH10K_LINUX_FIRMWARE_SUBDIR)/10.2.4/firmware-4.bin_10.2.4.45 \
-		$(1)/lib/firmware/ath10k/QCA988X/hw2.0/firmware-4.bin
+		$(PKG_BUILD_DIR)/$(PKG_ATH10K_LINUX_FIRMWARE_SUBDIR)/10.2.4/untested/firmware-5.bin_10.2.4.70-2 \
+		$(1)/lib/firmware/ath10k/QCA988X/hw2.0/firmware-5.bin
 endif
+endef
+
+define KernelPackage/mt7601u/install
+	$(INSTALL_DIR) $(1)/lib/firmware
+	$(INSTALL_DATA) \
+		$(PKG_BUILD_DIR)/$(PKG_MT7601U_FW_NAME)_$(PKG_MT7601U_FW_VERSION)/mcu/bin/MT7601.bin \
+		$(1)/lib/firmware/mt7601u.bin
 endef
 
 define KernelPackage/mwl8k/install
@@ -2053,6 +2083,7 @@ $(eval $(call KernelPackage,rtl8192de))
 $(eval $(call KernelPackage,rtl8192cu))
 $(eval $(call KernelPackage,zd1211rw))
 $(eval $(call KernelPackage,mac80211-hwsim))
+$(eval $(call KernelPackage,mt7601u))
 $(eval $(call KernelPackage,ath9k-common))
 $(eval $(call KernelPackage,ath9k))
 $(eval $(call KernelPackage,ath9k-htc))

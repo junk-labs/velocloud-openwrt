@@ -68,8 +68,11 @@ DRIVER_MAKEOPTS= \
 	CONFIG_DRIVER_NL80211=$(CONFIG_PACKAGE_kmod-cfg80211) \
 	CONFIG_DRIVER_HOSTAP=$(CONFIG_PACKAGE_kmod-hostap) \
 	CONFIG_IEEE80211N=$(HOSTAPD_IEEE80211N) \
-	CONFIG_IEEE80211W=$(CONFIG_PACKAGE_kmod-ath9k) \
 	CONFIG_DRIVER_WEXT=$(CONFIG_DRIVER_WEXT_SUPPORT) \
+
+ifeq ($(LOCAL_VARIANT),full)
+  CONFIG_IEEE80211W=$(CONFIG_PACKAGE_kmod-ath9k)
+endif
 
 ifneq ($(LOCAL_TYPE),hostapd)
   ifdef CONFIG_WPA_SUPPLICANT_OPENSSL
@@ -93,6 +96,11 @@ ifneq ($(LOCAL_TYPE),hostapd)
 endif
 
 ifdef CONFIG_USE_EGLIBC
+  TARGET_LDFLAGS += -lrt
+  TARGET_LDFLAGS_C += -lrt
+endif
+
+ifdef CONFIG_USE_GLIBC
   TARGET_LDFLAGS += -lrt
   TARGET_LDFLAGS_C += -lrt
 endif
@@ -174,7 +182,7 @@ endef
 define Package/wpad-mesh
 $(call Package/wpad/Default)
   TITLE+= (with 802.11s mesh and SAE support)
-  DEPENDS:=$(DRV_DEPENDS) +libubus +libopenssl +@CONFIG_WPA_SUPPLICANT_OPENSSL
+  DEPENDS:=$(DRV_DEPENDS) +libubus +libopenssl +@CONFIG_WPA_SUPPLICANT_OPENSSL @(!TARGET_uml||BROKEN)
   CONFLICTS:=@WPA_SUPPLICANT_INTERNAL
   VARIANT:=wpad-mesh
 endef
@@ -216,7 +224,7 @@ endef
 define Package/wpa-supplicant-mesh
   $(Package/wpa-supplicant)
   TITLE:=WPA Supplicant (with 802.11s and SAE)
-  DEPENDS:=$(DRV_DEPENDS)
+  DEPENDS:=$(DRV_DEPENDS) @(!TARGET_uml||BROKEN)
   CONFLICTS:=wpad wpad-mesh wpad-mesh
   VARIANT:=supplicant-mesh
 endef

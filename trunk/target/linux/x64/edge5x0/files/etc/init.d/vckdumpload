@@ -16,7 +16,7 @@ start() {
 			strstr=`expr "$arg" : "$FIND_SUBSTR"`
 
 			if [ ${#FIND_SUBSTR} -eq $strstr ] ; then
-				/usr/sbin/kexec -p /vmlinuz.kdump --command-line="1 debug init=/sbin/init earlyprintk=serial,ttyS0,115200 console=ttyS0,115200n8 irqpoll reset_devices earlyprintk=dbgp rootwait maxcpus=1 usbcore.old_scheme_first=0 reboot=p,c $arg"
+				/usr/sbin/kexec -p /vmlinuz.kdump --command-line="1 debug init=/sbin/init earlyprintk=serial,ttyS1,115200 console=ttyS1,115200n8 irqpoll reset_devices earlyprintk=dbgp rootwait maxcpus=1 usbcore.old_scheme_first=0 reboot=p,c $arg"
 				break
 		        fi
 		done

@@ -5,7 +5,7 @@ START=99
 
 start() {
 
-	[ -e /velocloud/kcore/kernel_dump ] && {
-		/root/kdump_package
-	}
+    [ -e /velocloud/kcore/kernel_dump ] && {
+        /root/kdump_package
+    }
 }

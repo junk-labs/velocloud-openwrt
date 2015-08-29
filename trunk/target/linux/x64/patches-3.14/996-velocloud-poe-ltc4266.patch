@@ -29,9 +29,9 @@ diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
 diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 --- /dev/null	2015-01-29 08:57:01.314411064 -0800
 +++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-08-24 08:35:21.545403436 -0700
-@@ -0,0 +1,2522 @@
+@@ -0,0 +1,2553 @@
 +/*
-+ * (c) Jordan Rhody (jordan@velocloud.net)
++ * CopyRight (c) 2015 VeloCloud Networks, Inc.
 + *
 + *  This program is free software; you can redistribute it and/or modify
 + *  it under the terms of the GNU General Public License as published by
@@ -46,6 +46,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 + *  You should have received a copy of the GNU General Public License
 + *  along with this program; if not, write to the Free Software
 + *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++/*
++ * Author: Jordan Rhody <jordanr@velocloud.net>
 + */
 +
 +#include <linux/module.h>
@@ -321,10 +324,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +enum ltc4266_ports_idx {
 +        VC_I2C_PORT_NONE = -1,
-+        VC_I2C_PORT1 = 0,
++        VC_I2C_PORT0 = 0,
++        VC_I2C_PORT1,
 +        VC_I2C_PORT2,
 +        VC_I2C_PORT3,
-+        VC_I2C_PORT4,
 +        N_VC_I2C_PORTS,
 +};
 +
@@ -382,7 +385,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	volatile int cancel_timer;
 +	volatile int port_event;
 +	int port_id;
-+	int last_port_event;
++	unsigned int last_port_event;
 +        int device_class;
 +        int device_mA;
 +	struct mutex port_lock;
@@ -499,6 +502,31 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		chipset->port_dev[port_id-1].port_event |= port_event;
 +		mutex_unlock(&chipset->port_dev[port_id-1].port_lock);
 +	}
++}
++
++static inline void send_eventfd_signal(struct i2c_ltc4266_chipset *chipset,
++                		       __u8 port_id)
++{
++        struct ltc4266_port *port;
++	__u64 eventval;
++
++	if (!chipset->eventfd)
++		return;
++
++        port = &chipset->port_dev[port_id];
++
++	/*
++	 * Event structure, version 0:
++	 *   Unused (0) : 32
++	 *   Event mask : 16
++	 *   classification : 8
++	 *   Port id : 8
++	 */
++	eventval = (port->last_port_event & 0xffffU) << 16;
++	eventval |= (port->device_class & 0xffU) << 8;
++	eventval |= port_id & 0xffU;
++
++	eventfd_signal(chipset->eventfd, eventval);
 +}
 +
 +static int ltc4266_port_pwr(struct i2c_ltc4266_chipset *chipset,
@@ -982,10 +1010,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +						CLASS_INTERRUPT);
 +			
 +			mutex_lock(&chipset->glbl_lock);
-+			if (chipset->eventfd)
-+                               	eventfd_signal(chipset->eventfd,
-+                                    (port->last_port_event<<16)|
-+                                    (1 << port_id));  
++			send_eventfd_signal(chipset, port_id);
 +			mutex_unlock(&chipset->glbl_lock);
 +
 +			if (chipset->mode == VC_I2C_CHIPSET_MANUAL_MODE)
@@ -1179,7 +1204,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		port->port_event &= ~POWER_ENABLE_INTERRUPT;
 +
 +		dev_dbg(&chipset->client->dev,
-+                    "Port %d device power enable detected\n", port_id+1);
++                    "Port %d device power enable detected\n", port_id);
 +        }
 +
 +	/* XXX We may carry POWER_GOOD_INTERRUPT and tCUT_INTERRUPT event
@@ -1192,7 +1217,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		err = 2;
 +                
 +		dev_dbg(&chipset->client->dev,
-+                    "Port %d device power good detected\n", port_id+1);
++                    "Port %d device power good detected\n", port_id);
 +		
 +		del_timer_sync(&port->port_pwr_on_timer);
 +
@@ -1207,12 +1232,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	if (last_change[port_id] != port->last_port_event) {
 +                
 +		dev_dbg(&chipset->client->dev, 
-+		    "Port %d event detected\n", port_id+1);
++		    "Port %d event detected\n", port_id);
 +
 +                mutex_lock(&chipset->glbl_lock);
-+		if (chipset->eventfd)
-+			eventfd_signal(chipset->eventfd, 
-+                            (port->last_port_event << 16) | (1 << port_id));
++		send_eventfd_signal(chipset, port_id);
 +                mutex_unlock(&chipset->glbl_lock);
 +
 +		last_change[port_id] = port->last_port_event;
@@ -1406,7 +1429,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	available_pwr = chipset->total_mA_avail;
 +	mutex_unlock(&chipset->glbl_lock);	
 +
-+	return sprintf(buf, "mA available: %d\n", available_pwr);
++	return sprintf(buf, "%d\n", available_pwr);
 +}
 +
 +static ssize_t set_total_mA(struct device *dev,
@@ -1444,7 +1467,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
-+        return sprintf(buf, "mode: %s\n", 
++        return sprintf(buf, "%s\n", 
 +		(chipset->mode == VC_I2C_CHIPSET_MANUAL_MODE) ? 
 +						"manual" : "auto");
 +}
@@ -1541,8 +1564,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +		mutex_unlock(&port->port_lock);
 +		
-+		len += sprintf(buf+len, "Port %d PD: %s %s\n", 
-+					i+1, class, action);
++		len += sprintf(buf+len, "%d: %s %s\n", 
++					i, class, action);
 +	}
 +
 +	return len;
@@ -1583,6 +1606,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +	struct ltc4266_port *port;
++	char *val = strim(buf);
 +
 +        if(index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
@@ -1596,7 +1620,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +	port = &chipset->port_dev[index];
 +
-+	if (strstr(buf, "on")) {
++	if (strcmp(val, "on") == 0 || strcmp(val, "1") == 0) {
 +
 +		mutex_lock(&port->port_lock);
 +
@@ -1622,21 +1646,21 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +			if (port->port_state == PORT_STATE_MONITOR) {
 +				err = -EINVAL;
 +				dev_err(dev, "Device already powered on "
-+							"port %d\n", index+1);
++							"port %d\n", index);
 +			} else {
 +				err = -ENODEV;
 +				dev_err(dev, "No device detected on "
-+							"port %d\n", index+1);
++							"port %d\n", index);
 +			}
 +		}
 +		mutex_unlock(&port->port_lock);
 +	
-+	} else if (strstr(buf, "off")) {
++	} else if (strcmp(val, "off") == 0 || strcmp(val, "0") == 0) {
 +
 +		mutex_lock(&port->port_lock);
 +		if (port->port_state != PORT_STATE_MONITOR) {
 +			mutex_unlock(&port->port_lock);
-+                	dev_err(dev, "Invald operation on port %d\n", index+1);
++                	dev_err(dev, "Invald operation on port %d\n", index);
 +			return -ENODEV;
 +		}
 +	
@@ -1665,9 +1689,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		mutex_unlock(&port->port_lock);
 +
 +		mutex_lock(&chipset->glbl_lock);	
-+		if (chipset->eventfd)
-+                	eventfd_signal(chipset->eventfd, 
-+				(port->last_port_event<<16)| (1 << index));
++		send_eventfd_signal(chipset, index);
 +		mutex_unlock(&chipset->glbl_lock);	
 +
 +		dev_dbg(&chipset->client->dev,
@@ -1689,45 +1711,45 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 + * planned item to add.
 + */
 +
-+#define SHOW_POWER(name,index) \
-+static ssize_t show_power_##name(struct device *dev, \
++#define SHOW_POWER(index) \
++static ssize_t show_power_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                char *buf) \
 +{ \
 +        return(show_power(dev, buf, index)); \
 +}
 +
-+SHOW_POWER(pwr_p1, VC_I2C_PORT1)
-+SHOW_POWER(pwr_p2, VC_I2C_PORT2)
++SHOW_POWER(0)
++SHOW_POWER(1)
 +#if 0
-+SHOW_POWER(pwr_p3, VC_I2C_PORT3)
-+SHOW_POWER(pwr_p4, VC_I2C_PORT4)
++SHOW_POWER(2)
++SHOW_POWER(3)
 +#endif
 +
-+#define STORE_POWER(name,index) \
-+static ssize_t store_power_##name(struct device *dev, \
++#define STORE_POWER(index) \
++static ssize_t store_power_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                const char *buf, size_t len) \
 +{ \
 +        return(store_power(dev, buf, len, index)); \
 +}
 +
-+STORE_POWER(pwr_p1, VC_I2C_PORT1)
-+STORE_POWER(pwr_p2, VC_I2C_PORT2)
++STORE_POWER(0)
++STORE_POWER(1)
 +#if 0
-+STORE_POWER(pwr_p3, VC_I2C_PORT3)
-+STORE_POWER(pwr_p4, VC_I2C_PORT4)
++STORE_POWER(2)
++STORE_POWER(3)
 +#endif
 +
-+#define ATTR_POWER(name) \
-+static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_power_##name, \
-+					    store_power_##name);
++#define ATTR_POWER(name,index) \
++static DEVICE_ATTR(name##_##index, S_IRUGO | S_IWUSR, show_power_##index, \
++					    store_power_##index);
 +
-+ATTR_POWER(pwr_p1);
-+ATTR_POWER(pwr_p2);
++ATTR_POWER(pwr,0);
++ATTR_POWER(pwr,1);
 +#if 0
-+ATTR_POWER(pwr_p3);
-+ATTR_POWER(pwr_p4);
++ATTR_POWER(pwr,2);
++ATTR_POWER(pwr,3);
 +#endif
 +
 +static ssize_t
@@ -1747,7 +1769,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	val = i2c_smbus_read_byte_data(chipset->client, 
 +				LTC_LIM_BASE_REG+(index*5));
 +
-+	return sprintf(buf, "port: %d iLIM: 0x%2X\n", index+1, val);
++	return sprintf(buf, "0x%02x\n", val);
 +
 +        return(ret);
 +}
@@ -1778,46 +1800,46 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        return(len);
 +}
 +
-+#define SHOW_ILIM(name,index) \
-+static ssize_t show_ilim_##name(struct device *dev, \
++#define SHOW_ILIM(index) \
++static ssize_t show_ilim_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                char *buf) \
 +{ \
 +        return(show_ilim(dev, buf, index)); \
 +}
 +
-+SHOW_ILIM(ilim_p1, VC_I2C_PORT1)
-+SHOW_ILIM(ilim_p2, VC_I2C_PORT2)
++SHOW_ILIM(0)
++SHOW_ILIM(1)
 +#if 0
-+SHOW_ILIM(ilim_p3, VC_I2C_PORT3)
-+SHOW_ILIM(ilim_p4, VC_I2C_PORT4)
++SHOW_ILIM(2)
++SHOW_ILIM(3)
 +#endif
 +
-+#define STORE_ILIM(name,index) \
-+static ssize_t store_ilim_##name(struct device *dev, \
++#define STORE_ILIM(index) \
++static ssize_t store_ilim_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                const char *buf, size_t len) \
 +{ \
 +        return(store_ilim(dev, buf, len, index)); \
 +}
 +
-+STORE_ILIM(ilim_p1, VC_I2C_PORT1)
-+STORE_ILIM(ilim_p2, VC_I2C_PORT2)
++STORE_ILIM(0)
++STORE_ILIM(1)
 +#if 0
-+STORE_ILIM(ilim_p3, VC_I2C_PORT3)
-+STORE_ILIM(ilim_p4, VC_I2C_PORT4)
++STORE_ILIM(2)
++STORE_ILIM(3)
 +#endif
 +
 +
-+#define ATTR_ILIM(name) \
-+static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_ilim_##name, \
-+					  store_ilim_##name);
++#define ATTR_ILIM(name,index) \
++static DEVICE_ATTR(name##_##index, S_IRUGO | S_IWUSR, show_ilim_##index, \
++					  store_ilim_##index);
 +
-+ATTR_ILIM(ilim_p1);
-+ATTR_ILIM(ilim_p2);
++ATTR_ILIM(ilim,0);
++ATTR_ILIM(ilim,1);
 +#if 0
-+ATTR_ILIM(ilim_p3);
-+ATTR_ILIM(ilim_p4);
++ATTR_ILIM(ilim,2);
++ATTR_ILIM(ilim,3);
 +#endif
 +
 +
@@ -1839,7 +1861,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +        val &= ~0xC0;
 +
-+        return sprintf(buf, "port: %d iCUT: 0x%2X\n", index+1, val);
++        return sprintf(buf, "0x%02x\n", val);
 +
 +        return(ret);
 +}
@@ -1870,45 +1892,45 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        return(len);
 +}
 +
-+#define SHOW_ICUT(name,index) \
-+static ssize_t show_icut_##name(struct device *dev, \
++#define SHOW_ICUT(index) \
++static ssize_t show_icut_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                char *buf) \
 +{ \
 +        return(show_icut(dev, buf, index)); \
 +}
 +
-+SHOW_ICUT(icut_p1, VC_I2C_PORT1)
-+SHOW_ICUT(icut_p2, VC_I2C_PORT2)
++SHOW_ICUT(0)
++SHOW_ICUT(1)
 +#if 0
-+SHOW_ICUT(icut_p3, VC_I2C_PORT3)
-+SHOW_ICUT(icut_p4, VC_I2C_PORT4)
++SHOW_ICUT(2)
++SHOW_ICUT(3)
 +#endif
 +
-+#define STORE_ICUT(name,index) \
-+static ssize_t store_icut_##name(struct device *dev, \
++#define STORE_ICUT(index) \
++static ssize_t store_icut_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                const char *buf, size_t len) \
 +{ \
 +        return(store_icut(dev, buf, len, index)); \
 +}
 +
-+STORE_ICUT(icut_p1, VC_I2C_PORT1)
-+STORE_ICUT(icut_p2, VC_I2C_PORT2)
++STORE_ICUT(0)
++STORE_ICUT(1)
 +#if 0
-+STORE_ICUT(icut_p3, VC_I2C_PORT3)
-+STORE_ICUT(icut_p4, VC_I2C_PORT4)
++STORE_ICUT(2)
++STORE_ICUT(3)
 +#endif
 +
-+#define ATTR_ICUT(name) \
-+static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_icut_##name, \
-+					  store_icut_##name);
++#define ATTR_ICUT(name,index) \
++static DEVICE_ATTR(name##_##index, S_IRUGO | S_IWUSR, show_icut_##index, \
++					  store_icut_##index);
 +
-+ATTR_ICUT(icut_p1);
-+ATTR_ICUT(icut_p2);
++ATTR_ICUT(icut,0);
++ATTR_ICUT(icut,1);
 +#if 0
-+ATTR_ICUT(icut_p3);
-+ATTR_ICUT(icut_p4);
++ATTR_ICUT(icut,2);
++ATTR_ICUT(icut,3);
 +#endif
 +
 +static ssize_t
@@ -1975,33 +1997,33 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	lsb = lsb - dec * 10;
 +
 +	/* Resolution only to three decimal places. */
-+        return sprintf(buf, "port %d: %d.%d%d%d mA\n", index, msb, cent, dec, lsb);
++        return sprintf(buf, "%d.%d%d%d\n", msb, cent, dec, lsb);
 +}
 +
 +
-+#define SHOW_mA(name,index) \
-+static ssize_t show_mA_##name(struct device *dev, \
++#define SHOW_mA(index) \
++static ssize_t show_mA_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                char *buf) \
 +{ \
 +        return(show_mA(dev, buf, index)); \
 +}
 +
-+SHOW_mA(mA_p1, VC_I2C_PORT1)
-+SHOW_mA(mA_p2, VC_I2C_PORT2)
++SHOW_mA(0)
++SHOW_mA(1)
 +#if 0
-+SHOW_mA(mA_p3, VC_I2C_PORT3)
-+SHOW_mA(mA_p4, VC_I2C_PORT4)
++SHOW_mA(2)
++SHOW_mA(3)
 +#endif
 +
-+#define ATTR_mA(name) \
-+static DEVICE_ATTR(name, S_IRUGO , show_mA_##name, NULL);
++#define ATTR_mA(name,index) \
++static DEVICE_ATTR(name##_##index, S_IRUGO , show_mA_##index, NULL);
 +
-+ATTR_mA(mA_p1);
-+ATTR_mA(mA_p2);
++ATTR_mA(mA,0);
++ATTR_mA(mA,1);
 +#if 0
-+ATTR_mA(mA_p3);
-+ATTR_mA(mA_p4);
++ATTR_mA(mA,2);
++ATTR_mA(mA,3);
 +#endif
 +
 +static ssize_t
@@ -2068,33 +2090,33 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +	lsb = lsb - dec * 10;
 +
-+        return sprintf(buf, "port %d: %d.%d%d%d V\n", index, msb, cent, dec, lsb);
++        return sprintf(buf, "%d.%d%d%d\n", msb, cent, dec, lsb);
 +}
 +
 +
-+#define SHOW_VOLTS(name,index) \
-+static ssize_t show_volts_##name(struct device *dev, \
++#define SHOW_VOLTS(index) \
++static ssize_t show_volts_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                char *buf) \
 +{ \
 +        return(show_volts(dev, buf, index)); \
 +}
 +
-+SHOW_VOLTS(volts_p1, VC_I2C_PORT1)
-+SHOW_VOLTS(volts_p2, VC_I2C_PORT2)
++SHOW_VOLTS(0)
++SHOW_VOLTS(1)
 +#if 0
-+SHOW_VOLTS(volts_p3, VC_I2C_PORT3)
-+SHOW_VOLTS(volts_p4, VC_I2C_PORT4)
++SHOW_VOLTS(2)
++SHOW_VOLTS(3)
 +#endif
 +
-+#define ATTR_VOLTS(name) \
-+static DEVICE_ATTR(name, S_IRUGO , show_volts_##name, NULL);
++#define ATTR_VOLTS(name,index) \
++static DEVICE_ATTR(name##_##index, S_IRUGO , show_volts_##index, NULL);
 +
-+ATTR_VOLTS(volts_p1);
-+ATTR_VOLTS(volts_p2);
++ATTR_VOLTS(volts,0);
++ATTR_VOLTS(volts,1);
 +#if 0
-+ATTR_VOLTS(volts_p3);
-+ATTR_VOLTS(volts_p4);
++ATTR_VOLTS(volts,2);
++ATTR_VOLTS(volts,3);
 +#endif
 +
 +static int 
@@ -2170,68 +2192,77 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	return len;
 +}
 +
-+#define STORE_PORT_RESET(name,index) \
-+static ssize_t store_port_##name(struct device *dev, \
++#define STORE_PORT_RESET(index) \
++static ssize_t store_port_##index(struct device *dev, \
 +                struct device_attribute *attr, \
 +                const char *buf, size_t len) \
 +{ \
 +        return(store_port_reset(dev, buf, len, index)); \
 +}
 +
-+STORE_PORT_RESET(reset_p1, VC_I2C_PORT1)
-+STORE_PORT_RESET(reset_p2, VC_I2C_PORT2)
++STORE_PORT_RESET(0)
++STORE_PORT_RESET(1)
 +#if 0
-+STORE_PORT_RESET(reset_p3, VC_I2C_PORT3)
-+STORE_PORT_RESET(reset_p4, VC_I2C_PORT4)
++STORE_PORT_RESET(2)
++STORE_PORT_RESET(3)
 +#endif
 +
-+#define ATTR_RESET(name) \
-+static DEVICE_ATTR(name, S_IWUSR, NULL, store_port_##name);
++#define ATTR_RESET(name,index) \
++static DEVICE_ATTR(name##_##index, S_IWUSR, NULL, store_port_##index);
 +
-+ATTR_RESET(reset_p1);
-+ATTR_RESET(reset_p2);
++ATTR_RESET(reset,0);
++ATTR_RESET(reset,1);
 +#if 0
-+ATTR_RESET(reset_p3);
-+ATTR_RESET(reset_p4);
++ATTR_RESET(reset,2);
++ATTR_RESET(reset,3);
 +#endif
++
++#define DEVICE_ATTR_ADDR(name,index) \
++&dev_attr_##name##_##index.attr
 +
 +static struct attribute *vc_ltc4266_port_attrs[] = {
-+        &dev_attr_pwr_p1.attr,
-+        &dev_attr_pwr_p2.attr,
++	DEVICE_ATTR_ADDR(pwr,0),
++	DEVICE_ATTR_ADDR(pwr,1),
 +#if 0
-+        &dev_attr_pwr_p3.attr,
-+        &dev_attr_pwr_p4.attr,
++	DEVICE_ATTR_ADDR(pwr,2),
++	DEVICE_ATTR_ADDR(pwr,3),
 +#endif
-+        &dev_attr_icut_p1.attr,
-+        &dev_attr_icut_p2.attr,
++
++	DEVICE_ATTR_ADDR(icut,0),
++	DEVICE_ATTR_ADDR(icut,1),
 +#if 0
-+        &dev_attr_icut_p3.attr,
-+        &dev_attr_icut_p4.attr,
++	DEVICE_ATTR_ADDR(icut,2),
++	DEVICE_ATTR_ADDR(icut,3),
 +#endif
-+        &dev_attr_ilim_p1.attr,
-+        &dev_attr_ilim_p2.attr,
++
++	DEVICE_ATTR_ADDR(ilim,0),
++	DEVICE_ATTR_ADDR(ilim,1),
 +#if 0
-+        &dev_attr_ilim_p3.attr,
-+        &dev_attr_ilim_p4.attr,
++	DEVICE_ATTR_ADDR(ilim,2),
++	DEVICE_ATTR_ADDR(ilim,3),
 +#endif
-+        &dev_attr_volts_p1.attr,
-+        &dev_attr_volts_p2.attr,
++
++	DEVICE_ATTR_ADDR(volts,0),
++	DEVICE_ATTR_ADDR(volts,1),
 +#if 0
-+        &dev_attr_volts_p3.attr,
-+        &dev_attr_volts_p4.attr,
++	DEVICE_ATTR_ADDR(volts,2),
++	DEVICE_ATTR_ADDR(volts,3),
 +#endif
-+        &dev_attr_mA_p1.attr,
-+        &dev_attr_mA_p2.attr,
++
++	DEVICE_ATTR_ADDR(mA,0),
++	DEVICE_ATTR_ADDR(mA,1),
 +#if 0
-+        &dev_attr_mA_p3.attr,
-+        &dev_attr_mA_p4.attr,
++	DEVICE_ATTR_ADDR(mA,2),
++	DEVICE_ATTR_ADDR(mA,3),
 +#endif
-+        &dev_attr_reset_p1.attr,
-+        &dev_attr_reset_p2.attr,
++
++	DEVICE_ATTR_ADDR(reset,0),
++	DEVICE_ATTR_ADDR(reset,1),
 +#if 0
-+        &dev_attr_reset_p3.attr,
-+        &dev_attr_reset_p4.attr,
++	DEVICE_ATTR_ADDR(reset,2),
++	DEVICE_ATTR_ADDR(reset,3),
 +#endif
++
 +        NULL,
 +};
 +

@@ -18,8 +18,9 @@ chomp($mk);		# trim trailing newline
 $mk or $mk = "make";	# default to 'make'
 
 # check version of make
-my @mkver = split /\s+/, `$mk -v`, 4;
+my @mkver = split /\s+/, `$mk -v`, 5;
 my $valid_mk = 1;
+$mkver[0] =~ /#/ and shift @mkver;
 $mkver[0] =~ /^GNU/ or $valid_mk = 0;
 $mkver[1] =~ /^Make/ or $valid_mk = 0;
 $mkver[2] >= "3.81" or $valid_mk = 0;

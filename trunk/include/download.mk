@@ -149,6 +149,7 @@ endef
 
 define DownloadMethod/none
 	@echo "Checking out files via PKG_CAT method..."
+	touch $(DL_DIR)/$(FILE)
 endef
 
 Validate/cvs=VERSION SUBDIR

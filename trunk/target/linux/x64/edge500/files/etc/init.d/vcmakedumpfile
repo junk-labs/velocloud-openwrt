@@ -3,13 +3,18 @@
 
 START=01
 
+COREDUMP_TOP_DIR=/velocloud
+COREDUMP_PATH=/velocloud/kcore
+CURR_DATE=`date +%Y-%m-%d:%H:%M:%S`
+
 boot() {
         if [ -e /proc/vmcore ] ; then
+		/bin/mkdir -p ${COREDUMP_TOP_DIR}
 		/sbin/block mount
-                /bin/mkdir -p /velocloud/kcore
-                /sbin/makedumpfile -c -d 22 /proc/vmcore /velocloud/kcore/kernel_dump
-                if [ $? -eq 0 ] ; then
-                        /sbin/reboot -f
-                fi
+                /bin/mkdir -p ${COREDUMP_PATH}
+		/sbin/makedumpfile --dump-dmesg /proc/vmcore ${COREDUMP_PATH}/kernel-crash-dmesg.${CURR_DATE}
+		/bin/touch ${COREDUMP_PATH}/.kernel-crash-dmesg.${CURR_DATE}
+		sync
+                /sbin/reboot -f
         fi
 }

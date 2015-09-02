@@ -177,9 +177,6 @@ define Kernel/CompileKdumpImage/Default
 	echo "Compiling DUMP build"
 	+$(MAKE) $(KERNEL_KDUMP_MAKEOPTS) $(subst ",,$(KERNELNAME))
 	$(CP) $(LINUX_KDUMP_DIR)/arch/x86/boot/bzImage $(TARGET_DIR)/vmlinuz.kdump
-	$(CP) $(LINUX_DIR)/vmlinux $(TARGET_DIR)/vmlinux.kdump
-	mkdir -p $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump
-	mkdir -p $(TARGET_ROOTFS_DIR)/root-$(BOARD).kdump/{bin,sbin,etc,proc,sys,lib}
 	echo "DUMP build compile complete"
 	#")
 endef

@@ -1,13 +1,13 @@
 hostapd_set_bss_options() {
 	local var="$1"
 	local vif="$2"
-	local enc wep_rekey wpa_group_rekey wpa_ptk_rekey wpa_gmk_rekey wpa_strict_rekey wps_possible wpa_key_mgmt
+	local enc wep_rekey wpa_group_rekey wpa_pair_rekey wpa_master_rekey wpa_strict_rekey wps_possible wpa_key_mgmt
 
 	config_get enc "$vif" encryption "none"
 	config_get wep_rekey        "$vif" wep_rekey        # 300
 	config_get wpa_group_rekey  "$vif" wpa_group_rekey  # 300
-	config_get wpa_ptk_rekey    "$vif" wpa_ptk_rekey    # 300
-	config_get wpa_gmk_rekey    "$vif" wpa_gmk_rekey    # 640
+	config_get wpa_pair_rekey   "$vif" wpa_pair_rekey   # 300
+	config_get wpa_master_rekey "$vif" wpa_master_rekey # 640
 	config_get wpa_strict_rekey "$vif" wpa_strict_rekey # 1
 	config_get_bool ap_isolate "$vif" isolate 0
 	config_get_bool disassoc_low_ack "$vif" disassoc_low_ack 1
@@ -91,9 +91,9 @@ hostapd_set_bss_options() {
 			fi
 			wps_possible=1
 			[ -n "$wpa_group_rekey"  ] && append "$var" "wpa_group_rekey=$wpa_group_rekey" "$N"
-			[ -n "$wpa_ptk_rekey"    ] && append "$var" "wpa_ptk_rekey=$wpa_ptk_rekey"    "$N"
-			[ -n "$wpa_gmk_rekey"    ] && append "$var" "wpa_gmk_rekey=$wpa_gmk_rekey"  "$N"
-			[ -n "$wpa_strict_rekey" ] && append "$var" "wpa_strict_rekey=$wpa_strict_rekey"  "$N"
+			[ -n "$wpa_pair_rekey"   ] && append "$var" "wpa_ptk_rekey=$wpa_pair_rekey"    "$N"
+			[ -n "$wpa_master_rekey" ] && append "$var" "wpa_gmk_rekey=$wpa_master_rekey"  "$N"
+			[ -n "$wpa_strict_rekey" ] && append "$var" "wpa_strict_rekey=$wpa_strict_rekey" "$N"
 			append wpa_key_mgmt "WPA-PSK"
 		;;
 		*wpa*|*8021x*)
@@ -138,9 +138,9 @@ hostapd_set_bss_options() {
 			append "$var" "ieee8021x=1" "$N"
 			append wpa_key_mgmt "WPA-EAP"
 			[ -n "$wpa_group_rekey"  ] && append "$var" "wpa_group_rekey=$wpa_group_rekey" "$N"
-			[ -n "$wpa_ptk_rekey"    ] && append "$var" "wpa_ptk_rekey=$wpa_ptk_rekey"    "$N"
-			[ -n "$wpa_gmk_rekey"    ] && append "$var" "wpa_gmk_rekey=$wpa_gmk_rekey"  "$N"
-			[ -n "$wpa_strict_rekey" ] && append "$var" "wpa_strict_rekey=$wpa_strict_rekey"  "$N"
+			[ -n "$wpa_pair_rekey"   ] && append "$var" "wpa_ptk_rekey=$wpa_pair_rekey"    "$N"
+			[ -n "$wpa_master_rekey" ] && append "$var" "wpa_gmk_rekey=$wpa_master_rekey"  "$N"
+			[ -n "$wpa_strict_rekey" ] && append "$var" "wpa_strict_rekey=$wpa_strict_rekey" "$N"
 		;;
 		*wep*)
 			config_get key "$vif" key
@@ -397,6 +397,6 @@ ${hwmode:+hw_mode=${hwmode#11}}
 ${channel:+channel=$channel}
 $hostapd_cfg
 EOF
-	nice -n $nice hostapd -P /var/run/wifi-$ifname.pid -B /var/run/hostapd-$ifname.conf $DISABLE_OLBC
+	nice -n $nice hostapd $DISABLE_OLBC -P /var/run/wifi-$ifname.pid -B /var/run/hostapd-$ifname.conf
 }
 

@@ -88,7 +88,7 @@ diff -Naur /dev/null b/include/misc/velocloud.h
 diff -Naur /dev/null b/drivers/platform/x86/velocloud.c
 --- /dev/null	2015-01-29 08:57:01.314411064 -0800
 +++ b/drivers/platform/x86/velocloud.c	2015-08-19 10:53:03.900651090 -0700
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,189 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -112,6 +112,8 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud.c
 +#include <linux/platform_device.h>
 +#include <linux/dmi.h>
 +#include <misc/velocloud.h>
++// fix reboot style for some boards
++#include <linux/reboot.h>
 +
 +// build with force enabled;
 +#define VC_FIX_DMI
@@ -210,6 +212,32 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud.c
 +const struct dmi_system_id *vc_dmi = NULL;
 +EXPORT_SYMBOL(vc_dmi);
 +
++static void
++vc_set_reboot(void)
++{
++	// assert(vc_dmi != NULL);
++	int id = (unsigned long)vc_dmi->driver_data;
++
++	// See if reboot params have already been overridden
++	if (!reboot_default) {
++		pr_info("vc: reboot style already set to '%c'\n", reboot_type);
++		return;
++	}
++	switch (id) {
++		case VC_EDGE500:
++		case VC_EDGE520:
++		case VC_EDGE540:
++		case VC_EDGE520B:
++		case VC_EDGE540B:
++			reboot_type = BOOT_CF9;
++			pr_info("vc: setting reboot style to PIC ('%c')\n", reboot_type);
++			break;
++		default:
++			// No change
++			break;
++	}
++}
++
 +// init vc dmi module;
 +
 +static int __init
@@ -233,6 +261,9 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud.c
 +		return(-ENODEV);
 +	}
 +	pr_info("vc: found %s\n", vc_dmi->ident);
++
++	// Set the reboot style
++	vc_set_reboot();
 +	return(0);
 +}
 +

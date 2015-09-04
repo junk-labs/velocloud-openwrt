@@ -1,0 +1,11 @@
+--- a/quickassist/utilities/osal/src/linux/user_space/Makefile
++++ a/quickassist/utilities/osal/src/linux/user_space/Makefile
+@@ -75,7 +75,7 @@
+ ifeq ($(MACHINE), x86_64)
+ MACHINE:=x86-64
+ endif
+-EXTRA_CFLAGS+= -march=$(MACHINE)
++#EXTRA_CFLAGS+= -march=$(MACHINE)
+ 
+ ifdef ICP_NUM_PAGES_PER_ALLOC
+ EXTRA_CFLAGS+=-DICP_NUM_PAGES_PER_ALLOC

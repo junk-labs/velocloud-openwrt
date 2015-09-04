@@ -432,6 +432,18 @@ endef
 $(eval $(call KernelPackage,crypto-sha256))
 
 
+define KernelPackage/crypto-sha512
+  TITLE:=SHA384 SHA512 digest CryptoAPI module
+  DEPENDS:=+kmod-crypto-hash
+  KCONFIG:=CONFIG_CRYPTO_SHA512
+  FILES:=$(LINUX_DIR)/crypto/sha512_generic.ko
+  AUTOLOAD:=$(call AutoLoad,09,sha512_generic)
+  $(call AddDepends/crypto)
+endef
+
+$(eval $(call KernelPackage,crypto-sha512))
+
+
 ifeq ($(strip $(call CompareKernelPatchVer,$(KERNEL_PATCHVER),ge,3.6.0)),1)
 camellia_mod_suffix=_generic
 endif

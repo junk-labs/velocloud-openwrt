@@ -1,0 +1,11 @@
+--- a/quickassist/utilities/osal/src/linux/user_space/OsalCryptoInterface.c
++++ b/quickassist/utilities/osal/src/linux/user_space/OsalCryptoInterface.c
+@@ -78,7 +78,7 @@
+ osalHashSHA1(UINT8 *in, UINT8 *out)
+ {
+     SHA_CTX ctx;
+-    if(!SHA_Init(&ctx))
++    if(!SHA1_Init(&ctx))
+     {
+         return OSAL_FAIL;
+     }

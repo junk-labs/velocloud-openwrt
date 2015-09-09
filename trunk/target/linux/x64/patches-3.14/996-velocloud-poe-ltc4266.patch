@@ -1,6 +1,6 @@
 diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
 --- a/drivers/i2c/busses/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/i2c/busses/Kconfig	2015-08-06 12:46:54.977410314 -0700
++++ b/drivers/i2c/busses/Kconfig	2015-09-09 15:43:50.039139476 -0700
 @@ -1012,4 +1012,13 @@
  	  This support is also available as a module.  If so, the module
  	  will be called scx200_acb.
@@ -17,7 +17,7 @@ diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
  endmenu
 diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
 --- a/drivers/i2c/busses/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/i2c/busses/Makefile	2015-08-06 12:46:54.981410129 -0700
++++ b/drivers/i2c/busses/Makefile	2015-09-09 15:43:50.039139476 -0700
 @@ -49,6 +49,7 @@
  obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
  obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o
@@ -27,11 +27,11 @@ diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
  obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
  obj-$(CONFIG_I2C_MXS)		+= i2c-mxs.o
 diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
---- /dev/null	2015-01-29 08:57:01.314411064 -0800
-+++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-08-24 08:35:21.545403436 -0700
-@@ -0,0 +1,2553 @@
+--- a/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-09-09 15:44:17.317526777 -0700
+@@ -0,0 +1,2482 @@
 +/*
-+ * CopyRight (c) 2015 VeloCloud Networks, Inc.
++ * Copyright (c) 2015 VeloCloud Networks, Inc.
 + *
 + *  This program is free software; you can redistribute it and/or modify
 + *  it under the terms of the GNU General Public License as published by
@@ -74,6 +74,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +// symbols provided by velocloud module;
 +
 +extern struct dmi_system_id *vc_dmi;
++extern struct kobject *vc_platform_kobj;
++
++#define SYS_PORT_DIR_NAME "port"
 +
 +#define LTC_SET_EVENTFD 1
 +#define LTC_RESET_EVENTFD 2
@@ -91,7 +94,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +#define LTC_PORTS_COUNT		2    /* LTC4266 controls 4 ports per chipset
 +					but using first 2 ports. */
 +
-+#define VELO_PWRDFLT_mA_AVAIL	700
++#define VELO_PWRDFLT_mA_AVAIL	575  /* 31w/54v = 575mA (rounded up) */
 +
 +#define LTC_FW_REV_STRING      "0x80"/* LTC4266 FW Rev. */
 +
@@ -108,8 +111,6 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +#define	LTC_tCUT_INT		0x20 /* bit(5) tCUT Interrupt. */
 +#define LTC_tSTART_INT		0x40 /* bit(6) tSTART Interrupt. */
 +#define LTC_SUPPLY_INT		0x80 /* bit(7) Supply Interrupt. */
-+
-+#define LTC_INTERRUPT_MASK_ALL  0xff
 +
 +#define LTC_PWREVN_REG		0x02 /* LTC4266 Power Event Register. */
 +
@@ -222,8 +223,6 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +#define LTC_STATp_CLASS(a) ((a >> 4) & LTC_STATp_CLASS_MASK)
 +
-+#define LTC_DETECT_EVENT	 0x7    /* Last detection result for port(x). */
-+
 +/* LTC4266 Detect Encoding for detection event. */
 +#define LTC_DETECTp_UNKNOWN	0x0
 +#define LTC_DETECTp_SHORT	0x1
@@ -301,18 +300,18 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +/* LTC4266 Port Mode Encoding. */
 +#define LTC_CONFIG_SHUTDOWN	0x0
 +#define LTC_CONFIG_MANUAL	0x1
-+#define LTC_CONFIG_SEMIAUTO        0x2
-+#define LTC_CONFIG_AUTO		   0x3
++#define LTC_CONFIG_SEMIAUTO     0x2
++#define LTC_CONFIG_AUTO		0x3
 +
-+#define LTC_CONFIG_MASK		   0x3
++#define LTC_CONFIG_MASK		0x3
 +
 +#define LTC_PORT_OP_MODE(reg, port) ((reg >> (2*port)) & LTC_CONFIG_MASK)
 +
-+#define LTC_PPOE_mA_CLASS_0    375
-+#define LTC_PPOE_mA_CLASS_1    112
-+#define LTC_PPOE_mA_CLASS_2    206
-+#define LTC_PPOE_mA_CLASS_3    375
-+#define LTC_PPOE_mA_CLASS_4    638
++#define LTC_PPOE_mA_CLASS_0    235 /* (12.95w/55v) = 235mA */
++#define LTC_PPOE_mA_CLASS_1    70  /* ( 3.84w/55v) = ~70mA */
++#define LTC_PPOE_mA_CLASS_2    118 /* ( 6.49w/55v) = 118mA */
++#define LTC_PPOE_mA_CLASS_3    235 /* (12.95w/55v) = 235mA */
++#define LTC_PPOE_mA_CLASS_4    464 /* (25.50w/55v) = 464mA */
 +
 +
 +enum vc_ltc4266_i2c_idx {
@@ -362,51 +361,73 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +					      */
 +};
 +
++struct port_obj {
++        struct kobject kobj;
++        s32 index;
++	struct device *dev;
++};
++#define to_port_obj(x) container_of(x, struct port_obj, kobj)
++
++struct port_attribute {
++        struct attribute attr;
++
++        ssize_t (*show)(struct port_obj *port, 
++			struct port_attribute *attr,
++			char *buf);
++
++	ssize_t (*store)(struct port_obj *port, 
++			 struct port_attribute *attr, 
++			 const char *buf, size_t count);
++};
++#define to_port_attr(x) container_of(x, struct port_attribute, attr)
++
 +struct ltc_icut_lim {
-+	int ilim;
-+	int icut;
++	s32 ilim;
++	s32 icut;
 +};
 +
 +static const struct ltc_icut_lim ltc_clspwr_settings[] = {
 +	{0, 0},       /* CLASS UNKNOWN */
 +	{0x80, 0x06}, /* CLASS 1 LIM=425mA; CUT=112mA */
-+	{0x80, 0x0B}, /* CLASS 2 LIM=425mA; CUT=206mA */
-+	{0x80, 0x14}, /* CLASS 3 LIM=425mA; CUT=375mA */
-+	{0xC0, 0x22}, /* CLASS 4 LIM=850mA; CUT=638mA */
++	{0x80, 0x08}, /* CLASS 2 LIM=425mA; CUT=150mA */
++	{0x80, 0x0f}, /* CLASS 3 LIM=425mA; CUT=281mA */
++	{0xc0, 0x1d}, /* CLASS 4 LIM=850mA; CUT=539mA */
 +	{0, 0},	      /* RESERVED */
-+	{0x80, 0x14}, /* CLASS 0 LIM=425mA; CUT=375mA */
++	{0x80, 0x14}, /* CLASS 0 LIM=425mA; CUT=281mA */
 +	{0, 0}        /* CLASS OVERCURRENT */
 +};
 +
 +struct i2c_ltc4266_chipset; // Forward declaration
 +
 +struct ltc4266_port {
-+	volatile int port_state;
-+	volatile int cancel_timer;
-+	volatile int port_event;
-+	int port_id;
-+	unsigned int last_port_event;
-+        int device_class;
-+        int device_mA;
++	volatile s32 port_state;
++	volatile s32 cancel_timer;
++	volatile s32 port_event;
++	s32 port_id;
++	u32 last_port_event;
++        s32 dev_class;
++        s32 device_mA;
 +	struct mutex port_lock;
 +        struct timer_list port_pwr_on_timer;
 +	struct work_struct port_work;
 +        struct workqueue_struct *port_wq;
 +	struct i2c_ltc4266_chipset *cookie;
++	struct port_obj *pkobj;
 +};
 +
 +struct i2c_ltc4266_chipset {
 +        struct ltc4266_port port_dev[LTC_PORTS_COUNT];
 +        struct timer_list       ltc_chip_monitor_timer;
-+	int chip_event;
++	s32 chip_event;
 +	struct i2c_client *client;
 +	char fw_rev[8];
-+        volatile int total_mA_avail;
-+	int mode;
++        volatile s32 total_mA_avail;
++	s32 mode;
 +	struct mutex glbl_lock;
 +        struct workqueue_struct *chip_wq;
 +	struct work_struct chip_work;
 +	struct eventfd_ctx *eventfd;
++	struct kset *pkset;
 +};
 +
 +struct ltc4266_softc {
@@ -417,38 +438,103 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	.i2c_dev = {0, 0},
 +};
 +
-+static int ltc_i2c_major = -1;
++static s32 ltc_i2c_major = -1;
 +
++static int mode = VC_I2C_CHIPSET_AUTO_MODE;
 +
-+static const unsigned short ltc4266_i2c_addr[] = { 0x21, I2C_CLIENT_END };
++module_param(mode, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
++MODULE_PARM_DESC(mode, "driver mode for PoE.");
 +
-+static int ltc4266_default_iCUT(__u8 class_code)
++static int mA_avail = VELO_PWRDFLT_mA_AVAIL;
++
++module_param(mA_avail, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
++MODULE_PARM_DESC(mA_avail, "total mA available for PoE.");
++
++static const u16 ltc4266_i2c_addr[] = { 0x21, I2C_CLIENT_END };
++
++/*
++ * The default show function that must be passed to sysfs.  This will be
++ * called by sysfs for whenever a show function is called by the user on a
++ * sysfs file associated with the kobjects we have registered.  We need to
++ * transpose back from a "default" kobject to our custom struct port_obj and
++ * then call the show function for that specific object.
++ */
++static ssize_t port_attr_show(struct kobject *kobj,
++                             struct attribute *attr,
++                             char *buf)
 +{
-+        int mA;
++        struct port_attribute *attribute;
++        struct port_obj *port;
++
++        attribute = to_port_attr(attr);
++        port = to_port_obj(kobj);
++
++        if (!attribute->show)
++                return -EIO;
++
++        return attribute->show(port, attribute, buf);
++}
++
++/*
++ * Just like the default show function above, but this one is for when the
++ * sysfs "store" is requested (when a value is written to a file.)
++ */
++static ssize_t port_attr_store(struct kobject *kobj,
++                              struct attribute *attr,
++                              const char *buf, size_t len)
++{
++        struct port_attribute *attribute;
++        struct port_obj *port;
++
++        attribute = to_port_attr(attr);
++        port = to_port_obj(kobj);
++
++        if (!attribute->store)
++                return -EIO;
++
++        return attribute->store(port, attribute, buf, len);
++}
++
++static void port_release(struct kobject *kobj)
++{
++        struct port_obj *port;
++
++        port = to_port_obj(kobj);
++        kfree(port);
++}
++
++static const struct sysfs_ops port_sysfs_ops = {
++        .show = port_attr_show,
++        .store = port_attr_store,
++};
++
++static s32 ltc4266_default_iCUT(u8 class_code)
++{
++        s32 mA;
 +        switch (class_code) {
 +
 +        case LTC_STATp_CLASS_0:
-+        	pr_debug("Class 0 POE device\n");
++        	pr_debug("Class 0 PoE device\n");
 +                mA = LTC_PPOE_mA_CLASS_0;
 +		break;
 +
 +	case LTC_STATp_CLASS_1:
-+		pr_debug("Class 1 POE device\n");
++		pr_debug("Class 1 PoE device\n");
 +		mA = LTC_PPOE_mA_CLASS_1;
 +		break;
 +
 +	case LTC_STATp_CLASS_2:
-+		pr_debug("Class 2 POE device\n");
++		pr_debug("Class 2 PoE device\n");
 +		mA = LTC_PPOE_mA_CLASS_2;
 +		break;
 +
 +	case LTC_STATp_CLASS_3:
-+		pr_debug("Class 3 POE device\n");
++		pr_debug("Class 3 PoE device\n");
 +		mA = LTC_PPOE_mA_CLASS_3;
 +                break;
 +
 +	case LTC_STATp_CLASS_4:
-+		pr_debug("Class 4 POE device\n");
++		pr_debug("Class 4 PoE device\n");
 +		mA = LTC_PPOE_mA_CLASS_4;
 +                break;
 +
@@ -462,13 +548,13 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        return mA;
 +}
 +
-+static inline int ltc4266_detena_port(__u8 port_id, __u8 detena)
++static inline s32 ltc4266_detena_port(u8 port_id, u8 detena)
 +{
 +        detena |= ((1 << (4+port_id)) | (1 << port_id));
 +        return detena;
 +}
 +
-+static inline __u8 xlt_bitpos_to_count(__u8 bitpos)
++static inline u8 xlt_bitpos_to_count(u8 bitpos)
 +{
 +	switch(bitpos) {
 +	case 1:
@@ -489,11 +575,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +}
 +
 +static inline void bitshift_and_store_port_event(
-+	struct i2c_ltc4266_chipset *chipset, 
-+				__u8 bitmask,
-+				int port_event)
++	struct i2c_ltc4266_chipset *chipset, u8 bitmask,
++				         s32 port_event)
 +{
-+	__u8 port_id;
++	u8 port_id;
 +	while (bitmask){
 +		port_id = bitmask & -bitmask;
 +		bitmask ^= port_id;
@@ -505,10 +590,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +}
 +
 +static inline void send_eventfd_signal(struct i2c_ltc4266_chipset *chipset,
-+                		       __u8 port_id)
++                		       				u8 port_id)
 +{
 +        struct ltc4266_port *port;
-+	__u64 eventval;
++	u64 eventval;
 +
 +	if (!chipset->eventfd)
 +		return;
@@ -523,16 +608,16 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	 *   Port id : 8
 +	 */
 +	eventval = (port->last_port_event & 0xffffU) << 16;
-+	eventval |= (port->device_class & 0xffU) << 8;
++	eventval |= (port->dev_class & 0xffU) << 8;
 +	eventval |= port_id & 0xffU;
 +
 +	eventfd_signal(chipset->eventfd, eventval);
 +}
 +
-+static int ltc4266_port_pwr(struct i2c_ltc4266_chipset *chipset,
-+                			__u8 port_id, int flags)
++static s32 ltc4266_port_pwr(struct i2c_ltc4266_chipset *chipset,
++                			  u8 port_id, s32 flags)
 +{
-+        int err, pwrpb;
++        s32 err, pwrpb;
 +
 +        /* Upper nibble turns off port pwr. */
 +        if (flags == LTC_PWRPB_OFF)
@@ -542,8 +627,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        else
 +             return -EINVAL;
 +
-+        err = i2c_smbus_write_byte_data(chipset->client, LTC_PWRPB_REG,
-+                                                        (__u8)pwrpb);
++        err = i2c_smbus_write_byte_data(chipset->client, 
++				LTC_PWRPB_REG, (u8)pwrpb);
 +        if (err < 0) {
 +		dev_err(&chipset->client->dev,
 +			"Port %d power off failed\n", port_id);
@@ -552,11 +637,66 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        return (err);
 +}
 +
-+
-+static int ltc4266_enable_detect_classify(struct i2c_ltc4266_chipset *chipset,
-+							int detena_cfg)
++static inline s32 ltc_get_port_state(struct ltc4266_port *port, s32 *state)
 +{
-+        int err, detena;
++	if (state == 0 || port == 0)
++		return -EINVAL;
++
++	if (port->last_port_event & POWER_GOOD_INTERRUPT)
++                *state = POWER_GOOD_INTERRUPT;
++        else if (port->last_port_event & tCUT_INTERRUPT)
++                *state = tCUT_INTERRUPT;
++        else if (port->last_port_event & DISCONNECT_INTERRUPT)
++                *state = DISCONNECT_INTERRUPT;
++        else if ((port->last_port_event & (DETECT_INTERRUPT|CLASS_INTERRUPT)) &&
++                                       (port->dev_class == LTC_STATp_CLASS_0 ||
++                                        port->dev_class == LTC_STATp_CLASS_1 ||
++                                        port->dev_class == LTC_STATp_CLASS_2 ||
++                                        port->dev_class == LTC_STATp_CLASS_3 ||
++                                        port->dev_class == LTC_STATp_CLASS_4))
++                *state = DETECT_INTERRUPT;
++        else if (port->last_port_event & POWER_VTRANS_INTERRUPT)
++                *state = POWER_VTRANS_INTERRUPT;
++        else {
++                *state = -1;
++        }
++
++	return(0);
++}
++
++static inline s32 ltc_get_port_class(struct ltc4266_port *port, s32 *class)
++{
++	if (class == 0 || port == 0)
++		return -EINVAL;
++
++	switch (port->dev_class) {
++	case LTC_STATp_CLASS_1:
++		*class = 1;
++		break;
++        case LTC_STATp_CLASS_2:
++		*class = 2;
++		break;
++        case LTC_STATp_CLASS_3:
++		*class = 3;
++		break;
++        case LTC_STATp_CLASS_4:
++		*class = 4;
++		break;
++        case LTC_STATp_CLASS_0:
++		*class = 0;
++		break;
++        default:
++		*class = -1;
++		break;
++	}
++
++	return(0);
++}
++
++static s32 ltc4266_enable_detect_classify(struct i2c_ltc4266_chipset *chipset,
++							s32 detena_cfg)
++{
++        s32 err, detena;
 +
 +	if (i2c_smbus_write_byte_data(chipset->client, 
 +			LTC_DISENA_REG, 0xf) < 0) {
@@ -581,10 +721,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +}
 +
 +
-+static int ltc4266_calculate_total_mA(struct i2c_ltc4266_chipset *chipset, 
-+					__u8 port_id, int statp)
++static s32 ltc4266_calculate_total_mA(struct i2c_ltc4266_chipset *chipset, 
++					            u8 port_id, s32 statp)
 +{
-+	int iCUT, clsdev;
++	s32 iCUT, clsdev;
 +
 +	clsdev = LTC_STATp_CLASS(statp);
 +
@@ -601,7 +741,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +		mutex_unlock(&chipset->glbl_lock);	
 +
-+		chipset->port_dev[port_id].device_class = clsdev;
++		chipset->port_dev[port_id].dev_class = clsdev;
 +
 +		chipset->port_dev[port_id].device_mA = iCUT;
 +
@@ -617,9 +757,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +}
 +
 +
-+static int ltc4266_port_reset(struct i2c_ltc4266_chipset *chipset, __u8 port_id)
++static s32 ltc4266_port_reset(struct i2c_ltc4266_chipset *chipset, u8 port_id)
 +{
-+        int err;
++        s32 err;
 +
 +	err = ltc4266_port_pwr(chipset, port_id, LTC_PWRPB_OFF);
 +	if (err < 0)
@@ -631,9 +771,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +}
 +
 +
-+static int ltc4266_chip_reset(struct i2c_ltc4266_chipset *chipset)
++static s32 ltc4266_chip_reset(struct i2c_ltc4266_chipset *chipset)
 +{
-+        int rstpb, err;
++        s32 rstpb, err;
 +
 +        rstpb = (1 << 4);
 +
@@ -646,9 +786,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        return (err);
 +}
 +
-+static int ltc4266_check_firmware_revision(struct i2c_ltc4266_chipset *chipset)
++static s32 ltc4266_check_firmware_revision(struct i2c_ltc4266_chipset *chipset)
 +{
-+        int fw_rev;
++        s32 fw_rev;
 +
 +        fw_rev = i2c_smbus_read_byte_data(chipset->client, LTC_ID_REG);
 +        if (fw_rev < 0) {
@@ -699,9 +839,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	return 0;
 +}
 +
-+static int ltc4266_interrupt(struct i2c_ltc4266_chipset *chipset)
++static s32 ltc4266_interrupt(struct i2c_ltc4266_chipset *chipset)
 +{
-+        int intmask, err, reg, val;
++        s32 intmask, err, reg, val;
 +
 +	/* Read interrupt mask register and save. */
 +        intmask = i2c_smbus_read_byte_data(chipset->client, LTC_INTMASK_REG);
@@ -808,10 +948,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	return 0;
 +}
 +
-+static int ltc4266_configure_mode(struct i2c_ltc4266_chipset *chipset, 
-+					__u8 port_id, int flags)
++static s32 ltc4266_configure_mode(struct i2c_ltc4266_chipset *chipset, 
++					        u8 port_id, s32 flags)
 +{
-+        int opmd, mode, detena, err;
++        s32 opmd, mode, detena, err;
 +
 +	opmd = i2c_smbus_read_byte_data(chipset->client, LTC_OPMD_REG);
 +        if (opmd < 0) {
@@ -860,13 +1000,13 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 + * machine for plug/unplug events for a PD. Setting up ports depends on the
 + * previous/current hardware state independent of the host processor.
 + */
-+static int ltc4266_config_semiauto_mode_from_pwr_on(
++static s32 ltc4266_config_semiauto_mode_from_pwr_on(
 +	struct i2c_ltc4266_chipset *chipset)
 +{
-+        int i, opmd, statpwr, statp, mode;
++        s32 i, opmd, statpwr, statp, mode;
 +        struct ltc4266_port *port;
 +
-+	int wmode = 0, detena = 0;
++	s32 wmode = 0, detena = 0;
 +
 +	/* Enable all interrupt mask bits. */
 +        if (i2c_smbus_write_byte_data(chipset->client, 
@@ -978,10 +1118,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +}
 +
 +
-+static int ltc4266_detect_classify_cycle(struct i2c_ltc4266_chipset *chipset, 
-+							__u8 port_id)
++static s32 ltc4266_detect_classify_cycle(struct i2c_ltc4266_chipset *chipset, 
++							          u8 port_id)
 +{
-+        int statp;
++        s32 statp;
 +        struct ltc4266_port *port = &chipset->port_dev[port_id];
 +
 +	(void) ltc4266_configure_mode(chipset, port_id, LTC_CONFIG_SEMIAUTO);
@@ -995,6 +1135,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +			port->port_event &= ~(DETECT_INTERRUPT|
 +						CLASS_INTERRUPT);
++
++			port->last_port_event = 0;
++			port->dev_class = -1;
++
 +			return (1);
 +		}
 +
@@ -1004,7 +1148,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		    LTC_STATp_CLASS(statp) == LTC_STATp_CLASS_3 ||
 +		    LTC_STATp_CLASS(statp) == LTC_STATp_CLASS_4) {
 +
-+			port->device_class = LTC_STATp_CLASS(statp);
++			port->dev_class = LTC_STATp_CLASS(statp);
 +				
 +			port->last_port_event = (DETECT_INTERRUPT|
 +						CLASS_INTERRUPT);
@@ -1027,7 +1171,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +					chipset->client, LTC_CUT1_REG+
 +							 (port_id*5),
 +					ltc_clspwr_settings[LTC_STATp_CLASS(
-+							statp)].icut | 0xC0);
++							statp)].icut);
 +
 +				i2c_smbus_write_byte_data(
 +					chipset->client, LTC_LIM1_REG+
@@ -1064,18 +1208,18 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	}
 +
 +	port->last_port_event = 0;
-+	port->device_class = LTC_STATp_CLASS_RESERVED;
++	port->dev_class = -1;
 +
 +        return (-EINVAL);
 +}
 +
-+static int ltc4266_port_monitor(struct i2c_ltc4266_chipset *chipset,
-+						__u8 port_id)
++static s32 ltc4266_port_monitor(struct i2c_ltc4266_chipset *chipset,
++						         u8 port_id)
 +{
-+	int statpwr, detena, err = 0;
++	s32 statpwr, detena, err = 0;
 +
 +        struct ltc4266_port *port;
-+	static int last_change[LTC_PORTS_COUNT] = { 0, 0};
++	static s32 last_change[LTC_PORTS_COUNT] = { 0, 0};
 +
 +	port = &chipset->port_dev[port_id];
 +
@@ -1176,7 +1320,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +                dev_dbg(&chipset->client->dev,
 +		    "Port %d class %d device disconnect detected\n",
-+                    port_id, port->device_class);
++                    port_id, port->dev_class);
 +		
 +		del_timer_sync(&port->port_pwr_on_timer);
 +
@@ -1264,7 +1408,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +static void port_pwr_on_work_fn(struct work_struct *work)
 +{
-+	int detena;
++	s32 detena;
 +
 +	struct ltc4266_port *port =
 +                container_of(work, struct ltc4266_port, port_work);
@@ -1298,7 +1442,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +static void ltc4266_port_work_fn(struct work_struct *work)
 +{
-+	int i, rc = 0;
++	s32 i, rc = 0;
 +	struct ltc4266_port *port;
 +
 +	struct i2c_ltc4266_chipset *chipset = 
@@ -1352,7 +1496,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +static ssize_t set_chip_reset(struct device *dev,
 +             struct device_attribute *attr, const char *buf, size_t size)
 +{
-+	int i, err;
++	s32 i, err;
 +	unsigned long val;
 +	struct i2c_ltc4266_chipset *chipset;
 +	struct ltc4266_port *port;
@@ -1373,7 +1517,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +			mutex_lock(&port->port_lock);
 +			
-+			if (port->device_class == LTC_STATp_CLASS_RESERVED)
++			if (port->dev_class == LTC_STATp_CLASS_RESERVED)
 +                        	port->last_port_event = 0;
 +			else
 +                        	port->last_port_event = DISCONNECT_INTERRUPT;
@@ -1401,7 +1545,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		err = ltc4266_chip_reset(chipset);
 +		
 +		mutex_lock(&chipset->glbl_lock);	
-+                chipset->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
++                chipset->total_mA_avail = mA_avail;
 +		mutex_unlock(&chipset->glbl_lock);	
 +
 +		if (ltc4266_config_semiauto_mode_from_pwr_on(chipset) < 0) {
@@ -1419,7 +1563,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +static ssize_t show_total_mA(struct device *dev,
 +                 struct device_attribute *attr, char *buf)
 +{
-+	int available_pwr;
++	s32 available_pwr;
 +        struct i2c_ltc4266_chipset *chipset;
 +        struct i2c_client *client = to_i2c_client(dev);
 +
@@ -1435,7 +1579,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +static ssize_t set_total_mA(struct device *dev,
 +             struct device_attribute *attr, const char *buf, size_t size)
 +{
-+        int err;
++        s32 err;
 +        unsigned long val;
 +        struct i2c_ltc4266_chipset *chipset;
 +
@@ -1497,10 +1641,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +static ssize_t show_event_notify(struct device *dev,
 +             struct device_attribute *attr, char *buf)
 +{
-+        int i, len = 0;
++        s32 i, state = -1, class = -1, len = 0;
 +        struct i2c_ltc4266_chipset *chipset;
 +	struct ltc4266_port *port;
-+	char *class, *action;
 +
 +        struct i2c_client *client = to_i2c_client(dev);
 +
@@ -1511,61 +1654,14 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		port = &chipset->port_dev[i];
 +
 +		mutex_lock(&port->port_lock);
++ 
++		ltc_get_port_class(port, &class);
 +
-+		switch (port->device_class) {
-+		case LTC_STATp_CLASS_UNKNOWN:
-+			class = "unknown";
-+		    	break;
-+		case LTC_STATp_CLASS_1:
-+			class = "class 1";
-+			break;
-+		case LTC_STATp_CLASS_2:
-+			class = "class 2";
-+			break;
-+		case LTC_STATp_CLASS_3:
-+			class = "class 3";
-+			break;
-+		case LTC_STATp_CLASS_4:
-+			class = "class 4";
-+			break;
-+		case LTC_STATp_CLASS_0:
-+			class = "class 0";
-+			break;
-+		case LTC_STATp_CLASS_OVERCURRENT:
-+			class = "overcurrent";
-+			break;
-+		case LTC_STATp_CLASS_RESERVED:
-+			class = "scanning";
-+			break;
-+		default:
-+			class = 0;
-+			break;
-+		}
-+
-+		if (port->last_port_event & POWER_GOOD_INTERRUPT)
-+			action = "pwr good";
-+		else if (port->last_port_event & tCUT_INTERRUPT)
-+			action = "tcut";
-+		else if (port->last_port_event & DISCONNECT_INTERRUPT)
-+			action = "disconnected";
-+		else if ((port->last_port_event & (DETECT_INTERRUPT|
-+						  CLASS_INTERRUPT)) &&
-+				 (port->device_class == LTC_STATp_CLASS_0 ||
-+				  port->device_class == LTC_STATp_CLASS_1 ||
-+				  port->device_class == LTC_STATp_CLASS_2 ||
-+				  port->device_class == LTC_STATp_CLASS_3 ||
-+				  port->device_class == LTC_STATp_CLASS_4))
-+			action = "detected";
-+		else if (port->last_port_event & POWER_VTRANS_INTERRUPT)
-+			action = "pwr enable transition";
-+		else {
-+			action = "for device";
-+		}
-+
-+		mutex_unlock(&port->port_lock);
++		ltc_get_port_state(port, &state);
 +		
-+		len += sprintf(buf+len, "%d: %s %s\n", 
-+					i, class, action);
++		mutex_unlock(&port->port_lock);
++
++		len += sprintf(buf + len, "%d:\t%3d\t%3d\n", i, class, state);
 +	}
 +
 +	return len;
@@ -1575,16 +1671,16 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +
 +static ssize_t
-+show_power(struct device *dev, char *buf, unsigned index)
++show_power(struct port_obj *pobj, struct port_attribute *attr, char *buf)
 +{
-+        int ret, statpwr;
++        s32 statpwr;
 +	struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
-+	if(index >= N_VC_I2C_PORTS)
++	if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
 +
-+        client = to_i2c_client(dev);
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
@@ -1592,33 +1688,32 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +					LTC_STATPWR_REG);
 +
 +	/* Upper nibble is pwrgd status for port. */
-+	statpwr = ((statpwr >> 4) & (1 << index));
++	statpwr = ((statpwr >> 4) & (1 << pobj->index));
 +
-+        ret = scnprintf(buf, PAGE_SIZE, "%s\n", (statpwr)? "on" : "off");
-+
-+        return(ret);
++        return scnprintf(buf, PAGE_SIZE, "%s", (statpwr)? "on" : "off");
 +}
 +
-+static int
-+store_power(struct device *dev, const char *buf, size_t len, unsigned index)
++static ssize_t
++store_power(struct port_obj *pobj, struct port_attribute *attr,
++                                const char *buf, size_t count)
 +{
-+        int detena, statp, err;
++        s32 detena, statp, err;
 +	struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +	struct ltc4266_port *port;
-+	char *val = strim(buf);
++	char *val = strim((char *)buf);
 +
-+        if(index >= N_VC_I2C_PORTS)
++        if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
 +
-+        client = to_i2c_client(dev);
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +	if (chipset->mode != VC_I2C_CHIPSET_MANUAL_MODE)
 +		return -EINVAL;
 +
-+	port = &chipset->port_dev[index];
++	port = &chipset->port_dev[pobj->index];
 +
 +	if (strcmp(val, "on") == 0 || strcmp(val, "1") == 0) {
 +
@@ -1628,16 +1723,17 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		     (port->port_state != PORT_STATE_MONITOR)) {
 +
 +			statp = i2c_smbus_read_byte_data(chipset->client,
-+                                (LTC_STATP_BASE_REG + index));
++                                (LTC_STATP_BASE_REG + pobj->index));
 +
-+			if (ltc4266_calculate_total_mA(chipset, index, statp)) {
++			if (ltc4266_calculate_total_mA(chipset, pobj->index, statp)) {
 +				mutex_unlock(&port->port_lock);
 +				return -EINVAL;
 +			}
 +
-+			err = ltc4266_port_pwr(chipset, index, LTC_PWRPB_ON);
++			err = ltc4266_port_pwr(chipset, pobj->index, LTC_PWRPB_ON);
 +			if (err < 0) {
-+                		dev_err(dev, "port %d pwr on error\n", index);
++                		dev_err(pobj->dev, "port %d pwr on error\n", 
++								pobj->index);
 +			}
 +			port->last_port_event = POWER_VTRANS_INTERRUPT;
 +			port->port_state = PORT_STATE_MONITOR;
@@ -1645,12 +1741,12 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		} else {
 +			if (port->port_state == PORT_STATE_MONITOR) {
 +				err = -EINVAL;
-+				dev_err(dev, "Device already powered on "
-+							"port %d\n", index);
++				dev_err(pobj->dev, "Device already powered on "
++						"port %d\n", pobj->index);
 +			} else {
 +				err = -ENODEV;
-+				dev_err(dev, "No device detected on "
-+							"port %d\n", index);
++				dev_err(pobj->dev, "No device detected on "
++						"port %d\n", pobj->index);
 +			}
 +		}
 +		mutex_unlock(&port->port_lock);
@@ -1660,16 +1756,18 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		mutex_lock(&port->port_lock);
 +		if (port->port_state != PORT_STATE_MONITOR) {
 +			mutex_unlock(&port->port_lock);
-+                	dev_err(dev, "Invald operation on port %d\n", index);
++                	dev_err(pobj->dev, "Invald operation on port %d\n", pobj->index);
 +			return -ENODEV;
 +		}
 +	
-+		err = ltc4266_port_pwr(chipset, index, LTC_PWRPB_OFF);
++		err = ltc4266_port_pwr(chipset, pobj->index, LTC_PWRPB_OFF);
 +		if (err < 0) {
-+                	dev_err(dev, "port %d pwr off error\n", index);
++                	dev_err(pobj->dev, "port %d pwr off error\n", pobj->index);
 +		}
 +
-+		detena = ltc4266_detena_port(index, 0);
++		msleep(15);
++
++		detena = ltc4266_detena_port(pobj->index, 0);
 +
 +                ltc4266_enable_detect_classify(chipset, detena);
 +		
@@ -1689,270 +1787,136 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		mutex_unlock(&port->port_lock);
 +
 +		mutex_lock(&chipset->glbl_lock);	
-+		send_eventfd_signal(chipset, index);
++		send_eventfd_signal(chipset, pobj->index);
 +		mutex_unlock(&chipset->glbl_lock);	
-+
++		
 +		dev_dbg(&chipset->client->dev,
-+                        "Port %d event detected\n", index);
++                        "Port %d event detected\n", pobj->index);
 +	} else {
-+                dev_err(dev, "vc-poe: bad value: %s\n", buf);
++                dev_err(pobj->dev, "vc-poe: bad value: %s\n", buf);
 +		err = -EINVAL;
 +	}
 +
 +        if(err < 0)
 +                return (err);
 +
-+        return(len);
++        return(count);
 +}
-+
-+/* XXX Fixme - We want sysfs port files under each port subdirectory
-+ * instead of lumping port index named files under 'port_attr'. In the
-+ * iteration of (any) bug fixes or additional features, this will be a 
-+ * planned item to add.
-+ */
-+
-+#define SHOW_POWER(index) \
-+static ssize_t show_power_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                char *buf) \
-+{ \
-+        return(show_power(dev, buf, index)); \
-+}
-+
-+SHOW_POWER(0)
-+SHOW_POWER(1)
-+#if 0
-+SHOW_POWER(2)
-+SHOW_POWER(3)
-+#endif
-+
-+#define STORE_POWER(index) \
-+static ssize_t store_power_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                const char *buf, size_t len) \
-+{ \
-+        return(store_power(dev, buf, len, index)); \
-+}
-+
-+STORE_POWER(0)
-+STORE_POWER(1)
-+#if 0
-+STORE_POWER(2)
-+STORE_POWER(3)
-+#endif
-+
-+#define ATTR_POWER(name,index) \
-+static DEVICE_ATTR(name##_##index, S_IRUGO | S_IWUSR, show_power_##index, \
-+					    store_power_##index);
-+
-+ATTR_POWER(pwr,0);
-+ATTR_POWER(pwr,1);
-+#if 0
-+ATTR_POWER(pwr,2);
-+ATTR_POWER(pwr,3);
-+#endif
 +
 +static ssize_t
-+show_ilim(struct device *dev, char *buf, unsigned index)
++show_ilim(struct port_obj *pobj, struct port_attribute *attr, char *buf)
 +{
-+        int ret, val;
++        s32 val;
 +        struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
-+        if(index >= N_VC_I2C_PORTS)
++        if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
 +
-+        client = to_i2c_client(dev);
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +	val = i2c_smbus_read_byte_data(chipset->client, 
-+				LTC_LIM_BASE_REG+(index*5));
++			LTC_LIM_BASE_REG+(pobj->index*5));
 +
-+	return sprintf(buf, "0x%02x\n", val);
-+
-+        return(ret);
++	return sprintf(buf, "0x%02x", val);
 +}
 +
-+static int
-+store_ilim(struct device *dev, const char *buf, size_t len, unsigned index)
++static ssize_t
++store_ilim(struct port_obj *pobj, struct port_attribute *attr, 
++			       const char *buf, size_t count)
 +{
-+        int err, val;
++        s32 err, val;
 +        struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
-+        if(index >= N_VC_I2C_PORTS)
++        if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
 +
-+        client = to_i2c_client(dev);
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +        err = kstrtouint(buf, 0, &val);
 +        if (err) {
-+                dev_err(dev, "bad value\n");
++                dev_err(pobj->dev, "bad value\n");
 +                return err;
 +        }
 +
 +        err = i2c_smbus_write_byte_data(chipset->client,
-+                LTC_LIM_BASE_REG + (index*5), val);
++                LTC_LIM_BASE_REG + (pobj->index*5), val);
 +
-+        return(len);
++        return(count);
 +}
-+
-+#define SHOW_ILIM(index) \
-+static ssize_t show_ilim_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                char *buf) \
-+{ \
-+        return(show_ilim(dev, buf, index)); \
-+}
-+
-+SHOW_ILIM(0)
-+SHOW_ILIM(1)
-+#if 0
-+SHOW_ILIM(2)
-+SHOW_ILIM(3)
-+#endif
-+
-+#define STORE_ILIM(index) \
-+static ssize_t store_ilim_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                const char *buf, size_t len) \
-+{ \
-+        return(store_ilim(dev, buf, len, index)); \
-+}
-+
-+STORE_ILIM(0)
-+STORE_ILIM(1)
-+#if 0
-+STORE_ILIM(2)
-+STORE_ILIM(3)
-+#endif
-+
-+
-+#define ATTR_ILIM(name,index) \
-+static DEVICE_ATTR(name##_##index, S_IRUGO | S_IWUSR, show_ilim_##index, \
-+					  store_ilim_##index);
-+
-+ATTR_ILIM(ilim,0);
-+ATTR_ILIM(ilim,1);
-+#if 0
-+ATTR_ILIM(ilim,2);
-+ATTR_ILIM(ilim,3);
-+#endif
-+
 +
 +static ssize_t
-+show_icut(struct device *dev, char *buf, unsigned index)
++show_icut(struct port_obj *pobj, struct port_attribute *attr, char *buf)
 +{
-+        int ret, val;
++        s32 val;
 +        struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
-+        if(index >= N_VC_I2C_PORTS)
++        if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
 +
-+        client = to_i2c_client(dev);
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
-+        val = i2c_smbus_read_byte_data(chipset->client, LTC_CUT1_REG+(index*5));
-+
++        val = i2c_smbus_read_byte_data(chipset->client, 
++				LTC_CUT1_REG+(pobj->index*5));
 +        val &= ~0xC0;
 +
-+        return sprintf(buf, "0x%02x\n", val);
-+
-+        return(ret);
++        return sprintf(buf, "0x%02x", val);
 +}
 +
-+static int
-+store_icut(struct device *dev, const char *buf, size_t len, unsigned index)
++static ssize_t
++store_icut(struct port_obj *pobj, struct port_attribute *attr,
++			       const char *buf, size_t count)
 +{
-+        int err, val;
++        s32 err, val;
 +        struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
-+        if(index >= N_VC_I2C_PORTS)
++        if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
 +
-+        client = to_i2c_client(dev);
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +	err = kstrtouint(buf, 0, &val);
 +        if (err) {
-+                dev_err(dev, "bad value\n");
++                dev_err(pobj->dev, "bad value\n");
 +                return err;
 +	}
-+	
 +	val = i2c_smbus_write_byte_data(chipset->client, 
-+		LTC_CUT1_REG+(index*5), val | 0xC0);
++		LTC_CUT1_REG+(pobj->index*5), val | 0xC0);
 +
-+        return(len);
++        return(count);
 +}
-+
-+#define SHOW_ICUT(index) \
-+static ssize_t show_icut_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                char *buf) \
-+{ \
-+        return(show_icut(dev, buf, index)); \
-+}
-+
-+SHOW_ICUT(0)
-+SHOW_ICUT(1)
-+#if 0
-+SHOW_ICUT(2)
-+SHOW_ICUT(3)
-+#endif
-+
-+#define STORE_ICUT(index) \
-+static ssize_t store_icut_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                const char *buf, size_t len) \
-+{ \
-+        return(store_icut(dev, buf, len, index)); \
-+}
-+
-+STORE_ICUT(0)
-+STORE_ICUT(1)
-+#if 0
-+STORE_ICUT(2)
-+STORE_ICUT(3)
-+#endif
-+
-+#define ATTR_ICUT(name,index) \
-+static DEVICE_ATTR(name##_##index, S_IRUGO | S_IWUSR, show_icut_##index, \
-+					  store_icut_##index);
-+
-+ATTR_ICUT(icut,0);
-+ATTR_ICUT(icut,1);
-+#if 0
-+ATTR_ICUT(icut,2);
-+ATTR_ICUT(icut,3);
-+#endif
 +
 +static ssize_t
-+show_mA(struct device *dev, char *buf, unsigned index)
++show_mA(struct port_obj *pobj, struct port_attribute *attr, char *buf)
 +{
-+        int val, lsb, msb;
-+	int dec, cent;
++        s32 val, lsb, msb;
++	s32 dec, cent;
 +        struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
-+        if(index >= N_VC_I2C_PORTS)
++        if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
 +
-+        client = to_i2c_client(dev);
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +        lsb = i2c_smbus_read_byte_data(chipset->client,
-+                        LTC_mA_LSB_BASE_REG+(index*4));
++                        LTC_mA_LSB_BASE_REG+(pobj->index*4));
 +
 +        msb = i2c_smbus_read_byte_data(chipset->client,
-+                        LTC_mA_MSB_BASE_REG+(index*4));
++                        LTC_mA_MSB_BASE_REG+(pobj->index*4));
 +
 +        val = ((msb << 8) | lsb);
 +
@@ -1961,91 +1925,46 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	 */
 +	val = val * 122070;
 +
-+	/* Convert to mA and strip out whole number. */
-+	msb = val / (1000 * 1000);
++        /* Convert to V and strip out whole number. */
++        msb = val / (1000 * 1000);
 +
-+	/* If no whole number simply show the decimal portion. */
-+	if (msb == 0) {
-+		/* This is our resolution. */
-+		lsb = val / 1000;
++        lsb = val - msb * 1000 * 1000;
 +
-+		cent = lsb / 100;
++        /* This is our resolution. */
++        lsb = lsb / 1000;
 +
-+		lsb = lsb - cent * 100;
++        cent = lsb / 100;
 +
-+		dec = lsb / 10;
++        lsb = lsb - cent * 100;
 +
-+		lsb = lsb - dec * 10;
++        dec = lsb / 10;
 +
-+        	return sprintf(buf, "port %d: 0.%d%d%dmA\n", index, cent, dec, lsb);
-+	}
-+
-+	/* Else strip out whole number to show both whole number +
-+	 * mantissa.
-+	 */
-+	lsb = val - msb * 1000 * 1000;
-+
-+	/* This is our resolution. */
-+	lsb = lsb / 1000;
-+
-+	cent = lsb / 100;
-+
-+	lsb = lsb - cent * 100;
-+
-+	dec = lsb / 10;
-+
-+	lsb = lsb - dec * 10;
++        lsb = lsb - dec * 10;
 +
 +	/* Resolution only to three decimal places. */
-+        return sprintf(buf, "%d.%d%d%d\n", msb, cent, dec, lsb);
++        return sprintf(buf, "%d.%d%d%d", msb, cent, dec, lsb);
 +}
-+
-+
-+#define SHOW_mA(index) \
-+static ssize_t show_mA_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                char *buf) \
-+{ \
-+        return(show_mA(dev, buf, index)); \
-+}
-+
-+SHOW_mA(0)
-+SHOW_mA(1)
-+#if 0
-+SHOW_mA(2)
-+SHOW_mA(3)
-+#endif
-+
-+#define ATTR_mA(name,index) \
-+static DEVICE_ATTR(name##_##index, S_IRUGO , show_mA_##index, NULL);
-+
-+ATTR_mA(mA,0);
-+ATTR_mA(mA,1);
-+#if 0
-+ATTR_mA(mA,2);
-+ATTR_mA(mA,3);
-+#endif
 +
 +static ssize_t
-+show_volts(struct device *dev, char *buf, unsigned index)
++show_volts(struct port_obj *pobj, struct port_attribute *attr, char *buf)
 +{
-+        int val, lsb, msb;
-+	int dec, cent;
++        s32 val, lsb, msb;
++	s32 dec, cent;
 +        struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +
-+        if(index >= N_VC_I2C_PORTS)
++        if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
 +
-+        client = to_i2c_client(dev);
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
 +	lsb = i2c_smbus_read_byte_data(chipset->client, 
-+			LTC_VOLTS_LSB_BASE_REG+(index*4));
++		LTC_VOLTS_LSB_BASE_REG+(pobj->index*4));
 +
 +        msb = i2c_smbus_read_byte_data(chipset->client, 
-+			LTC_VOLTS_MSB_BASE_REG+(index*4));
++		LTC_VOLTS_MSB_BASE_REG+(pobj->index*4));
 +
 +	val = ((msb << 8) | lsb);
 +
@@ -2057,26 +1976,6 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	/* Convert to V and strip out whole number. */
 +	msb = val / (1000 * 1000);
 +
-+	/* If no whole number simply show the decimal portion. */
-+	if (msb == 0) {
-+		
-+		/* This is our resolution. */
-+		lsb = val / 1000;
-+
-+		cent = lsb / 100;
-+
-+		lsb = lsb - cent * 100;
-+
-+		dec = lsb / 10;
-+
-+		lsb = lsb - dec * 10;
-+
-+        	return sprintf(buf, "port %d: 0.%d%d%dV\n", index, cent, dec, lsb);
-+	}
-+
-+	/* Else strip out whole number to show both whole number +
-+	 * mantissa.
-+	 */
 +	lsb = val - msb * 1000 * 1000;
 +	
 +	/* This is our resolution. */
@@ -2090,82 +1989,59 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +	lsb = lsb - dec * 10;
 +
-+        return sprintf(buf, "%d.%d%d%d\n", msb, cent, dec, lsb);
++        return sprintf(buf, "%d.%d%d%d", msb, cent, dec, lsb);
 +}
 +
 +
-+#define SHOW_VOLTS(index) \
-+static ssize_t show_volts_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                char *buf) \
-+{ \
-+        return(show_volts(dev, buf, index)); \
-+}
-+
-+SHOW_VOLTS(0)
-+SHOW_VOLTS(1)
-+#if 0
-+SHOW_VOLTS(2)
-+SHOW_VOLTS(3)
-+#endif
-+
-+#define ATTR_VOLTS(name,index) \
-+static DEVICE_ATTR(name##_##index, S_IRUGO , show_volts_##index, NULL);
-+
-+ATTR_VOLTS(volts,0);
-+ATTR_VOLTS(volts,1);
-+#if 0
-+ATTR_VOLTS(volts,2);
-+ATTR_VOLTS(volts,3);
-+#endif
-+
-+static int 
-+store_port_reset(struct device *dev, const char *buf, size_t len, 
-+						unsigned index)
++static ssize_t 
++store_port_reset(struct port_obj *pobj, struct port_attribute *attr,
++                                const char *buf, size_t count)
 +{
-+	int val, detena, err;
++	s32 val, detena, err;
++	struct i2c_client *client;
 +        struct i2c_ltc4266_chipset *chipset;
 +	struct ltc4266_port *port;
 +
-+        struct i2c_client *client = to_i2c_client(dev);
-+
-+        if(index >= N_VC_I2C_PORTS)
++        if(pobj->index >= N_VC_I2C_PORTS)
 +                return(-EINVAL);
++
++        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
-+	port = &chipset->port_dev[index];
++	port = &chipset->port_dev[pobj->index];
 +
 +	err = kstrtouint(buf, 0, &val);
 +        if (err) {
-+                dev_err(dev, "bad value\n");
++                dev_err(pobj->dev, "bad value\n");
 +                return err;
 +        }
 +
 +        if (val) {
 +		mutex_lock(&port->port_lock);
 +
-+		if (port->last_port_event & (POWER_VTRANS_INTERRUPT|
-+					    POWER_GOOD_INTERRUPT)) {
++		if (! (port->last_port_event & (POWER_VTRANS_INTERRUPT)) &&
++			! (port->last_port_event & (POWER_GOOD_INTERRUPT))) {
 +
-+			mutex_lock(&chipset->glbl_lock);
-+               		chipset->total_mA_avail += port->device_mA;
-+			mutex_unlock(&chipset->glbl_lock);	
++			mutex_unlock(&port->port_lock);
++			return(count);
 +		}
 +
-+		ltc4266_port_pwr(chipset, index, LTC_PWRPB_OFF);
++               	chipset->total_mA_avail += port->device_mA;
++
++		ltc4266_port_pwr(chipset, pobj->index, LTC_PWRPB_OFF);
 +
 +		port->device_mA = 0;
 +		port->port_event = 0;
 +
-+		if (port->device_class == LTC_STATp_CLASS_RESERVED)
++		if (port->dev_class == LTC_STATp_CLASS_RESERVED)
 +			port->last_port_event = 0;
 +		else
 +			port->last_port_event = DISCONNECT_INTERRUPT;
 +
 +                port->port_state = PORT_STATE_CLASSIFY;
 +
-+		detena = ltc4266_detena_port(index, 0);
++		detena = ltc4266_detena_port(pobj->index, 0);
 +
 +                ltc4266_enable_detect_classify(chipset, detena);
 +
@@ -2189,93 +2065,142 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +                        mutex_unlock(&port->port_lock);
 +        }
 +	
-+	return len;
++	return(count);
 +}
 +
-+#define STORE_PORT_RESET(index) \
-+static ssize_t store_port_##index(struct device *dev, \
-+                struct device_attribute *attr, \
-+                const char *buf, size_t len) \
-+{ \
-+        return(store_port_reset(dev, buf, len, index)); \
++static ssize_t
++show_dev_class(struct port_obj *pobj, struct port_attribute *attr, char *buf)
++{
++	struct i2c_client *client;
++	struct i2c_ltc4266_chipset *chipset;
++	struct ltc4266_port *port;
++	s32 class = -1;
++
++        if(pobj->index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
++
++        client = to_i2c_client(pobj->dev);
++
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++
++        port = &chipset->port_dev[pobj->index];	
++	
++	mutex_lock(&port->port_lock);
++
++	ltc_get_port_class(port, &class);
++
++	mutex_unlock(&port->port_lock);
++
++	return sprintf(buf, "%d", class);
 +}
 +
-+STORE_PORT_RESET(0)
-+STORE_PORT_RESET(1)
-+#if 0
-+STORE_PORT_RESET(2)
-+STORE_PORT_RESET(3)
-+#endif
++static ssize_t
++show_dev_state(struct port_obj *pobj, struct port_attribute *attr, char *buf)
++{
++	struct i2c_client *client;
++	struct i2c_ltc4266_chipset *chipset;
++	struct ltc4266_port *port;
++	s32 state = -1;
 +
-+#define ATTR_RESET(name,index) \
-+static DEVICE_ATTR(name##_##index, S_IWUSR, NULL, store_port_##index);
++        if(pobj->index >= N_VC_I2C_PORTS)
++                return(-EINVAL);
 +
-+ATTR_RESET(reset,0);
-+ATTR_RESET(reset,1);
-+#if 0
-+ATTR_RESET(reset,2);
-+ATTR_RESET(reset,3);
-+#endif
++        client = to_i2c_client(pobj->dev);
 +
-+#define DEVICE_ATTR_ADDR(name,index) \
-+&dev_attr_##name##_##index.attr
++        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
 +
-+static struct attribute *vc_ltc4266_port_attrs[] = {
-+	DEVICE_ATTR_ADDR(pwr,0),
-+	DEVICE_ATTR_ADDR(pwr,1),
-+#if 0
-+	DEVICE_ATTR_ADDR(pwr,2),
-+	DEVICE_ATTR_ADDR(pwr,3),
-+#endif
++        port = &chipset->port_dev[pobj->index];	
 +
-+	DEVICE_ATTR_ADDR(icut,0),
-+	DEVICE_ATTR_ADDR(icut,1),
-+#if 0
-+	DEVICE_ATTR_ADDR(icut,2),
-+	DEVICE_ATTR_ADDR(icut,3),
-+#endif
++	mutex_lock(&port->port_lock);
 +
-+	DEVICE_ATTR_ADDR(ilim,0),
-+	DEVICE_ATTR_ADDR(ilim,1),
-+#if 0
-+	DEVICE_ATTR_ADDR(ilim,2),
-+	DEVICE_ATTR_ADDR(ilim,3),
-+#endif
++	ltc_get_port_state(port, &state);
 +
-+	DEVICE_ATTR_ADDR(volts,0),
-+	DEVICE_ATTR_ADDR(volts,1),
-+#if 0
-+	DEVICE_ATTR_ADDR(volts,2),
-+	DEVICE_ATTR_ADDR(volts,3),
-+#endif
++	mutex_unlock(&port->port_lock);
 +
-+	DEVICE_ATTR_ADDR(mA,0),
-+	DEVICE_ATTR_ADDR(mA,1),
-+#if 0
-+	DEVICE_ATTR_ADDR(mA,2),
-+	DEVICE_ATTR_ADDR(mA,3),
-+#endif
++	return sprintf(buf, "%d", state);
++}
 +
-+	DEVICE_ATTR_ADDR(reset,0),
-+	DEVICE_ATTR_ADDR(reset,1),
-+#if 0
-+	DEVICE_ATTR_ADDR(reset,2),
-+	DEVICE_ATTR_ADDR(reset,3),
-+#endif
 +
-+        NULL,
++static struct port_attribute icut_attribute =
++        __ATTR(icut, S_IRUGO|S_IWUSR, show_icut, store_icut);
++static struct port_attribute ilim_attribute =
++        __ATTR(ilim, S_IRUGO|S_IWUSR, show_ilim, store_ilim);
++static struct port_attribute pwr_attribute =
++        __ATTR(pwr, S_IRUGO|S_IWUSR, show_power, store_power);
++static struct port_attribute reset_attribute =
++        __ATTR(reset, S_IWUSR, NULL, store_port_reset);
++static struct port_attribute mA_attribute =
++        __ATTR(mA, S_IRUGO, show_mA, NULL);
++static struct port_attribute volts_attribute =
++        __ATTR(volts, S_IRUGO, show_volts, NULL);
++static struct port_attribute class_attribute =
++        __ATTR(class, S_IRUGO, show_dev_class, NULL);
++static struct port_attribute state_attribute =
++        __ATTR(state, S_IRUGO, show_dev_state, NULL);
++
++
++static struct attribute *port_default_attrs[] = {
++        &icut_attribute.attr,
++	&ilim_attribute.attr,
++	&pwr_attribute.attr,
++	&reset_attribute.attr,
++	&mA_attribute.attr,
++	&volts_attribute.attr,
++	&class_attribute.attr,
++	&state_attribute.attr,
++        NULL,   /* need to NULL terminate the list of attributes */
 +};
 +
-+static struct attribute_group port_attr_group = {
-+        .name = "port_attr",
-+        .attrs = vc_ltc4266_port_attrs,
++static struct kobj_type port_ktype = {
++        .sysfs_ops = &port_sysfs_ops,
++        .release = port_release,
++        .default_attrs = port_default_attrs,
 +};
 +
++static struct port_obj *create_port_obj(struct kset *pkset, 
++			struct device *dev, const s32 port_id)
++{
++        struct port_obj *port;
++        s32 retval;
 +
-+static int
++        /* allocate the memory for the whole object */
++        port = kzalloc(sizeof(struct port_obj), GFP_KERNEL);
++        if (!port)
++                return NULL;
++
++        /*
++         * As we have a kset for this kobject, we need to set it before calling
++         * the kobject core.
++         */
++        port->kobj.kset = pkset;
++	port->index = port_id;
++	port->dev = dev;
++
++        /*
++         * Initialize and add the kobject to the kernel.  All the default files
++         * will be created here.  As we have already specified a kset for this
++         * kobject, we don't have to set a parent for the kobject, the kobject
++         * will be placed beneath that kset automatically.
++         */
++        retval = kobject_init_and_add(&port->kobj, &port_ktype, NULL, "%d", port_id);
++        if (retval) {
++                kobject_put(&port->kobj);
++                return NULL;
++        }
++
++        /*
++         * We are always responsible for sending the uevent that the kobject
++         * was added to the system.
++         */
++        kobject_uevent(&port->kobj, KOBJ_ADD);
++
++        return port;
++}
++
++static s32
 +ltc4266_i2c_probe(struct i2c_client *client)
 +{
-+        int i, err;
++        s32 i;
 +	struct ltc4266_port *port;
 +        struct i2c_ltc4266_chipset *chip;
 +
@@ -2299,9 +2224,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +	i2c_set_clientdata(client, (void *)chip);
 +
-+	chip->total_mA_avail = VELO_PWRDFLT_mA_AVAIL;
++	chip->total_mA_avail = mA_avail;
 +
-+	chip->mode = VC_I2C_CHIPSET_AUTO_MODE;
++	chip->mode = mode;
 +	
 +	mutex_init(&chip->glbl_lock);
 +
@@ -2336,6 +2261,9 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	/* Reset initial state to power on.  State machine will detect hardware
 +	 * state and put in the correct state.
 +	 */
++
++	chip->pkset = kset_create_and_add("port", NULL, &client->dev.kobj);
++
 +	for (i = 0; i < LTC_PORTS_COUNT; i++) {
 +	
 +		port = &chip->port_dev[i];
@@ -2352,6 +2280,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		port->port_pwr_on_timer.data = (unsigned long)port;
 +
 +		init_timer(&port->port_pwr_on_timer);
++
++		port->pkobj = create_port_obj(chip->pkset, &client->dev, i);
 +	}
 +
 +	device_create_file(&client->dev, &dev_attr_fw_rev);	
@@ -2360,12 +2290,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	device_create_file(&client->dev, &dev_attr_chip_notify);
 +	device_create_file(&client->dev, &dev_attr_chip_mode);
 +
-+	err = sysfs_create_group(&client->dev.kobj, &port_attr_group);
-+        if(err < 0) {
-+                dev_err(&client->dev, "couldn't register chipset %s\n",
-+					port_attr_group.name);
-+		return (err);
-+        }
++	if (vc_platform_kobj)
++		sysfs_create_link(vc_platform_kobj, &client->dev.kobj, "poe");
 +
 +	mod_timer(&chip->ltc_chip_monitor_timer, 
 +		msecs_to_jiffies(LTC4266_CHIPSET_MONITOR_MS) + jiffies);
@@ -2373,23 +2299,25 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	return (0);
 +}
 +
-+
-+static int
++static s32
 +ltc4266_i2c_remove(struct i2c_client *client)
 +{
-+        int i;
++        s32 i;
 +        struct ltc4266_port *port;
 +        struct i2c_ltc4266_chipset *chip;
 +
 +	chip = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++	
++	if (vc_platform_kobj)
++		sysfs_remove_link(vc_platform_kobj, "poe");
++
++	kset_unregister(chip->pkset);
 +
 +	device_remove_file(&client->dev, &dev_attr_fw_rev);
 +	device_remove_file(&client->dev, &dev_attr_chip_reset);
 +	device_remove_file(&client->dev, &dev_attr_total_mA);
 +	device_remove_file(&client->dev, &dev_attr_chip_notify);
 +	device_remove_file(&client->dev, &dev_attr_chip_mode);
-+
-+	sysfs_remove_group(&client->dev.kobj, &port_attr_group);
 +
 +	/* delete any scheduled timer */
 +	del_timer_sync(&chip->ltc_chip_monitor_timer);
@@ -2414,6 +2342,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +		cancel_work_sync(&port->port_work);
 +
 +		destroy_workqueue(port->port_wq);
++
++		kobject_put(&port->pkobj->kobj);
 +	}
 +
 +	if (chip->eventfd) {
@@ -2431,10 +2361,10 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +MODULE_DEVICE_TABLE(i2c, vc_ltc4266_i2c_id);
 +
-+static int
++static s32
 +i2c_open(struct inode *inode, struct file *file)
 +{
-+        unsigned int minor_number;
++        u32 minor_number;
 +
 +        minor_number = iminor(inode);
 +        if (minor_number)
@@ -2444,9 +2374,8 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +}
 +
 +/* This function handles ioctl for the character device */
-+static long ltc_chrdev_ioctl(struct file *file,
-+			     unsigned int cmd,
-+			     unsigned long efd) 
++static long ltc_chrdev_ioctl(struct file *file, u32 cmd, 
++				      unsigned long efd)
 +{
 +	struct fd efile;
 +
@@ -2495,7 +2424,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        .llseek         = noop_llseek,
 +};
 +
-+static int __init ltc4266_init(void)
++static s32 __init ltc4266_init(void)
 +{
 +	unsigned long id = VC_NONE;
 +	struct i2c_adapter *adapter;
@@ -2557,7 +2486,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +static void __exit
 +ltc4266_exit(void)
 +{
-+	int i;
++	u32 i;
 +
 +	for (i = 0; i < N_VC_I2C_DEVS; i++) {
 +
@@ -2581,5 +2510,5 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +module_exit(ltc4266_exit);
 +
 +MODULE_AUTHOR("Jordan Rhody <jordan@velocloud.net>");
-+MODULE_DESCRIPTION("Velocloud POE Driver");
++MODULE_DESCRIPTION("VeloCloud LTC4266 PoE driver");
 +MODULE_LICENSE("GPL");

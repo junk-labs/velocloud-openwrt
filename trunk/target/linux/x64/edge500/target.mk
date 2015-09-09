@@ -16,6 +16,8 @@ DEFAULT_PACKAGES += \
 	kmod-hwmon-coretemp \
 	kmod-hwmon-w83627ehf \
 	igb-eeprom \
+	kmod-intel-qat \
+	intel-qat \
 
 define Target/Description
 	Build firmware images for the Edge 500 and similar boards

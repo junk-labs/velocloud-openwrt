@@ -76,6 +76,9 @@ define Package/libgnutls
 $(call Package/gnutls/Default)
   TITLE+= (library)
   DEPENDS+= +libnettle +!LIBNETTLE_MINI:libgmp
+ifeq ($(CONFIG_PACKAGE_trousers),y)
+  DEPENDS+= +trousers
+endif
 endef
 
 define Package/libgnutls/description
@@ -149,6 +152,10 @@ endif
 
 ifeq ($(CONFIG_GNUTLS_CRYPTODEV),y)
 CONFIGURE_ARGS += --enable-cryptodev
+endif
+
+ifneq ($(CONFIG_PACKAGE_trousers),y)
+CONFIGURE_ARGS += --without-tpm
 endif
 
 # XXX: AM_CFLAGS duplicates with CFLAGS

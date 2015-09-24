@@ -21,6 +21,8 @@ DEFAULT_PACKAGES += \
 	igb-eeprom \
 	kmod-intel-qat \
 	intel-qat \
+	trousers \
+	tpm-tools \
 
 define Target/Description
 	Build firmware images for the Edge 520/540 and similar boards

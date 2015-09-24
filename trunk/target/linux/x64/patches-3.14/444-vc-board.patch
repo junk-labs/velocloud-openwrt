@@ -1,6 +1,6 @@
 diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 --- a/drivers/platform/x86/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Kconfig	2015-08-18 15:12:56.689475694 -0700
++++ b/drivers/platform/x86/Kconfig	2015-09-09 15:37:33.326211422 -0700
 @@ -827,4 +827,27 @@
  	  Interface. This is a requirement for systems that need to configure
  	  the PUNIT for power management features such as RAPL.
@@ -31,7 +31,7 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
  endif # X86_PLATFORM_DEVICES
 diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 --- a/drivers/platform/x86/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Makefile	2015-08-18 15:13:33.759777114 -0700
++++ b/drivers/platform/x86/Makefile	2015-09-09 15:37:33.326211422 -0700
 @@ -55,4 +55,6 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
@@ -39,9 +39,9 @@ diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 +obj-$(CONFIG_VELOCLOUD)         += velocloud.o
 +obj-$(CONFIG_VELOCLOUD_VC)      += velocloud-vc.o
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
-diff -Naur /dev/null b/include/misc/velocloud.h
---- /dev/null	2015-01-29 08:57:01.314411064 -0800
-+++ b/include/misc/velocloud.h	2015-08-18 10:30:39.207338166 -0700
+diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
+--- a/include/misc/velocloud.h	1969-12-31 16:00:00.000000000 -0800
++++ b/include/misc/velocloud.h	2015-09-09 15:37:33.330211422 -0700
 @@ -0,0 +1,42 @@
 +/*
 + * velocloud.h
@@ -85,9 +85,9 @@ diff -Naur /dev/null b/include/misc/velocloud.h
 +};
 +
 +#endif /* _VELOCLOUD_H_ */
-diff -Naur /dev/null b/drivers/platform/x86/velocloud.c
---- /dev/null	2015-01-29 08:57:01.314411064 -0800
-+++ b/drivers/platform/x86/velocloud.c	2015-08-19 10:53:03.900651090 -0700
+diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
+--- a/drivers/platform/x86/velocloud.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/platform/x86/velocloud.c	2015-09-09 15:37:33.330211422 -0700
 @@ -0,0 +1,189 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
@@ -278,10 +278,10 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud.c
 +subsys_initcall(vc_dmi_init);
 +module_exit(vc_dmi_exit);
 +
-diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
---- /dev/null	2015-01-29 08:57:01.314411064 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2015-08-24 09:00:04.953042987 -0700
-@@ -0,0 +1,3654 @@
+diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
+--- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/platform/x86/velocloud-vc.c	2015-09-09 15:38:49.198215490 -0700
+@@ -0,0 +1,3658 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -775,6 +775,9 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +
 +struct mii_bus *vc_mdio_bus;
 +EXPORT_SYMBOL(vc_mdio_bus);
++
++struct kobject *vc_platform_kobj = NULL;
++EXPORT_SYMBOL(vc_platform_kobj);
 +
 +// board hardware config;
 +
@@ -3856,6 +3859,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +	// board will not show up unless all above succeeded;
 +	// create velocloud board id;
 +	// all below may fail, but still print log messages;
++	vc_platform_kobj = &vc_pdev->dev.kobj;
 +
 +	err = sysfs_create_file(&vc_pdev->dev.kobj, &dev_attr_board.attr);
 +	if(err < 0)

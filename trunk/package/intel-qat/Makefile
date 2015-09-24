@@ -127,6 +127,14 @@ define Build/Compile
 	$(call Build/Compile/intel-qat-perf)
 endef
 
+define Build/InstallDev
+	$(INSTALL_DIR) $(1)/usr/include
+	$(CP) $(PKG_BUILD_DIR)/quickassist/include/* $(1)/usr/include/
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/lib*.a $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/lib*.so $(1)/usr/lib/
+endef
+
 define Package/intel-qat/install
 	$(INSTALL_DIR) $(1)/bin/ $(1)/lib/ $(1)/etc/qat
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/adf_ctl $(1)/bin/

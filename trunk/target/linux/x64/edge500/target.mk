@@ -16,6 +16,9 @@ DEFAULT_PACKAGES += \
 	kmod-hwmon-coretemp \
 	kmod-hwmon-w83627ehf \
 	igb-eeprom \
+
+# Enable QAT for this platform
+DEFAULT_PACKAGES += \
 	kmod-intel-qat \
 	intel-qat \
 

@@ -19,10 +19,13 @@ DEFAULT_PACKAGES += \
 	kmod-hwmon-coretemp \
 	kmod-hwmon-w83627ehf \
 	igb-eeprom \
-	kmod-intel-qat \
-	intel-qat \
 	trousers \
 	tpm-tools \
+
+# Enable QAT for this platform
+DEFAULT_PACKAGES += \
+	kmod-intel-qat \
+	intel-qat \
 
 define Target/Description
 	Build firmware images for the Edge 520/540 and similar boards

@@ -130,6 +130,8 @@ endef
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
 	$(CP) $(PKG_BUILD_DIR)/quickassist/include/* $(1)/usr/include/
+	$(INSTALL_DIR) $(1)/usr/include/access_layer
+	$(CP) $(PKG_BUILD_DIR)/quickassist/lookaside/access_layer/include/* $(1)/usr/include/access_layer/
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/lib*.a $(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/lib*.so $(1)/usr/lib/

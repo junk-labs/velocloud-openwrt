@@ -1,0 +1,127 @@
+#!/bin/sh
+
+. /opt/vc/modems/modem.path
+export PYTHONPATH=/opt/vc/lib/python
+local eventdir
+
+set_eventdir() 
+{
+	eventdir=$1
+}
+
+log() 
+{
+        logger -t "usbmodems" "$eventdir: $@"
+}
+
+usb_wan_naming()
+{
+    python - "$1" <<-EOF
+import hardware
+import sys
+usb = hardware.get_usb_by_path(sys.argv[1])
+if usb:
+    print usb
+EOF
+}
+
+check_device_config() {
+	local usbifname=$1
+        local ret="False"
+        uci -c $modem_path -X get modems.$usbifname.device 2>&1 >/dev/null
+        if [ "$?" == "0" ]; then
+                ret="True"
+        fi
+        echo $ret
+}
+
+get_modem_type()
+{
+	local interface=${1/[0-9]*} # ttyUSB or eth or wwan
+	local product=$2
+	local hymodemsfile=$modem_script_path/hybridmodems.list	
+	local modemtype
+	local hybridtype
+	#log "get_modem_type: interface=$interface product=$product"
+	if [ -z "$product" ]; then
+		echo "ignore"
+		return
+	fi
+
+	if [ "$interface" == "ttyUSB" ]; then
+		modemtype="serial"
+		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
+		#log "get_modem_type: hybridtype=$hybridtype"
+		if [ "$hybridtype" = "ignore" ]; then
+			echo "ignore"
+			return
+		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" != "serial" ]; then
+			modemtype="None" # cdcether or qmiwwan
+		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
+			modemtype="qmihybrid"
+		fi
+	else
+		local found=0
+		local index=1
+		local mtypes="eth=cdcether usb=cdcether wwan=qmiwwan"
+		local mtotal=$(echo $mtypes | awk '{print NF}')
+		local intf type
+
+		modemtype="None"
+		while [ $index -le $mtotal ]; do
+			intf=$(echo $mtypes | awk -v i=$index '{print $i}' | awk -F= '{print $1}')
+                        if [ "$interface" == "$intf" ]; then
+				found=1
+				type=$(echo $mtypes | awk -v i=$index '{print $i}' | awk -F= '{print $2}')
+                                break
+                        fi
+			index=$(expr $index + 1)
+		done
+		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
+		if [ "$found" -eq 1 ]; then
+			modemtype=$type
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "serial" ]; then
+				modemtype="None" # cdcether or qmiwwan
+			fi
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
+				modemtype="qmihybrid"
+			fi
+		fi
+	fi
+	echo $modemtype
+}
+
+uci_get_modem_type()
+{
+	local usbifname=$1
+	local type
+	type=$(uci -c $modem_path get modems.$usbifname.type)
+	echo $type
+}
+
+uci_get_modem_product()
+{
+	local usbifname=$1
+	echo $(uci -c $modem_path get modems.$usbifname.product)
+}
+
+uci_get_modem_mgmt()
+{
+	local usbifname=$1
+	echo $(uci -c $modem_path get modems.$usbifname.mgmt)
+}
+
+uci_get_modem_ifname()
+{
+    local usbifname=$1
+    echo $(uci -c $modem_path get modems.$usbifname.ifname)
+}
+
+debug_hotplugevents()
+{
+	echo "HOTPLUG:`date`:$eventdir" >> /tmp/hotplug-events.txt
+	env | xargs echo >> /tmp/hotplug-events.txt
+}
+

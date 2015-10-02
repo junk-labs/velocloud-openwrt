@@ -1,0 +1,44 @@
+#                               Modems
+#                                 |
+#           ---------------------------------------------------------------------------
+#          |                      |                      |                            |
+#       serial              usb over ethernet          Hybrid                      qmihybrid
+#    ttyUSB/ttyACM           ethX interfaces        select serial or ethernet    Control over serial AT,
+#                                                                                data over qmi wwanX 
+#    
+# 1) For serial modem we need to get the exact serial device which responds
+# 2) For ethX interfaces we need to run dhcp client on that interface (wwanX or ethX) to get the IP
+#       a) ethX - To get DNS and additional information we need to fetch from the browser Rest API
+#                 from the network address   
+# 3) For qmihybrid modems, all the control like resetting the modem, getting signal strength etc..
+#    happens over serial ttyUSBX devices. But data happens over qmi wwanX interfaces, we run udhcpc
+#    over wwanX to get IP address and send data over it etc..
+#
+# ------------------------------------------------------------------------------------------
+#              HANDLING OF THE HOTPLUG EVENT
+# ------------------------------------------------------------------------------------------
+# 
+# When the modem is inserted hotplug triggers the script under this path
+#  i)   Search the file ttyUSB/ttyACM/ethX under DEVPATH
+#  ii)  After getting the appropiate name(tty|ethX) add it to configuration for future use
+#  iii) a) If tty run ppp_run.sh and run as deamon
+#       b) If ethX run udhcpc and get the IP
+#       c) if qmihybrid, run qmi_connect.sh to enable the modem and monitor the modem states
+#          and reset it if required etc.., and run udhcpc over wwanX to get the IP. 
+# ------------------------------------------------------------------------------------------  
+# ------------------------------------------------------------------------------------------
+# When the modem is removed 
+#  i)   Remove the name from the configuration file
+#  ii)  kill the ppp_run.sh or qmi_connect.sh and/or udhcpc
+#
+# ------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------
+#
+# NOTE on qmihybrid:
+# The modem that got us into this bucket is the Novatel551L. Looks like this modem has a later
+# firmware version which can work in the classic qmiwwan mode. But we dont know whether all
+# customers have the latest firmware and whether we want to go through the hassle of them finding
+# out the modem doesnt work and then we debugging and telling them to upgrade etc.. So if we 
+# support the qmyhybrid mode, even with the later firmware, that should work. All this is not 
+# something pulled out of anyones hat, its after discussions with the modem Gods in the libqmi-devel
+# alias (search for threads with heading Novatel 551L + qmi) 

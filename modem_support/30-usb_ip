@@ -2,18 +2,29 @@
 
 # Copytight (C) 2013 Velocloud Inc
 
-get_wwan_mode()
+get_wda_version()
+{
+	qmicli -d "$1" --get-service-version-info | sed -ne "s/\s*wda (\([^']*\))/\1/p"
+}
+
+get_wda_data_format()
 {
 	qmicli -d "$1" --wda-get-data-format | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
 }
 
-set_wwan_mode()
+set_wda_data_format()
 {
-	qmicli -d "$1" --wda-set-data-format="$2" | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
+	qmicli -d "$1" --wda-set-data-format="802-3" | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
 }
 
-qmi_get_apn() {
+set_ctl_data_format()
+{
+	# Note: There's no explicit error if this action fails. It usually just works.
+	qmicli -d "$1" --device-open-net="net-802-3|net-no-qos-header" --dms-noop 1>/dev/null
+}
 
+qmi_get_apn()
+{
 	local device=$1
 	local apn=''
 	local mcode=''
@@ -40,32 +51,47 @@ qmi_get_apn() {
 	echo $apn
 }
 
-fix_sierra_qmi_modem() {
+# All QMI modems need to use the 802.3 link data format (i.e. packets with
+# ethernet headers) instead of raw-ip (i.e. packets without ethernet headers).
+# 802.3 is the format expected by the qmi_wwan kernel driver in the upstream
+# Linux kernel, it cannot be changed programmatically.
+#
+# If the modem supports the WDA service, we'll use that one. Otherwise we'll
+# run a DMS NOOP operation asking for 802.3 in the CTL service (the old way,
+# always supported by modems without WDA).
+ensure_802_3_data_format()
+{
 	local device=$1
 
-	cur_mode=`get_wwan_mode $device`
-	if [ "$cur_mode" != "raw-ip" ]; then
-		# Either OK, or in a bad state; either way, give up
-		return
-	fi
-
-	# mode is raw-ip, and the device is reachable. Try setting to 802-3.
-	echo "Trying to set Sierra QMI modem protocol to 802-3" > /dev/kmsg
-	num_attempts=0
-	max_attempts=18
-	sleep_interval=10
-	cur_mode=`set_wwan_mode $device 802-3`
-	while [ "$cur_mode" = "raw-ip" ]; do
-		# sometimes retries help. Try upto 4 retries at 15 seconds each
-		num_attempts=$((num_attempts+1))
-		if [ $num_attempts -gt $max_attempts ]; then
-			echo "Giving up on trying to set Sierra modem protocol to 802-3" > /dev/kmsg
+	wda_version=`get_wda_version $device`
+	if [ ! -z "$wda_version" ]; then
+		cur_mode=`get_wwan_mode $device`
+		if [ "$cur_mode" != "raw-ip" ]; then
+			# Either OK, or in a bad state; either way, give up
 			return
 		fi
-		echo "Re-trying to set Sierra modem protocol to 802-3, attempt $num_attempts (out of $max_attempts)" > /dev/kmsg
-		sleep $sleep_interval
-		cur_mode=`set_wwan_mode $device 802-3`
-	done
+
+		# mode is raw-ip, and the device is reachable. Try setting to 802-3.
+		echo "Trying to set QMI link layer protocol to 802-3" > /dev/kmsg
+		num_attempts=0
+		max_attempts=18
+		sleep_interval=10
+		cur_mode=`set_wda_data_format $device`
+		while [ "$cur_mode" = "raw-ip" ]; do
+			# sometimes retries help. Try upto 4 retries at 15 seconds each
+			num_attempts=$((num_attempts+1))
+			if [ $num_attempts -gt $max_attempts ]; then
+				echo "Giving up on trying to set QMI link layer protocol to 802-3" > /dev/kmsg
+				return
+			fi
+			echo "Re-trying to set QMI link layer protocol to 802-3, attempt $num_attempts (out of $max_attempts)" > /dev/kmsg
+			sleep $sleep_interval
+			cur_mode=`set_wda_data_format $device`
+		done
+	else
+		echo "Trying to set QMI link layer protocol to 802.3... (CTL)" > /dev/kmsg
+		set_ctl_data_format $device
+	fi
 }
 
 # AC340U seems to have some bug when it starts locking into 2G mode, where the
@@ -118,11 +144,10 @@ set_usb_ip_over_ethernet() {
 	if [ $modemtype == "qmiwwan" ]; then
 		local device=$(ls $usbpath/../../usbmisc)
 		uci -c $modem_path set modems.$usbifname.device=''"/dev/$device"''
-		# Work around brain damage in latest Sierra Wireless QMI modems
-		manufacturer=${product%:*}
-		if [ "$manufacturer" = "1199" ]; then	 # sierra wireless
-			fix_sierra_qmi_modem /dev/$device
-		fi
+
+		# Ensure that 802.3 is used in the QMI modems, as that is what qmi_wwan expects
+		ensure_802_3_data_format /dev/$device
+
 		# Disable 2G mode for AC340U
 		disable_AC340U_2G /dev/$device
 

@@ -15,29 +15,29 @@ set_wwan_mode()
 qmi_get_apn() {
 
 	local device=$1
-        local apn=''
-        local mcode=''
-        local mcc=''
-        local mnc=''
-        local apnfile='/tmp/'$device'.apn'
-        /usr/bin/qmicli -d /dev/$device --nas-get-home-network > $apnfile
-        mcc=`awk '/MCC/ {gsub("\x27","",$2); print $2}' $apnfile`
-        if [ $? -eq 0 -a ! -z "$mcc" ]; then
-                mnc=`awk '/MNC/ {gsub("\x27","",$2); print $2}' $apnfile`
-                if [ $? -eq 0 -a ! -z "$mnc" ]; then
-                        while [ ${#mnc} -lt 3 ]; do
+	local apn=''
+	local mcode=''
+	local mcc=''
+	local mnc=''
+	local apnfile='/tmp/'$device'.apn'
+	/usr/bin/qmicli -d /dev/$device --nas-get-home-network > $apnfile
+	mcc=`awk '/MCC/ {gsub("\x27","",$2); print $2}' $apnfile`
+	if [ $? -eq 0 -a ! -z "$mcc" ]; then
+		mnc=`awk '/MNC/ {gsub("\x27","",$2); print $2}' $apnfile`
+		if [ $? -eq 0 -a ! -z "$mnc" ]; then
+			while [ ${#mnc} -lt 3 ]; do
 				mnc="0"$mnc
 			done
-                        mcode=$mcc$mnc
-                fi
-        fi
+			mcode=$mcc$mnc
+		fi
+	fi
 	if [ ! -z $mcode ]; then
 		apn=$(uci -c /etc/config/modems get mcodemap.${mcode}.apn)
 	fi
 	if [ -z $apn ]; then
 		apn="broadband"
 	fi
-        echo $apn
+	echo $apn
 }
 
 fix_sierra_qmi_modem() {
@@ -73,8 +73,8 @@ fix_sierra_qmi_modem() {
 # mode, so disable 2G. Now this disabling doesnt seem to work unless we reload
 # the qmi diver for the device, so doing a unbind bind to reload the driver. We
 # are doing this only for 340U in specific because we dont know if other models
-# have the problem and if this fix works for them if so. We are not even 100% 
-# sure if this fixes AC340U itself in all situations - this is all based on 
+# have the problem and if this fix works for them if so. We are not even 100%
+# sure if this fixes AC340U itself in all situations - this is all based on
 # hear-say in modem/qmi aliases.
 disable_AC340U_2G() {
     local device=$1
@@ -83,74 +83,74 @@ disable_AC340U_2G() {
     local usbnum=`echo $usbpath | awk 'BEGIN { FS = "/" } ;{ print $(NF-2); }'`
 
     if [ "$vendor" = "1199" ] && [ "$product" = "9051" ]; then
-        is_gsm=`/usr/bin/qmicli -d $device --nas-get-system-selection-preference | grep "Mode preference" | grep gsm`
-        if [ -z "$is_gsm" ]; then
-            return;
-        fi
-        /usr/bin/qmicli -d $device --nas-set-system-selection-preference='umts|lte'
-        echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/unbind
-        sleep 2
-        echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/bind
-        sleep 2
-    fi    
+	is_gsm=`/usr/bin/qmicli -d $device --nas-get-system-selection-preference | grep "Mode preference" | grep gsm`
+	if [ -z "$is_gsm" ]; then
+	    return;
+	fi
+	/usr/bin/qmicli -d $device --nas-set-system-selection-preference='umts|lte'
+	echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/unbind
+	sleep 2
+	echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/bind
+	sleep 2
+    fi
 }
 
 set_usb_ip_over_ethernet() {
-        local etherdevice=$DEVICENAME
+	local etherdevice=$DEVICENAME
 	local modemtype=$1
 
-        uci -c /etc/config add network interface\\\ '"$usbifname"'
-        uci -c /etc/config set network.$usbifname=interface
-        uci -c /etc/config set network.$usbifname.ifname=''"$etherdevice"''
-        uci -c /etc/config set network.$usbifname.proto='dhcp'
-        uci -c /etc/config set network.$usbifname.hostname=''"vc-$usbifname"''
-        uci -c /etc/config commit network
+	uci -c /etc/config add network interface\\\ '"$usbifname"'
+	uci -c /etc/config set network.$usbifname=interface
+	uci -c /etc/config set network.$usbifname.ifname=''"$etherdevice"''
+	uci -c /etc/config set network.$usbifname.proto='dhcp'
+	uci -c /etc/config set network.$usbifname.hostname=''"vc-$usbifname"''
+	uci -c /etc/config commit network
 	log "Updated network config"
 
-        manufacturer=$(cat /sys$DEVPATH/../../../manufacturer)
-        uci -c $modem_path add modems interface\\\ '"$usbifname"'
-        uci -c $modem_path set modems.$usbifname=interface
-        uci -c $modem_path set modems.$usbifname.ifname=''"$etherdevice"''
-        uci -c $modem_path set modems.$usbifname.manufacturer=''"$manufacturer"''
-        uci -c $modem_path set modems.$usbifname.type=''"$modemtype"''
-        uci -c $modem_path set modems.$usbifname.product=''"$product"''
+	manufacturer=$(cat /sys$DEVPATH/../../../manufacturer)
+	uci -c $modem_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_path set modems.$usbifname=interface
+	uci -c $modem_path set modems.$usbifname.ifname=''"$etherdevice"''
+	uci -c $modem_path set modems.$usbifname.manufacturer=''"$manufacturer"''
+	uci -c $modem_path set modems.$usbifname.type=''"$modemtype"''
+	uci -c $modem_path set modems.$usbifname.product=''"$product"''
 
 	if [ $modemtype == "qmiwwan" ]; then
 		local device=$(ls $usbpath/../../usbmisc)
 		uci -c $modem_path set modems.$usbifname.device=''"/dev/$device"''
 		# Work around brain damage in latest Sierra Wireless QMI modems
 		manufacturer=${product%:*}
-		if [ "$manufacturer" = "1199" ]; then    # sierra wireless
+		if [ "$manufacturer" = "1199" ]; then	 # sierra wireless
 			fix_sierra_qmi_modem /dev/$device
 		fi
-                # Disable 2G mode for AC340U
-                disable_AC340U_2G /dev/$device
-		
+		# Disable 2G mode for AC340U
+		disable_AC340U_2G /dev/$device
+
 		#APN detection
 		apn=$(qmi_get_apn $device)
 		/usr/bin/qmicli -d /dev/$device --wds-start-network=$apn --client-no-release-cid
 		log "Updated $device - $modemtype - $apn"
 	fi
-        
+
 	ubus call network reload
-        status="CONNECTED SUCCESSFULLY"
-        uci -c $modem_path set modems.$usbifname.status=''"$status"''
-        uci -c $modem_path commit modems
+	status="CONNECTED SUCCESSFULLY"
+	uci -c $modem_path set modems.$usbifname.status=''"$status"''
+	uci -c $modem_path commit modems
 	log "Updated modems config with ubus status=$status ubus_return=$?"
 
 }
 
 add_to_config() {
 
-        # Action for the each USB
+	# Action for the each USB
 	local modemtype
 	local product
 
-        if [ -z "$usbifname" ]
-        then
+	if [ -z "$usbifname" ]
+	then
 		# log "Not a modem:devpath=$DEVPATH"
-                return
-        fi
+		return
+	fi
 
 	log "Hotplug add event: IP"
 
@@ -162,40 +162,40 @@ add_to_config() {
 	if [ "$modemtype" == "None" ]; then
 		log "Hybrid modem selected for $modemtype: $INTERFACE DEVICENAME:$DEVICENAME"
 		return
-	fi	
-	
-        # Already detected and updated network
+	fi
+
+	# Already detected and updated network
 	log "DEVICE=$DEVICENAME: TYPE=$modemtype INTERFACE:$INTERFACE"
 
-        ret=$(check_device_config $usbifname)
-        if [ "$ret" == "True" ]; then
-                # Already dialup tty detected
-                log "net device $modemtype already detected"
-                return
+	ret=$(check_device_config $usbifname)
+	if [ "$ret" == "True" ]; then
+		# Already dialup tty detected
+		log "net device $modemtype already detected"
+		return
 	fi
 
 	log "Starting eth script for $ethdevice"
-        set_usb_ip_over_ethernet "$modemtype" "$product"
-	$modem_script_path/modem_service.sh $usbifname start 
+	set_usb_ip_over_ethernet "$modemtype" "$product"
+	$modem_script_path/modem_service.sh $usbifname start
 }
 
 remove_from_config() {
 
-        local modemtype
+	local modemtype
 	local ucigetmodem
 	local product=$(uci_get_modem_product $usbifname)
-        ucigetmodem=$(uci_get_modem_type $usbifname)
+	ucigetmodem=$(uci_get_modem_type $usbifname)
 	modemtype=$(get_modem_type "$DEVICENAME" "$product")
 
 	log "Hotplug remove event: $DEVICENAME: $product: $ucigetmodem"
-        if [ ! -z $ucigetmodem ] && [ "$modemtype" == "$ucigetmodem" ];then
+	if [ ! -z $ucigetmodem ] && [ "$modemtype" == "$ucigetmodem" ];then
 		local pidfile="$tmpdir/$usbifname.pid"
 		$modem_script_path/modem_service.sh $usbifname stop
-                uci -c $network_config delete network.$usbifname
-                uci -c $network_config commit network
+		uci -c $network_config delete network.$usbifname
+		uci -c $network_config commit network
 		log "Removed network config"
-                uci -c $modem_path delete modems.$usbifname
-                uci -c $modem_path commit modems
+		uci -c $modem_path delete modems.$usbifname
+		uci -c $modem_path commit modems
 		log "Removed modems config"
 
 		ubus call network reload
@@ -203,7 +203,7 @@ remove_from_config() {
 
 		rm -rf $pidfile
 		rm -rf $tmpdir/$usbifname"_periodic.txt"
-        fi
+	fi
 
 }
 
@@ -226,12 +226,12 @@ local usbifname=$(usb_wan_naming $usbpath) # The USB number fixed to the board
 
 set_eventdir "$usbifname: net: $INTERFACE"
 
-debug_hotplugevents 
+debug_hotplugevents
 
 if [ "$ACTION" = add ]; then
-        add_to_config
+	add_to_config
 elif [ "$ACTION" = remove ]; then
-        remove_from_config
+	remove_from_config
 fi
 
 # Local Variables:

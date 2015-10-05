@@ -12,6 +12,10 @@ I. Setting up Build System
 * bison
 * flex
 * gawk
+* zip and unzip
+* gdisk
+* gettext
+* libneon27-gnutls
 * libncurses5-dev libncurses5
 * zlib1g-dev zlib1g
 * libapr1 libaprutil1

@@ -15,6 +15,11 @@ DEFAULT_PACKAGES += \
 	kmod-hwmon-w83627ehf \
 	igb-eeprom \
 
+# Enable QAT for this platform
+DEFAULT_PACKAGES += \
+	kmod-intel-qat \
+	intel-qat \
+
 define Target/Description
 	Build firmware images for Portwell Dev Board
 endef

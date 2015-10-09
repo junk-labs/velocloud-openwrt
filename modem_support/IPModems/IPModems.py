@@ -93,6 +93,12 @@ class IPModems():
 
         self.json_file_open()
 
+    def setup(self):
+        logging.debug("[dev=%s]: setup", self.USB)
+
+    def teardown(self):
+        logging.debug("[dev=%s]: teardown", self.USB)
+
     def log(self, contents):
         logging.warning('%s: %s' % (self.USB, contents))
 

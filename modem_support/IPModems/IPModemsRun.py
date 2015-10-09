@@ -85,13 +85,18 @@ while True:
         exec "from %s import %s" %(found_plugin, obj_name)
         exec "modemobj = %s('%s')" %(obj_name, USB)
         try:
+            logging.debug("[%s], setting up device", found_plugin_id);
+            modemobj.setup()
             logging.warning("[%s], starting collecting info", found_plugin_id);
             modemobj.monitor()
             logging.warning("[%s], info collection completed", found_plugin_id);
+            modemobj.teardown()
         except NameError:
             logging.error("NameError..");
 
     except (SystemExit, AttributeError):
+        # Explicitly run teardown before exiting...
+        modemobj.teardown()
         logging.warning("Exiting Program due to interrupt")
         sys.exit(1)
     except Exception as e:

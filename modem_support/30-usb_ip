@@ -23,6 +23,12 @@ set_ctl_data_format()
 	qmicli -d "$1" --device-open-net="net-802-3|net-no-qos-header" --dms-noop 1>/dev/null
 }
 
+set_ctl_sync()
+{
+	# Note: There's no explicit error if this action fails. It usually just works.
+	qmicli -d "$1" --device-open-sync --dms-noop 1>/dev/null
+}
+
 qmi_get_apn()
 {
 	local device=$1
@@ -144,6 +150,9 @@ set_usb_ip_over_ethernet() {
 	if [ $modemtype == "qmiwwan" ]; then
 		local device=$(ls $usbpath/../../usbmisc)
 		uci -c $modem_path set modems.$usbifname.device=''"/dev/$device"''
+
+		# Start with a sync, so that we reset the endpoint
+		set_ctl_sync /dev/$device
 
 		# Ensure that 802.3 is used in the QMI modems, as that is what qmi_wwan expects
 		ensure_802_3_data_format /dev/$device

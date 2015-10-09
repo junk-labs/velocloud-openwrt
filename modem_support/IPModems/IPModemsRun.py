@@ -7,7 +7,7 @@ import logging
 import time
 
 def signal_handler(signal, frame):
-    logging.warning(USB + ": Recieved Signal " + str(signal))
+    logging.warning(USB + ": Received Signal " + str(signal))
     sys.exit(0)
 
 def supported_modems():

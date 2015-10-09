@@ -33,7 +33,7 @@ supported_modem_list = {
         'Beceem Communications' : 'ubee',
         'Pantech' : 'pantech',
         'ZTE,Incorporated' : 'zte',
-        'Sierra Wireless, Incorporated' : 'qmi'
+        'Sierra Wireless, Incorporated' : 'sierra'
         }
 
 supported_modems() #print the supported modems

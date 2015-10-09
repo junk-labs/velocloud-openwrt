@@ -30,7 +30,7 @@ class Qmi(IPModems.IPModems):
 		self.modem_name = modem_name
 		self.modem_version = modem_version
 		self.activation_status = 'activated'
-		self.isp_name = 'AT&T'
+		self.isp_name = ''
 		self.supported_technologies = 'LTE'
 
 		#self.ip_value = wanip

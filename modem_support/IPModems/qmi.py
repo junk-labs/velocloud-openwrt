@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
 import commands
-import IPModems 
+import IPModems
 
-class Sierra(IPModems.IPModems):
+class Qmi(IPModems.IPModems):
 
 	def __init__(self, USB):
 		IPModems.IPModems.__init__(self, USB)
-		self.modem_str = 'sierra'
+		self.modem_str = 'qmi'
 		self.timer = 3
 		self.clicmd = '/usr/bin/qmicli -d ' + self.device + ' '
 
@@ -16,12 +16,12 @@ class Sierra(IPModems.IPModems):
 
 	def qmicli(self, cmd):
 		return self.runcmd(self.clicmd + cmd)
-		
+
 	def get_static_values(self):
 		linkid = self.qmicli("--dms-uim-get-imsi | awk -F\"'\" '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}/)){printf $i} } }'")
 		conn = self.qmicli("--wds-get-packet-service-status | awk -F\"'\" '/Connection status/ { print $2}'")
-		modem_name = self.qmicli("--dms-get-manufacturer | awk '/Manufacturer:/ { gsub(/\\x27/, \"\", $0); for(i=2;i<=NF;i++) {printf $i\" \"}}'") 
-		
+		modem_name = self.qmicli("--dms-get-manufacturer | awk '/Manufacturer:/ { gsub(/\\x27/, \"\", $0); for(i=2;i<=NF;i++) {printf $i\" \"}}'")
+
 		modem_version = self.qmicli("--dms-get-model | awk '/Model:/ { gsub(/\\x27/, \"\", $0); for(i=2;i<=NF;i++) {printf $i\" \"}}'")
 
 		# Set the values
@@ -47,7 +47,7 @@ class Sierra(IPModems.IPModems):
 
 		rxvalue = self.runcmd("ifconfig " + self.ifname + " | awk  '/RX bytes:/ { split($2, a, /:/); print a[2]}'")
 		txvalue = self.runcmd("ifconfig " + self.ifname + " | awk  '/TX bytes:/ { split($6, a, /:/); print a[2]}'")
-		#TODO: Make changes related to sierra
+		#TODO: Make changes related to qmi modems
 		sspercentage = IPModems.LTESignalStrengthPercentage(str(rsrp))
 
 		# Set the values
@@ -65,4 +65,3 @@ class Sierra(IPModems.IPModems):
 
 		#self.rx_cumulative_packets = ''
 		#self.tx_cumulative_packets = ''
-

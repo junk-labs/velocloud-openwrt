@@ -86,7 +86,7 @@ while True:
         exec "modemobj = %s('%s')" %(obj_name, USB)
         try:
             logging.warning("[%s], starting collecting info", found_plugin_id);
-            modemobj.get_modem_info()
+            modemobj.monitor()
             logging.warning("[%s], info collection completed", found_plugin_id);
         except NameError:
             logging.error("NameError..");

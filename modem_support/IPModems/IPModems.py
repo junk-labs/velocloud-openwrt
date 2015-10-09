@@ -229,8 +229,8 @@ class IPModems():
         # Have to take care on signal handling to proper close
         # self.jsonfile.close() # Have to take care on signal handling
 
-    def get_modem_info(self):
-        logging.warning("[dev=%s]: Get static modem info", self.USB)
+    def monitor(self):
+        logging.warning("[dev=%s]: Started monitoring device", self.USB)
         if self.modemtype == "cdcether" and not self.dontping:
             ret, tries = self.ping_test()
             if ret != 0:

@@ -103,9 +103,9 @@ class IPModems():
         value = ""
         try:
             value = pipe.readline().strip()
-            logging.debug("[dev=%s]: Got the value for %s = %s", self.USB, name)
+            logging.debug("[dev=%s]: Got the value for %s = %s", self.USB, name, value)
         except:
-            logging.debug("[dev=%s]: Unable to get the value for %s = %s", self.USB, name)
+            logging.debug("[dev=%s]: Unable to get the value for %s", self.USB, name)
         return value
 
     def json_file_open(self):

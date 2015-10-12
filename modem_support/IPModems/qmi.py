@@ -16,6 +16,12 @@ class Qmi(IPModems.IPModems):
 		self.wds_cid = 0
 		self.wwan_iface = ''
 		self.registration_status = ''
+		self.connection_errors = 0
+
+		# If we have 20 consecutive checks (~60s) without a proper connection, we request a soft reset
+		self.soft_reset_threshold = 20
+		# If we have 100 consecutive checks (~300s) without a proper connection, we request a hard reset
+		self.hard_reset_threshold = 100
 
 	def runcmd(self, cmd):
 		return commands.getstatusoutput(cmd)[1].strip()
@@ -118,6 +124,7 @@ class Qmi(IPModems.IPModems):
 		self.reload_connection_status()
 		logging.debug("[dev=%s]: connection status (initial): %s", self.USB, self.connection_status);
 		if self.connection_status == 'connected':
+			self.connection_errors = 0
 			self.runcmd("ubus call network reload")
 			self.set_modem_status()
 
@@ -161,6 +168,9 @@ class Qmi(IPModems.IPModems):
 
 		# Do we need to force a full explicit disconnection of all our state info?
 		if wwan_down:
+			# Flag a new connection error detected
+			self.connection_errors += 1
+
 			# If we have WWAN net info, bring it down
 			if self.wwan_iface:
 				logging.debug("[dev=%s]: setting %s device down...", self.USB, self.wwan_iface)
@@ -177,6 +187,9 @@ class Qmi(IPModems.IPModems):
 
 				self.reload_connection_status()
 				if self.connection_status == 'connected':
+					# Clear connection errors once connected
+					self.connection_errors = 0
+
 					if self.wwan_iface:
 						logging.debug("[dev=%s]: setting %s device up...", self.USB, self.wwan_iface)
 						self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " up")
@@ -187,6 +200,20 @@ class Qmi(IPModems.IPModems):
 					logging.warning("[dev=%s]: reconnected", self.USB)
 				else:
 					logging.warning("[dev=%s]: couldn't reconnect", self.USB)
+
+		# If we reach too many connection errors, we trigger a full device reboot
+		if self.connection_errors == self.hard_reset_threshold:
+			logging.warning("[dev=%s]: too many connection errors (%d): requesting hard reset", self.USB, self.connection_errors)
+			# Device should reboot itself after this
+			self.linkid = self.qmicli_dms("--dms-set-operating-mode=offline")
+			self.linkid = self.qmicli_dms("--dms-set-operating-mode=reset")
+			self.connection_errors = 0
+		# If we reach the soft reset threshold, reset the RF subsystem
+		elif (self.connection_errors % self.soft_reset_threshold) == 0:
+			logging.warning("[dev=%s]: too many connection errors (%d): requesting soft reset", self.USB, self.connection_errors)
+			# Device will explicitly re-register after this
+			self.linkid = self.qmicli_dms("--dms-set-operating-mode=low-power")
+			self.linkid = self.qmicli_dms("--dms-set-operating-mode=online")
 
 
 		# Ubee does not provide the following stuff

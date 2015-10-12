@@ -10,7 +10,7 @@ class Qmi(IPModems.IPModems):
 		IPModems.IPModems.__init__(self, USB)
 		self.modem_str = 'qmi'
 		self.timer = 3
-		self.clicmd = '/usr/bin/qmicli -d ' + self.device + ' '
+		self.clicmd = '/usr/bin/qmicli -d ' + self.device + ' --device-open-proxy '
 		self.dms_cid = 0
 		self.nas_cid = 0
 		self.wds_cid = 0

@@ -14,6 +14,7 @@ class Qmi(IPModems.IPModems):
 		self.dms_cid = 0
 		self.nas_cid = 0
 		self.wds_cid = 0
+		self.wwan_iface = ''
 
 	def runcmd(self, cmd):
 		return commands.getstatusoutput(cmd)[1].strip()
@@ -56,6 +57,12 @@ class Qmi(IPModems.IPModems):
 			self.wds_cid = int(self.qmicli("--wds-noop --client-no-release-cid | sed  -n \"s/.*CID.*'\(.*\)'.*/\\1/p\""))
 		except:
 			logging.warning("[dev=%s]: couldn't allocate WDS QMI client", self.USB);
+		try:
+			logging.debug("[dev=%s]: checking WWAN iface", self.USB);
+			self.wwan_iface = self.qmicli("--get-wwan-iface")
+			logging.debug("[dev=%s]: WWAN iface loaded: %s", self.USB, self.wwan_iface);
+		except:
+			logging.warning("[dev=%s]: couldn't get WWAN iface name", self.USB);
 
 	def teardown(self):
 		IPModems.IPModems.teardown(self)
@@ -70,6 +77,13 @@ class Qmi(IPModems.IPModems):
 			self.qmicli("--wds-noop --client-cid=" + str(self.wds_cid))
 
 
+	def reload_connection_status(self):
+		try:
+			self.connection_status = self.qmicli_wds("--wds-get-packet-service-status | awk -F\"'\" '/Connection status/ { print $2}'")
+		except RuntimeError:
+			logging.warning("[dev=%s]: couldn't load connection status", self.USB)
+
+
 	def get_static_values(self):
 		# Reset to defaults before reloading
 		self.linkid = 'unknown'
@@ -80,14 +94,12 @@ class Qmi(IPModems.IPModems):
 			self.linkid = self.qmicli_dms("--dms-uim-get-imsi | awk -F\"'\" '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}/)){printf $i} } }'")
 			self.modem_name = self.qmicli_dms("--dms-get-manufacturer | awk '/Manufacturer:/ { gsub(/\\x27/, \"\", $0); for(i=2;i<=NF;i++) {printf $i\" \"}}'")
 			self.modem_version = self.qmicli_dms("--dms-get-model | awk '/Model:/ { gsub(/\\x27/, \"\", $0); for(i=2;i<=NF;i++) {printf $i\" \"}}'")
-			self.connection_status = self.qmicli_wds("--wds-get-packet-service-status | awk -F\"'\" '/Connection status/ { print $2}'")
 		except RuntimeError:
 			logging.warning("[dev=%s]: couldn't load static values", self.USB)
 
 		logging.debug("[dev=%s]: manufacturer: %s", self.USB, self.modem_name);
 		logging.debug("[dev=%s]: model: %s", self.USB, self.modem_version);
 		logging.debug("[dev=%s]: linkid: %s", self.USB, self.linkid);
-		logging.debug("[dev=%s]: connection status (initial): %s", self.USB, self.connection_status);
 
 		# Set the static values
 		self.activation_status = 'activated'
@@ -114,6 +126,32 @@ class Qmi(IPModems.IPModems):
 		self.signal_percentage = sspercentage
 		self.rx_session_bytes = rxvalue
 		self.tx_session_bytes = txvalue
+
+		# If we're detected as being disconnected, retry to call qmi-network
+		self.reload_connection_status()
+		if self.connection_status == 'disconnected' and self.wwan_iface:
+			logging.warning("[dev=%s]: reconnecting...", self.USB)
+
+			logging.debug("[dev=%s]: setting %s device down...", self.USB, self.wwan_iface)
+			self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " down")
+
+			logging.debug("[dev=%s]: explicitly stopping connection...", self.USB)
+			self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + "_qminetwork.profile " + self.device + " stop")
+
+			logging.debug("[dev=%s]: restarting connection...", self.USB)
+			self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + "_qminetwork.profile " + self.device + " start")
+
+			self.reload_connection_status()
+			if self.connection_status == 'connected':
+				logging.warning("[dev=%s]: reconnected", self.USB)
+
+				logging.debug("[dev=%s]: setting %s device up...", self.USB, self.wwan_iface)
+				self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " up")
+
+				logging.debug("[dev=%s]: reloading network...", self.USB, self.wwan_iface)
+				self.runcmd("ubus call network reload")
+			else:
+				logging.warning("[dev=%s]: couldn't reconnect", self.USB)
 
 		# Ubee does not provide the following stuff
 		#self.rx_session_packets = ''

@@ -160,10 +160,16 @@ set_usb_ip_over_ethernet() {
 		# Disable 2G mode for AC340U
 		disable_AC340U_2G /dev/$device
 
-		#APN detection
+		# qmi-network profile generation
 		apn=$(qmi_get_apn $device)
-		/usr/bin/qmicli -d /dev/$device --wds-start-network=$apn --client-no-release-cid
-		log "Updated $device - $modemtype - $apn"
+		PROFILE=/tmp/USB/${usbifname}_qminetwork.profile
+		rm -f ${PROFILE} >/dev/null 2>&1
+		echo "APN=$apn"  >> ${PROFILE}
+		echo "PROXY=yes" >> ${PROFILE}
+
+		# For QMI modems, we just create the profile at this point.
+		# The modem_service.sh script will launch the connection.
+		return
 	fi
 
 	ubus call network reload

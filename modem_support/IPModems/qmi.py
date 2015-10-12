@@ -15,6 +15,7 @@ class Qmi(IPModems.IPModems):
 		self.nas_cid = 0
 		self.wds_cid = 0
 		self.wwan_iface = ''
+		self.registration_status = ''
 
 	def runcmd(self, cmd):
 		return commands.getstatusoutput(cmd)[1].strip()
@@ -76,6 +77,12 @@ class Qmi(IPModems.IPModems):
 			logging.debug("[dev=%s]: releasing WDS QMI client %d", self.USB, self.wds_cid);
 			self.qmicli("--wds-noop --client-cid=" + str(self.wds_cid))
 
+	def reload_registration_status(self):
+		try:
+			self.registration_status = self.qmicli_nas("--nas-get-serving-system | sed	-n \"s/.*Registration state.*'\(.*\)'.*/\\1/p\"")
+		except RuntimeError:
+			logging.warning("[dev=%s]: couldn't load registration status", self.USB)
+
 
 	def reload_connection_status(self):
 		try:
@@ -135,31 +142,52 @@ class Qmi(IPModems.IPModems):
 		self.rx_session_bytes = rxvalue
 		self.tx_session_bytes = txvalue
 
-		# If we're detected as being disconnected, retry to call qmi-network
-		self.reload_connection_status()
-		if self.connection_status == 'disconnected' and self.wwan_iface:
-			logging.warning("[dev=%s]: reconnecting...", self.USB)
+		# Flag to decide whether we need to bring iface down and perform reconnection
+		wwan_down = False
 
-			logging.debug("[dev=%s]: setting %s device down...", self.USB, self.wwan_iface)
-			self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " down")
+		# Check if we're registered
+		self.reload_registration_status()
+		if self.registration_status != 'registered':
+			logging.warning("[dev=%s]: not registered in network: %s", self.USB, self.registration_status)
+			# Request to bring iface down and don't retry re-connection (we need to get registered first)
+			wwan_down = True
+
+		# Check if we're connected
+		self.reload_connection_status()
+		if self.connection_status == 'disconnected':
+			logging.warning("[dev=%s]: not connected in network", self.USB)
+			# Request to bring iface down and don't retry re-connection (we need to get registered first)
+			wwan_down = True
+
+		# Do we need to force a full explicit disconnection of all our state info?
+		if wwan_down:
+			# If we have WWAN net info, bring it down
+			if self.wwan_iface:
+				logging.debug("[dev=%s]: setting %s device down...", self.USB, self.wwan_iface)
+				self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " down")
 
 			logging.debug("[dev=%s]: explicitly stopping connection...", self.USB)
 			self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + "_qminetwork.profile " + self.device + " stop")
 
-			logging.debug("[dev=%s]: restarting connection...", self.USB)
-			self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + "_qminetwork.profile " + self.device + " start")
+			# If we're registered, we relaunch reconnection
+			if self.registration_status == 'registered':
+				# Launch qmi-network start
+				logging.debug("[dev=%s]: restarting connection...", self.USB)
+				self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + "_qminetwork.profile " + self.device + " start")
 
-			self.reload_connection_status()
-			if self.connection_status == 'connected':
-				logging.warning("[dev=%s]: reconnected", self.USB)
+				self.reload_connection_status()
+				if self.connection_status == 'connected':
+					if self.wwan_iface:
+						logging.debug("[dev=%s]: setting %s device up...", self.USB, self.wwan_iface)
+						self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " up")
 
-				logging.debug("[dev=%s]: setting %s device up...", self.USB, self.wwan_iface)
-				self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " up")
+					logging.debug("[dev=%s]: reloading network...", self.USB)
+					self.runcmd("ubus call network reload")
 
-				logging.debug("[dev=%s]: reloading network...", self.USB, self.wwan_iface)
-				self.runcmd("ubus call network reload")
-			else:
-				logging.warning("[dev=%s]: couldn't reconnect", self.USB)
+					logging.warning("[dev=%s]: reconnected", self.USB)
+				else:
+					logging.warning("[dev=%s]: couldn't reconnect", self.USB)
+
 
 		# Ubee does not provide the following stuff
 		#self.rx_session_packets = ''

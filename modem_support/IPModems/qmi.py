@@ -106,6 +106,14 @@ class Qmi(IPModems.IPModems):
 		self.isp_name = ''
 		self.supported_technologies = 'LTE'
 
+		# If we're connected when loading static values we may be in auto-connect, so just
+		# setup the interface. This will avoid 'PolicyMismatch' errors at this stage.
+		self.reload_connection_status()
+		logging.debug("[dev=%s]: connection status (initial): %s", self.USB, self.connection_status);
+		if self.connection_status == 'connected':
+			self.runcmd("ubus call network reload")
+			self.set_modem_status()
+
 		#self.ip_value = wanip
 		#self.gateway_value = wangw
 		#self.dns_value = wandns

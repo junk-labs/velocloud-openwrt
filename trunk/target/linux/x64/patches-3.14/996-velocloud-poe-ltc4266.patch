@@ -1,6 +1,6 @@
 diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
 --- a/drivers/i2c/busses/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/i2c/busses/Kconfig	2015-09-09 15:43:50.039139476 -0700
++++ b/drivers/i2c/busses/Kconfig	2015-10-13 15:38:50.929436535 -0700
 @@ -1012,4 +1012,13 @@
  	  This support is also available as a module.  If so, the module
  	  will be called scx200_acb.
@@ -17,7 +17,7 @@ diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
  endmenu
 diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
 --- a/drivers/i2c/busses/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/i2c/busses/Makefile	2015-09-09 15:43:50.039139476 -0700
++++ b/drivers/i2c/busses/Makefile	2015-10-13 15:38:50.929436535 -0700
 @@ -49,6 +49,7 @@
  obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
  obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o
@@ -28,8 +28,8 @@ diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
  obj-$(CONFIG_I2C_MXS)		+= i2c-mxs.o
 diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 --- a/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-09-09 15:44:17.317526777 -0700
-@@ -0,0 +1,2482 @@
++++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-10-13 15:39:11.108510737 -0700
+@@ -0,0 +1,2502 @@
 +/*
 + * Copyright (c) 2015 VeloCloud Networks, Inc.
 + *
@@ -307,11 +307,23 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +
 +#define LTC_PORT_OP_MODE(reg, port) ((reg >> (2*port)) & LTC_CONFIG_MASK)
 +
++/* Calculate iCUT values from the PSE, not the PD.  Therefore, values will be
++ * a little higher than if calculated for the PD according to the spec. Also,
++ * keep in mind the limits of the power source which is rated (currently) at
++ * 31w.
++ */
++#define LTC_PPOE_mA_CLASS_0    280 /* (15.4w / 55v) = 280mA */
++#define LTC_PPOE_mA_CLASS_1    73  /* (4w / 55v) = ~73mA */
++#define LTC_PPOE_mA_CLASS_2    127 /* (7w / 55v) = ~127mA */
++#define LTC_PPOE_mA_CLASS_3    280 /* (15.4w / 55v) = 280mA */
++#define LTC_PPOE_mA_CLASS_4    545 /* (30w / 55v) = 545mA */
++#if 0
 +#define LTC_PPOE_mA_CLASS_0    235 /* (12.95w/55v) = 235mA */
 +#define LTC_PPOE_mA_CLASS_1    70  /* ( 3.84w/55v) = ~70mA */
 +#define LTC_PPOE_mA_CLASS_2    118 /* ( 6.49w/55v) = 118mA */
 +#define LTC_PPOE_mA_CLASS_3    235 /* (12.95w/55v) = 235mA */
 +#define LTC_PPOE_mA_CLASS_4    464 /* (25.50w/55v) = 464mA */
++#endif
 +
 +
 +enum vc_ltc4266_i2c_idx {
@@ -386,14 +398,21 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +	s32 icut;
 +};
 +
++#define LTC_PPOE_mA_CLASS_2    127 /* (7w/55v)    = ~127mA */
++
++/* Calculate iCUT values from the PSE, not the PD.  Therefore, values will be
++ * a little higher than if calculated for the PD according to the spec. Also,
++ * keep in mind the limits of the power source which is rated (currently) at
++ * 31w.
++ */
 +static const struct ltc_icut_lim ltc_clspwr_settings[] = {
 +	{0, 0},       /* CLASS UNKNOWN */
-+	{0x80, 0x06}, /* CLASS 1 LIM=425mA; CUT=112mA */
-+	{0x80, 0x08}, /* CLASS 2 LIM=425mA; CUT=150mA */
-+	{0x80, 0x0f}, /* CLASS 3 LIM=425mA; CUT=281mA */
-+	{0xc0, 0x1d}, /* CLASS 4 LIM=850mA; CUT=539mA */
++	{0x80, 0x06}, /* CLASS 1 LIM=425mA; CUT=75mA     (55V * .075A) = ~4w  */
++	{0x80, 0x07}, /* CLASS 2 LIM=425mA; CUT=131.25mA (55V * .131A) = ~7w  */
++	{0x80, 0x0f}, /* CLASS 3 LIM=425mA; CUT=281mA  (55V * .281A) = ~15.4w */
++	{0xc0, 0x1d}, /* CLASS 4 LIM=850mA; CUT=544mA  (55V * .544A) = ~30w   */
 +	{0, 0},	      /* RESERVED */
-+	{0x80, 0x14}, /* CLASS 0 LIM=425mA; CUT=281mA */
++	{0x80, 0x0f}, /* CLASS 0 LIM=425mA; CUT=281mA  (55V * .281A) = ~15.4w */
 +	{0, 0}        /* CLASS OVERCURRENT */
 +};
 +
@@ -1167,15 +1186,16 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +							port_id,
 +			    				statp) == 0) {
 +
-+				i2c_smbus_write_byte_data(
-+					chipset->client, LTC_CUT1_REG+
-+							 (port_id*5),
-+					ltc_clspwr_settings[LTC_STATp_CLASS(
-+							statp)].icut);
++				i2c_smbus_write_byte_data(chipset->client, 
++							LTC_HPEN_REG, 0xf);
 +
-+				i2c_smbus_write_byte_data(
-+					chipset->client, LTC_LIM1_REG+
-+							 (port_id*5),
++				i2c_smbus_write_byte_data(chipset->client,
++						LTC_CUT1_REG+(port_id*5),
++					ltc_clspwr_settings[LTC_STATp_CLASS(
++							statp)].icut | 0xc0);
++
++				i2c_smbus_write_byte_data(chipset->client,
++						LTC_LIM1_REG+(port_id*5),
 +					ltc_clspwr_settings[LTC_STATp_CLASS(
 +								statp)].ilim);
 +

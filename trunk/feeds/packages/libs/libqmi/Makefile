@@ -1,12 +1,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libqmi
-PKG_VERSION:=1.10.2
-PKG_RELEASE:=1
+PKG_VERSION:=1.13.4
+PKG_RELEASE:=2
 
 PKG_SOURCE:=libqmi-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=http://www.freedesktop.org/software/libqmi
-PKG_MD5SUM:=b5b3aa098ac33c246f4a8122b7d04d05
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_VERSION:=5b6752d37dbd82c7f244b2c54de0376f245b305a
+PKG_SOURCE_URL:=git://anongit.freedesktop.org/libqmi
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)
+
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -48,6 +52,7 @@ define Package/libqmi/install
 	$(CP) \
 		$(PKG_INSTALL_DIR)/usr/lib/*.so* \
 		$(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/qmi-proxy $(1)/usr/lib/
 
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/qmicli $(1)/usr/bin/

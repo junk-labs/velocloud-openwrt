@@ -1,7 +1,7 @@
 diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 --- a/drivers/platform/x86/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Kconfig	2015-09-09 15:37:33.326211422 -0700
-@@ -827,4 +827,27 @@
++++ b/drivers/platform/x86/Kconfig	2015-10-15 16:32:10.793491585 -0700
+@@ -827,4 +827,37 @@
  	  Interface. This is a requirement for systems that need to configure
  	  the PUNIT for power management features such as RAPL.
  
@@ -9,6 +9,16 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 +	bool "Velocloud framework"
 +	default n
 +	depends on X86
++
++config VELOCLOUD_NMI
++	tristate "Support for the Velocloud Edge5x0 boards"
++	select VELOCLOUD
++	help
++	  This option enables support for the Velocloud NMI,
++	  which currently applies to Edge5x0 boards only
++	  (optionally loading the driver on non-Edge5x0 boards
++	   will work as well).
++	  Say Y to enable support for the Velocloud boards.
 +
 +config VELOCLOUD_VC
 +	tristate "Support for the Velocloud boards"
@@ -31,63 +41,18 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
  endif # X86_PLATFORM_DEVICES
 diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 --- a/drivers/platform/x86/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Makefile	2015-09-09 15:37:33.326211422 -0700
-@@ -55,4 +55,6 @@
++++ b/drivers/platform/x86/Makefile	2015-10-15 16:32:46.391841046 -0700
+@@ -55,4 +55,7 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
  obj-$(CONFIG_PVPANIC)           += pvpanic.o
 +obj-$(CONFIG_VELOCLOUD)         += velocloud.o
++obj-$(CONFIG_VELOCLOUD_NMI)	+= velocloud-nmi.o
 +obj-$(CONFIG_VELOCLOUD_VC)      += velocloud-vc.o
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
-diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
---- a/include/misc/velocloud.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/include/misc/velocloud.h	2015-09-09 15:37:33.330211422 -0700
-@@ -0,0 +1,42 @@
-+/*
-+ * velocloud.h
-+ * Copyright (C) 2015 VeloCloud Inc
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef _VELOCLOUD_H_
-+#define _VELOCLOUD_H_
-+
-+// edge board enums;
-+
-+enum vc_edge_id {
-+	VC_NONE = 0,
-+	VC_EDGE500,
-+	VC_EDGE_NEXCOM,
-+	VC_EDGE1000IFM,
-+	VC_EDGE1000SM,
-+	VC_EDGE300,
-+	VC_EDGE800,
-+	VC_EDGE520,
-+	VC_EDGE540,
-+	VC_EDGE520B,
-+	VC_EDGE540B,
-+	// add new before here,
-+	VC_N_BOARDS,
-+};
-+
-+#endif /* _VELOCLOUD_H_ */
 diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 --- a/drivers/platform/x86/velocloud.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud.c	2015-09-09 15:37:33.330211422 -0700
++++ b/drivers/platform/x86/velocloud.c	2015-10-15 16:30:32.270053894 -0700
 @@ -0,0 +1,189 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
@@ -278,9 +243,244 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +subsys_initcall(vc_dmi_init);
 +module_exit(vc_dmi_exit);
 +
+diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/velocloud-nmi.c
+--- a/drivers/platform/x86/velocloud-nmi.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/platform/x86/velocloud-nmi.c	2015-10-15 16:33:35.597562524 -0700
+@@ -0,0 +1,231 @@
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/pci.h>
++#include <linux/io.h>
++#include <linux/mm.h>
++#include <linux/file.h>
++#include <linux/fs.h>
++#include <linux/signal.h>
++#include <linux/sched.h>
++
++#include <asm/io.h>
++#include <asm/nmi.h>
++#include <asm-generic/rtc.h>
++
++#define GNMI_MM_REG_OFFSET	0x80
++
++spinlock_t dg_vc_bh_lock = __SPIN_LOCK_UNLOCKED(dg_vc_bh_lock);
++
++static volatile pid_t vc_registered_pid = -1;
++
++static void __iomem *ilb_mm = NULL;
++
++extern struct kobject *vc_platform_kobj;
++
++static void do_vc_dg_task(unsigned long ignored);
++
++static int nmi_vc_major = -1;
++
++DECLARE_TASKLET(vc_dg_bh, do_vc_dg_task, 0);
++
++static ssize_t show_dg_pwr_loss(struct device *dev,
++                 struct device_attribute *attr, char *buf)
++{
++	return 0;
++}
++
++static DEVICE_ATTR(dg_pwr_loss, S_IRUGO, show_dg_pwr_loss, NULL);
++
++static ssize_t show_dg_pid(struct device *dev,
++                 struct device_attribute *attr, char *buf)
++{
++	u32 pid;
++        spin_lock_bh(&dg_vc_bh_lock);
++        pid = vc_registered_pid;
++        spin_unlock_bh(&dg_vc_bh_lock);
++
++	return sprintf(buf, "%d\n", pid);
++}
++
++static DEVICE_ATTR(nmi_pid, S_IRUSR , show_dg_pid, NULL);
++
++static void do_vc_dg_task(unsigned long ignored)
++{
++	struct siginfo info;
++	struct task_struct *task;
++	
++	rcu_read_lock();
++
++	spin_lock_bh(&dg_vc_bh_lock);
++
++	/* If our registered client is not there, no harm, no foul. */
++	if (vc_registered_pid < 0) {
++		spin_unlock_bh(&dg_vc_bh_lock);
++		rcu_read_unlock();
++		return;
++	}
++
++	task = pid_task(find_vpid(vc_registered_pid), PIDTYPE_PID);
++	spin_unlock_bh(&dg_vc_bh_lock);
++	
++	memset(&info, 0, sizeof(struct siginfo));
++
++	info.si_code = SI_KERNEL;
++	info.si_signo = SIGPWR;
++
++	if (!task) {
++		rcu_read_unlock();
++		return;
++	}
++	send_sig_info(SIGPWR, &info, task);
++
++	rcu_read_unlock();
++
++	return;
++}
++
++
++static int nmi_dg_notify_userspace(void)
++{
++	if (CMOS_READ(0x12)) {
++		printk(KERN_INFO "!!! Power loss occurred during last "
++						"system runtime. !!!\n");
++
++		if (vc_platform_kobj)
++			sysfs_create_file(vc_platform_kobj, &dev_attr_dg_pwr_loss.attr);
++
++		CMOS_WRITE(0, 0x12);
++	}
++	return 0;
++}
++
++static int nmi_handler(unsigned int ulReason, struct pt_regs *regs)
++{
++	u32 ilb_reg;
++
++	if (likely((ilb_mm))) {
++		ilb_reg = ioread32(ilb_mm + GNMI_MM_REG_OFFSET);
++
++		/* If the NMI source comes from the NMI pin (GPIO_0) then
++		 * write CMOS and handle the nmi interrupt.  Otherwise, 
++		 * simply pass off to another handler (if registered). 
++		 */
++		if ((ilb_reg & 1)) {
++			CMOS_WRITE(1, 0x12);
++
++			CMOS_READ(0x12);
++
++			tasklet_schedule(&vc_dg_bh);
++
++			return NMI_HANDLED;
++		}
++	}
++	return NMI_DONE;
++}
++
++static int nmi_vc_open(struct inode *inode, struct file *file)
++{
++	spin_lock_bh(&dg_vc_bh_lock);
++
++	if (vc_registered_pid >= 0) {
++
++		spin_unlock_bh(&dg_vc_bh_lock);
++
++		return -EACCES;
++	}
++	
++	vc_registered_pid = pid_nr(get_task_pid(current, PIDTYPE_PID));
++
++	spin_unlock_bh(&dg_vc_bh_lock);
++
++        return 0;
++}
++
++static int nmi_vc_close(struct inode *inode, struct file *file)
++{
++	spin_lock_bh(&dg_vc_bh_lock);
++
++	if (vc_registered_pid == pid_nr(get_task_pid(current, PIDTYPE_PID)))
++		vc_registered_pid = -1;
++	
++	spin_unlock_bh(&dg_vc_bh_lock);
++
++        return 0;
++}
++
++static const struct file_operations nmi_vc_fops = {
++        .owner          = THIS_MODULE,
++        .open           = nmi_vc_open,
++        .release        = nmi_vc_close,
++};
++
++static int __init ipi_init(void)
++{
++	int rc;//, i;
++	struct pci_dev *dev = NULL;
++	u32 pci_ilb_bar, ilb_reg, pci_ilb_len;
++
++	rc = register_nmi_handler(NMI_UNKNOWN, nmi_handler, 0, "vc-dg");
++	if (rc)
++		return -ENODEV;
++
++	dev = pci_get_device(PCI_VENDOR_ID_INTEL, 0x1f38, NULL);
++
++	if (dev) {
++		/* Read the BAR (ILB) */
++		pci_read_config_dword(dev, 0x50, &pci_ilb_bar);
++
++		pci_write_config_dword(dev, 0x50, 0xffffffff);
++
++		pci_read_config_dword(dev, 0x50, &pci_ilb_len);
++
++		pci_ilb_len = ~(pci_ilb_len & 0xfffffff0) + 1;
++
++		/* Write original value back + MemEn. */	
++		pci_write_config_dword(dev, 0x50, pci_ilb_bar | 1 << 1);
++
++		ilb_mm = ioremap_nocache(pci_ilb_bar & 0xfffffff0, pci_ilb_len);
++
++		ilb_reg = ioread32(ilb_mm + GNMI_MM_REG_OFFSET);
++
++		/* NMI asserted on rising edge and enable NMI messages. */
++		if ((ilb_reg & 0xf) != 0x6)
++			iowrite32(ilb_reg | 0x6, ilb_mm + GNMI_MM_REG_OFFSET);
++	}
++		
++	nmi_dg_notify_userspace();
++
++	if (vc_platform_kobj)
++		sysfs_create_file(vc_platform_kobj, &dev_attr_nmi_pid.attr);
++
++	if ((nmi_vc_major = register_chrdev (0, "nmi-vc", &nmi_vc_fops)) < 0)
++                printk(KERN_WARNING "nmi_vc: Failed to register character device.");
++
++	return 0;
++}
++
++static void __exit ipi_exit(void)
++{
++	unregister_nmi_handler(NMI_UNKNOWN, "vc-dg"); 
++
++	iounmap(ilb_mm);
++
++	if (nmi_vc_major >= 0)
++                unregister_chrdev(nmi_vc_major, "nmi-vc");
++
++	if (vc_platform_kobj) {
++                sysfs_remove_file(vc_platform_kobj, &dev_attr_nmi_pid.attr);
++		sysfs_remove_file(vc_platform_kobj, &dev_attr_dg_pwr_loss.attr);
++	}
++
++	nmi_vc_major = -1;
++}
++
++module_init(ipi_init);
++module_exit(ipi_exit);
++
++MODULE_AUTHOR("Jordan Rhody");
++MODULE_LICENSE("GPL");
++
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
 --- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2015-09-09 15:38:49.198215490 -0700
++++ b/drivers/platform/x86/velocloud-vc.c	2015-10-15 16:30:32.274053636 -0700
 @@ -0,0 +1,3658 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
@@ -3940,3 +4140,49 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +module_init(vc_init);
 +module_exit(vc_exit);
+diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
+--- a/include/misc/velocloud.h	1969-12-31 16:00:00.000000000 -0800
++++ b/include/misc/velocloud.h	2015-10-15 16:30:32.270053894 -0700
+@@ -0,0 +1,42 @@
++/*
++ * velocloud.h
++ * Copyright (C) 2015 VeloCloud Inc
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#ifndef _VELOCLOUD_H_
++#define _VELOCLOUD_H_
++
++// edge board enums;
++
++enum vc_edge_id {
++	VC_NONE = 0,
++	VC_EDGE500,
++	VC_EDGE_NEXCOM,
++	VC_EDGE1000IFM,
++	VC_EDGE1000SM,
++	VC_EDGE300,
++	VC_EDGE800,
++	VC_EDGE520,
++	VC_EDGE540,
++	VC_EDGE520B,
++	VC_EDGE540B,
++	// add new before here,
++	VC_N_BOARDS,
++};
++
++#endif /* _VELOCLOUD_H_ */

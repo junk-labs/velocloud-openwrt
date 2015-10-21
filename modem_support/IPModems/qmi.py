@@ -99,6 +99,18 @@ class Qmi(IPModems.IPModems):
 		except RuntimeError:
 			logging.warning("[dev=%s]: couldn't load connection status", self.USB)
 
+	def reconnected(self):
+		# Clear connection errors once connected
+		self.connection_errors = 0
+
+		# Make sure WWAN is always up when just connected
+		if self.wwan_iface:
+			logging.debug("[dev=%s]: setting %s device up...", self.USB, self.wwan_iface)
+			self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " up")
+
+		logging.debug("[dev=%s]: reloading network...", self.USB)
+		self.runcmd("ubus call network reload")
+
 
 	def get_static_values(self):
 		# Reset to defaults before reloading
@@ -127,9 +139,7 @@ class Qmi(IPModems.IPModems):
 		self.reload_connection_status()
 		logging.debug("[dev=%s]: connection status (initial): %s", self.USB, self.connection_status);
 		if self.connection_status == 'connected':
-			self.connection_errors = 0
-			self.runcmd("ubus call network reload")
-			self.set_modem_status()
+			self.reconnected()
 
 		#self.ip_value = wanip
 		#self.gateway_value = wangw
@@ -190,16 +200,7 @@ class Qmi(IPModems.IPModems):
 
 				self.reload_connection_status()
 				if self.connection_status == 'connected':
-					# Clear connection errors once connected
-					self.connection_errors = 0
-
-					if self.wwan_iface:
-						logging.debug("[dev=%s]: setting %s device up...", self.USB, self.wwan_iface)
-						self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " up")
-
-					logging.debug("[dev=%s]: reloading network...", self.USB)
-					self.runcmd("ubus call network reload")
-
+					self.reconnected()
 					logging.warning("[dev=%s]: reconnected", self.USB)
 				else:
 					logging.warning("[dev=%s]: couldn't reconnect", self.USB)

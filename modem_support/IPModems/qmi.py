@@ -82,6 +82,9 @@ class Qmi(IPModems.IPModems):
 		if (self.wds_cid > 0):
 			logging.debug("[dev=%s]: releasing WDS QMI client %d", self.USB, self.wds_cid);
 			self.qmicli("--wds-noop --client-cid=" + str(self.wds_cid))
+		if self.wwan_iface:
+			logging.debug("[dev=%s]: setting %s device down...", self.USB, self.wwan_iface)
+			self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " down")
 
 	def reload_registration_status(self):
 		try:

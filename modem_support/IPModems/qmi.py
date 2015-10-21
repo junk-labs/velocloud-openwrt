@@ -17,7 +17,11 @@ class Qmi(IPModems.IPModems):
 		self.wwan_iface = ''
 		self.registration_status = ''
 		self.connection_errors = 0
+		self.ip_check_errors = 0
+		self.expected_ip = ''
 
+		# If we have 100 consecutive IP check errors (~300s), we request a hard reset
+		self.ip_check_errors_threshold = 100
 		# If we have 20 consecutive checks (~60s) without a proper connection, we request a soft reset
 		self.soft_reset_threshold = 20
 		# If we have 100 consecutive checks (~300s) without a proper connection, we request a hard reset
@@ -111,6 +115,9 @@ class Qmi(IPModems.IPModems):
 		logging.debug("[dev=%s]: reloading network...", self.USB)
 		self.runcmd("ubus call network reload")
 
+		# We keep track of the IP address we expect to see in the network interface
+		self.expected_ip = self.qmicli_wds("--wds-get-current-settings | grep 'IPv4 address' | awk '{ print $3}'")
+		self.ip_check_errors = 0
 
 	def get_static_values(self):
 		# Reset to defaults before reloading
@@ -179,10 +186,24 @@ class Qmi(IPModems.IPModems):
 			# Request to bring iface down and don't retry re-connection (we need to get registered first)
 			wwan_down = True
 
+		# If we're connected, we'll do an IP check
+		if self.connection_status == 'connected' and self.expected_ip != '':
+			ip_valid = self.runcmd("/usr/sbin/ip addr ls dev " + self.wwan_iface + " | grep " + self.expected_ip + " | wc -l")
+			if ip_valid == '0':
+				logging.warning("[dev=%s]: IP check (%s) failed", self.USB, self.expected_ip)
+				self.ip_check_errors += 1
+			else:
+				logging.debug("[dev=%s]: IP check (%s) succeeded", self.USB, self.expected_ip)
+
+
 		# Do we need to force a full explicit disconnection of all our state info?
 		if wwan_down:
 			# Flag a new connection error detected
 			self.connection_errors += 1
+
+			# Cleanup expected IP address
+			self.expected_ip = ''
+			self.ip_check_errors = 0
 
 			# If we have WWAN net info, bring it down
 			if self.wwan_iface:
@@ -205,8 +226,15 @@ class Qmi(IPModems.IPModems):
 				else:
 					logging.warning("[dev=%s]: couldn't reconnect", self.USB)
 
+		# If we reach too many IP check errors, we trigger a full device reboot
+		if self.ip_check_errors == self.ip_check_errors_threshold:
+			logging.warning("[dev=%s]: too many IP check errors (%d): requesting hard reset", self.USB, self.ip_check_errors)
+			# Device should reboot itself after this
+			self.linkid = self.qmicli_dms("--dms-set-operating-mode=offline")
+			self.linkid = self.qmicli_dms("--dms-set-operating-mode=reset")
+			self.ip_check_errors = 0
 		# If we reach too many connection errors, we trigger a full device reboot
-		if self.connection_errors == self.hard_reset_threshold:
+		elif self.connection_errors == self.hard_reset_threshold:
 			logging.warning("[dev=%s]: too many connection errors (%d): requesting hard reset", self.USB, self.connection_errors)
 			# Device should reboot itself after this
 			self.linkid = self.qmicli_dms("--dms-set-operating-mode=offline")

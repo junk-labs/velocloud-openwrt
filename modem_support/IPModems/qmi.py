@@ -209,7 +209,7 @@ class Qmi(IPModems.IPModems):
 			self.linkid = self.qmicli_dms("--dms-set-operating-mode=reset")
 			self.connection_errors = 0
 		# If we reach the soft reset threshold, reset the RF subsystem
-		elif (self.connection_errors % self.soft_reset_threshold) == 0:
+		elif self.connection_errors > 0 and (self.connection_errors % self.soft_reset_threshold) == 0:
 			logging.warning("[dev=%s]: too many connection errors (%d): requesting soft reset", self.USB, self.connection_errors)
 			# Device will explicitly re-register after this
 			self.linkid = self.qmicli_dms("--dms-set-operating-mode=low-power")

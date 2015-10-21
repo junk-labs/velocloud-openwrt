@@ -169,7 +169,7 @@ modems_stop() {
 	local pid=$(cat /$tmpdir/$USB.pid)
 	local type=$(get_usb_type $USB)
 	kill -SIGTERM $pid
-	if [ "$type" != "serial" ];then
+	if [ "$type" == "qmihybrid" ];then
 		kill -SIGKILL $pid
 	fi
 	modems_plugout_delete_rule "$USB"

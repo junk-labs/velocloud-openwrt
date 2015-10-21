@@ -176,14 +176,12 @@ class Qmi(IPModems.IPModems):
 		self.reload_registration_status()
 		if self.registration_status != 'registered':
 			logging.warning("[dev=%s]: not registered in network: %s", self.USB, self.registration_status)
-			# Request to bring iface down and don't retry re-connection (we need to get registered first)
 			wwan_down = True
 
 		# Check if we're connected
 		self.reload_connection_status()
 		if self.connection_status == 'disconnected':
 			logging.warning("[dev=%s]: not connected in network", self.USB)
-			# Request to bring iface down and don't retry re-connection (we need to get registered first)
 			wwan_down = True
 
 		# If we're connected, we'll do an IP check

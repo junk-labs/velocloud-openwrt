@@ -1,65 +1,62 @@
 --- a/Makefile.am
 +++ b/Makefile.am
-@@ -10,7 +10,7 @@ ethtool_SOURCES = ethtool.c ethtool-copy
+@@ -11,6 +11,7 @@
+ ethtool_SOURCES += \
+ 		  amd8111e.c de2104x.c e100.c e1000.c et131x.c igb.c	\
  		  fec_8xx.c ibm_emac.c ixgb.c ixgbe.c natsemi.c	\
++		  ixp4xx.c \
  		  pcnet32.c realtek.c tg3.c marvell.c vioc.c	\
  		  smsc911x.c at76c50x-usb.c sfc.c stmmac.c	\
--		  rxclass.c sfpid.c sfpdiag.c
-+		  rxclass.c sfpid.c sfpdiag.c ixp4xx.c
- 
- TESTS = test-cmdline test-features
- check_PROGRAMS = test-cmdline test-features
+ 		  sfpid.c sfpdiag.c ixgbevf.c tse.c vmxnet3.c
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -78,7 +78,7 @@ am_ethtool_OBJECTS = ethtool.$(OBJEXT) a
- 	tg3.$(OBJEXT) marvell.$(OBJEXT) vioc.$(OBJEXT) \
- 	smsc911x.$(OBJEXT) at76c50x-usb.$(OBJEXT) sfc.$(OBJEXT) \
- 	stmmac.$(OBJEXT) rxclass.$(OBJEXT) sfpid.$(OBJEXT) \
--	sfpdiag.$(OBJEXT)
-+	sfpdiag.$(OBJEXT) ixp4xx.$(OBJEXT)
- ethtool_OBJECTS = $(am_ethtool_OBJECTS)
- ethtool_LDADD = $(LDADD)
- ethtool_DEPENDENCIES =
-@@ -286,7 +286,7 @@ ethtool_SOURCES = ethtool.c ethtool-copy
- 		  fec_8xx.c ibm_emac.c ixgb.c ixgbe.c natsemi.c	\
- 		  pcnet32.c realtek.c tg3.c marvell.c vioc.c	\
- 		  smsc911x.c at76c50x-usb.c sfc.c stmmac.c	\
--		  rxclass.c sfpid.c sfpdiag.c
-+		  rxclass.c sfpid.c sfpdiag.c ixp4xx.c
- 
- test_cmdline_SOURCES = test-cmdline.c test-common.c $(ethtool_SOURCES) 
- test_cmdline_CFLAGS = -DTEST_ETHTOOL
-@@ -431,6 +431,7 @@ distclean-compile:
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sfpid.Po@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smsc911x.Po@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stmmac.Po@am__quote@
+@@ -127,6 +127,7 @@
+ @ETHTOOL_ENABLE_PRETTY_DUMP_TRUE@	ibm_emac.$(OBJEXT) \
+ @ETHTOOL_ENABLE_PRETTY_DUMP_TRUE@	ixgb.$(OBJEXT) \
+ @ETHTOOL_ENABLE_PRETTY_DUMP_TRUE@	ixgbe.$(OBJEXT) \
++@ETHTOOL_ENABLE_PRETTY_DUMP_TRUE@	ixp4xx.$(OBJEXT) \
+ @ETHTOOL_ENABLE_PRETTY_DUMP_TRUE@	natsemi.$(OBJEXT) \
+ @ETHTOOL_ENABLE_PRETTY_DUMP_TRUE@	pcnet32.$(OBJEXT) \
+ @ETHTOOL_ENABLE_PRETTY_DUMP_TRUE@	realtek.$(OBJEXT) \
+@@ -150,6 +151,7 @@
+ am__test_cmdline_SOURCES_DIST = test-cmdline.c test-common.c ethtool.c \
+ 	ethtool-copy.h internal.h net_tstamp-copy.h rxclass.c \
+ 	amd8111e.c de2104x.c e100.c e1000.c et131x.c igb.c fec_8xx.c \
++	ixp4xx.c \
+ 	ibm_emac.c ixgb.c ixgbe.c natsemi.c pcnet32.c realtek.c tg3.c \
+ 	marvell.c vioc.c smsc911x.c at76c50x-usb.c sfc.c stmmac.c \
+ 	sfpid.c sfpdiag.c ixgbevf.c tse.c vmxnet3.c
+@@ -751,6 +753,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ixgb.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ixgbe.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ixgbevf.Po@am__quote@
 +@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ixp4xx.Po@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_cmdline-amd8111e.Po@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_cmdline-at76c50x-usb.Po@am__quote@
- @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_cmdline-de2104x.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/marvell.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/natsemi.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pcnet32.Po@am__quote@
 --- a/ethtool.c
 +++ b/ethtool.c
-@@ -873,6 +873,7 @@ static const struct {
- 	{ "igb", igb_dump_regs },
+@@ -958,6 +958,7 @@
  	{ "ixgb", ixgb_dump_regs },
  	{ "ixgbe", ixgbe_dump_regs },
+ 	{ "ixgbevf", ixgbevf_dump_regs },
 +	{ "ixp4xx", ixp4xx_dump_regs },
  	{ "natsemi", natsemi_dump_regs },
  	{ "e100", e100_dump_regs },
  	{ "amd8111e", amd8111e_dump_regs },
 --- a/internal.h
 +++ b/internal.h
-@@ -241,6 +241,9 @@ int st_gmac_dump_regs(struct ethtool_drv
- /* Et131x ethernet controller */
- int et131x_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
+@@ -216,6 +216,9 @@
+ 
+ int ixgbevf_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
  
 +/* Intel IXP4xx internal MAC */
 +int ixp4xx_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 +
- /* Rx flow classification */
- int rxclass_parse_ruleopts(struct cmd_context *ctx,
- 			   struct ethtool_rx_flow_spec *fsp);
---- /dev/null
+ /* Broadcom Tigon3 Ethernet controller */
+ int tg3_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
+ 
+--- a/ixp4xx.c
 +++ b/ixp4xx.c
 @@ -0,0 +1,130 @@
 +/*

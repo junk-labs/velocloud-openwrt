@@ -1,0 +1,12 @@
+re#16: switch Verizon 620L to usb configuration 4
+
+USB configuration 4 should provide an ECM interface along with AT-capable TTYs.
+
+--- /dev/null
++++ b/usb-modeswitch-data-20140529/usb_modeswitch.d/1410:9020
+@@ -0,0 +1,5 @@
++# Novatel Wireless MiFi USB620L
++TargetVendor=0x1410
++TargetProduct=0x9022
++Configuration=4
++

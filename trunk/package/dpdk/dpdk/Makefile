@@ -3,6 +3,7 @@
 #
 
 include $(TOPDIR)/rules.mk
+include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=dpdk
 PKG_VERSION:=2.0.0
@@ -12,10 +13,10 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://dpdk.org/browse/dpdk/snapshot/
 PKG_MD5SUM:=e9e7935c9eec920841ad373949514934
 
+PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/kernel.mk
 
 define Package/dpdk/Default
   SECTION:=devel

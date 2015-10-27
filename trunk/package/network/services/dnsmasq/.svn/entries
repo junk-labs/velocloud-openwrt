@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/dnsmasq
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/network/services/dnsmasq
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-01T13:22:08.134551Z
-42390
-blogic
+2015-07-27T11:49:48.840796Z
+46511
+jow
 
 
 
@@ -32,33 +32,12 @@ file
 
 
 
-2014-09-03T23:42:09.873712Z
-99cc0737a0b0765c8ff4b64d7f3438e9
-2014-08-20T09:53:29.995767Z
-42226
+
+cd549637f2497cf50280de8f4d275263
+2015-06-15T08:00:46.183876Z
+45987
 cyrus
 has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3073
 
 files
 dir

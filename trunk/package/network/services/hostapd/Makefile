@@ -71,7 +71,7 @@ DRIVER_MAKEOPTS= \
 	CONFIG_DRIVER_WEXT=$(CONFIG_DRIVER_WEXT_SUPPORT) \
 
 ifeq ($(LOCAL_VARIANT),full)
-  CONFIG_IEEE80211W=$(CONFIG_PACKAGE_kmod-ath9k)
+  DRIVER_MAKEOPTS += CONFIG_IEEE80211W=$(CONFIG_PACKAGE_kmod-ath9k)
 endif
 
 ifneq ($(LOCAL_TYPE),hostapd)
@@ -104,7 +104,6 @@ ifdef CONFIG_USE_GLIBC
   TARGET_LDFLAGS += -lrt
   TARGET_LDFLAGS_C += -lrt
 endif
-
 DRV_DEPENDS:=+PACKAGE_kmod-cfg80211:libnl-tiny
 
 define Package/hostapd/Default

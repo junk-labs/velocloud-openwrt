@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/hostapd/patches
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/network/services/hostapd/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
+2015-10-06T12:33:38.622888Z
+47150
+nbd
 
 
 
@@ -25,708 +25,15 @@ cyrus
 
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
-
-330-nl80211_fix_set_freq.patch
-file
 
 
 
 
-2014-06-20T21:11:27.528245Z
-90b3d31f62ca6cae6da70a9dd5af5b0d
-2014-06-05T15:58:01.092765Z
-41022
-nbd
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-812
-
-440-max_num_sta_probe.patch
-file
-0
-
-
-add
-
-500-wpa_supplicant-add-new-config-params-to-be-used-with.patch
-file
-
-
-
-delete
-2014-06-20T21:11:27.528245Z
-db964a3fc6314110f57e36305edc38e0
-2014-06-05T21:14:02.384814Z
-41023
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4692
-
-462-wpa_s-support-htmode-param.patch
-file
-0
-
-
-add
-
-004-hostapd_cli-Use-os_exec-for-action-script-execution.patch
-file
-
-
-
-delete
-2014-11-09T00:21:29.672215Z
-0c76255884332c24c5d0aa6fa4f891d2
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1569
-
-410-bring_down_interface.patch
-file
-
-
-
-delete
-2014-06-20T21:11:27.528245Z
-13096ab2fa61c6b1c6bff28ed1ee4424
-2014-06-05T15:58:01.092765Z
-41022
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-712
-
-480-max_num_sta_probe.patch
-file
-
-
-
-delete
-2014-06-03T20:19:38.406338Z
-1bf3272866e56834c4658e2ba9b1a2f9
-2014-04-26T19:48:06.940048Z
-40571
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-430
-
-410-limit_debug_messages.patch
-file
-0
-
-
-add
-
-600-ubus_support.patch
-file
-
-
-
-
-2014-06-20T21:11:27.532245Z
-287dc8e189a66e9f4e0029289f228be4
-2014-06-05T15:58:01.092765Z
-41022
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-18059
-
-450-scan_wait.patch
-file
-0
-
-
-add
-
-431-wpa_cli_ifdef.patch
-file
-0
-
-
-add
-
-002-Add-os_exec-helper-to-run-external-programs.patch
-file
-
-
-
-delete
-2014-11-09T00:21:29.672215Z
-1e8d5c0ee2dc0086fe4aec82862ecb52
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2474
-
-450-limit_debug_messages.patch
-file
-
-
-
-delete
-2014-11-09T00:21:29.672215Z
-1ee319469c624557168cf560e2967286
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6689
-
-490-scan_wait.patch
-file
-
-
-
-delete
-2014-11-09T00:21:29.672215Z
-91b6bae277c0b1bfb29b0854e2c4c394
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1474
-
-471-wpa_cli_ifdef.patch
-file
-
-
-
-delete
-2014-06-03T20:19:38.402338Z
-cf75ad0546ef62433a9f55e26364c06c
-2014-04-06T12:13:55.119216Z
-40394
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-295
-
-200-multicall.patch
-file
-
-
-
-
-2014-06-20T21:11:27.528245Z
-e7183d1e95ed88c44cabe305da3e5b02
-2014-06-05T21:14:02.384814Z
-41023
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-7706
-
-430-hostapd_cli_ifdef.patch
-file
-0
-
-
-add
-
-320-optional_rfkill.patch
-file
-
-
-
-
-2014-06-20T21:11:27.528245Z
-261d7769a1d4f5860e3b329cd65ac2dc
-2014-06-05T15:58:01.092765Z
-41022
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1346
-
-461-driver_nl80211-use-new-parameters-during-ibss-join.patch
-file
-0
-
-
-add
-
-470-hostapd_cli_ifdef.patch
-file
-
-
-
-delete
-2014-11-09T00:21:29.672215Z
-f6c8b46c5121df8daf6f06e618ebbcba
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2010
-
-310-rescan_immediately.patch
-file
-
-
-
-
-2014-06-20T21:11:27.528245Z
-b63201c36a1ff88047d9110266e2a715
-2014-06-05T21:14:02.384814Z
-41023
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-353
-
-420-indicate-features.patch
-file
-0
-
-
-add
-
-110-bool_fix.patch
-file
-
-
-
-
-2014-06-03T20:19:38.402338Z
-db5f1fc82d62362d7bc08d819d6ed721
-2014-04-06T12:13:55.119216Z
-40394
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-296
-
-001-fix_pmksa_cache.patch
-file
-
-
-
-delete
-2014-11-09T00:21:29.672215Z
-a04a66afb9578c967b7abae0996a35bb
-2014-10-05T10:39:52.719145Z
-42763
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1139
-
-460-indicate-features.patch
-file
-
-
-
-delete
-2014-06-03T20:19:38.402338Z
-bb35c1060fdbc4cb89e373cdbb27dee1
-2014-04-06T12:13:55.119216Z
-40394
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1931
-
-502-wpa_s-support-htmode-param.patch
-file
-
-
-
-delete
-2014-06-20T21:11:27.528245Z
-97aee2a3dc9e81a5f1c0d0da9758d9c0
-2014-06-05T21:14:02.384814Z
-41023
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4030
-
-420-fix_wps_pin_crash.patch
-file
-
-
-
-delete
-2014-06-03T20:19:38.406338Z
-327f993eafdbfdc1d13d5ff69decdede
-2014-04-06T12:13:55.119216Z
-40394
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-245
+()
 
 370-ap_sta_support.patch
 file
@@ -734,33 +41,11 @@ file
 
 
 
-2014-11-09T00:21:29.672215Z
-9443c47958db267dd6fc985db02c2d34
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-7002
+661e1d2453dc94682fe18b2c656eeb99
+2015-04-23T08:01:51.441517Z
+45567
+nbd
 
 390-wpa_ie_cap_workaround.patch
 file
@@ -768,40 +53,23 @@ file
 
 
 
-2014-06-03T20:19:38.406338Z
-966426cf7f2f405373aeb7b834697259
-2014-04-06T12:13:55.119216Z
-40394
+
+f0108fba004ac1e859be2b1bd67b22ef
+2015-03-26T23:33:47.655716Z
+45045
 nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1453
 
 460-wpa_supplicant-add-new-config-params-to-be-used-with.patch
 file
-0
 
 
-add
+
+
+
+78126a4e02c33d2de47e5006afbb5da6
+2015-03-26T23:33:47.655716Z
+45045
+nbd
 
 350-nl80211_del_beacon_bss.patch
 file
@@ -809,33 +77,35 @@ file
 
 
 
-2014-06-20T21:11:27.532245Z
-ff08930ff504daaeced7cba40fa4c4c6
-2014-06-05T15:58:01.092765Z
-41022
+
+ab7dcc09725b13601b79838e81684a03
+2015-03-26T23:33:47.655716Z
+45045
 nbd
+
+600-ubus_support.patch
+file
 
 
 
 
 
+702fd67c997715f0b52eae1628c28447
+2015-09-28T09:39:47.561515Z
+47065
+rmilecki
+
+410-limit_debug_messages.patch
+file
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-1364
+99b06eac1ef7a421f0db8f1dd351d35d
+2015-04-23T08:01:51.441517Z
+45567
+nbd
 
 380-disable_ctrl_iface_mib.patch
 file
@@ -843,74 +113,35 @@ file
 
 
 
-2014-08-06T22:47:47.293824Z
-58d7f6e0dd116f2afff6d995a5e1a4b6
-2014-07-28T22:52:39.502599Z
-41863
+
+35fe83154c37279def4a6aa4f7ac7a94
+2015-03-26T23:33:47.655716Z
+45045
 nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5423
 
-000-nl80211-Report-new-station-assoc-event-for-the-corre.patch
-file
-0
-
-
-add
-
-300-noscan.patch
+450-scan_wait.patch
 file
 
 
 
 
-2014-08-06T22:47:47.293824Z
-bda349cd9c4467dbb843a8fb0bdc562e
-2014-07-25T14:29:58.514511Z
-41828
+
+be5ab939b76a12a1edb6078ea5c51e11
+2015-04-23T08:01:51.441517Z
+45567
 nbd
+
+431-wpa_cli_ifdef.patch
+file
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1558
+8bc54e66a00541454f6a75d074626699
+2015-03-26T23:33:47.655716Z
+45045
+nbd
 
 120-daemonize_fix.patch
 file
@@ -918,11 +149,11 @@ file
 
 
 
-2014-11-09T00:21:29.672215Z
+
 43ce136d0336ab59332b9da5def7bf8c
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
+2015-04-23T08:01:51.441517Z
+45567
+nbd
 
 
 
@@ -946,23 +177,40 @@ cyrus
 
 1822
 
+300-noscan.patch
+file
+
+
+
+
+
+d6aec404f46bb8f3daae5268f28e29de
+2015-06-02T08:39:19.840429Z
+45873
+nbd
+
 400-wps_single_auth_enc_type.patch
 file
-0
 
 
-add
+
+
+
+5149e6a60938cafc843e017ce72a50bf
+2015-03-26T23:33:47.655716Z
+45045
+nbd
 
-100-madwifi_key_fixes.patch
+140-disable_bridge_packet_workaround.patch
 file
 
 
 
 
-2014-06-03T20:19:38.402338Z
-b5c0238bff4f0f4451f66113fde037a6
-2014-04-06T12:13:55.119216Z
-40394
+2015-10-25T21:59:55.860717Z
+49cdff9ad33b74ad4297c187558a3c6b
+2015-03-27T14:54:41.012481Z
+45060
 nbd
 
 
@@ -985,75 +233,19 @@ nbd
 
 
 
-1101
+361
 
-430-wps_single_auth_enc_type.patch
+200-multicall.patch
 file
 
 
 
-delete
-2014-06-03T20:19:38.402338Z
-62be12cf705c4bed99b29e82a6a01130
-2014-04-06T12:13:55.119216Z
-40394
+
+
+f4a9bc2200479fdd2708e55ce733bb8d
+2015-03-26T23:33:47.655716Z
+45045
 nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-842
-
-501-driver_nl80211-use-new-parameters-during-ibss-join.patch
-file
-
-
-
-delete
-2014-06-20T21:11:27.528245Z
-bf210eefe161bbaaf821476259c0a779
-2014-06-05T15:58:01.092765Z
-41022
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1753
 
 360-ctrl_iface_reload.patch
 file
@@ -1061,33 +253,47 @@ file
 
 
 
-2014-06-03T20:19:38.402338Z
-1b9d59ea5fdce295f02760a7fca48960
-2014-04-06T12:13:55.119216Z
-40394
+
+7b95cc17b6b764e1818f7d33b32e6103
+2015-03-26T23:33:47.655716Z
+45045
 nbd
+
+320-optional_rfkill.patch
+file
 
 
 
 
 
+05f8a0c5c8fd9e7215b7b8adc725bf5f
+2015-03-26T23:33:47.655716Z
+45045
+nbd
+
+430-hostapd_cli_ifdef.patch
+file
 
 
 
 
 
+17f4f69a1dcf26e88d1b03e5c12568b4
+2015-03-26T23:33:47.655716Z
+45045
+nbd
+
+461-driver_nl80211-use-new-parameters-during-ibss-join.patch
+file
 
 
 
 
 
-
-
-
-
-
-
-2562
+127c1b2c3e789d6cca711a7d183262e4
+2015-03-26T23:33:47.655716Z
+45045
+nbd
 
 340-reload_freq_change.patch
 file
@@ -1095,10 +301,22 @@ file
 
 
 
-2014-06-20T21:11:27.528245Z
-fcfbd0e788f9ad2a654236936c8279b8
-2014-06-05T15:58:01.092765Z
-41022
+
+e2976da7bb682839faa010e83c1a3e20
+2015-03-26T23:33:47.655716Z
+45045
+nbd
+
+001-P2P-Validate-SSID-element-length-before-copying-it-C.patch
+file
+
+
+
+
+2015-10-25T22:00:26.739294Z
+0a917fc52813ddf2168fc0fce69bf2bc
+2015-04-23T08:01:51.441517Z
+45567
 nbd
 
 
@@ -1121,41 +339,43 @@ nbd
 
 
 
-1543
+1590
 
-003-wpa_cli-Use-os_exec-for-action-script-execution.patch
+310-rescan_immediately.patch
 file
 
 
 
-delete
-2014-11-09T00:21:29.672215Z
-01dbab6820e5313d425340cefcf41aaf
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
+
+
+ebebca91f875aea2dc6cd70acb850783
+2015-03-26T23:33:47.655716Z
+45045
+nbd
+
+420-indicate-features.patch
+file
 
 
 
 
 
+51c71d7fc9edebad25818db97aefd7e4
+2015-03-26T23:33:47.655716Z
+45045
+nbd
+
+110-bool_fix.patch
+file
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-1568
+51cae459c44f149b888e2e7e025f4dbf
+2015-03-26T23:33:47.655716Z
+45045
+nbd
 
 130-no_eapol_fix.patch
 file
@@ -1163,10 +383,22 @@ file
 
 
 
-2014-06-20T21:11:27.528245Z
-3cdbe06f50b7ebe7576b7a97083625aa
-2014-06-05T21:14:02.384814Z
-41023
+
+0939932e3a2fb2f44a606454c54287a8
+2015-03-26T23:33:47.655716Z
+45045
+nbd
+
+002-AP-WMM-Fix-integer-underflow-in-WMM-Action-frame-par.patch
+file
+
+
+
+
+2015-10-25T22:00:26.739294Z
+3bc4f435254181f9526a8632231610c2
+2015-05-06T09:45:39.179992Z
+45619
 nbd
 
 
@@ -1189,5 +421,75 @@ nbd
 
 
 
-430
+1289
+
+330-nl80211_fix_set_freq.patch
+file
+
+
+
+
+
+7603f7e204b61612eb6566c77803c25c
+2015-03-26T23:33:47.655716Z
+45045
+nbd
+
+440-max_num_sta_probe.patch
+file
+
+
+
+
+
+13ebca10903b88519b1954faf3319a24
+2015-03-26T23:33:47.655716Z
+45045
+nbd
+
+470-wait-for-nullfunc-longer.patch
+file
+
+
+
+
+2015-10-25T21:59:41.257390Z
+7e4e313f9547aa3a302eaa383ec20934
+2015-10-06T12:33:38.622888Z
+47150
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+465
+
+462-wpa_s-support-htmode-param.patch
+file
+
+
+
+
+
+d074eb4c0c200ec5e9cab4b1a8fa5c24
+2015-03-26T23:33:47.655716Z
+45045
+nbd
 

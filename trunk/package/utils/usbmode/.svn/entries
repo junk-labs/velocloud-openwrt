@@ -1,14 +1,14 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/usbmode
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/utils/usbmode
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-07-19T16:57:09.533622Z
-41761
+2015-04-01T13:36:58.417166Z
+45219
 blogic
 
 
@@ -26,7 +26,7 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
+data
 dir
 
 Makefile
@@ -35,10 +35,10 @@ file
 
 
 
-2014-08-06T22:46:28.909826Z
-6fe1255ddfe9899c5936740843a798b5
-2014-07-19T16:57:09.533622Z
-41761
+2015-10-25T20:43:33.135026Z
+adde93eba4d103c09752064da1ef5c82
+2015-04-01T13:36:58.417166Z
+45219
 blogic
 
 
@@ -61,5 +61,8 @@ blogic
 
 
 
-1702
+1769
+
+files
+dir
 

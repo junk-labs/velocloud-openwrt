@@ -21,7 +21,7 @@ define Package/qemu
   VERSION:=1.0-$(PKG_RELEASE)
   TITLE:=QEMU for virtual machine guests.
   URL:=http://velocloud.net
-  DEPENDS:=+USE_EGLIBC +libz +libuuid +libcurl +libncurses +glib2 +libgthread-2.0
+  DEPENDS:=+USE_EGLIBC +libz +libuuid +libcurl +libncurses +glib2 +libgthread-2.0 +libusb-1.0
 endef
 
 define Package/qemu/description

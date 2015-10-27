@@ -1,8 +1,8 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/base-files/files/etc/hotplug.d/net
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/base-files/files/etc/hotplug.d/net
 svn://svn.openwrt.org/openwrt
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2014-06-03T20:17:37.570341Z
+2015-10-25T19:46:30.176029Z
 6eb8c010d0a0c357ae027458988098ca
 2013-03-25T18:43:30.654169Z
 36129

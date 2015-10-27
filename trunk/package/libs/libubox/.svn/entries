@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/libubox
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/libs/libubox
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-01T13:21:45.574600Z
-42373
-blogic
+2015-06-14T17:41:33.117774Z
+45959
+nbd
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-09-03T23:42:09.825712Z
-6e60af26941bacef6f9b2b19b105c4bc
-2014-09-01T13:21:45.574600Z
-42373
-blogic
+2015-10-25T20:03:27.741293Z
+7080874211aa20accc193eaa1deb662f
+2015-06-14T17:41:33.117774Z
+45959
+nbd
 
 
 
@@ -58,5 +58,5 @@ blogic
 
 
 
-2495
+2488
 

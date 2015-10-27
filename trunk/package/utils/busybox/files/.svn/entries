@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox/files
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/utils/busybox/files
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-09-01T13:21:54.319454Z
-42379
-blogic
+2014-11-28T11:41:25.459073Z
+43421
+cyrus
 
 
 
@@ -26,17 +26,17 @@ blogic
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-cron
+ntpd-hotplug
 file
 
 
 
 
-2014-06-03T20:36:39.066315Z
-3712dc5bcc605fc3dd769c7aaef08781
-2013-11-25T08:34:55.865877Z
-38909
-blogic
+2015-10-25T22:16:31.526842Z
+61295dcdc0cb2c73c2df26c0a1c9e30a
+2014-11-28T11:41:25.459073Z
+43421
+cyrus
 has-props
 
 
@@ -58,41 +58,7 @@ has-props
 
 
 
-729
-
-sysntpd
-file
-
-
-
-
-2014-09-03T23:42:10.077712Z
-2399cafff3f26fe56e3e366235c9fe23
-2014-09-01T13:21:54.319454Z
-42379
-blogic
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-770
+74
 
 telnet
 file
@@ -127,4 +93,72 @@ has-props
 
 
 926
+
+cron
+file
+
+
+
+
+2015-10-25T22:16:31.526842Z
+1f39f97ffa9c3d548cc25c8823b0968a
+2014-10-02T19:47:33.901933Z
+42751
+cyrus
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+741
+
+sysntpd
+file
+
+
+
+
+2015-10-25T22:16:31.526842Z
+54d5b3ecc9231ca119ecf201d80f7df5
+2014-11-28T11:41:25.459073Z
+43421
+cyrus
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+885
 

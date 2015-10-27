@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/base-files/files/lib/upgrade
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/base-files/files/lib/upgrade
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-10-25T17:23:14.980873Z
-43062
-nbd
+2015-09-23T11:55:18.334513Z
+47028
+rmilecki
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2014-08-06T22:47:47.337824Z
-92cfd7719f2a96471d2e58d1b98a069c
-2014-07-10T19:16:27.403116Z
-41563
-blogic
+
+f332baa30d6f1fa6d26e716cf1aa1971
+2015-09-23T11:55:18.334513Z
+47028
+rmilecki
 
 
 
@@ -58,7 +58,7 @@ blogic
 
 
 
-5816
+5935
 
 keep.d
 dir

@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/iptables/patches
+47254
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/network/utils/iptables/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-06T10:30:09.934040Z
-42007
-nbd
+2015-05-26T09:16:50.251810Z
+45758
+jow
 
 
 
@@ -60,17 +60,17 @@ nbd
 
 2749
 
-400-lenient-restore.patch
+600-shared-libext.patch
 file
 
 
 
 
-2014-06-03T20:21:33.982336Z
-29a8b3156158616e21e349fcc7b2fbf4
-2014-03-20T13:51:40.436518Z
-39964
-nbd
+2015-10-26T02:21:59.213730Z
+f367396e1939c92d2c45f63ffa867303
+2015-05-26T09:16:50.251810Z
+45758
+jow
 
 
 
@@ -92,7 +92,7 @@ nbd
 
 
 
-4912
+3378
 
 100-bash-location.patch
 file
@@ -128,40 +128,6 @@ cyrus
 
 177
 
-002-layer7_2.22.patch
-file
-
-
-
-
-2014-06-03T20:17:37.778341Z
-3d064b3eae52b3e6d3bc25ad1265ccde
-2010-12-19T11:16:46.024141Z
-24719
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-9821
-
 200-configurable_builtin.patch
 file
 
@@ -196,6 +162,40 @@ nbd
 
 2742
 
+050-optional-xml.patch
+file
+
+
+
+
+2015-10-26T02:21:59.213730Z
+e1fc5d6b36471794f2af53e504435dbc
+2015-05-06T00:59:41.908723Z
+45617
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+455
+
 020-iptables-disable-modprobe.patch
 file
 
@@ -229,6 +229,40 @@ nbd
 
 
 410
+
+700-disable-legacy-revisions.patch
+file
+
+
+
+
+2015-10-26T02:21:59.213730Z
+188137949faf132a3bf8fb2048158915
+2015-05-26T09:16:50.251810Z
+45758
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3114
 
 030-no-libnfnetlink.patch
 file
@@ -270,11 +304,11 @@ file
 
 
 
-2014-08-06T22:46:59.569825Z
+
 56c224a3e427aa8f02abae9f929fa379
-2014-08-06T10:30:09.934040Z
-42007
-nbd
+2014-08-01T22:49:47.052259Z
+41945
+jow
 
 
 

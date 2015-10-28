@@ -1,6 +1,6 @@
 diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 --- a/drivers/platform/x86/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Kconfig	2015-10-15 16:32:10.793491585 -0700
++++ b/drivers/platform/x86/Kconfig	2015-10-28 12:23:33.286692569 -0700
 @@ -827,4 +827,37 @@
  	  Interface. This is a requirement for systems that need to configure
  	  the PUNIT for power management features such as RAPL.
@@ -41,7 +41,7 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
  endif # X86_PLATFORM_DEVICES
 diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 --- a/drivers/platform/x86/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Makefile	2015-10-15 16:32:46.391841046 -0700
++++ b/drivers/platform/x86/Makefile	2015-10-28 12:23:33.286692569 -0700
 @@ -55,4 +55,7 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
@@ -52,7 +52,7 @@ diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
 diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 --- a/drivers/platform/x86/velocloud.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud.c	2015-10-15 16:30:32.270053894 -0700
++++ b/drivers/platform/x86/velocloud.c	2015-10-28 12:23:33.286692569 -0700
 @@ -0,0 +1,189 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
@@ -245,8 +245,8 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +
 diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/velocloud-nmi.c
 --- a/drivers/platform/x86/velocloud-nmi.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-nmi.c	2015-10-15 16:33:35.597562524 -0700
-@@ -0,0 +1,231 @@
++++ b/drivers/platform/x86/velocloud-nmi.c	2015-10-28 12:23:56.317639434 -0700
+@@ -0,0 +1,263 @@
 +#include <linux/module.h>
 +#include <linux/init.h>
 +#include <linux/kernel.h>
@@ -258,6 +258,7 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +#include <linux/fs.h>
 +#include <linux/signal.h>
 +#include <linux/sched.h>
++#include <misc/velocloud.h>
 +
 +#include <asm/io.h>
 +#include <asm/nmi.h>
@@ -272,6 +273,7 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +static void __iomem *ilb_mm = NULL;
 +
 +extern struct kobject *vc_platform_kobj;
++extern struct dmi_system_id *vc_dmi;
 +
 +static void do_vc_dg_task(unsigned long ignored);
 +
@@ -299,6 +301,16 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +}
 +
 +static DEVICE_ATTR(nmi_pid, S_IRUSR , show_dg_pid, NULL);
++
++static ssize_t show_TCO_WDT_timeout(struct device *dev,
++                 struct device_attribute *attr, char *buf)
++{
++	return 0;
++}
++
++static DEVICE_ATTR(tco_wdt_timeout, S_IRUGO, show_TCO_WDT_timeout, NULL);
++
++
 +
 +static void do_vc_dg_task(unsigned long ignored)
 +{
@@ -412,7 +424,9 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +
 +static int __init ipi_init(void)
 +{
-+	int rc;//, i;
++	int rc;
++	struct dmi_system_id *dmi;
++	unsigned long id = VC_NONE;
 +	struct pci_dev *dev = NULL;
 +	u32 pci_ilb_bar, ilb_reg, pci_ilb_len;
 +
@@ -449,6 +463,23 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +	if (vc_platform_kobj)
 +		sysfs_create_file(vc_platform_kobj, &dev_attr_nmi_pid.attr);
 +
++	// determine velocloud board;
++	dmi = vc_dmi;
++	if(dmi) {
++		pr_info("velocloud-nmi %s\n", dmi->ident);
++		id = (unsigned long)dmi->driver_data;
++	}
++	
++	if (id >= VC_EDGE520 && id <= VC_EDGE540B) {
++
++		if (CMOS_READ(0x11)) {
++
++			CMOS_WRITE(0, 0x11);
++
++			sysfs_create_file(vc_platform_kobj, &dev_attr_tco_wdt_timeout.attr);
++		}
++	}
++
 +	if ((nmi_vc_major = register_chrdev (0, "nmi-vc", &nmi_vc_fops)) < 0)
 +                printk(KERN_WARNING "nmi_vc: Failed to register character device.");
 +
@@ -467,6 +498,7 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +	if (vc_platform_kobj) {
 +                sysfs_remove_file(vc_platform_kobj, &dev_attr_nmi_pid.attr);
 +		sysfs_remove_file(vc_platform_kobj, &dev_attr_dg_pwr_loss.attr);
++		sysfs_remove_file(vc_platform_kobj, &dev_attr_tco_wdt_timeout.attr);
 +	}
 +
 +	nmi_vc_major = -1;
@@ -480,7 +512,7 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
 --- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2015-10-15 16:30:32.274053636 -0700
++++ b/drivers/platform/x86/velocloud-vc.c	2015-10-28 12:23:33.290692527 -0700
 @@ -0,0 +1,3658 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
@@ -4142,7 +4174,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +module_exit(vc_exit);
 diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
 --- a/include/misc/velocloud.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/include/misc/velocloud.h	2015-10-15 16:30:32.270053894 -0700
++++ b/include/misc/velocloud.h	2015-10-28 12:23:33.290692527 -0700
 @@ -0,0 +1,42 @@
 +/*
 + * velocloud.h

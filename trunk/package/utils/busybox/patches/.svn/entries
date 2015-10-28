@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox/patches
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/utils/busybox/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-10-27T11:22:41.448968Z
-43085
-jow
+2015-04-17T00:01:29.809151Z
+45471
+nbd
 
 
 
@@ -26,16 +26,16 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-004-upstream_iplink_fix.patch
+204-udhcpc_src_ip_rebind.patch
 file
 
 
 
 
-2014-06-03T20:36:39.054315Z
-7055529a0177118f848ff77ba146ab60
-2014-05-25T17:42:09.256426Z
-40852
+2015-10-25T22:16:31.498843Z
+40c033d2bc4c6132f7f7864ce2be385b
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 
 
@@ -58,18 +58,18 @@ nbd
 
 
 
-392
+1836
 
-120-remove_uclibc_rpc_check.patch
+230-ntpd_delayed_resolve.patch
 file
 
 
 
 
-2014-06-03T20:36:39.054315Z
-9d69b46e2c9c86bf9a67ec2a908632c9
-2014-05-25T17:42:09.256426Z
-40852
+2015-10-25T22:16:31.498843Z
+1e623bbdcb5fd72d8d752223edfc4c3f
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 
 
@@ -92,18 +92,18 @@ nbd
 
 
 
-447
+1439
 
-250-date-k-flag.patch
+280-fix_find_regression.patch
 file
 
 
 
 
-2014-06-03T20:36:39.054315Z
-cb6764cf830e86f6965aedcc0955d444
-2014-05-25T17:42:09.256426Z
-40852
+2015-10-25T22:16:31.498843Z
+5aa1d0dec87fb03f2a5cf12e5acc4ebb
+2015-04-09T08:02:33.696123Z
+45321
 nbd
 
 
@@ -126,188 +126,18 @@ nbd
 
 
 
-2620
+890
 
-270-libbb_make_unicode_printable.patch
+220-add_lock_util.patch
 file
 
 
 
 
-2014-11-09T00:21:28.476237Z
-471140d6a840fb35e432f172de78c729
-2014-10-27T11:22:41.448968Z
-43085
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-388
-
-110-no_static_libgcc.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-fe7cfacafacd1b7aab43931a6426d402
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-635
-
-200-udhcpc_reduce_msgs.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-c886d988928e0cd76eda78ed83d83e1b
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-564
-
-201-udhcpc_changed_ifindex.patch
-file
-
-
-
-
-2014-06-03T20:36:39.058315Z
-3367c0fb7bab4bd2b3c7d7dcbef27092
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-680
-
-130-mconf_missing_sigwinch.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-c18355c6633b78d92b549a24b29ecf30
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-217
-
-100-trylink_bash.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-dba1f389b9cd0f08439137b3fde931e6
-2014-05-25T17:42:09.256426Z
-40852
+2015-10-25T22:16:31.502843Z
+7e65b7a2803ce4f6669c7a2b651610df
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 has-props
 
@@ -330,109 +160,7 @@ has-props
 
 
 
-109
-
-005-upstream_nc_fix.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-c8fcb270a94f83267a706ac292ebc0a7
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-586
-
-204-udhcpc_src_ip_rebind.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-79377c08b56b6a0e3025435304fc02f0
-2014-05-29T10:35:34.512139Z
-40878
-cyrus
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1982
-
-230-ntpd_delayed_resolve.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-cdb20ef8a9b9792be8798ed8c42c3eb6
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1433
+3746
 
 240-telnetd_intr.patch
 file
@@ -468,50 +196,16 @@ nbd
 
 244
 
-220-add_lock_util.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-87fbdcfe267ed476a1f2d99317ebc174
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3746
-
 001-resource_h_include.patch
 file
 
 
 
 
-2014-06-03T20:36:39.054315Z
-2523ed8757b66e27c9685ff95aa78922
-2014-05-25T17:42:09.256426Z
-40852
+2015-10-25T22:16:31.502843Z
+a70525fabd34af413d85e429f1682438
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 
 
@@ -534,41 +228,7 @@ nbd
 
 
 
-230
-
-002-upstream_ash_fix.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-2dde67b45b35dbab69641811e3b20d48
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-314
+226
 
 210-add_netmsg_util.patch
 file
@@ -576,10 +236,10 @@ file
 
 
 
-2014-06-03T20:36:39.054315Z
-3a8615ca122749b3674707fa48b4f0c3
-2014-05-25T17:42:09.256426Z
-40852
+2015-10-25T22:16:31.502843Z
+9c59f6f5f3d70521951e16231fbbedec
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 has-props
 
@@ -610,10 +270,10 @@ file
 
 
 
-2014-06-03T20:36:39.054315Z
-97ba9ce939d2a7feede7f7063a114cad
-2014-05-25T17:42:09.256426Z
-40852
+2015-10-25T22:16:31.502843Z
+6e1158d40216837018834e9f2f5c724a
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 
 
@@ -637,40 +297,6 @@ nbd
 
 
 327
-
-003-upstream_date_fix.patch
-file
-
-
-
-
-2014-06-03T20:36:39.054315Z
-f6845d0a1355d45087ccf4ecb08a3cd7
-2014-05-25T17:42:09.256426Z
-40852
-nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-978
 
 260-arping_missing_includes.patch
 file
@@ -739,4 +365,310 @@ nbd
 
 
 209
+
+120-remove_uclibc_rpc_check.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+9d69b46e2c9c86bf9a67ec2a908632c9
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+447
+
+250-date-k-flag.patch
+file
+
+
+
+
+2015-10-25T22:16:31.498843Z
+7c6185b150b3cfc45ba2d7e0ee0b4a69
+2015-03-12T19:50:23.750097Z
+44700
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2621
+
+270-libbb_make_unicode_printable.patch
+file
+
+
+
+
+
+471140d6a840fb35e432f172de78c729
+2014-10-27T11:22:15.517523Z
+43084
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+388
+
+201-udhcpc_changed_ifindex.patch
+file
+
+
+
+
+2015-10-25T22:16:31.498843Z
+c51a2bc9a08ec8384eeb5cf88c023546
+2015-04-04T17:52:02.653463Z
+45272
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+680
+
+200-udhcpc_reduce_msgs.patch
+file
+
+
+
+
+2015-10-25T22:16:31.498843Z
+f6071eeab1c94cac634c51543f83fd07
+2015-04-04T17:52:02.653463Z
+45272
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+564
+
+110-no_static_libgcc.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+fe7cfacafacd1b7aab43931a6426d402
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+635
+
+100-trylink_bash.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+dba1f389b9cd0f08439137b3fde931e6
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+109
+
+130-mconf_missing_sigwinch.patch
+file
+
+
+
+
+2014-06-03T20:36:39.054315Z
+c18355c6633b78d92b549a24b29ecf30
+2014-05-25T17:42:09.256426Z
+40852
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+217
+
+290-ash-fix-a-regression-in-handling-local-variables.patch
+file
+
+
+
+
+2015-10-25T22:16:31.498843Z
+ee22b3b9da8e6f1c040f716bf2b9606a
+2015-04-17T00:01:29.809151Z
+45471
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1590
 

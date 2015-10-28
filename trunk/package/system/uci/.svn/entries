@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/system/uci
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/system/uci
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-04-11T16:14:09.409793Z
-40458
-jow
+2015-10-02T10:48:57.124772Z
+47084
+blogic
 
 
 
@@ -26,20 +26,17 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
-files
-dir
-
 Makefile
 file
 
 
 
 
-2014-06-03T20:36:39.086315Z
-224a75cf1207e5da1dfb14ffcf21cd76
-2014-04-11T16:14:09.409793Z
-40458
-jow
+2015-10-25T20:41:20.505095Z
+e5f1602badc919dbd65efdb7e59622bd
+2015-10-02T10:48:57.124772Z
+47084
+blogic
 
 
 
@@ -61,5 +58,8 @@ jow
 
 
 
-2130
+2124
+
+files
+dir
 

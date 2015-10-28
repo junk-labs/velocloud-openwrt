@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/utils/iptables
+47254
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/network/utils/iptables
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-08-07T12:33:22.484190Z
-42035
-cyrus
+2015-05-26T09:16:50.251810Z
+45758
+jow
 
 
 
@@ -26,17 +26,20 @@ cyrus
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+patches
+dir
+
 Makefile
 file
 
 
 
 
-2014-09-03T23:42:09.849712Z
-898901408b895d4fc379421a4ccc04cf
-2014-08-07T12:33:22.484190Z
-42035
-cyrus
+2015-10-26T02:21:59.385722Z
+7c81c99d40347cbe693e7836a936ed43
+2015-05-26T09:16:50.251810Z
+45758
+jow
 has-props
 
 
@@ -58,11 +61,5 @@ has-props
 
 
 
-11872
-
-files
-dir
-
-patches
-dir
+13431
 

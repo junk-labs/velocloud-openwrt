@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/utils/busybox
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-10-27T11:22:41.448968Z
-43085
-jow
+2015-04-17T00:01:29.809151Z
+45471
+nbd
 
 
 
@@ -26,16 +26,84 @@ jow
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+Config.in
+file
+
+
+
+
+2015-10-25T22:16:31.530842Z
+48baf883b6e5a7f5b8a9e677a7c3aa14
+2014-12-12T12:33:34.096530Z
+43653
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+774
+
+Makefile
+file
+
+
+
+
+2015-10-25T22:16:31.530842Z
+7fc60263d9ffb8c8844fc8309153244c
+2015-04-04T17:52:02.653463Z
+45272
+nbd
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3143
+
 Config-defaults.in
 file
 
 
 
 
-2014-06-03T20:36:39.070315Z
-e4f2046449ab0b71ee46dcc55c658bbe
-2014-05-25T17:45:22.883753Z
-40853
+2015-10-25T22:16:31.534842Z
+955833f73711ea3dd98deb0fcff87f66
+2015-04-11T19:34:45.020461Z
+45384
 nbd
 
 
@@ -58,7 +126,7 @@ nbd
 
 
 
-49597
+50505
 
 convert_defaults.pl
 file
@@ -103,10 +171,10 @@ file
 
 
 
-2014-06-03T20:36:39.066315Z
-c72d69695d5a64b36f057b8c2a71233f
-2014-01-31T13:50:16.915345Z
-39435
+2015-10-25T22:16:31.534842Z
+2f90fb96ea14fbcc7d79c217fafc443f
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 has-props
 
@@ -129,79 +197,11 @@ has-props
 
 
 
-1676
+1907
 
 config
 dir
 
 patches
 dir
-
-Config.in
-file
-
-
-
-
-2014-06-03T20:36:39.066315Z
-62fac50f4ab318c0070c795f584d034d
-2014-01-31T19:15:14.955652Z
-39440
-jow
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-818
-
-Makefile
-file
-
-
-
-
-2014-11-09T00:21:28.508236Z
-867609d240f8f403c131890d9df820d8
-2014-10-27T11:22:41.448968Z
-43085
-jow
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3160
 

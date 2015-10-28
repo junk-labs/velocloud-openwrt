@@ -1,14 +1,14 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/libusb/patches
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/libs/libusb/patches
 svn://svn.openwrt.org/openwrt
 
 
 
-2013-01-29T10:48:37.032580Z
-35373
+2015-01-11T16:14:23.149174Z
+43930
 nbd
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2014-06-03T20:17:37.698341Z
-dc81a91f10d4e67d54ed457b791d09be
-2013-01-29T10:48:37.032580Z
-35373
+2015-10-25T20:42:55.728738Z
+7a671f413df87adc96af464b74cb2e25
+2015-01-11T16:14:23.149174Z
+43930
 nbd
 
 
@@ -58,5 +58,5 @@ nbd
 
 
 
-1075
+1067
 

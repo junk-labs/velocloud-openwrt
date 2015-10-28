@@ -80,3 +80,5 @@ VERSION_SED:=$(SED) 's,%U,$(VERSION_REPO),g' \
 	-e 's,%M,$(VERSION_MANUFACTURER),g' \
 	-e 's,%P,$(VERSION_PRODUCT),g' \
 	-e 's,%h,$(VERSION_HWREV),g'
+
+VERSION_SED_SCRIPT:=$(subst '\'','\'\\\\\'\'',$(VERSION_SED))

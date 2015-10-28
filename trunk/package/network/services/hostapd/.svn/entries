@@ -1,15 +1,15 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/services/hostapd
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/network/services/hostapd
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
+2015-10-06T12:33:38.622888Z
+47150
+nbd
 
 
 
@@ -26,39 +26,23 @@ cyrus
 
 3c298f89-4303-0410-b956-a3cf2f4a3e73
 
+files
+dir
+
+patches
+dir
+
 Config.in
 file
 
 
 
 
-2014-06-03T20:17:37.750341Z
-3eea642950607b1d77b8add6f2d3a6e6
-2013-04-17T15:36:41.835016Z
-36351
+
+4c70bf65c5375603668b2177a7fc81fc
+2015-03-26T23:33:56.777358Z
+45047
 nbd
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1110
 
 Makefile
 file
@@ -66,40 +50,10 @@ file
 
 
 
-2014-11-09T00:21:29.736214Z
-33db80e90baa954cfe67111415c1ef55
-2014-10-17T06:16:07.280944Z
-42943
-cyrus
+
+5cdfee43e00da17557061204151744c3
+2015-08-29T20:32:26.824102Z
+46751
+hauke
 has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10885
-
-madwifi
-dir
-
-files
-dir
-
-patches
-dir
 

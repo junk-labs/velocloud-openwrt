@@ -1,14 +1,14 @@
 10
 
 dir
-43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/busybox/config/shell
+47252
+svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/utils/busybox/config/shell
 svn://svn.openwrt.org/openwrt
 
 
 
-2014-05-25T17:42:09.256426Z
-40852
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2014-06-03T20:36:35.838315Z
-4f8012ba5ce51a27fced82b0bbf0fc0e
-2014-05-25T17:42:09.256426Z
-40852
+2015-10-25T22:16:31.294852Z
+252b83c51d1a5ff76c661ddc51051d8b
+2015-04-04T17:52:02.653463Z
+45272
 nbd
 
 
@@ -58,5 +58,5 @@ nbd
 
 
 
-14632
+14787
 

@@ -143,11 +143,14 @@ define Package/intel-qat/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/libicp_qa_al_s.so $(1)/lib/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickassist/lookaside/access_layer/src/sample_code/build/cpa_sample_code $(1)/bin/
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/quickassist/config/c2xxx_qa_dev0_single_ae.conf $(1)/etc/qat/c2xxx_qa_dev0.conf
+	$(INSTALL_CONF) $(PKG_BUILD_DIR)/quickassist/config/dh89xxcc_qa_dev0_single_accel.conf $(1)/etc/qat/dh89xxcc_qa_dev0.conf
 endef
 
 define KernelPackage/intel-qat/install
 	$(INSTALL_DIR) $(1)/lib/firmware/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/mmp_firmware.bin $(1)/lib/firmware/
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/mmp_firmware_c2xxx.bin $(1)/lib/firmware/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/mof_firmware.bin $(1)/lib/firmware/
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/mof_firmware_c2xxx.bin $(1)/lib/firmware/
 endef
 

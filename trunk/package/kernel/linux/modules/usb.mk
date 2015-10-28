@@ -597,6 +597,49 @@ endef
 $(eval $(call KernelPackage,usb-serial-ftdi))
 
 
+define KernelPackage/usb-serial-garmin
+  TITLE:=Support for Garmin GPS devices
+  KCONFIG:=CONFIG_USB_SERIAL_GARMIN
+  FILES:=$(LINUX_DIR)/drivers/usb/serial/garmin_gps.ko
+  AUTOLOAD:=$(call AutoProbe,garmin_gps)
+  $(call AddDepends/usb-serial)
+endef
+
+define KernelPackage/usb-serial-garmin/description
+ Should work with most Garmin GPS devices which have a native USB port.
+endef
+
+$(eval $(call KernelPackage,usb-serial-garmin))
+
+
+define KernelPackage/usb-serial-simple
+  TITLE:=USB Serial Simple (Motorola phone)
+  KCONFIG:=CONFIG_USB_SERIAL_SIMPLE
+  FILES:=$(LINUX_DIR)/drivers/usb/serial/usb-serial-simple.ko
+  AUTOLOAD:=$(call AutoProbe,usb-serial-simple)
+  $(call AddDepends/usb-serial)
+endef
+
+define KernelPackage/usb-serial-simple/description
+  Kernel support for "very simple devices".
+
+Specifically, it supports:
+	- Suunto ANT+ USB device.
+	- Medtronic CareLink USB device (3.18)
+	- Fundamental Software dongle.
+	- Google USB serial devices (3.19)
+	- HP4x calculators
+	- a number of Motorola phones
+	- Novatel Wireless GPS receivers (3.18)
+	- Siemens USB/MPI adapter.
+	- ViVOtech ViVOpay USB device.
+	- Infineon Modem Flashloader USB interface
+	- ZIO Motherboard USB serial interface
+endef
+
+$(eval $(call KernelPackage,usb-serial-simple))
+
+
 define KernelPackage/usb-serial-ti-usb
   TITLE:=Support for TI USB 3410/5052
   KCONFIG:=CONFIG_USB_SERIAL_TI
@@ -977,7 +1020,8 @@ $(eval $(call KernelPackage,usb-atm-cxacru))
 define KernelPackage/usb-net
   TITLE:=Kernel modules for USB-to-Ethernet convertors
   DEPENDS:=+kmod-mii
-  KCONFIG:=CONFIG_USB_USBNET
+  KCONFIG:=CONFIG_USB_USBNET \
+	CONFIG_USB_NET_DRIVERS
   AUTOLOAD:=$(call AutoProbe,usbnet)
   FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/usbnet.ko
   $(call AddDepends/usb,+kmod-mii)
@@ -1010,6 +1054,23 @@ define KernelPackage/usb-net-asix/description
 endef
 
 $(eval $(call KernelPackage,usb-net-asix))
+
+
+define KernelPackage/usb-net-asix-ax88179
+  TITLE:=Kernel module for USB-to-Gigabit-Ethernet Asix convertors
+  DEPENDS:=+kmod-libphy
+  KCONFIG:=CONFIG_USB_NET_AX88179_178A
+  FILES:=$(LINUX_DIR)/drivers/$(USBNET_DIR)/ax88179_178a.ko
+  AUTOLOAD:=$(call AutoProbe,ax88179_178a)
+  $(call AddDepends/usb-net)
+endef
+
+define KernelPackage/usb-net-asix-ax88179/description
+ Kernel module for USB-to-Ethernet ASIX AX88179 based USB 3.0/2.0
+ to Gigabit Ethernet adapters.
+endef
+
+$(eval $(call KernelPackage,usb-net-asix-ax88179))
 
 
 define KernelPackage/usb-net-hso
@@ -1210,6 +1271,21 @@ define KernelPackage/usb-net-cdc-ncm/description
 endef
 
 $(eval $(call KernelPackage,usb-net-cdc-ncm))
+
+
+define KernelPackage/usb-net-huawei-cdc-ncm
+  TITLE:=Support for Huawei CDC NCM connections
+  KCONFIG:=CONFIG_USB_NET_HUAWEI_CDC_NCM
+  FILES:= $(LINUX_DIR)/drivers/$(USBNET_DIR)/huawei_cdc_ncm.ko
+  AUTOLOAD:=$(call AutoProbe,huawei_cdc_ncm)
+  $(call AddDepends/usb-net,+kmod-usb-net-cdc-ncm +kmod-usb-wdm)
+endef
+
+define KernelPackage/usb-net-huawei-cdc-ncm/description
+ Kernel support for Huawei CDC NCM connections
+endef
+
+$(eval $(call KernelPackage,usb-net-huawei-cdc-ncm))
 
 
 define KernelPackage/usb-net-sierrawireless

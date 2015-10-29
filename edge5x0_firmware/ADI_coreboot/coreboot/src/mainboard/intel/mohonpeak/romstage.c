@@ -31,13 +31,13 @@
 #include <cbmem.h>
 #include <console/console.h>
 #include <drivers/intel/fsp/fsp_util.h>
-#include "northbridge/intel/fsp_rangeley/northbridge.h"
-#include "northbridge/intel/fsp_rangeley/raminit.h"
-#include "southbridge/intel/fsp_rangeley/soc.h"
-#include "southbridge/intel/fsp_rangeley/gpio.h"
-#include "southbridge/intel/fsp_rangeley/romstage.h"
+#include <northbridge/intel/fsp_rangeley/northbridge.h>
+#include <southbridge/intel/fsp_rangeley/soc.h>
+#include <southbridge/intel/fsp_rangeley/gpio.h>
+#include <southbridge/intel/fsp_rangeley/romstage.h>
 #include <arch/cpu.h>
 #include <cpu/x86/msr.h>
+#include <reset.h>
 #include "gpio.h"
 
 static void interrupt_routing_config(void)
@@ -68,6 +68,66 @@ static void interrupt_routing_config(void)
  */
 void early_mainboard_romstage_entry(void)
 {
+	u8 val;
+
+	struct i2c_gpio_dev bb_i2c1 = {
+          .sdl_pin = 11,
+          .scl_pin = 12,
+	};
+
+	console_init();
+
+	printk(BIOS_DEBUG, "***default TCO1_CNT reg: 0x%x***\n", inl(0x400 + TCO1_CNT));
+
+	vc_register_i2c_gpio(&bb_i2c1);
+
+	/* Mode1 Select register  */
+	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x0, 0x1);
+
+	/* LED1 OUT (off) */
+	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xd, 0x0);
+
+	if ((cmos_read(0x10) & 1)) {
+
+		val = 0x34;
+
+		/* GRPPWM register. */
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xa, 0x3f);
+
+		/* GRPFREQ register. */	
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xb, 0x1f);
+	
+		/* LED0 OUT */
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xc, 0xff);
+
+		/* Red LED only, full on. */	
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x2, 0x0); // red
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x3, 0x0); // green
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x4, 0xff); // blue
+
+	} else {
+		val = 0x14;
+	
+		/* LED0 OUT */
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xc, 0xaa);
+
+		/* White LED, full on. */	
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x2, 0xff); // red
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x3, 0xff); // green
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x4, 0xff); // blue
+	}
+		
+	/* Mode 2 Select register */
+	vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x1, val);
+
+	/* Select pin 6 of mux to be output. */
+	vc_i2c_gpio_write_byte(&bb_i2c1, 0x1c, 0x3, 0xbf);
+
+	/* Drive signal FORCE_PWM_N low (turn on fan PWM full on). */
+	vc_i2c_gpio_write_byte(&bb_i2c1, 0x1c, 0x1, 0x0);
+		
+	vc_deregister_i2c_gpio(&bb_i2c1);
+
 	setup_soc_gpios(&gpio_map);
 }
 
@@ -77,6 +137,61 @@ void early_mainboard_romstage_entry(void)
  */
 void late_mainboard_romstage_entry(void)
 {
+	u8 val, reset_pressed = 0;
+
+	struct i2c_gpio_dev bb_i2c1 = {
+          .sdl_pin = 11,
+          .scl_pin = 12,
+	};
+
+	if (vc_read_reset_button_level() == 0) 
+		reset_pressed = 1;
+
+	vc_register_i2c_gpio(&bb_i2c1);
+
+	/* Mode1 Select register  */
+	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x0, 0x1);
+
+	/* LED1 OUT (off) */
+	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xd, 0x0);
+
+	if (reset_pressed || (cmos_read(0x10) & 1)) {
+
+		val = 0x34;
+
+		cmos_write(cmos_read(0x10) | 1, 0x10);
+
+		/* GRPPWM register. */
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xa, 0x3f);
+
+		/* GRPFREQ register. */	
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xb, 0x1f);
+	
+		/* LED0 OUT */
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xc, 0xff);
+
+		/* Red LED only, full on. */	
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x2, 0x0); // red
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x3, 0x0); // green
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x4, 0xff); // blue
+
+	} else {
+		val = 0x14;
+	
+		/* LED0 OUT */
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xc, 0xaa);
+
+		/* White LED, full on. */	
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x2, 0xff); // red
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x3, 0xff); // green
+		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x4, 0xff); // blue
+	}
+		
+	/* Mode 2 Select register */
+	vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x1, val);
+
+	vc_deregister_i2c_gpio(&bb_i2c1);
+
 	interrupt_routing_config();
 }
 

@@ -84,18 +84,18 @@ static void rangeley_setup_bars(void)
 	config = dev->chip_info;
 
 	/* Setting up Southbridge. */
+
+
+	/* Enable I/O space. */
+	pci_write_config16(LPC_BDF, 0x04, pci_read_config16(LPC_BDF, 0x4) | 1);
+
+
 	printk(BIOS_DEBUG, "Setting up static southbridge registers...");
 	pci_write_config32(LPC_BDF, RCBA, DEFAULT_RCBA | RCBA_ENABLE);
-	pci_write_config32(LPC_BDF, ABASE, DEFAULT_ABASE | SET_BAR_ENABLE);
+	pci_write_config32(LPC_BDF, ABASE, DEFAULT_ABASE | SET_BAR_ENABLE | 1);
 	pci_write_config32(LPC_BDF, PBASE, DEFAULT_PBASE | SET_BAR_ENABLE);
 	printk(BIOS_DEBUG, " done.\n");
 
-	printk(BIOS_DEBUG, "Disabling Watchdog timer...");
-	/* Disable the watchdog reboot and turn off the watchdog timer */
-	write8(DEFAULT_PBASE + PMC_CFG, read8(DEFAULT_PBASE + PMC_CFG) |
-		 NO_REBOOT);	// disable reboot on timer trigger
-	outw(DEFAULT_ABASE + TCO1_CNT, inw(DEFAULT_ABASE + TCO1_CNT) |
-		TCO_TMR_HALT);	// disable watchdog timer
 
 #if CONFIG_ELOG_BOOT_COUNT
 	/* Increment Boot Counter for non-S3 resume */
@@ -103,7 +103,6 @@ static void rangeley_setup_bars(void)
 	    ((inl(DEFAULT_ABASE + PM1_CNT) >> 10) & 7) != SLP_TYP_S3)
 		boot_count_increment();
 #endif
-
 	printk(BIOS_DEBUG, " done.\n");
 
 #if CONFIG_ELOG_BOOT_COUNT
@@ -159,4 +158,64 @@ void rangeley_sb_early_initialization(void)
 	rangeley_setup_bars();
 
 	reset_rtc();
+}
+
+void tco_watchdog_init(void)
+{
+	u8 cmos_val;
+	u16 abase;
+	u32 tco_val = 0;
+
+	printk(BIOS_DEBUG, "default PMC_CFG reg: 0x%x\n", read8(DEFAULT_PBASE + PMC_CFG));
+
+	/* Enable the watchdog reboot (if not already done). */
+	write8(DEFAULT_PBASE + PMC_CFG, read8(DEFAULT_PBASE + PMC_CFG) &
+		 ~NO_REBOOT);
+
+	abase = (pci_read_config16(SOC_LPC_DEV, ABASE) & ~0xf);
+
+	tco_val = inl(abase + TCO_STS);
+
+	printk(BIOS_DEBUG, "abase is: 0x%x\n", abase);	
+	printk(BIOS_DEBUG, "default TCO_STS reg: 0x%x\n", inl(abase + TCO_STS));
+
+	outl(tco_val | TCO1_SECOND_TO_STS, abase + TCO_STS);
+
+	if (tco_val & TCO1_SECOND_TO_STS) {
+
+		printk(BIOS_DEBUG, "Found watchdog event..storing...");
+
+		cmos_val = cmos_read(0x11);
+
+		cmos_val += 1;
+	
+		cmos_write(cmos_val, 0x11);
+
+		outl(tco_val | TCO1_SECOND_TO_STS, abase + TCO_STS);
+
+		printk(BIOS_DEBUG, "TCO_STS value applied: 0x%x\n", inl(abase + TCO_STS));
+
+		printk(BIOS_DEBUG, "done.\n");
+	}
+
+	printk(BIOS_DEBUG, "default TCO_TMR reg: 0x%x\n", inl(abase + TCO_TMR));
+
+	printk(BIOS_DEBUG, "Raising Watchdog timer timeout to 3min...");
+	/* 3min * 60 sec = 180 sec.  180 / .6 (timer clock) = 300 aka 0x12c. */
+
+	tco_val = (0x64 << 16);
+
+	outl(tco_val, abase + TCO_TMR);
+	
+	printk(BIOS_DEBUG, "TCO_TMR value applied: 0x%x\n", inl(abase + TCO_TMR));
+	
+	printk(BIOS_DEBUG, "done.\n");
+
+	printk(BIOS_DEBUG, "default TCO1_CNT reg: 0x%x\n", inl(abase + TCO1_CNT));
+
+	/* Enable watchdog timer if not already done. */
+	outl(inl(abase + TCO1_CNT) & ~TCO_TMR_HALT, abase + TCO1_CNT);
+
+	printk(BIOS_DEBUG, "TCO1_CNT value applied: 0x%x\n", inl(abase + TCO1_CNT));
+
 }

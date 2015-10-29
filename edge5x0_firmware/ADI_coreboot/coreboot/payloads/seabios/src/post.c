@@ -230,12 +230,14 @@ startBoot(void)
 static void
 maininit(void)
 {
+    u16 bdf, abase;
+
     // Initialize internal interfaces.
     interface_init();
 
     // Setup platform devices.
     platform_hardware_setup();
-
+    
     // call a payload
     if (CONFIG_RUN_PAYLOAD) {
         dprintf(1, "Looking for payload %s\n", CONFIG_RUN_PAYLOAD_FILE);
@@ -269,6 +271,21 @@ maininit(void)
     // show system info before the F12 menu
     if (CONFIG_DISPLAY_SYSTEM_INFO)
         dprintf(1, "\nBuild date: %s\n", __DATE__);
+
+    //while(1) { }
+    
+    /* Encode the LPC BDF */
+    bdf = pci_to_bdf(0x0, 0x1f, 0);
+
+    abase = pci_config_readw(bdf, 0x40) & ~0xf;
+
+    /* Load initial countdown value into timer register. */
+    outl(0x64 << 16, abase + 0x70);
+
+    /* Enable watchdog timer count. */
+    outl(~(1 << 11) & inl(abase + 0x68), abase + 0x68);
+
+    dprintf(3, "(re)init TCO watchdog\n");
 
     // Allow user to modify overall boot order.
     interactive_bootmenu();

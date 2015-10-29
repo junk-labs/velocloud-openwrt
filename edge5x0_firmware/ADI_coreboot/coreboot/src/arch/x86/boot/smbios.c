@@ -190,9 +190,11 @@ static int smbios_write_type0(unsigned long *current, int handle)
 #define ADI_OEM_SYS_SN_SIZE 13
 #define ADI_OEM_UUID_SIZE 16
 #define ADI_OEM_BOARD_SN_SIZE 14
-#define ADI_OEM_DMI_SIZE (ADI_OEM_SYS_SN_SIZE +ADI_OEM_UUID_SIZE +ADI_OEM_BOARD_SN_SIZE)
+#define ADI_OEM_PRODUCT_NAME_SIZE 10
+#define ADI_OEM_BOARD_VERSION_SIZE 4
+#define ADI_OEM_DMI_SIZE (ADI_OEM_SYS_SN_SIZE + ADI_OEM_UUID_SIZE + ADI_OEM_BOARD_SN_SIZE + ADI_OEM_PRODUCT_NAME_SIZE + ADI_OEM_BOARD_VERSION_SIZE)
 
-static char oem_dmi[ADI_OEM_SYS_SN_SIZE + ADI_OEM_UUID_SIZE +ADI_OEM_BOARD_SN_SIZE +1 ]={0};
+static char oem_dmi[ADI_OEM_DMI_SIZE  +1 ]={0};
 static char sys_sn[ADI_OEM_SYS_SN_SIZE +1] = {0};	
 const char *__attribute__((weak)) smbios_system_serial_number(void)
 {
@@ -242,10 +244,20 @@ const char *__attribute__((weak)) smbios_mainboard_serial_number(void)
 
 }
 
-
+static char board_version[ADI_OEM_BOARD_VERSION_SIZE + 1] = {0};
 const char *__attribute__((weak)) smbios_mainboard_version(void)
 {
-		 return CONFIG_MAINBOARD_VERSION; 
+	int i;
+        	
+	/* copy board version from dmi area */
+	for (i=0; i< ADI_OEM_BOARD_VERSION_SIZE; i++)
+	{
+		board_version[i] = oem_dmi[i + ADI_OEM_SYS_SN_SIZE + ADI_OEM_UUID_SIZE + ADI_OEM_BOARD_SN_SIZE + ADI_OEM_PRODUCT_NAME_SIZE ];
+	}
+
+	printk(BIOS_DEBUG, "Board Version:%s\n",board_version);
+
+	return board_version; 
 }
 
 const char *__attribute__((weak)) smbios_mainboard_manufacturer(void)
@@ -253,9 +265,19 @@ const char *__attribute__((weak)) smbios_mainboard_manufacturer(void)
 	return CONFIG_MAINBOARD_SMBIOS_MANUFACTURER;
 }
 
+static char product_name[ADI_OEM_PRODUCT_NAME_SIZE + 1] = {0};
 const char *__attribute__((weak)) smbios_mainboard_product_name(void)
 {
-	return CONFIG_MAINBOARD_SMBIOS_PRODUCT_NAME;
+
+	int i;
+        	
+	for (i=0; i< ADI_OEM_PRODUCT_NAME_SIZE; i++)
+	{
+		product_name[i] = oem_dmi[i + ADI_OEM_SYS_SN_SIZE + ADI_OEM_UUID_SIZE + ADI_OEM_BOARD_SN_SIZE];
+	}
+
+	printk(BIOS_DEBUG, "BSN:%s\n",board_sn);
+	return product_name;
 }
 
 void __attribute__((weak)) smbios_mainboard_set_uuid(u8 *uuid)
@@ -306,10 +328,10 @@ static int smbios_write_type1(unsigned long *current, int handle)
 	t->type = SMBIOS_SYSTEM_INFORMATION;
 	t->length = len - 2;
 	t->handle = handle;
+	t->serial_number = smbios_add_string(t->eos, smbios_system_serial_number());
 	t->manufacturer = smbios_add_string(t->eos, smbios_mainboard_manufacturer());
 	t->product_name = smbios_add_string(t->eos, smbios_mainboard_product_name());
 	t->version = smbios_add_string(t->eos, smbios_mainboard_version());
-	t->serial_number = smbios_add_string(t->eos, smbios_system_serial_number());
 	smbios_mainboard_set_uuid(t->uuid);
 	t->sku = smbios_add_string(t->eos, smbios_mainboard_sku());
 	t->family = smbios_add_string(t->eos, "None Provided");

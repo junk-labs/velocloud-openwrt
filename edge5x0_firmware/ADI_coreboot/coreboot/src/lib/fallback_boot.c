@@ -44,5 +44,5 @@ void boot_successful(void)
 	set_boot_successful();
 
 	/* turn off the boot watchdog */
-	watchdog_off();
+	// watchdog_off();
 }

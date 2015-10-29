@@ -114,6 +114,16 @@ struct soc_gpio_map {
 
 };
 
+struct i2c_gpio_dev {
+	u8 scl_pin;
+	u8 sdl_pin;
+	u16 gpiobase;
+	u32 active_io_lvl;
+	u32 cached_io_lvl;
+	u32 active_io_sel;
+	u32 cached_io_sel;
+	u32 cached_io_mode;
+};
 
 /* Configure GPIOs with mainboard provided settings */
 void setup_soc_gpios(const struct soc_gpio_map *gpio);
@@ -125,5 +135,13 @@ int get_gpio(int gpio_num);
  * the array of gpio pin numbers to scan, terminated by -1.
  */
 unsigned get_gpios(const int *gpio_num_array);
+
+void vc_register_i2c_gpio(struct i2c_gpio_dev *dev);
+
+void vc_deregister_i2c_gpio(struct i2c_gpio_dev *dev);
+
+int vc_i2c_gpio_write_byte(struct i2c_gpio_dev *dev, u8 addr, u8 cmd, u8 data);
+
+u32 vc_read_reset_button_level(void);
 
 #endif

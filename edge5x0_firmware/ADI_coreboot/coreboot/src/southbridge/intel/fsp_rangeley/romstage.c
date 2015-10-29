@@ -142,6 +142,8 @@ void romstage_main_continue(EFI_STATUS status, void *hob_list_ptr) {
 if (base_time.hi == 0)
 	base_time.lo = 0;
 #endif
+	tco_watchdog_init();
+
 	post_code(0x48);
 	printk(BIOS_DEBUG, "%s status: %x  hob_list_ptr: %x\n",
 		__func__, (u32) status, (u32) hob_list_ptr);

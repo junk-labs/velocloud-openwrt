@@ -158,8 +158,17 @@ void chipset_fsp_early_init(FSP_INIT_PARAMS *pFspInitParams,
 	pFspInitParams->NvsBufferPtr = NULL;
 	pFspRtBuffer->Common.BootMode = BOOT_WITH_FULL_CONFIGURATION;
 
+/* XXX Disable MRC cache.  Observation is occasional hang in the FSP.
+ * Decision was made to disable this to mitigate risk of a hang in the field.
+ * May take a few second hit to reinit memory, however, it's worth it
+ * provided the system makes progress.
+ */
+#if 0
+#if IS_ENABLED(CONFIG_ENABLE_MRC_CACHE)
 	/* Find the fastboot cache that was saved in the ROM*/
 	pFspInitParams->NvsBufferPtr = find_and_set_fastboot_cache();
+#endif
+#endif
 
 	return;
 }

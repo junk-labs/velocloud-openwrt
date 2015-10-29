@@ -25,11 +25,15 @@
 #include <device/pci.h>
 #include <device/pci_def.h>
 #include <device/pnp_def.h>
+#include <console/console.h>
 
 #include "soc.h"
 #include "gpio.h"
 
 #define MAX_GPIO_NUMBER 31 /* zero based */
+
+#define likely(x)	__builtin_expect((x),1)
+#define unlikely(x)	__builtin_expect((x),0)
 
 static inline __attribute__((always_inline))
 uint16_t pci_io_read_config16_simple(uint32_t dev, unsigned where)
@@ -57,7 +61,239 @@ uint32_t pci_io_read_config32_simple(uint32_t dev, unsigned where)
         return inl(0xCFC);
 }
 
+static inline __attribute__((always_inline))
+void vc_early_udelay(const uint32_t delay_us)
+{
+	uint32_t i;
 
+	for (i = 0; i < delay_us; i++) 
+        	inb(0x80);
+}
+
+
+uint32_t vc_read_reset_button_level(void)
+{
+	u16 gpiobase;
+	u32 rst_btn_n = (1 << 18);
+	u32 rc, io_mode, io_sel;
+	
+#ifdef __SIMPLE_DEVICE__
+        gpiobase = pci_read_config16(SOC_LPC_DEV, GBASE) & ~0xf;
+#else
+        gpiobase = pci_io_read_config16_simple(SOC_LPC_DEV, GBASE) & ~0xf;
+#endif /* __SIMPLE_DEVICE__ */
+
+        /* Read default USE_SEL for native/GPIO mode. */
+        io_mode = inl(gpiobase + GPIO_SC_USE_SEL);
+
+        /* Set GPIO mode for rst_btn pin. */
+        outl(io_mode | rst_btn_n, gpiobase + GPIO_SC_USE_SEL);
+        
+	/* Read default IO_SEL for directional input/output. */
+        io_sel = inl(gpiobase + GPIO_SC_IO_SEL);
+
+        /* Set direction to 'in' for rst_btn_pin. */
+        outl(io_sel | rst_btn_n, gpiobase + GPIO_SC_IO_SEL);
+
+	/* Read current level */
+	rc = inl(gpiobase + GPIO_SC_GP_LVL) & rst_btn_n;
+
+	outl(io_sel, gpiobase + GPIO_SC_USE_SEL);
+
+        outl(io_mode, gpiobase + GPIO_SC_USE_SEL);
+
+	return (rc);
+} 
+
+
+void vc_register_i2c_gpio(struct i2c_gpio_dev *dev)
+{
+	u32 scl_pin = (1 << dev->scl_pin);
+
+#ifdef __SIMPLE_DEVICE__
+        dev->gpiobase = pci_read_config16(SOC_LPC_DEV, GBASE) & ~0xf;
+#else
+        dev->gpiobase = pci_io_read_config16_simple(SOC_LPC_DEV, GBASE) & ~0xf;
+#endif /* __SIMPLE_DEVICE__ */
+
+        /* Read default USE_SEL for native/GPIO mode. */
+        dev->cached_io_mode = inl(dev->gpiobase + GPIO_SC_USE_SEL);
+
+        /* Set GPIO mode for all pins. */
+        outl(0xffffffff, dev->gpiobase + GPIO_SC_USE_SEL);
+
+        /* Read default IO_SEL for directional input/output. */
+        dev->cached_io_sel = inl(dev->gpiobase + GPIO_SC_IO_SEL);
+	dev->active_io_sel = dev->cached_io_sel;
+
+        /* Set direction to 'in'. */
+        outl(0xffffffff, dev->gpiobase + GPIO_SC_IO_SEL);
+
+        /* Read what is on the GPIO line. */
+        dev->cached_io_lvl = inl(dev->gpiobase + GPIO_SC_GP_LVL);
+	dev->active_io_lvl = dev->cached_io_lvl;
+
+        /* Make pins GPIO 8/9 and default the rest. */
+        outl(dev->cached_io_mode | scl_pin |(1 << dev->sdl_pin),
+                               dev->gpiobase + GPIO_SC_USE_SEL);
+        
+	dev->active_io_sel &= ~scl_pin;
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+
+	dev->active_io_lvl &= ~scl_pin;
+	outl(dev->active_io_lvl, dev->gpiobase + GPIO_SC_GP_LVL);
+
+	dev->active_io_sel |= scl_pin;
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+	
+	vc_early_udelay(100);
+}
+
+void vc_deregister_i2c_gpio(struct i2c_gpio_dev *dev)
+{
+	/* Make GP(O) to set level. */
+	dev->active_io_sel &= ~((1 << dev->scl_pin) | (1 << dev->sdl_pin));
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+
+	/* Set output to high. */
+	dev->active_io_lvl |= ((1 << dev->scl_pin) | (1 << dev->sdl_pin));
+	outl(dev->active_io_lvl, dev->gpiobase + GPIO_SC_GP_LVL);
+
+	/* Program as a GP(I). */	
+	dev->active_io_sel |= ((1 << dev->scl_pin) | (1 << dev->sdl_pin));
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+
+	dev->cached_io_mode &= ~((1 << dev->scl_pin) | (1 << dev->sdl_pin));
+        outl(dev->cached_io_mode, dev->gpiobase + GPIO_SC_USE_SEL);
+}
+
+static inline void vc_i2c_gpio_ack(struct i2c_gpio_dev *dev)
+{
+	u32 sdl_pin = (1 << dev->sdl_pin);
+
+	dev->active_io_sel &= ~sdl_pin;
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+
+	dev->active_io_lvl &= ~sdl_pin;
+	outl(dev->active_io_lvl, dev->gpiobase + GPIO_SC_GP_LVL);
+}
+
+static void vc_i2c_gpio_stop_condition(struct i2c_gpio_dev *dev)
+{
+	/* Complete our transaction by driving clock low. */
+	vc_early_udelay(2);
+	dev->active_io_sel &= ~(1 << dev->scl_pin);
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+	vc_early_udelay(2);
+	
+	/* Stop condition by clock rising first. */
+	dev->active_io_sel |= (1 << dev->scl_pin);
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+
+	vc_early_udelay(6);
+
+	/* the data line rising second. */
+	dev->active_io_lvl |= (1 << dev->sdl_pin);
+	outl(dev->active_io_lvl, dev->gpiobase + GPIO_SC_GP_LVL);
+}
+
+static inline void vc_i2c_gpio_start_condition(struct i2c_gpio_dev *dev)
+{
+	u32 sdl_pin = (1 << dev->sdl_pin);
+	
+        /* Set SDL to output and default the rest. */
+        dev->active_io_sel &= ~sdl_pin;
+        outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+
+	/* I2C clock start condition. */
+	dev->active_io_lvl |= sdl_pin;
+        outl(dev->active_io_lvl, dev->gpiobase + GPIO_SC_GP_LVL);
+
+	vc_early_udelay(6);
+
+	/* I2C_START condition. */
+	dev->active_io_lvl &= ~sdl_pin;
+	outl(dev->active_io_lvl, dev->gpiobase + GPIO_SC_GP_LVL);
+
+	vc_early_udelay(5);
+}
+
+
+inline int vc_i2c_gpio_write_byte(struct i2c_gpio_dev *dev, u8 addr, u8 cmd, u8 data)
+{
+	int i = 0, err = 0, j, val;
+#define I2C_WRITE_CMD	3
+#define I2C_WRITE_BYTE	8
+
+	/* We send 8 bits including R/W. */
+	addr = ((addr & 0x7f) << 1);
+
+	/* Plus our write operation. */
+	addr &= ~1;
+
+	vc_i2c_gpio_start_condition(dev);
+
+	while (likely (i < I2C_WRITE_CMD)) {
+
+		if (i == 0)
+			val = addr;
+		if (i == 1)
+			val = cmd;
+		if (i == 2)
+			val = data;
+		j = 0;
+
+		while (likely (j < I2C_WRITE_BYTE)) {
+
+			/* Write clock line low. */
+                        dev->active_io_sel &= ~(1 << dev->scl_pin);
+
+                        outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+
+			vc_early_udelay(1);
+
+			dev->active_io_sel &= ~(1 << dev->sdl_pin);
+
+			outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+			
+                       	if ((val & 0x80))
+				dev->active_io_lvl |= (1 << dev->sdl_pin);
+			else
+				dev->active_io_lvl &= ~(1 << dev->sdl_pin);
+
+			outl(dev->active_io_lvl, dev->gpiobase + GPIO_SC_GP_LVL);
+
+			vc_early_udelay(2);
+
+			/* Write clock line high. */
+                        dev->active_io_sel |= (1 << dev->scl_pin);
+                        outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+			vc_early_udelay(1);
+			
+			val = val << 1;
+			
+			j++;
+		}
+                        
+		dev->active_io_sel &= ~(1 << dev->scl_pin);
+                outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+
+		vc_i2c_gpio_ack(dev);
+	
+		vc_early_udelay(3);
+		
+		/* Write clock line high. */
+                dev->active_io_sel |= (1 << dev->scl_pin);
+                outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+		vc_early_udelay(3);
+
+		i++;
+	}
+
+	vc_i2c_gpio_stop_condition(dev);
+
+	return err;
+}
 
 void setup_soc_gpios(const struct soc_gpio_map *gpio)
 {

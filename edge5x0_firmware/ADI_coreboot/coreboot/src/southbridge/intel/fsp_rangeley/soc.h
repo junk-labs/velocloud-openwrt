@@ -76,6 +76,7 @@ void enable_usb_bar(void);
 int smbus_read_byte(unsigned device, unsigned address);
 int early_spi_read(u32 offset, u32 size, u8 *buffer);
 void rangeley_sb_early_initialization(void);
+void tco_watchdog_init(void);
 #endif
 #endif
 int smbus_enable_usb3_clock(void);
@@ -386,10 +387,13 @@ int smbus_enable_spread_spectrum(void);
 #define PM2A_CNT_BLK	0x50
 #define SS_CNT		0x50
 #define C3_RES		0x54
-#define TCO1_STS	0x64
+#define TCO_RLD		0x60
+#define TCO_STS		0x64
+#define TCO1_SECOND_TO_STS (1 << 17)
 #define   DMISCI_STS	(1 << 9)
 #define TCO2_STS	0x66
 #define TCO1_CNT	0x68
+#define TCO_TMR		0x70
 #define  TCO_TMR_HALT	(1 << 11)
 #define  TCO_LOCK			(1 << 12)
 

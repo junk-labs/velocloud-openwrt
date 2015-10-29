@@ -10,6 +10,7 @@
 #include "hw/pic.h" // pic_eoi1
 #include "hw/rtc.h" // rtc_read
 #include "hw/usb-hid.h" // usb_check_event
+#include "hw/pci.h" // pci utils
 #include "output.h" // debug_enter
 #include "stacks.h" // yield
 #include "string.h" // memset
@@ -31,6 +32,15 @@ u8 Century VARLOW;
 void
 clock_setup(void)
 {
+
+    u16 bdf, abase;
+    u32 tco_val = 0;
+
+    /* Encode the LPC BDF */
+    bdf = pci_to_bdf(0x0, 0x1f, 0);
+
+    abase = (pci_config_readw(bdf, 0x40) & ~0xf);
+
     dprintf(3, "init timer\n");
     pit_setup();
 
@@ -53,9 +63,16 @@ clock_setup(void)
         else
             Century = 0x20;
     }
-
+    
     enable_hwirq(0, FUNC16(entry_08));
     enable_hwirq(8, FUNC16(entry_70));
+
+    /* Reload our original timeout value. */
+    tco_val = inl(abase + 0x60) | 0x64;
+
+    outl(tco_val, abase + 0x60);
+
+    outl(0x64 << 16, abase + 0x70);
 }
 
 

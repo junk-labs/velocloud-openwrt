@@ -31,7 +31,6 @@ static void
 __callrom(struct rom_header *rom, u16 offset, u16 bdf)
 {
     u16 seg = FLATPTR_TO_SEG(rom);
-    dprintf(1, "Running option rom at %04x:%04x\n", seg, offset);
 
     struct bregs br;
     memset(&br, 0, sizeof(br));

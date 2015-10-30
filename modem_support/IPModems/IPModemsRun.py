@@ -11,6 +11,7 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 def supported_modems():
+    logging.debug("================");
     logging.debug("Supported vid/pids:")
     logging.debug("================");
     for vidpid, plugin in supported_vidpid_list.iteritems():
@@ -21,6 +22,12 @@ def supported_modems():
     for vendor_string, plugin in supported_vendor_string_list.iteritems():
         logging.debug("  " + vendor_string + ": " + plugin + " plugin")
     logging.debug("================");
+    logging.debug("Supported generic:")
+    logging.debug("================");
+    for typestr, plugin in supported_generic_type_list.iteritems():
+        logging.debug("  " + typestr + ": " + plugin + " plugin")
+    logging.debug("================");
+
 
 #
 # Main program starts here!
@@ -47,17 +54,25 @@ supported_vendor_string_list = {
     'Sierra Wireless, Incorporated' : 'sierra'
 }
 
+# This is a list of generic implementations that may be used for some
+# modem types
+supported_generic_type_list = {
+    'huawei-ncm' : 'huawei'
+}
+
 supported_modems() #print the supported modems
 modemobj = IPModems.IPModems(USB)
 modemobj.set_link_id()
 
 while True:
     try:
-        found_plugin = ''
-        found_plugin_id = ''
+        found_plugin         = ''
+        found_plugin_id      = ''
+        device_vidpid        = modemobj.product
+        device_vendor_string = modemobj.manufacturer
+        device_type_string   = modemobj.modemtype
 
         # Look for plugin to use based on VID/PID
-        device_vidpid = modemobj.product
         for vidpid, plugin in supported_vidpid_list.iteritems():
             if device_vidpid.find(vidpid) >= 0:
                 found_plugin = plugin
@@ -66,19 +81,23 @@ while True:
 
         # Look for plugin to use based on vendor string
         if not found_plugin:
-            device_vendor_string = modemobj.manufacturer
             for vendor_string, plugin in supported_vendor_string_list.iteritems():
                 if device_vendor_string.find(vendor_string) >= 0:
                     found_plugin = plugin
                     found_plugin_id = vendor_string
                     break
 
+        # Some default plugins we can fallback to
+        if not found_plugin:
+            for typestr, plugin in supported_generic_type_list.iteritems():
+                if device_type_string.find(typestr) >= 0:
+                    found_plugin = plugin
+                    found_plugin_id = device_type_string
+                    break;
+
         # Error out if no plugin really found
         if not found_plugin:
-            logging.warning("manufacturer %s not in supported modem list", device_vendor_string);
-            modemobj.set_link_id()
-            '''All mandatory values can be set here and implemented in the base
-            class'''
+            logging.warning("No plugin found for device (manufacturer %s, vidpid %s, type %s)", device_vendor_string, device_vidpid, device_type_string)
             sys.exit(0)
 
         obj_name = found_plugin.capitalize()

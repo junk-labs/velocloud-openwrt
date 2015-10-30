@@ -4,14 +4,14 @@
 export PYTHONPATH=/opt/vc/lib/python
 local eventdir
 
-set_eventdir() 
+set_eventdir()
 {
 	eventdir=$1
 }
 
-log() 
+log()
 {
-        logger -t "usbmodems" "$eventdir: $@"
+	logger -t "usbmodems" "$eventdir: $@"
 }
 
 usb_wan_naming()
@@ -27,19 +27,19 @@ EOF
 
 check_device_config() {
 	local usbifname=$1
-        local ret="False"
-        uci -c $modem_path -X get modems.$usbifname.device 2>&1 >/dev/null
-        if [ "$?" == "0" ]; then
-                ret="True"
-        fi
-        echo $ret
+	local ret="False"
+	uci -c $modem_path -X get modems.$usbifname.device 2>&1 >/dev/null
+	if [ "$?" == "0" ]; then
+		ret="True"
+	fi
+	echo $ret
 }
 
 get_modem_type()
 {
 	local interface=${1/[0-9]*} # ttyUSB or eth or wwan
 	local product=$2
-	local hymodemsfile=$modem_script_path/hybridmodems.list	
+	local hymodemsfile=$modem_script_path/hybridmodems.list
 	local modemtype
 	local hybridtype
 	#log "get_modem_type: interface=$interface product=$product"
@@ -72,11 +72,11 @@ get_modem_type()
 		modemtype="None"
 		while [ $index -le $mtotal ]; do
 			intf=$(echo $mtypes | awk -v i=$index '{print $i}' | awk -F= '{print $1}')
-                        if [ "$interface" == "$intf" ]; then
+			if [ "$interface" == "$intf" ]; then
 				found=1
 				type=$(echo $mtypes | awk -v i=$index '{print $i}' | awk -F= '{print $2}')
-                                break
-                        fi
+				break
+			fi
 			index=$(expr $index + 1)
 		done
 		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
@@ -124,4 +124,3 @@ debug_hotplugevents()
 	echo "HOTPLUG:`date`:$eventdir" >> /tmp/hotplug-events.txt
 	env | xargs echo >> /tmp/hotplug-events.txt
 }
-

@@ -38,6 +38,10 @@ class Huawei(IPModems.IPModems):
 		self.isp_name	   = ''
 		self.activation_status = 'activated'
 
+                # Disable unsolicited messages that flood the ports
+		cmd = "MODE=\"AT^CURC=0\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
+		self.runcmd(cmd)
+
 		# Make sure we start disconnected
 		self.reload_connection_status()
 		logging.debug("[dev=%s]: connection status (initial): %s", self.USB, self.connection_status);

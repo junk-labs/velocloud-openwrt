@@ -10,6 +10,11 @@ class Huawei(IPModems.IPModems):
 		IPModems.IPModems.__init__(self, USB)
 		self.modem_str = 'huawei'
 		self.timer = 3
+                self.connection_status_check_errors = 0
+                self.connection_status = 'disconnected'
+
+                # If we have 10 consecutive checks (~30s) without a proper connection, we request assume disconnected
+                self.connection_status_check_threshold = 10
 
 	def runcmd(self, cmd):
 		return commands.getstatusoutput(cmd)[1].strip()
@@ -17,7 +22,25 @@ class Huawei(IPModems.IPModems):
 	def reload_connection_status(self):
 		try:
 			cmd = "gcom -d " + self.device + " -s /etc/gcom/huaweistatus.gcom"
-			self.connection_status = self.runcmd(cmd)
+			new_connection_status = self.runcmd(cmd)
+                        if new_connection_status == 'connected':
+                                self.connection_status_check_errors = 0
+                                self.connection_status = new_connection_status
+                                return
+                        # If we were already disconnected, nothing to do
+                        if self.connection_status == 'disconnected':
+                                return
+                        # If we're reported disconnected N consecutive times times, flag disconnected
+                        self.connection_status_check_errors += 1
+                        if self.connection_status_check_errors == self.connection_status_check_threshold:
+                                logging.debug("[dev=%s]: too many checks reported disconnection...", self.USB)
+                                self.connection_status_check_errors = 0
+                                self.connection_status = 'disconnected'
+                                return
+                        # Otherwise, do nothing else, we don't consider the new state change to
+                        # disconnected until the 10th try
+                        logging.debug("[dev=%s]: disconnection reported (%d)...", self.USB, self.connection_status_check_errors)
+
 		except RuntimeError:
 			logging.warning("[dev=%s]: couldn't load connection status", self.USB)
 

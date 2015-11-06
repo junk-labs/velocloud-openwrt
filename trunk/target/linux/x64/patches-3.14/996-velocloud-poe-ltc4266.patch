@@ -1,6 +1,6 @@
 diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
 --- a/drivers/i2c/busses/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/i2c/busses/Kconfig	2015-10-13 15:38:50.929436535 -0700
++++ b/drivers/i2c/busses/Kconfig	2015-11-05 16:23:49.247332197 -0800
 @@ -1012,4 +1012,13 @@
  	  This support is also available as a module.  If so, the module
  	  will be called scx200_acb.
@@ -17,7 +17,7 @@ diff -Naur a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
  endmenu
 diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
 --- a/drivers/i2c/busses/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/i2c/busses/Makefile	2015-10-13 15:38:50.929436535 -0700
++++ b/drivers/i2c/busses/Makefile	2015-11-05 16:23:49.247332197 -0800
 @@ -49,6 +49,7 @@
  obj-$(CONFIG_I2C_IMX)		+= i2c-imx.o
  obj-$(CONFIG_I2C_IOP3XX)	+= i2c-iop3xx.o
@@ -28,8 +28,8 @@ diff -Naur a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
  obj-$(CONFIG_I2C_MXS)		+= i2c-mxs.o
 diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 --- a/drivers/i2c/busses/i2c-ltc4266.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-10-13 15:39:11.108510737 -0700
-@@ -0,0 +1,2502 @@
++++ b/drivers/i2c/busses/i2c-ltc4266.c	2015-11-05 16:25:00.748056158 -0800
+@@ -0,0 +1,2526 @@
 +/*
 + * Copyright (c) 2015 VeloCloud Networks, Inc.
 + *
@@ -1923,6 +1923,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        s32 val, lsb, msb;
 +	s32 dec, cent;
 +        struct i2c_client *client;
++	struct ltc4266_port *port;
 +        struct i2c_ltc4266_chipset *chipset;
 +
 +        if(pobj->index >= N_VC_I2C_PORTS)
@@ -1931,6 +1932,17 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++	
++	port = &chipset->port_dev[pobj->index];
++
++	mutex_lock(&port->port_lock);
++
++	if ( !(port->last_port_event & (POWER_GOOD_INTERRUPT))) {
++		mutex_unlock(&port->port_lock);
++		return sprintf(buf, "%d.%d%d%d", 0, 0, 0, 0);
++	}
++
++	mutex_unlock(&port->port_lock);
 +
 +        lsb = i2c_smbus_read_byte_data(chipset->client,
 +                        LTC_mA_LSB_BASE_REG+(pobj->index*4));
@@ -1971,6 +1983,7 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        s32 val, lsb, msb;
 +	s32 dec, cent;
 +        struct i2c_client *client;
++	struct ltc4266_port *port;
 +        struct i2c_ltc4266_chipset *chipset;
 +
 +        if(pobj->index >= N_VC_I2C_PORTS)
@@ -1979,6 +1992,17 @@ diff -Naur a/drivers/i2c/busses/i2c-ltc4266.c b/drivers/i2c/busses/i2c-ltc4266.c
 +        client = to_i2c_client(pobj->dev);
 +
 +        chipset = (struct i2c_ltc4266_chipset *)i2c_get_clientdata(client);
++	
++	port = &chipset->port_dev[pobj->index];
++
++	mutex_lock(&port->port_lock);
++
++	if (!(port->last_port_event & (POWER_GOOD_INTERRUPT))) {
++		mutex_unlock(&port->port_lock);
++		return sprintf(buf, "%d.%d%d%d", 0, 0, 0, 0);
++	}
++
++	mutex_unlock(&port->port_lock);
 +
 +	lsb = i2c_smbus_read_byte_data(chipset->client, 
 +		LTC_VOLTS_LSB_BASE_REG+(pobj->index*4));

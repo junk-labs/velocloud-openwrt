@@ -28,6 +28,8 @@
 0f3d:68aa               serial
 # Novatel 551L
 1410:b001       qmihybrid
+# Novatel U620L
+1410:9022 qmihybrid
 #
 # Modem type list
 # Expecting the type list to help in auto initialization of modems

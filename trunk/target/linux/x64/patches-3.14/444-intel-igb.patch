@@ -555,7 +555,23 @@
  
  	if ((new_mtu < 68) || (max_frame > MAX_JUMBO_FRAME_SIZE)) {
  		dev_err(&pdev->dev, "Invalid MTU setting\n");
-@@ -6678,6 +6724,7 @@
+@@ -5272,14 +5318,7 @@
+ 
+ 	/* Tx Dropped needs to be maintained elsewhere */
+ 
+-	/* Phy Stats */
+-	if (hw->phy.media_type == e1000_media_type_copper) {
+-		if ((adapter->link_speed == SPEED_1000) &&
+-		   (!igb_read_phy_reg(hw, PHY_1000T_STATUS, &phy_tmp))) {
+-			phy_tmp &= PHY_IDLE_ERROR_COUNT_MASK;
+-			adapter->phy_stats.idle_errors += phy_tmp;
+-		}
+-	}
++	/* Phy Stats, BUG: cannot read phy here */
+ 
+ 	/* Management Stats */
+ 	adapter->stats.mgptc += rd32(E1000_MGTPTC);
+@@ -6678,6 +6717,7 @@
  		unsigned char *network;
  		/* l2 headers */
  		struct ethhdr *eth;
@@ -563,7 +579,7 @@
  		struct vlan_hdr *vlan;
  		/* l3 headers */
  		struct iphdr *ipv4;
-@@ -6698,6 +6745,15 @@
+@@ -6698,6 +6738,15 @@
  	protocol = hdr.eth->h_proto;
  	hdr.network += ETH_HLEN;
  

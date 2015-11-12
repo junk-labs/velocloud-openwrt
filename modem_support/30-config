@@ -255,6 +255,7 @@ start_pppd_script() {
 # done from 30-usb_ip
 handle_qmi_hybrid() {
 	local ttydevice
+	local ifname
 
 	ttydevice=$(gettty_device)
 	if [ -z "$ttydevice" ]; then
@@ -282,6 +283,18 @@ handle_qmi_hybrid() {
 	lock -u $lockfile
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=qmihybrid"
+
+	# If we have the WWAN net iface name already defined, we're ready to go;
+	# otherwise we'll need to wait and it will get launched when the net iface
+	# is processed.
+	ifname=$(uci_get_modem_ifname $usbifname)
+	if [ -z "$ifname" ]; then
+		log "WWAN net not yet defined in qmihybrid modem: deferred"
+		return
+	fi
+
+	log "WWAN modem setup: QMI-hybrid"
+	$modem_script_path/modem_service.sh $usbifname start
 }
 
 add_to_config() {

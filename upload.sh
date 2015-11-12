@@ -13,6 +13,10 @@ scp ${SSH_PREFS}                                 \
     root@${VELOCLOUD}:/etc/hotplug.d/net/
 
 scp ${SSH_PREFS}                                 \
+    modem_support/30-config                      \
+    root@${VELOCLOUD}:/etc/hotplug.d/tty/
+
+scp ${SSH_PREFS}                                 \
     modem_support/modem_service.sh               \
     modem_support/modem_functions.sh             \
     modem_support/modem.path                     \

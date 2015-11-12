@@ -114,24 +114,24 @@ qmi_ensure_802_3_data_format()
 # have the problem and if this fix works for them if so. We are not even 100%
 # sure if this fixes AC340U itself in all situations - this is all based on
 # hear-say in modem/qmi aliases.
-    local device=$1
-    local vendor=$(cat $usbpath/../../../idVendor)
-    local product=$(cat $usbpath/../../../idProduct)
-    local usbnum=`echo $usbpath | awk 'BEGIN { FS = "/" } ;{ print $(NF-2); }'`
-
-    if [ "$vendor" = "1199" ] && [ "$product" = "9051" ]; then
-	is_gsm=`/usr/bin/qmicli -d $device --nas-get-system-selection-preference | grep "Mode preference" | grep gsm`
-	if [ -z "$is_gsm" ]; then
-	    return;
 qmi_disable_AC340U_2G()
 {
+	local device=$1
+	local vendor=$(cat $usbpath/../../../idVendor)
+	local product=$(cat $usbpath/../../../idProduct)
+	local usbnum=`echo $usbpath | awk 'BEGIN { FS = "/" } ;{ print $(NF-2); }'`
+
+	if [ "$vendor" = "1199" ] && [ "$product" = "9051" ]; then
+		is_gsm=`/usr/bin/qmicli -d $device --nas-get-system-selection-preference | grep "Mode preference" | grep gsm`
+		if [ -z "$is_gsm" ]; then
+       			return;
+		fi
+		/usr/bin/qmicli -d $device --nas-set-system-selection-preference='umts|lte'
+		echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/unbind
+		sleep 2
+		echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/bind
+		sleep 2
 	fi
-	/usr/bin/qmicli -d $device --nas-set-system-selection-preference='umts|lte'
-	echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/unbind
-	sleep 2
-	echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/bind
-	sleep 2
-    fi
 }
 
 ################################################################################

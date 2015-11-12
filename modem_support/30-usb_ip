@@ -71,7 +71,7 @@ ensure_802_3_data_format()
 
 	wda_version=`get_wda_version $device`
 	if [ ! -z "$wda_version" ]; then
-		cur_mode=`get_wwan_mode $device`
+		cur_mode=`get_wda_data_format $device`
 		if [ "$cur_mode" != "raw-ip" ]; then
 			# Either OK, or in a bad state; either way, give up
 			return

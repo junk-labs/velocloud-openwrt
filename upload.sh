@@ -17,9 +17,10 @@ scp ${SSH_PREFS}                                 \
     modem_support/modem_functions.sh             \
     modem_support/modem.path                     \
     modem_support/usb_common                     \
+    modem_support/hybridmodems.list              \
     root@${VELOCLOUD}:/opt/vc/modems/
 
-scp  ${SSH_PREFS}                                \
+scp ${SSH_PREFS}                                 \
     modem_support/IPModems/IPModemsRun.py        \
     modem_support/IPModems/IPModems.py           \
     modem_support/IPModems/qmi.py                \

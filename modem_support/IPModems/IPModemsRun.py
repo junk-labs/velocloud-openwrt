@@ -1,14 +1,9 @@
 #!/usr/bin/python
 
 import sys
-import signal
 import IPModems
 import logging
 import time
-
-def signal_handler(signal, frame):
-    logging.warning(USB + ": Received Signal " + str(signal))
-    sys.exit(0)
 
 def supported_modems():
     logging.debug("================");
@@ -33,8 +28,6 @@ def supported_modems():
 # Main program starts here!
 #
 USB = sys.argv[1]
-signal.signal(signal.SIGTERM, signal_handler)
-signal.signal(signal.SIGINT, signal_handler)
 
 # Debugging: DEBUG, INFO, WARNING, ERROR, CRITICAL
 debugflag = logging.WARNING #logging.DEBUG

@@ -1,29 +1,35 @@
 #!/bin/sh
 
-# Copytight (C) 2013 Velocloud Inc
+# Copyright (C) 2013-2015 Velocloud Inc
 
-get_wda_version()
+################################################################################
+#
+#    QMI modem support
+#
+################################################################################
+
+qmi_get_wda_version()
 {
 	qmicli -d "$1" --get-service-version-info | sed -ne "s/\s*wda (\([^']*\))/\1/p"
 }
 
-get_wda_data_format()
+qmi_get_wda_data_format()
 {
 	qmicli -d "$1" --wda-get-data-format | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
 }
 
-set_wda_data_format()
+qmi_set_wda_data_format()
 {
 	qmicli -d "$1" --wda-set-data-format="802-3" | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
 }
 
-set_ctl_data_format()
+qmi_set_ctl_data_format()
 {
 	# Note: There's no explicit error if this action fails. It usually just works.
 	qmicli -d "$1" --device-open-net="net-802-3|net-no-qos-header" --dms-noop 1>/dev/null
 }
 
-set_ctl_sync()
+qmi_set_ctl_sync()
 {
 	# Note: There's no explicit error if this action fails. It usually just works.
 	qmicli -d "$1" --device-open-sync --dms-noop 1>/dev/null
@@ -65,13 +71,13 @@ qmi_get_apn()
 # If the modem supports the WDA service, we'll use that one. Otherwise we'll
 # run a DMS NOOP operation asking for 802.3 in the CTL service (the old way,
 # always supported by modems without WDA).
-ensure_802_3_data_format()
+qmi_ensure_802_3_data_format()
 {
 	local device=$1
 
-	wda_version=`get_wda_version $device`
+	wda_version=`qmi_get_wda_version $device`
 	if [ ! -z "$wda_version" ]; then
-		cur_mode=`get_wda_data_format $device`
+		cur_mode=`qmi_get_wda_data_format $device`
 		if [ "$cur_mode" != "raw-ip" ]; then
 			# Either OK, or in a bad state; either way, give up
 			return
@@ -82,9 +88,9 @@ ensure_802_3_data_format()
 		num_attempts=0
 		max_attempts=18
 		sleep_interval=10
-		cur_mode=`set_wda_data_format $device`
+		cur_mode=`qmi_set_wda_data_format $device`
 		while [ "$cur_mode" = "raw-ip" ]; do
-			# sometimes retries help. Try upto 4 retries at 15 seconds each
+			# sometimes retries help. Try up to 4 retries at 15 seconds each
 			num_attempts=$((num_attempts+1))
 			if [ $num_attempts -gt $max_attempts ]; then
 				echo "Giving up on trying to set QMI link layer protocol to 802-3" > /dev/kmsg
@@ -92,11 +98,11 @@ ensure_802_3_data_format()
 			fi
 			echo "Re-trying to set QMI link layer protocol to 802-3, attempt $num_attempts (out of $max_attempts)" > /dev/kmsg
 			sleep $sleep_interval
-			cur_mode=`set_wda_data_format $device`
+			cur_mode=`qmi_set_wda_data_format $device`
 		done
 	else
 		echo "Trying to set QMI link layer protocol to 802.3... (CTL)" > /dev/kmsg
-		set_ctl_data_format $device
+		qmi_set_ctl_data_format $device
 	fi
 }
 
@@ -108,7 +114,6 @@ ensure_802_3_data_format()
 # have the problem and if this fix works for them if so. We are not even 100%
 # sure if this fixes AC340U itself in all situations - this is all based on
 # hear-say in modem/qmi aliases.
-disable_AC340U_2G() {
     local device=$1
     local vendor=$(cat $usbpath/../../../idVendor)
     local product=$(cat $usbpath/../../../idProduct)
@@ -118,6 +123,8 @@ disable_AC340U_2G() {
 	is_gsm=`/usr/bin/qmicli -d $device --nas-get-system-selection-preference | grep "Mode preference" | grep gsm`
 	if [ -z "$is_gsm" ]; then
 	    return;
+qmi_disable_AC340U_2G()
+{
 	fi
 	/usr/bin/qmicli -d $device --nas-set-system-selection-preference='umts|lte'
 	echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/unbind
@@ -127,7 +134,14 @@ disable_AC340U_2G() {
     fi
 }
 
-at_get_imsi() {
+################################################################################
+#
+#    AT modem support
+#
+################################################################################
+
+at_get_imsi()
+{
 	local dialdevice=$1
 	local imsi_tries=3
 	local tempfile='/tmp/'$dialdevice'.siminfo'
@@ -142,7 +156,8 @@ at_get_imsi() {
 	echo $imsi_number
 }
 
-at_get_apn() {
+at_get_apn()
+{
 	local dialdevice=$1
 	local imsi=`at_get_imsi $dialdevice`
 	local mccmnc
@@ -169,7 +184,14 @@ at_get_apn() {
 	echo $apn
 }
 
-set_usb_ip_over_ethernet() {
+################################################################################
+#
+#    Common
+#
+################################################################################
+
+setup_wwan_modem()
+{
 	local etherdevice=$DEVICENAME
 	local modemtype=$1
 
@@ -189,32 +211,36 @@ set_usb_ip_over_ethernet() {
 	uci -c $modem_path set modems.$usbifname.type=''"$modemtype"''
 	uci -c $modem_path set modems.$usbifname.product=''"$product"''
 
+	# huawei-ncm devices are AT-controlled NET devices
+	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
 	if [ $modemtype == "huawei-ncm" ]; then
 		local device=$(ls $usbpath/../../usbmisc)
 		uci -c $modem_path set modems.$usbifname.device=''"/dev/$device"''
 
-		#APN detection
+		# huawei profile generation
 		apn=$(at_get_apn $device)
 		PROFILE=/tmp/USB/${usbifname}_huawei.profile
 		echo "APN=$apn" > ${PROFILE}
 
-		# Don't restart here
-		log "Updated $device - $modemtype"
+		# For Huawei NCM modems, we just create the profile at this point.
+		# The modem_service.sh script will launch the connection.
 		return
 	fi
 
+	# qmiwwan devices are QMI-controlled NET devices
+	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
 	if [ $modemtype == "qmiwwan" ]; then
 		local device=$(ls $usbpath/../../usbmisc)
 		uci -c $modem_path set modems.$usbifname.device=''"/dev/$device"''
 
 		# Start with a sync, so that we reset the endpoint
-		set_ctl_sync /dev/$device
+		qmi_set_ctl_sync /dev/$device
 
 		# Ensure that 802.3 is used in the QMI modems, as that is what qmi_wwan expects
-		ensure_802_3_data_format /dev/$device
+		qmi_ensure_802_3_data_format /dev/$device
 
 		# Disable 2G mode for AC340U
-		disable_AC340U_2G /dev/$device
+		qmi_disable_AC340U_2G /dev/$device
 
 		# qmi-network profile generation
 		apn=$(qmi_get_apn $device)
@@ -228,16 +254,17 @@ set_usb_ip_over_ethernet() {
 		return
 	fi
 
+	# Other NET devices without control port
+	# Just assume that the network interface can be setup through DHCP and assume connected
 	ubus call network reload
 	status="CONNECTED SUCCESSFULLY"
 	uci -c $modem_path set modems.$usbifname.status=''"$status"''
 	uci -c $modem_path commit modems
 	log "Updated modems config with ubus status=$status ubus_return=$?"
-
 }
 
-add_to_config() {
-
+add_to_config()
+{
 	# Action for the each USB
 	local modemtype
 	local product
@@ -248,7 +275,7 @@ add_to_config() {
 		return
 	fi
 
-	log "Hotplug add event: IP"
+	log "Hotplug add event: network device"
 
 	product=$(cat $usbpath/../../uevent | awk -F= '/PRODUCT/ { print $2}' | tr '/' ':')
 	product=${product%:*}
@@ -270,13 +297,13 @@ add_to_config() {
 		return
 	fi
 
-	log "Starting eth script for $ethdevice"
-	set_usb_ip_over_ethernet "$modemtype" "$product"
+	log "Starting WWAN modem script for $DEVICENAME"
+	setup_wwan_modem "$modemtype" "$product"
 	$modem_script_path/modem_service.sh $usbifname start
 }
 
-remove_from_config() {
-
+remove_from_config()
+{
 	local modemtype
 	local ucigetmodem
 	local product=$(uci_get_modem_product $usbifname)

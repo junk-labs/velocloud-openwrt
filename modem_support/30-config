@@ -3,39 +3,39 @@
 # Copyright (C) 2013-2014 Velocloud Inc
 
 usb_serial_detect() {
-        local status=1
-        local tries=0
-        local device=$1
-        while [ $status -ne 0 -a $tries -le 3 ]; do
-                gcom -d "$device" -s /etc/gcom/vccheck.gcom | grep 'OK' &>/dev/null
-                status=$?
-                tries=$((tries + 1))
-        done
-        if [ $status -ne 0 ]; then
-                # Not a serial port
-                log "No output from device $device"
-                return
-        fi
-        log "Detected device $device is found"
-        echo $device
+	local status=1
+	local tries=0
+	local device=$1
+	while [ $status -ne 0 -a $tries -le 3 ]; do
+		gcom -d "$device" -s /etc/gcom/vccheck.gcom | grep 'OK' &>/dev/null
+		status=$?
+		tries=$((tries + 1))
+	done
+	if [ $status -ne 0 ]; then
+		# Not a serial port
+		log "No output from device $device"
+		return
+	fi
+	log "Detected device $device is found"
+	echo $device
 }
 
 gettty_device() {
 	local ttydevice=$DEVICENAME
 
-        if [ ! -e /dev/$ttydevice ]; then
-                log "Serial device does not exists... Waiting!"
-                sleep 1
-                # Wait for tty file exists
-                if [ ! -e /dev/$ttydevice ]; then
-                        ttydevice=""
-                        return
-                fi
-        fi
+	if [ ! -e /dev/$ttydevice ]; then
+		log "Serial device does not exists... Waiting!"
+		sleep 1
+		# Wait for tty file exists
+		if [ ! -e /dev/$ttydevice ]; then
+			ttydevice=""
+			return
+		fi
+	fi
 	log "Device /dev/$ttydevice exists"
 
-        ttydevice=$(usb_serial_detect "/dev/$ttydevice")
-        echo $ttydevice
+	ttydevice=$(usb_serial_detect "/dev/$ttydevice")
+	echo $ttydevice
 }
 
 get_hw_details() {
@@ -163,14 +163,14 @@ get_imsi_number() {
 	local tempfile="$tmpdir/$usbifname.siminfo"
 	local imsicmd="gcom -d $dialdevice -s /etc/gcom/vcgetimsi.gcom"
 	local imsi_number
-        while [ -z $imsi_number ] && [ "$imsi_tries" -ne 0 ]; do
+	while [ -z $imsi_number ] && [ "$imsi_tries" -ne 0 ]; do
 		$imsicmd | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
 		log "IMSI Info: $(cat $tempfile | xargs echo)"
 
 		imsi_number=$(cat $tempfile | awk '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}$/)){print $i;break} } }')
-                imsi_tries=$(expr $imsi_tries - 1)
-        done
-        log "IMSI: $imsi_number"
+		imsi_tries=$(expr $imsi_tries - 1)
+	done
+	log "IMSI: $imsi_number"
 	rm -f $tempfile
 	echo $imsi_number
 }
@@ -207,7 +207,7 @@ get_revision_number() {
 update_hwinfo_config() {
 	local tempfile="$tmpdir/$usbifname.cardinfo"
 	local manufacturer model_number revision_number
-	local cdma_string 
+	local cdma_string
 	local cdma_gsm="CDMA"
 	# If Electronic Signal Number is present then its CDMA
 	local imei_number imsi_number
@@ -246,47 +246,47 @@ start_pppd_script() {
 }
 
 # QMI hybrid modems are a pain in the butt, it can support data over
-# qmi_wwan driver wwanX interface. But its control is all done over 
+# qmi_wwan driver wwanX interface. But its control is all done over
 # serial ttyUSB using AT commands. Later the 30-usb_ip script will call
 # modem_service.sh as part of the hotplug event for the wwanX interface,
 # and at that point we need to let the modem_service.sh script know which
 # serial interface is the "control" interface for this mode, so we just
-# set the mgmt device parameter here and call it a day, rest all gets 
+# set the mgmt device parameter here and call it a day, rest all gets
 # done from 30-usb_ip
 handle_qmi_hybrid() {
-        local ttydevice
+	local ttydevice
 
-        ttydevice=$(gettty_device)
-        if [ -z "$ttydevice" ]; then
-                log "No TTY device: $usbpath"
-                return
-        fi
+	ttydevice=$(gettty_device)
+	if [ -z "$ttydevice" ]; then
+		log "No TTY device: $usbpath"
+		return
+	fi
 
-        count=1
-        while [ $count -le 10 ];
-        do
-                imei=`gcom -d $ttydevice -s /etc/gcom/getimei.gcom | grep -E '[0-9]+'`
-                if [ ! -z "$imei" ]; then
-                        break
-                fi
-                sleep 2
-                count=$(($count+1))
-        done
-        
-        lock $lockfile
-        uci -c $modem_path add modems interface\\\ '"$usbifname"'
-        uci -c $modem_path set modems.$usbifname=interface
-        uci -c $modem_path set modems.$usbifname.mgmt=''"$ttydevice"''
-        uci -c $modem_path set modems.$usbifname.linkid=''"$imei"''
-        uci -c $modem_path commit modems
-        lock -u $lockfile
+	count=1
+	while [ $count -le 10 ];
+	do
+		imei=`gcom -d $ttydevice -s /etc/gcom/getimei.gcom | grep -E '[0-9]+'`
+		if [ ! -z "$imei" ]; then
+			break
+		fi
+		sleep 2
+		count=$(($count+1))
+	done
 
-        log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=qmihybrid"
+	lock $lockfile
+	uci -c $modem_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_path set modems.$usbifname=interface
+	uci -c $modem_path set modems.$usbifname.mgmt=''"$ttydevice"''
+	uci -c $modem_path set modems.$usbifname.linkid=''"$imei"''
+	uci -c $modem_path commit modems
+	lock -u $lockfile
+
+	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=qmihybrid"
 }
 
 add_to_config() {
 
-        # Action for the each USB
+	# Action for the each USB
 	local ttydevice
 	local modemtype
 	local product
@@ -297,28 +297,28 @@ add_to_config() {
 		# log "Not a modem:devpath=$DEVPATH"
 		return
 	fi
-        log "Hotplug add event: serial"
+	log "Hotplug add event: serial"
 	product=$(cat $usbpath/../uevent | awk -F= '/PRODUCT/ { print $2}')
-        if [ -z "$product" ]; then
-                log "Ignoring tty device, no product: DEVICENAME:$DEVICENAME"
-                return                        
-        fi
-        product="${product%/*}"
+	if [ -z "$product" ]; then
+		log "Ignoring tty device, no product: DEVICENAME:$DEVICENAME"
+		return
+	fi
+	product="${product%/*}"
 	# Normalize the USB ID so that it's ####:#### (4 chars each)
 	product=$(printf "%04x:%04x" "0x${product%/*}" "0x${product#*/}")
 
-        modemtype=$(get_modem_type "$DEVICENAME" "$product")
-        #log "product = $product, modem type = $modemtype"
-        if [ "$modemtype" == "ignore" ]; then
-                log "Ignoring tty device: DEVICENAME:$DEVICENAME"  
-                return                        
-        elif [ "$modemtype" == "qmihybrid" ]; then
-                handle_qmi_hybrid               
-                return                        
-        elif [ "$modemtype" == "None" ]; then
-                log "Hybrid modem selected for $modemtype: DEVICENAME:$DEVICENAME"  
+	modemtype=$(get_modem_type "$DEVICENAME" "$product")
+	#log "product = $product, modem type = $modemtype"
+	if [ "$modemtype" == "ignore" ]; then
+		log "Ignoring tty device: DEVICENAME:$DEVICENAME"
 		return
-        fi
+	elif [ "$modemtype" == "qmihybrid" ]; then
+		handle_qmi_hybrid
+		return
+	elif [ "$modemtype" == "None" ]; then
+		log "Hybrid modem selected for $modemtype: DEVICENAME:$DEVICENAME"
+		return
+	fi
 
 	ttydevice=$(gettty_device)
 	if [ -z "$ttydevice" ]; then
@@ -330,15 +330,15 @@ add_to_config() {
 
 	lock $lockfile
 	ret=$(check_device_config $usbifname)
-        if [ "$ret" == "True" ]; then
-                # Already dialup tty detected
+	if [ "$ret" == "True" ]; then
+		# Already dialup tty detected
 		log "Dial device already detected"
 		update_mgmt_device $ttydevice
 		lock -u $lockfile
 		return
-        else
+	else
 		update_dial_device "$ttydevice" "$product"
-        fi
+	fi
 
 	log "Starting pppd script for $ttydevice"
 	start_pppd_script
@@ -354,21 +354,21 @@ remove_from_config() {
 
 	log "Hotplug remove event: $DEVICENAME: $product: $ucigetmodem"
 	if [ ! -z $ucigetmodem ] && [ "$modemtype" == "$ucigetmodem" ];then
-                # QMI hybrid modems will also get a wwan net interface
-                # hotplug event as part of which these same sequence of steps
-                # will happen
-                if [ "$modemtype" == "qmihybrid" ]; then
-                        return;
-                fi
-                local pidfile="/$tmpdir/$usbifname.pid"
+		# QMI hybrid modems will also get a wwan net interface
+		# hotplug event as part of which these same sequence of steps
+		# will happen
+		if [ "$modemtype" == "qmihybrid" ]; then
+			return;
+		fi
+		local pidfile="/$tmpdir/$usbifname.pid"
 		$modem_script_path/modem_service.sh $usbifname stop
-                uci -c $modem_path delete modems.$usbifname
-                uci -c $modem_path commit modems
+		uci -c $modem_path delete modems.$usbifname
+		uci -c $modem_path commit modems
 		log "Removed modems config"
 
 		rm -rf $pidfile
-                rm -rf /$tmpdir/$usbifname"_periodic.txt"
-        fi
+		rm -rf /$tmpdir/$usbifname"_periodic.txt"
+	fi
 
 }
 
@@ -393,7 +393,7 @@ local lockfile="$tmpdir/$usbifname.lck"
 
 set_eventdir "$usbifname: usb: $DEVICENAME"
 
-debug_hotplugevents 
+debug_hotplugevents
 
 case "$DEVICENAME" in
     console|ttyS[0-9]*)

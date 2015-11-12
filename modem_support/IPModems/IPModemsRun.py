@@ -57,7 +57,8 @@ supported_vendor_string_list = {
 # This is a list of generic implementations that may be used for some
 # modem types
 supported_generic_type_list = {
-    'huawei-ncm' : 'huawei'
+    'huawei-ncm' : 'huawei',
+    'qmihybrid'  : 'qmihybrid'
 }
 
 supported_modems() #print the supported modems

@@ -156,8 +156,6 @@ modems_start() {
 	log "$USB: Start the modem $type script"
 	if [ "$type" == "serial" ];then
 		nohup $modem_script_path/TTYModems/ppp_run.sh -ifname $USB 2>&1 >/dev/null &
-	elif [ "$type" == "qmihybrid" ];then
-		nohup $modem_script_path/TTYModems/qmi_connect.sh -ifname $USB 2>&1 >/dev/null &
 	else
 		nohup $modem_script_path/IPModems/IPModemsRun.py $USB 2>&1 >/dev/null &
 	fi
@@ -169,9 +167,6 @@ modems_stop() {
 	local pid=$(cat /$tmpdir/$USB.pid)
 	local type=$(get_usb_type $USB)
 	kill -SIGTERM $pid
-	if [ "$type" == "qmihybrid" ];then
-		kill -SIGKILL $pid
-	fi
 	modems_plugout_delete_rule "$USB"
 	log "$USB: Kill modem $type script"
 }

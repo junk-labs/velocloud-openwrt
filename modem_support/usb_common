@@ -124,10 +124,10 @@ uci_get_modem_product()
 	echo $(uci -c $modem_path get modems.$usbifname.product)
 }
 
-uci_get_modem_mgmt()
+uci_get_modem_device()
 {
 	local usbifname=$1
-	echo $(uci -c $modem_path get modems.$usbifname.mgmt)
+	echo $(uci -c $modem_path get modems.$usbifname.device)
 }
 
 uci_get_modem_ifname()

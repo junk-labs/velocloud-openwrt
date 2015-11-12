@@ -277,8 +277,7 @@ handle_qmi_hybrid() {
 	lock $lockfile
 	uci -c $modem_path add modems interface\\\ '"$usbifname"'
 	uci -c $modem_path set modems.$usbifname=interface
-	uci -c $modem_path set modems.$usbifname.mgmt=''"$ttydevice"''
-	uci -c $modem_path set modems.$usbifname.linkid=''"$imei"''
+	uci -c $modem_path set modems.$usbifname.device=''"$ttydevice"''
 	uci -c $modem_path commit modems
 	lock -u $lockfile
 

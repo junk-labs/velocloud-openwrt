@@ -263,7 +263,7 @@ setup_wwan_modem()
 	# qmihybrid devices are AT-controlled NET devices
 	# The control port of the device is a /dev/ttyUSB device exposed through tty
 	if [ $modemtype == "qmihybrid" ]; then
-		local device=$(uci_get_modem_mgmt $usbifname)
+		local device=$(uci_get_modem_device $usbifname)
 
 		# If we have the tty already defined as mgmt device, we're ready
 		# to go; otherwise we'll need to wait and it will get launched

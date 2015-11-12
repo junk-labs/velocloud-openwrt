@@ -6,8 +6,10 @@ opengt
  flash 0.1
 
 :start
- send 'AT$NWQMICONNECT=,,^m'
- waitquiet 3 0.5
+  send 'AT$NWQMISTATUS^m'
+  waitfor 5 "NWQMISTATUS"
+  get 2 '' $s
+  print $s
 
 :continue
  exit 0

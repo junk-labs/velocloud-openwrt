@@ -1,0 +1,18 @@
+
+
+    This is a readme just for velocloud source code repo users (ie doesnt apply
+    to Aleksander)
+
+    This repository is maintained as a git submodule from the velocloud-modems
+    space. For more info on submodule read through http://git-scm.com/book/en/v2/Git-Tools-Submodules
+
+    If you are reading this file because you ran into some build errors etc.., all you
+    might have to do are the below two commands from your velocloud.src workspace
+
+    git submodule init
+    git submodule update
+
+    Do the above two commands and that should populate this repository and then you can
+    commit your stuff. Unless you are going to make any changes to contents in this directory,
+    thats all you probably ever have to do. If you plan to make changes to modem files,
+    then you better read through the git-scm link and understand things before committing anything

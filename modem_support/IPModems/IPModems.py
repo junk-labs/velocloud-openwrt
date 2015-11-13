@@ -9,6 +9,7 @@ import math
 import subprocess
 import socket
 import struct
+import datetime
 
 # This signal strength table is obtained from rssi/cinr mapping
 # Source:
@@ -66,6 +67,8 @@ class IPModems():
     def __init__(self, USB):
         self.USB = USB
         self.dontping = 0
+        # Traces disabled by default
+        self.notraces = 1
         # self.linkid
         # self.timer, self.modem_str
         # self.modem_name, self.modem_version
@@ -102,6 +105,9 @@ class IPModems():
     def log(self, contents):
         logging.warning('%s: %s' % (self.USB, contents))
 
+    def runcmd(self, cmd):
+	return commands.getstatusoutput(cmd)[1].strip()
+
     def get_uci_value(self, name):
         path = self.modem_path['modem_path']
         cmdget = "uci -c " + path + " get modems." + self.USB
@@ -124,13 +130,12 @@ class IPModems():
         except:
             logging.warning("[dev=%s]: Unable to open json modem info file %s", self.USB,filename)
 
-    def ping_test(self):
-        time.sleep(3) # Always takes 3 sec to get IP
+    def ping_test(self, max_tries, address):
         with open(os.devnull, "wb") as limbo:
             tries = 1
-            while tries <= 10: # Retry for 10 pings
+            while tries <= max_tries:
 	        try:
-                    result=subprocess.Popen(["ping", "-I", self.ifname, "-c", "1", "-W", "2", self.IP],
+                    result=subprocess.Popen(["ping", "-I", self.ifname, "-c", "1", "-W", "2", address],
                                stdout=limbo, stderr=limbo).wait()
                     if not result:
 		        time.sleep(1)
@@ -208,7 +213,7 @@ class IPModems():
         # Shared memory or the json print text ????
         path = self.modem_path['modem_path']
         cmd = "uci -c " + path + " set modems." + self.USB
-    
+
         if self.signal_strength:
             os.system(cmd + ".sigstrength='" + self.signal_strength + "'")
         if self.signal_percentage:
@@ -235,10 +240,51 @@ class IPModems():
         # Have to take care on signal handling to proper close
         # self.jsonfile.close() # Have to take care on signal handling
 
+    def write_traces(self):
+        # Do nothing if disabled
+        if self.notraces:
+            return
+
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # Iface address test
+        cmd = "ip -f inet -o addr show " + self.ifname + " 2>/dev/null | cut -d\\  -f 7 | cut -d/ -f 1"
+        ipaddr = self.runcmd(cmd)
+        if not ipaddr:
+            ipaddr = "no IP"
+            logging.debug("[dev=%s,traces]: no IP address set", self.USB)
+        else:
+            logging.debug("[dev=%s,traces]: IP address set: %s", self.USB, ipaddr)
+
+        # Ping test
+        ret, tries = self.ping_test(1, '8.8.8.8')
+        if ret != 0:
+            pingtest = "ping failed"
+            logging.debug("[dev=%s,traces]: ping test failed", self.USB)
+        else:
+            pingtest = "ping success"
+            logging.debug("[dev=%s,traces]: ping test succeeded", self.USB)
+
+        # Signal quality
+        if self.signal_strength:
+            signalstrength = self.signal_strength
+        else:
+            signalstrength = "??"
+        if self.signal_percentage:
+            signalpercentage = self.signal_percentage
+        else:
+            signalpercentage = "??"
+
+        # Write to file
+        with open('/tmp/USB/' + self.USB + '_ipmodem_traces.log', "a") as myfile:
+            trace = "[%s] %s, %s, %s, %s dBm, %s%%\n" % (timestamp, self.ifname, ipaddr, pingtest, signalstrength, signalpercentage)
+            myfile.write(trace)
+
     def monitor(self):
         logging.warning("[dev=%s]: Started monitoring device", self.USB)
         if self.modemtype == "cdcether" and not self.dontping:
-            ret, tries = self.ping_test()
+            time.sleep(3) # Always takes 3 sec to get IP
+            ret, tries = self.ping_test(10, self.IP)
             if ret != 0:
                 logging.warning("[dev=%s]: Ping Failed to %s", self.USB, self.IP)
             else:
@@ -250,6 +296,7 @@ class IPModems():
         while True:
             self.get_dynamic_values()
             self.set_dynamic_values_json()
+            self.write_traces()
             logging.debug("[dev=%s]: Waiting for %d secs to collect next info", self.USB, self.timer)
             time.sleep(self.timer)
 

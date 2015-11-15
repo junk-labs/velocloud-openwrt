@@ -164,9 +164,11 @@ modems_start() {
 }
 
 modems_stop() {
-	local pid=$(cat /$tmpdir/$USB.pid)
 	local type=$(get_usb_type $USB)
-	kill -SIGTERM $pid
+	if [ -f /$tmpdir/$USB.pid ]; then
+		local pid=$(cat /$tmpdir/$USB.pid)
+		kill -SIGTERM $pid
+	fi
 	modems_plugout_delete_rule "$USB"
 	log "$USB: Kill modem $type script"
 }

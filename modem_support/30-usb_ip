@@ -228,7 +228,8 @@ setup_wwan_modem()
 		# For Huawei NCM modems, we just create the profile at this point.
 		# The modem_service.sh script will launch the connection.
 		log "WWAN modem setup: Huawei NCM"
-		return 1
+		$modem_script_path/modem_service.sh $usbifname start
+		return
 	fi
 
 	# qmiwwan devices are QMI-controlled NET devices
@@ -257,7 +258,8 @@ setup_wwan_modem()
 		# For QMI modems, we just create the profile at this point.
 		# The modem_service.sh script will launch the connection.
 		log "WWAN modem setup: QMI"
-		return 1
+		$modem_script_path/modem_service.sh $usbifname start
+		return
 	fi
 
 	# qmihybrid devices are AT-controlled NET devices
@@ -270,11 +272,12 @@ setup_wwan_modem()
 		# later when the tty is processed.
 		if [ -z "$device" ]; then
 			log "TTY not yet defined in qmihybrid modem: deferred"
-			return 0
+			return
 		fi
 
 		log "WWAN modem setup: QMI-hybrid"
-		return 1
+		$modem_script_path/modem_service.sh $usbifname start
+		return
 	fi
 
 	# Plain ECM/NCM device without control port, which we just assume is
@@ -285,7 +288,7 @@ setup_wwan_modem()
 	uci -c $modem_path commit modems
 
 	log "Unmanaged network device: $status"
-	return 1
+	$modem_script_path/modem_service.sh $usbifname start
 }
 
 add_to_config()
@@ -322,10 +325,7 @@ add_to_config()
 		return
 	fi
 
-	if [ $(setup_wwan_modem "$modemtype" "$product") -eq 1 ]; then
-		log "Starting WWAN modem script for $DEVICENAME"
-		$modem_script_path/modem_service.sh $usbifname start
-	fi
+	setup_wwan_modem "$modemtype" "$product"
 }
 
 remove_from_config()

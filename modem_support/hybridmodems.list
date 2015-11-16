@@ -27,7 +27,7 @@
 # AT&T sierra 313U
 0f3d:68aa               serial
 # Novatel 551L
-1410:b001       qmihybrid
+1410:b001 qmiwwan
 # Novatel U620L
 1410:9022 qmihybrid
 #

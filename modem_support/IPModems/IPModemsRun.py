@@ -51,7 +51,8 @@ supported_vendor_string_list = {
 # modem types
 supported_generic_type_list = {
     'huawei-ncm' : 'huawei',
-    'qmihybrid'  : 'qmihybrid'
+    'qmihybrid'  : 'qmihybrid',
+    'qmiwwan'    : 'qmi'
 }
 
 supported_modems() #print the supported modems

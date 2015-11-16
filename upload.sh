@@ -9,11 +9,11 @@ fi
 SSH_PREFS=""
 
 scp ${SSH_PREFS}                                 \
-    modem_support/30-usb_ip                      \
+    modem_support/30-velocloud-modem-net         \
     root@${VELOCLOUD}:/etc/hotplug.d/net/
 
 scp ${SSH_PREFS}                                 \
-    modem_support/30-config                      \
+    modem_support/30-velocloud-modem-tty         \
     root@${VELOCLOUD}:/etc/hotplug.d/tty/
 
 scp ${SSH_PREFS}                                 \

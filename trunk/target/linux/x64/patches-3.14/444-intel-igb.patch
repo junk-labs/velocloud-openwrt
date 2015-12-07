@@ -555,7 +555,15 @@
  
  	if ((new_mtu < 68) || (max_frame > MAX_JUMBO_FRAME_SIZE)) {
  		dev_err(&pdev->dev, "Invalid MTU setting\n");
-@@ -5272,14 +5318,7 @@
+@@ -5106,7 +5152,6 @@
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	u32 reg, mpc;
+-	u16 phy_tmp;
+ 	int i;
+ 	u64 bytes, packets;
+ 	unsigned int start;
+@@ -5272,14 +5317,7 @@
  
  	/* Tx Dropped needs to be maintained elsewhere */
  
@@ -571,7 +579,7 @@
  
  	/* Management Stats */
  	adapter->stats.mgptc += rd32(E1000_MGTPTC);
-@@ -6678,6 +6717,7 @@
+@@ -6678,6 +6716,7 @@
  		unsigned char *network;
  		/* l2 headers */
  		struct ethhdr *eth;
@@ -579,7 +587,7 @@
  		struct vlan_hdr *vlan;
  		/* l3 headers */
  		struct iphdr *ipv4;
-@@ -6698,6 +6738,15 @@
+@@ -6698,6 +6737,15 @@
  	protocol = hdr.eth->h_proto;
  	hdr.network += ETH_HLEN;
  
@@ -595,9 +603,27 @@
  	/* handle any vlan tag if present */
  	if (protocol == __constant_htons(ETH_P_8021Q)) {
  		if ((hdr.network - data) > (max_len - VLAN_HLEN))
+@@ -7255,7 +7303,8 @@
+ 	/* Fiber NIC's only allow 1000 gbps Full duplex
+ 	 * and 100Mbps Full duplex for 100baseFx sfp
+ 	 */
+-	if (adapter->hw.phy.media_type == e1000_media_type_internal_serdes) {
++	if ((adapter->hw.phy.media_type == e1000_media_type_internal_serdes)
++		|| (adapter->hw.phy.media_type == e1000_media_type_sfp)) {
+ 		switch (spd + dplx) {
+ 		case SPEED_10 + DUPLEX_HALF:
+ 		case SPEED_10 + DUPLEX_FULL:
+@@ -7281,6 +7330,7 @@
+ 		break;
+ 	case SPEED_1000 + DUPLEX_FULL:
+ 		mac->autoneg = 1;
++		mac->forced_speed_duplex = ADVERTISE_1000_FULL;
+ 		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
+ 		break;
+ 	case SPEED_1000 + DUPLEX_HALF: /* not supported */
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,3492 @@
+@@ -0,0 +1,3495 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -2052,6 +2078,7 @@
 +{
 +	u16 data;
 +	s32 ret;
++	struct e1000_mac_info *mac = &hw->mac;
 +
 +	// setup the sgmii link;
 +
@@ -2084,9 +2111,11 @@
 +		goto out;
 +	data &= ~(M88E1000_SPEC_CTRL_PREFER
 +		| M88E1000_SPEC_CTRL_MODE);
-+	data |= (M88E1000_SPEC_CTRL_MODE_1000BASEX_ONLY
-+		| M88E1000_SPEC_CTRL_PWR_UP
-+		| M88E1000_SPEC_CTRL_ENH_SGMII);
++	if(mac->forced_speed_duplex & (E1000_ALL_100_SPEED | E1000_ALL_10_SPEED))
++		data |= M88E1000_SPEC_CTRL_MODE_100BASEFX;
++	else
++		data |= M88E1000_SPEC_CTRL_MODE_1000BASEX_ONLY;
++	data |= (M88E1000_SPEC_CTRL_PWR_UP | M88E1000_SPEC_CTRL_ENH_SGMII);
 +	ret = igb_vc_m88phy_sgmii_mdio_write(hw, M88E1000_PHY_SPEC_CTRL, data);
 +	if(ret)
 +		goto out;
@@ -4151,3 +4180,29 @@
  	/* When SoL/IDER sessions are active, autoneg/speed/duplex
  	 * cannot be changed
  	 */
+@@ -275,7 +285,8 @@
+ 	 * some hardware doesn't allow MDI setting when speed or
+ 	 * duplex is forced.
+ 	 */
+-	if (ecmd->eth_tp_mdix_ctrl) {
++	if(hw->phy.media_type != e1000_media_type_sfp) {
++	    if (ecmd->eth_tp_mdix_ctrl) {
+ 		if (hw->phy.media_type != e1000_media_type_copper)
+ 			return -EOPNOTSUPP;
+ 
+@@ -284,6 +295,7 @@
+ 			dev_err(&adapter->pdev->dev, "forcing MDI/MDI-X state is not supported when link speed and/or duplex are forced\n");
+ 			return -EINVAL;
+ 		}
++	    }
+ 	}
+ 
+ 	while (test_and_set_bit(__IGB_RESETTING, &adapter->state))
+@@ -291,6 +303,7 @@
+ 
+ 	if (ecmd->autoneg == AUTONEG_ENABLE) {
+ 		hw->mac.autoneg = 1;
++		hw->mac.forced_speed_duplex = 0;
+ 		if (hw->phy.media_type == e1000_media_type_fiber) {
+ 			hw->phy.autoneg_advertised = ecmd->advertising |
+ 						     ADVERTISED_FIBRE |

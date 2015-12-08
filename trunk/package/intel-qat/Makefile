@@ -45,6 +45,8 @@ define Package/intel-qat/description
   Intel Quickassist user libs and tools.
 endef
 
+TARGET_CFLAGS += -ggdb3
+
 # kernel land;
 
 define KernelPackage/intel-qat

@@ -77,8 +77,6 @@ void early_mainboard_romstage_entry(void)
 
 	console_init();
 
-	printk(BIOS_DEBUG, "***default TCO1_CNT reg: 0x%x***\n", inl(0x400 + TCO1_CNT));
-
 	vc_register_i2c_gpio(&bb_i2c1);
 
 	/* Mode1 Select register  */

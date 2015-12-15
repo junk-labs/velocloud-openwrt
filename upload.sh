@@ -35,6 +35,6 @@ scp ${SSH_PREFS}                                 \
     root@${VELOCLOUD}:/opt/vc/modems/IPModems/
 
 scp ${SSH_PREFS}                                 \
-    modem_support/IPModems/huaweistatus.gcom     \
-    modem_support/IPModems/qmihybridstatus.gcom  \
+    modem_support/gcom/huaweistatus.gcom         \
+    modem_support/gcom/qmihybridstatus.gcom      \
     root@${VELOCLOUD}:/etc/gcom/

@@ -245,6 +245,26 @@ setup_wwan_modem()
 		return
 	fi
 
+	# sierranet devices are AT-controlled NET devices
+	# The control port of the device is a /dev/ttyUSB device exposed through tty
+	if [ $modemtype == "sierranet" ]; then
+		local device=$(uci_get_modem_device $usbifname)
+
+		# NOTE: Profile generation where the TTY is processed
+
+		# If we have the tty already defined as mgmt device, we're ready
+		# to go; otherwise we'll need to wait and it will get launched
+		# later when the tty is processed.
+		if [ -z "$device" ]; then
+			log "TTY not yet defined in modem: deferred"
+			return
+		fi
+
+		log "WWAN modem setup: Sierra Direct IP"
+		$modem_script_path/modem_service.sh $usbifname start
+		return
+	fi
+
 	# Plain ECM/NCM device without control port, which we just assume is
 	# connected by default (e.g. a MiFi) without a control port.
 	ubus call network reload
@@ -285,6 +305,8 @@ add_to_config()
 
 	if [ "$modemtype" == "qmihybrid" ]; then
 		log "qmihybrid modem, not checking for config presence"
+	elif [ "$modemtype" == "sierranet" ]; then
+		log "sierranet modem, not checking for config presence"
 	else
 		ret=$(check_device_config $usbifname)
 		if [ "$ret" == "True" ]; then

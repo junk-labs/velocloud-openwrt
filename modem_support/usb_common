@@ -112,6 +112,9 @@ get_modem_type()
 		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
 			modemtype="qmihybrid"
 		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "sierranet" ]; then
+			modemtype="sierranet"
+		fi
 	fi
 
 	# Some initial modem type detection based on the current driver in use
@@ -152,6 +155,9 @@ get_modem_type()
 			fi
 			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
 				modemtype="qmihybrid"
+			fi
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "sierranet" ]; then
+				modemtype="sierranet"
 			fi
 		fi
 	fi

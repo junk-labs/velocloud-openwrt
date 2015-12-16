@@ -29,10 +29,12 @@ scp ${SSH_PREFS}                                 \
     modem_support/IPModems/IPModems.py           \
     modem_support/IPModems/qmi.py                \
     modem_support/IPModems/huawei.py             \
+    modem_support/IPModems/sierranet.py          \
     modem_support/IPModems/qmihybrid.py          \
     root@${VELOCLOUD}:/opt/vc/modems/IPModems/
 
 scp ${SSH_PREFS}                                 \
     modem_support/gcom/huaweistatus.gcom         \
     modem_support/gcom/qmihybridstatus.gcom      \
+    modem_support/gcom/sierranetstatus.gcom      \
     root@${VELOCLOUD}:/etc/gcom/

@@ -49,6 +49,7 @@ supported_vendor_string_list = {
 # This is a list of generic implementations that may be used for some
 # modem types
 supported_generic_type_list = {
+    'sierranet'  : 'sierranet',
     'huawei-ncm' : 'huawei',
     'qmihybrid'  : 'qmihybrid',
     'qmiwwan'    : 'qmi'

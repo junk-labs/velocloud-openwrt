@@ -129,16 +129,17 @@ class Qmi(IPModems.IPModems):
 			self.linkid = self.qmicli_dms("--dms-uim-get-imsi | awk -F\"'\" '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}/)){printf $i} } }'")
 			self.modem_name = self.qmicli_dms("--dms-get-manufacturer | awk '/Manufacturer:/ { gsub(/\\x27/, \"\", $0); for(i=2;i<=NF;i++) {printf $i\" \"}}'")
 			self.modem_version = self.qmicli_dms("--dms-get-model | awk '/Model:/ { gsub(/\\x27/, \"\", $0); for(i=2;i<=NF;i++) {printf $i\" \"}}'")
+			self.isp_name = self.qmicli_nas("--nas-get-home-network | awk '/Description:/ { gsub(/\\x27/, \"\", $0); for(i=2;i<=NF;i++) {printf $i\" \"}}'")
 		except RuntimeError:
 			logging.warning("[dev=%s]: couldn't load static values", self.USB)
 
 		logging.debug("[dev=%s]: manufacturer: %s", self.USB, self.modem_name);
 		logging.debug("[dev=%s]: model: %s", self.USB, self.modem_version);
 		logging.debug("[dev=%s]: linkid: %s", self.USB, self.linkid);
+		logging.debug("[dev=%s]: isp_name: %s", self.USB, self.isp_name);
 
 		# Set the static values
 		self.activation_status = 'activated'
-		self.isp_name = ''
 		self.supported_technologies = 'LTE'
 
 		# If we're connected when loading static values we may be in auto-connect, so just

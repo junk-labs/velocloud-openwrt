@@ -36,7 +36,7 @@ logging.basicConfig(filename=debugfile, level=debugflag)
 
 # This is a VID/PID based list
 supported_vidpid_list = {
-    '106c:3718' : 'uml290'
+    # 'VID:PID' : 'plugin name'
 }
 
 # This is a Vendor string based list
@@ -44,7 +44,6 @@ supported_vendor_string_list = {
     'Beceem Communications'         : 'ubee',
     'Pantech'                       : 'pantech',
     'ZTE,Incorporated'              : 'zte',
-    'Sierra Wireless, Incorporated' : 'sierra'
 }
 
 # This is a list of generic implementations that may be used for some

@@ -28,8 +28,6 @@ scp ${SSH_PREFS}                                 \
     modem_support/IPModems/IPModemsRun.py        \
     modem_support/IPModems/IPModems.py           \
     modem_support/IPModems/qmi.py                \
-    modem_support/IPModems/sierra.py             \
-    modem_support/IPModems/uml290.py             \
     modem_support/IPModems/huawei.py             \
     modem_support/IPModems/qmihybrid.py          \
     root@${VELOCLOUD}:/opt/vc/modems/IPModems/

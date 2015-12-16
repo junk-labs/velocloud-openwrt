@@ -112,6 +112,16 @@ mfg_t Mfg[] = {
 	  { 1, 630, 0 }, 6,
 	  { 0xF0,0x8E,0xDB,0x01,0x41,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x4f,0xff }, },
 
+	// start a new 16k block 01:50:00..01:8f:ff for pw-mp2 for units 2500..6595;
+	{ "pw-mp2",
+	  "edge500",
+	  { "eth0", },
+	  { "atom-c2000-igb-sgmii.bin", },
+	  { 0x8086, },
+	  { 0x1f41, },
+	  { 2500, 6595, 2500 }, 4,
+	  { 0xF0,0x8E,0xDB,0x01,0x50,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x8f,0xff }, },
+
 	{ 0 },
 };
 
@@ -135,6 +145,7 @@ struct g {
 	char opt_pciid;
 	char opt_x;
 	char opt_dry;
+	char opt_all;
 	char nmacs;
 	char *bid;
 	char *board;
@@ -508,6 +519,8 @@ mfg_list(g_t *g)
 
 	Msg("list of mfg runs (for -u):\n");
 	for(mfg = Mfg; p = mfg->name; mfg++) {
+		if( !g->opt_all && strcmp(g->board, mfg->board))
+			continue;
 		Msg(" %s board ids %d..%d base %02x:%02x:%02x:%02x:%02x:%02x macs %u\n",
 			p, mfg->bnums[0], mfg->bnums[1],
 			mfg->mac_min[0], mfg->mac_min[1], mfg->mac_min[2],
@@ -605,7 +618,7 @@ main(int argc, char **argv)
 
 	// get options;
 
-	while((c = getopt(argc, argv, "o:N:m:B:b:p:i:t:u:xnh")) != EOF) {
+	while((c = getopt(argc, argv, "o:N:m:B:b:p:i:t:u:xnah")) != EOF) {
 		switch(c) {
 		case 'o' :
 			if( !get_num(optarg, &g->mac[0], 3))
@@ -652,6 +665,9 @@ main(int argc, char **argv)
 		case 'n' :
 			g->opt_dry = 1;
 			break;
+		case 'a' :
+			g->opt_all = 1;
+			break;
 		case 'h':
 			Msg("help\n"
 				"  %s [options]\n"
@@ -666,6 +682,7 @@ main(int argc, char **argv)
 				"  [-u mfg:id]    (unique MAC from pool with board id)\n"
 				"  [-x]           (program i350-sfp on edge520/540)\n"
 				"  [-n]           (dry run, do not program)\n"
+				"  [-a]           (list all mfg runs)\n"
 				"  [-h]           (this help)\n",
 				g->cmd);
 			mfg_list(g);
@@ -794,6 +811,8 @@ main(int argc, char **argv)
 	if( !g->opt_dry) {
 		n = system(cmd);
 		Msg("flash status 0x%x: %s\n", n, n? "FAILED" : "success");
+		if(n)
+			return(n);
 	}
 
 	return(0);

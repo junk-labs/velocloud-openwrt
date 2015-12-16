@@ -59,7 +59,7 @@ SRC32FLAT=$(SRCBOTH) post.c memmap.c malloc.c pmm.c romfile.c optionroms.c \
     hw/ahci.c hw/pvscsi.c hw/usb-xhci.c hw/usb-hub.c \
     fw/coreboot.c fw/lzmadecode.c fw/csm.c fw/biostables.c \
     fw/paravirt.c fw/shadow.c fw/pciinit.c fw/smm.c fw/mtrr.c fw/xen.c \
-    fw/acpi.c fw/mptable.c fw/pirtable.c fw/smbios.c fw/romfile_loader.c
+    fw/acpi.c fw/mptable.c fw/pirtable.c fw/smbios.c fw/romfile_loader.c vc_gpio.c
 SRC32SEG=string.c output.c pcibios.c apm.c stacks.c hw/pci.c hw/serialio.c
 DIRS=src src/hw src/fw vgasrc
 

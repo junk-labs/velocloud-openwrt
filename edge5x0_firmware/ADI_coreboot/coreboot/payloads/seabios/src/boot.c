@@ -22,6 +22,7 @@
 #include "util.h" // irqtimer_calc
 #include "fw/coreboot.h" // get_cbmem_bootorder_file
 #include "boot.h" // bootmapper struct/defines
+#include "vc_gpio.h" //flashing red LED
 
 /****************************************************************
  * Boot priority ordering
@@ -770,12 +771,15 @@ boot_rom(u32 vector)
 static void
 boot_fail(void)
 {
+    extern void vc_led_blink_red(void);
+
     if (BootRetryTime == (u32)-1)
         printf("No bootable device.\n");
     else
         printf("No bootable device.  Retrying in %d seconds.\n"
                , BootRetryTime/1000);
     // Wait for 'BootRetryTime' milliseconds and then reboot.
+    vc_led_blink_red();
     u32 end = irqtimer_calc(BootRetryTime);
     for (;;) {
         if (BootRetryTime != (u32)-1 && irqtimer_check(end))

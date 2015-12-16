@@ -123,7 +123,7 @@ class Huawei(IPModems.IPModems):
 
 			# Get APN from profile
 			myvars = {}
-			with open("/tmp/USB/" + self.USB + "_huawei.profile") as myfile:
+			with open("/tmp/USB/" + self.USB + ".profile") as myfile:
 				for line in myfile:
 					name, var = line.partition("=")[::2]
 					myvars[name.strip()] = var.strip()

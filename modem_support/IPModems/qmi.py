@@ -209,13 +209,13 @@ class Qmi(IPModems.IPModems):
 				self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " down")
 
 			logging.debug("[dev=%s]: explicitly stopping connection...", self.USB)
-			self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + "_qminetwork.profile " + self.device + " stop")
+			self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + ".profile " + self.device + " stop")
 
 			# If we're registered, we relaunch reconnection
 			if self.registration_status == 'registered':
 				# Launch qmi-network start
 				logging.debug("[dev=%s]: restarting connection...", self.USB)
-				self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + "_qminetwork.profile " + self.device + " start")
+				self.runcmd("/usr/bin/qmi-network --profile=/tmp/USB/" + self.USB + ".profile " + self.device + " start")
 
 				self.reload_connection_status()
 				if self.connection_status == 'connected':

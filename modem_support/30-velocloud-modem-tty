@@ -274,6 +274,12 @@ handle_qmi_hybrid() {
 		count=$(($count+1))
 	done
 
+	# In qmi-hybrid modems we trigger the profile generation as soon as we get
+	# the management TTY
+	apn=$(at_get_apn $ttydevice $usbifname)
+	PROFILE=/tmp/USB/${usbifname}.profile
+	echo "APN=$apn" > ${PROFILE}
+
 	lock $lockfile
 	uci -c $modem_path add modems interface\\\ '"$usbifname"'
 	uci -c $modem_path set modems.$usbifname=interface

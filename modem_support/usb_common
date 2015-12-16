@@ -25,6 +25,54 @@ if usb:
 EOF
 }
 
+at_get_imsi_number() {
+	local dialdevice=$1
+	local usbifname=$2
+	local imsi_tries=3
+	local tempfile="$tmpdir/$usbifname.siminfo"
+	local imsicmd="gcom -d $dialdevice -s /etc/gcom/vcgetimsi.gcom"
+	local imsi_number
+	while [ -z $imsi_number ] && [ "$imsi_tries" -ne 0 ]; do
+		$imsicmd | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
+		log "IMSI Info: $(cat $tempfile | xargs echo)"
+
+		imsi_number=$(cat $tempfile | awk '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}$/)){print $i;break} } }')
+		imsi_tries=$(expr $imsi_tries - 1)
+	done
+	log "IMSI: $imsi_number"
+	rm -f $tempfile
+	echo $imsi_number
+}
+
+at_get_apn()
+{
+	local dialdevice=$1
+	local usbifname=$2
+	local imsi=$(at_get_imsi_number $dialdevice $usbifname)
+	local mccmnc
+
+	# Look for a match with a 2-digit MNC (i.e. no PCS digit)
+	mccmnc="${imsi:0:5}"
+	if [ ! -z $mccmnc ]; then
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Look for a match with a 3-digit MNC (i.e. with PCS digit)
+	if [ -z $apn ]; then
+		mccmnc="${imsi:0:6}"
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Assume we got a 2 digit MNC from IMSI, so build a 3-digit MNC and recheck
+	if [ -z $apn ]; then
+		mccmnc="${imsi:0:3}0${imsi:3:2}"
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Note: if APN not found, use empty APN
+	echo $apn
+}
+
 check_device_config() {
 	local usbifname=$1
 	local ret="False"

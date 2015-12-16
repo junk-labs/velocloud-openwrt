@@ -39,23 +39,33 @@ qmi_get_apn()
 {
 	local device=$1
 	local apn=''
-	local mcode=''
 	local mcc=''
 	local mnc=''
+	local mnc2=''
+	local mnc3=''
 	local apnfile='/tmp/'$device'.apn'
 	/usr/bin/qmicli -d /dev/$device --nas-get-home-network > $apnfile
 	mcc=`awk '/MCC/ {gsub("\x27","",$2); print $2}' $apnfile`
 	if [ $? -eq 0 -a ! -z "$mcc" ]; then
 		mnc=`awk '/MNC/ {gsub("\x27","",$2); print $2}' $apnfile`
 		if [ $? -eq 0 -a ! -z "$mnc" ]; then
-			while [ ${#mnc} -lt 3 ]; do
-				mnc="0"$mnc
+			mnc2=$mnc
+			while [ ${#mnc2} -lt 2 ]; do
+				mnc2="0"$mnc2
 			done
-			mcode=$mcc$mnc
+			mnc3=$mnc2
+			while [ ${#mnc3} -lt 3 ]; do
+				mnc3="0"$mnc3
+			done
 		fi
 	fi
-	if [ ! -z $mcode ]; then
-		apn=$(uci -c /etc/config/modems get mcodemap.${mcode}.apn)
+	if [ ! -z $mcc -a ! -z $mnc ]; then
+		# Look for 3 digit MNC first
+		apn=$(uci -c /etc/config/modems get mcodemap.${mcc}${mnc3}.apn)
+		# Otherwise, look for 2 digit MNC
+		if [ -z $apn ]; then
+			apn=$(uci -c /etc/config/modems get mcodemap.${mcc}${mnc2}.apn)
+		fi
 	fi
 	if [ -z $apn ]; then
 		apn="broadband"

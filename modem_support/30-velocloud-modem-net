@@ -283,11 +283,15 @@ add_to_config()
 	# Already detected and updated network
 	log "DEVICE=$DEVICENAME: TYPE=$modemtype INTERFACE:$INTERFACE"
 
-	ret=$(check_device_config $usbifname)
-	if [ "$ret" == "True" ]; then
-		# Already dialup tty detected
-		log "net device $modemtype already detected"
-		return
+	if [ "$modemtype" == "qmihybrid" ]; then
+		log "qmihybrid modem, not checking for config presence"
+	else
+		ret=$(check_device_config $usbifname)
+		if [ "$ret" == "True" ]; then
+			# Already dialup tty detected
+			log "net device $modemtype already detected"
+			return
+		fi
 	fi
 
 	setup_wwan_modem "$modemtype" "$product"

@@ -1,0 +1,53 @@
+--- a/libparted/arch/linux.c	2015-12-10 15:02:00.528163080 -0800
++++ b/libparted/arch/linux.c	2015-12-10 14:59:37.986537616 -0800
+@@ -2304,6 +2304,7 @@
+   return r < 0 ? NULL : resultp;
+ }
+ 
++#ifdef ENABLE_DEVICE_MAPPER
+ static char *
+ dm_canonical_path (PedDevice const *dev)
+ {
+@@ -2326,12 +2327,17 @@
+ err:
+         return NULL;
+ }
++#endif
+ 
+ static char*
+ _device_get_part_path (PedDevice const *dev, int num)
+ {
++#ifdef ENABLE_DEVICE_MAPPER
+         char *devpath = (dev->type == PED_DEVICE_DM
+                          ? dm_canonical_path (dev) : dev->path);
++#else
++        char *devpath = dev->path;
++#endif
+         size_t path_len = strlen (devpath);
+         char *result;
+         /* Check for devfs-style /disc => /partN transformation
+@@ -2945,12 +2951,14 @@
+                                                unsigned long long *length);
+ 
+ 
++#ifdef ENABLE_DEVICE_MAPPER
+         if (disk->dev->type == PED_DEVICE_DM) {
+                 add_partition = _dm_add_partition;
+                 remove_partition = _dm_remove_partition;
+                 resize_partition = _dm_resize_partition;
+                 get_partition_start_and_length = _dm_get_partition_start_and_length;
+         } else {
++#endif
+                 add_partition = _blkpg_add_partition;
+                 remove_partition = _blkpg_remove_partition;
+ #ifdef BLKPG_RESIZE_PARTITION
+@@ -2959,7 +2967,9 @@
+                 resize_partition = NULL;
+ #endif
+                 get_partition_start_and_length = _kernel_get_partition_start_and_length;
++#ifdef ENABLE_DEVICE_MAPPER
+         }
++#endif
+ 
+         /* lpn = largest partition number.
+          * for remove pass, use greater of device or label limit */

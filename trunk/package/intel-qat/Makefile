@@ -33,12 +33,15 @@ ADF_DEBUG:=
 
 # user land
 
+# Do not make intel-qat depend on kmod-intel-qat.
+# We only install the kmod on systems that have a QAT module, while
+# the intel-qat package (library, etc.) go on all systems.
 define Package/intel-qat
   SECTION:=utils
   CATEGORY:=VeloCloud
   TITLE:=Intel Quickassist user libs and tools.
   URL:=http://velocloud.net
-  DEPENDS:=+USE_EGLIBC +zlib +libopenssl +kmod-intel-qat
+  DEPENDS:=+USE_EGLIBC +zlib +libopenssl
 endef
 
 define Package/intel-qat/description

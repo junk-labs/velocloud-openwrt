@@ -149,6 +149,7 @@ define OpenwrtConfig
 		-e '/CONFIG_.*_kmod-i2c-i801/d' \
 		-e '/CONFIG_.*_kmod-i2c-ismt/d' \
 		-e '/CONFIG_.*_kmod-i2c-ltc4266/d' \
+		-e '/CONFIG_.*_kmod-vc-nmi/d' \
 		-e '/CONFIG_.*_dmi-tool/d' \
 		-e '$$ a\\n# target overwrites\n' \
 		-e '$$ aCONFIG_TARGET_$(OPENWRT_ARCH)=y' \

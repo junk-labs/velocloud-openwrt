@@ -623,7 +623,7 @@
  	case SPEED_1000 + DUPLEX_HALF: /* not supported */
 --- /dev/null
 +++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,3495 @@
+@@ -0,0 +1,3549 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -765,6 +765,8 @@
 +#define M88_GL2_SMI_CMD_REG 0x001f	// SMI register address;
 +#define M88_GL2_SMI_DATA 0x19		// SMI data;
 +
++#define M88_GL2_SRATCH_MISC 0x1a	// scratch/misc;
++
 +#define SUPPORTED_M88E6320 (SUPPORTED_Autoneg | SUPPORTED_TP \
 +	| SUPPORTED_10baseT_Half | SUPPORTED_10baseT_Full \
 +	| SUPPORTED_100baseT_Half | SUPPORTED_100baseT_Full \
@@ -859,10 +861,25 @@
 +};
 +
 +static int dsa = 0;
-+module_param(dsa, int, 0);
++module_param(dsa, int, 0444);
 +MODULE_PARM_DESC(dsa, "Enable DSA on switch.");
 +
 +#define VC_DSA "dsa"
++
++// switch/phy voltage control;
++
++static int avdd = 0x80;
++module_param(avdd, int, 0444);
++MODULE_PARM_DESC(avdd, "Set switch/phy analog Vdd.");
++
++enum avdd {
++	AVDD_6320_1_35V = 0,
++	AVDD_6320_1_40V = 1,
++	AVDD_6320_1_45V = 2,
++	AVDD_6320_1_50V = 3,
++	AVDD_6320_MASK = 0x7f,
++	AVDD_6320_SET = 0x80,
++};
 +
 +// switch tree;
 +
@@ -1266,7 +1283,7 @@
 +// the PHY registers cannot be accessed directly through bank;
 +// instead, we must go through the SMI_CMD/SMI_DATA registers;
 +// reg[4:0] register;
-+// reg[9:5] device (copper 0..N, 0xf fiver);
++// reg[9:5] device (copper 0..N, 0xf fiber);
 +// reg[31:16] page;
 +
 +static s32
@@ -1323,7 +1340,7 @@
 +// the PHY registers cannot be accessed directly through bank;
 +// instead, we must go through the SMI_CMD/SMI_DATA registers;
 +// reg[4:0] register;
-+// reg[9:5] device (copper 0..N, 0xf fiver);
++// reg[9:5] device (copper 0..N, 0xf fiber);
 +// reg[31:16] page;
 +
 +static s32
@@ -1946,7 +1963,7 @@
 +{
 +	struct e1000_phy_info *phy = &hw->phy;
 +	s32 ret;
-+	u16 fid;
++	u16 fid, old, val;
 +
 +	// setup the sgmii link;
 +
@@ -1962,6 +1979,43 @@
 +	ret = phy->ops.reset(hw); 
 +	if(ret)
 +		goto out;
++
++	// manage 88e6320 analog VDD for copper side drivers;
++	// unfortunately, this is also the vdd for the sgmii links;
++	// t-mark certification requires certain limits;
++
++	if(avdd & AVDD_6320_SET) {
++		// set pointer;
++		ret = igb_vc_mdio_write(hw,
++			M88_SW_REG(M88_SW_GLOBAL2, M88_GL2_SRATCH_MISC),
++			0x0600);
++		if(ret)
++			goto out;
++		// read old;
++		ret = igb_vc_mdio_read(hw,
++			M88_SW_REG(M88_SW_GLOBAL2, M88_GL2_SRATCH_MISC),
++			&old);
++		if(ret)
++			goto out;
++		val = avdd & AVDD_6320_MASK;
++		switch(val) {
++		case AVDD_6320_1_35V:
++		case AVDD_6320_1_40V:
++		case AVDD_6320_1_45V:
++		case AVDD_6320_1_50V:
++			val = 0x8600 | (val << 4) | (old & 0xf);
++			break;
++		default:
++			pr_err("igb: illegal avdd parameter: 0x%x\n", avdd);
++		}
++		if(val) {
++			ret = igb_vc_mdio_write(hw,
++				M88_SW_REG(M88_SW_GLOBAL2, M88_GL2_SRATCH_MISC),
++				val);
++			if(ret)
++				goto out;
++		}
++	}
 +
 +	// setup port-based routing;
 +	// the two WAN ports are different networks;

@@ -12,6 +12,10 @@ class Sierranet(IPModems.IPModems):
 		self.timer = 3
                 self.connection_status_check_errors = 0
                 self.connection_status = 'disconnected'
+		self.connection_errors = 0
+
+		# If we have 10 consecutive checks (~30s) without a proper connection, we request a hard reset
+		self.hard_reset_threshold = 10
 
                 # If we have 10 consecutive checks (~30s) without a proper connection, we request assume disconnected
                 self.connection_status_check_threshold = 10
@@ -45,6 +49,9 @@ class Sierranet(IPModems.IPModems):
 			logging.warning("[dev=%s]: couldn't load connection status", self.USB)
 
 	def reconnected(self):
+		# Clear connection errors once connected
+		self.connection_errors = 0
+
 		# Make sure WWAN is always up when just connected
 		logging.debug("[dev=%s]: setting %s device up...", self.USB, self.ifname)
 		self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " up")
@@ -113,6 +120,9 @@ class Sierranet(IPModems.IPModems):
 
 		# Do we need to force a full explicit disconnection of all our state info?
 		if wwan_down:
+			# Flag a new connection error detected
+			self.connection_errors += 1
+
 			# If we have WWAN net info, bring it down
 			logging.debug("[dev=%s]: setting %s device down...", self.USB, self.ifname)
 			self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " down")
@@ -139,3 +149,16 @@ class Sierranet(IPModems.IPModems):
 				logging.warning("[dev=%s]: reconnected", self.USB)
 			else:
 				logging.warning("[dev=%s]: couldn't reconnect", self.USB)
+
+		if self.connection_errors == self.hard_reset_threshold:
+			logging.warning("[dev=%s]: too many connection errors (%d): requesting hard reset", self.USB, self.connection_errors)
+
+			# Force a full reset
+			cmd = "MODE=\"AT!RESET\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
+			logging.debug("[dev=%s]: restarting connection... cmd: '%s'", self.USB, cmd)
+			self.runcmd(cmd)
+
+			# After a reset we get a hotplug remove event, so there is no question
+			# of "going back" or anything here, but just code assume we will go back
+			# to the beginning of the while loop
+			self.connection_errors = 0

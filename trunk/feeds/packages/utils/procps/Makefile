@@ -68,6 +68,11 @@ define Package/procps/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/proc/libproc-$(PKG_VERSION).so $(1)/usr/lib/
 endef
 
+define Build/InstallDev
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_BUILD_DIR)/proc/libproc-$(PKG_VERSION).so $(1)/usr/lib/
+endef
+
 AUXDIR_ps := "ps/"
 
 define BuildPlugin

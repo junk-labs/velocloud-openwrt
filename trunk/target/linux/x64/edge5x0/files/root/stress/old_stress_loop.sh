@@ -17,33 +17,28 @@ done
 iperfs=""
 openssls=""
 
-# LAN ports:
-#   1=(1,1)  3=(1,3)   5=(0,2)  7=(0,1)
-#   2=(1,0)  4=(1,2)   6=(0,0)  8=(0,3)
-#
-
 # config:
 #
-#   LAN1 (sw1p1):  10.0.0.10
-#   LAN2 (sw1p0):  10.0.0.11
-#   LAN3 (sw1p3):  10.0.0.12
-#   LAN4 (sw1p2):  10.0.0.13
+IPADDR_LAN1=10.0.0.11
+IPADDR_LAN2=10.0.0.12	; PORT_LAN2=5012
+IPADDR_LAN3=10.0.0.13	; PORT_LAN3=5013
+IPADDR_LAN4=10.0.0.14
+IPADDR_LAN5=10.0.0.15
+IPADDR_LAN6=10.0.0.16
+IPADDR_LAN7=10.0.0.17
+IPADDR_LAN8=10.0.0.18
 #
-#   LAN5 (sw0p2):  10.0.0.20
-#   LAN6 (sw0p0):  10.0.0.21
-#   LAN7 (sw0p1):  10.0.0.22
-#   LAN8 (sw0p3):  10.0.0.23
+IPADDR_GE1=10.0.0.21	; PORT_GE1=5021
+IPADDR_GE2=10.0.0.22	; PORT_GE2=5022
 #
-#   WAN1 (eth2): 10.0.0.32
-#   WAN2 (eth3): 10.0.0.33
-#   SFP1 (eth4): 10.0.0.34
-#   SFP2 (eth5): 10.0.0.35
+IPADDR_SFP1=10.0.0.31	; PORT_SFP1=5031
+IPADDR_SFP2=10.0.0.32	; PORT_SFP2=5032
 #
 # Wiring:
 #   SFP1 to LAN1
 #   SFP2 to LAN4
-#   WAN1 to LAN5
-#   WAN2 to LAN8
+#   GE1  to LAN5
+#   GE2  to LAN8
 #   LAN2 to LAN6
 #   LAN3 to LAN7
 #
@@ -65,14 +60,16 @@ clean_up() {
 }
 
 # setup a loopback pair;
-# $1 and $2 are the interface names;
+# $1 and $2 are the physical interface names;
 # $3 and $4 are their respective IPs;
 # $5 and $6 are their respective table IDs;
 
-setup_loopback() {
+setup_loopback_physical() {
         echo "Setting up loop $1/$2"
         echo 1 > /proc/sys/net/ipv4/conf/$1/accept_local
         echo 1 > /proc/sys/net/ipv4/conf/$2/accept_local
+	ifconfig $1 $3
+	ifconfig $2 $4
         route del $3
         route del $4
         route add $4 dev $1
@@ -87,53 +84,40 @@ setup_loopback() {
         ip route add local $4 dev $2 table $6
 }
 
+# Configures the interface and sets up routing between two interfaces
+# $1 and $2 are symbolic interface names (GE1, SFP2, etc.)
+TABLE_NUM=1
+setup_loop() {
+	LIF1="$1"
+	LIF2="$2"
+	PHYS1=`uci get network.$LIF1.ifname`
+	PHYS2=`uci get network.$LIF2.ifname`
+
+	# configure IP addresses
+	IP1=`eval echo '$'IPADDR_$LIF1`
+	IP2=`eval echo '$'IPADDR_$LIF2`
+
+	TN1=$((TABLE_NUM+1))
+	TN2=$((TABLE_NUM+2))
+	TABLE_NUM=$TN2
+	setup_loopback_physical $PHYS1 $PHYS2 $IP1 $IP2 $TN1 $TN2
+}
+
 trap clean_up 2
 clean_up
-
-# shut down default network config
-
-#echo "Shutting down default network config"
-
-#ifconfig br-lan down
-#brctl delif br-lan sw0p0
-#brctl delif br-lan sw0p1
-#brctl delif br-lan sw0p2
-#brctl delif br-lan sw0p3
-#brctl delif br-lan sw1p0
-#brctl delif br-lan sw1p1
-#brctl delif br-lan sw1p2
-#brctl delif br-lan sw1p3
-#ifconfig br-lan up
 
 # setup loopback;
 
 echo "Setting up loopback"
 
-ifconfig sw1p1 10.0.0.10
-ifconfig sw1p0 10.0.0.11
-ifconfig sw1p3 10.0.0.12
-ifconfig sw1p2 10.0.0.13
+# From the Wiring above
 
-ifconfig sw0p2 10.0.0.20
-ifconfig sw0p0 10.0.0.21
-ifconfig sw0p1 10.0.0.22
-ifconfig sw0p3 10.0.0.23
-
-ifconfig eth2 10.0.0.32
-ifconfig eth3 10.0.0.33
-
-ifconfig eth4 10.0.0.34
-ifconfig eth5 10.0.0.35
-
-# setup loops;
-
-setup_loopback eth4 sw1p1 10.0.0.34 10.0.0.10 2 3
-setup_loopback eth5 sw1p2 10.0.0.35 10.0.0.13 4 5
-setup_loopback eth2 sw0p2 10.0.0.32 10.0.0.20 6 7
-setup_loopback eth3 sw0p3 10.0.0.33 10.0.0.23 8 9
-
-setup_loopback sw1p0 sw0p0 10.0.0.11 10.0.0.21 10 11
-setup_loopback sw1p3 sw0p1 10.0.0.12 10.0.0.22 12 13
+setup_loop SFP1 LAN1
+setup_loop SFP2 LAN4
+setup_loop GE1  LAN5
+setup_loop GE2  LAN8
+setup_loop LAN2 LAN6
+setup_loop LAN3 LAN7
 
 # exit 0
 
@@ -154,21 +138,24 @@ fi
 # kill old iperfs laying around;
 # start iperfs;
 
+rm -f /tmp/iperf.*.out
+
 echo "Starting iperf on loopbacks"
-iperf -s -p 5011 >/dev/null &
-iperf -s -p 5012 >/dev/null &
-iperf -s -p 5032 >/dev/null &
-iperf -s -p 5033 >/dev/null &
-iperf -s -p 5034 >/dev/null &
-iperf -s -p 5035 >/dev/null &
+iperf -s -p $PORT_LAN2 >/dev/null &
+iperf -s -p $PORT_LAN3 >/dev/null &
+iperf -s -p $PORT_GE1 >/dev/null &
+iperf -s -p $PORT_GE2 >/dev/null &
+iperf -s -p $PORT_SFP1 >/dev/null &
+iperf -s -p $PORT_SFP2 >/dev/null &
 sleep 2
 (
-iperf -p 5011 -c 10.0.0.11 $iperf_int -t $dur > /tmp/iperf.5011.out 2>&1 &
-iperf -p 5012 -c 10.0.0.12 $iperf_int -t $dur > /tmp/iperf.5012.out 2>&1 &
-iperf -p 5032 -c 10.0.0.32 $iperf_int -t $dur > /tmp/iperf.5032.out 2>&1 &
-iperf -p 5033 -c 10.0.0.33 $iperf_int -t $dur > /tmp/iperf.5033.out 2>&1 &
-iperf -p 5034 -c 10.0.0.34 $iperf_int -t $dur > /tmp/iperf.5034.out 2>&1 &
-iperf -p 5035 -c 10.0.0.35 $iperf_int -t $dur > /tmp/iperf.5035.out 2>&1 &
+iperf -p $PORT_LAN2 -c $IPADDR_LAN2 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN2.out 2>&1 &
+iperf -p $PORT_LAN3 -c $IPADDR_LAN3 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN3.out 2>&1 &
+iperf -p $PORT_GE1 -c $IPADDR_GE1 $iperf_int -t $dur > /tmp/iperf.$PORT_GE1.out 2>&1 &
+iperf -p $PORT_GE2 -c $IPADDR_GE2 $iperf_int -t $dur > /tmp/iperf.$PORT_GE2.out 2>&1 &
+iperf -p $PORT_SFP1 -c $IPADDR_SFP1 $iperf_int -t $dur > /tmp/iperf.$PORT_SFP1.out 2>&1 &
+iperf -p $PORT_SFP2 -c $IPADDR_SFP2 $iperf_int -t $dur > /tmp/iperf.$PORT_SFP2.out 2>&1 &
+
 wait
 rm -f $SENTINEL
 ) &
@@ -179,7 +166,8 @@ if stty -g -F /proc/self/fd/0 > /dev/null 2>&1; then
     eval `resize`
     LINES=`stty size | cut -d' ' -f1`
 fi
-TOPLINES=`expr $LINES - 9`
+NUM_IPERFS=`pidof iperf | wc -w`
+TOPLINES=`expr $LINES - $NUM_IPERFS / 2 - 3`
 
 # Run top until all iperfs finish
 # top
@@ -194,11 +182,12 @@ report_progress()
 	echo "    $FN: $FSTATUS"
     done
     echo "Processes:"
-    IPERF_PIDS=`pidof iperf openssl | sed -e 's/ /,/g'`
-    if [ -z "$IPERF_PIDS" ]; then
-        IPERF_PIDS=99999999
-    fi
-    top -b -c -n 1 -p $IPERF_PIDS | head -$TOPLINES
+    #IPERF_PIDS=`pidof iperf openssl | sed -e 's/ /,/g'`
+    #if [ -z "$IPERF_PIDS" ]; then
+    #    IPERF_PIDS=99999999
+    #fi
+    #top -b -c -n 1 -p $IPERF_PIDS | head -$TOPLINES
+    top -b -c -n 1 | head -$TOPLINES
 }
 
 while test -e $SENTINEL ; do

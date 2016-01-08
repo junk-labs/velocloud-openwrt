@@ -213,6 +213,7 @@ endif
 define Image/BuildKernel
 	$(CP) $(KDIR)/bzImage $(BIN_DIR)/$(IMG_PREFIX)-vmlinuz
 	$(CP) $(KDIR)/bzImage $(TARGET_DIR)/vmlinuz
+	$(CP) $(KDIR)/bzImage.kdump $(TARGET_DIR)/vmlinuz.kdump
 endef
 
 define Image/Build/Profile/ar525w

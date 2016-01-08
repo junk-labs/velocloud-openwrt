@@ -83,6 +83,7 @@ define KernelPackage/xen
   DEFAULT:=y if (TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws)
   KCONFIG:= \
   	CONFIG_PARAVIRT=y \
+	CONFIG_PARAVIRT_DEBUG=y \
   	CONFIG_HYPERVISOR_GUEST=y \
   	CONFIG_XEN=y \
   	CONFIG_XEN_BLKDEV_FRONTEND=y \
@@ -269,6 +270,7 @@ define KernelPackage/vc_kvm_guest
 	CONFIG_KVM_GUEST=y \
 	CONFIG_HYPERVISOR_GUEST=y \
 	CONFIG_PARAVIRT=y \
+	CONFIG_PARAVIRT_DEBUG=y \
 	CONFIG_PARAVIRT_CLOCK=y
 endef
 

@@ -19,14 +19,14 @@ openssls=""
 
 # config:
 #
-IPADDR_LAN1=10.0.0.11
+IPADDR_LAN1=10.0.0.11   ; PORT_LAN1=5011
 IPADDR_LAN2=10.0.0.12	; PORT_LAN2=5012
 IPADDR_LAN3=10.0.0.13	; PORT_LAN3=5013
-IPADDR_LAN4=10.0.0.14
-IPADDR_LAN5=10.0.0.15
-IPADDR_LAN6=10.0.0.16
-IPADDR_LAN7=10.0.0.17
-IPADDR_LAN8=10.0.0.18
+IPADDR_LAN4=10.0.0.14   ; PORT_LAN4=5014
+IPADDR_LAN5=10.0.0.15   ; PORT_LAN5=5015
+IPADDR_LAN6=10.0.0.16   ; PORT_LAN6=5016
+IPADDR_LAN7=10.0.0.17   ; PORT_LAN7=5017
+IPADDR_LAN8=10.0.0.18   ; PORT_LAN8=5018
 #
 IPADDR_GE1=10.0.0.21	; PORT_GE1=5021
 IPADDR_GE2=10.0.0.22	; PORT_GE2=5022
@@ -35,13 +35,12 @@ IPADDR_SFP1=10.0.0.31	; PORT_SFP1=5031
 IPADDR_SFP2=10.0.0.32	; PORT_SFP2=5032
 #
 # Wiring:
-#   SFP1 to LAN1
-#   SFP2 to LAN4
-#   GE1  to LAN5
-#   GE2  to LAN8
+#   SFP1 to SFP2
+#   GE1 to GE2
+#   LAN1 to LAN5
 #   LAN2 to LAN6
 #   LAN3 to LAN7
-#
+#   LAN4 to LAN8
 
 export SENTINEL=/tmp/stress.$$
 
@@ -112,12 +111,12 @@ echo "Setting up loopback"
 
 # From the Wiring above
 
-setup_loop SFP1 LAN1
-setup_loop SFP2 LAN4
-setup_loop GE1  LAN5
-setup_loop GE2  LAN8
+setup_loop SFP1 SFP2
+setup_loop GE1  GE2
+setup_loop LAN1 LAN5
 setup_loop LAN2 LAN6
 setup_loop LAN3 LAN7
+setup_loop LAN4 LAN8
 
 # exit 0
 
@@ -141,20 +140,20 @@ fi
 rm -f /tmp/iperf.*.out
 
 echo "Starting iperf on loopbacks"
+iperf -s -p $PORT_LAN1 >/dev/null &
 iperf -s -p $PORT_LAN2 >/dev/null &
-iperf -s -p $PORT_LAN3 >/dev/null &
+iperf -s -p $PORT_LAN7 >/dev/null &
+iperf -s -p $PORT_LAN8 >/dev/null &
 iperf -s -p $PORT_GE1 >/dev/null &
-iperf -s -p $PORT_GE2 >/dev/null &
 iperf -s -p $PORT_SFP1 >/dev/null &
-iperf -s -p $PORT_SFP2 >/dev/null &
 sleep 2
 (
+iperf -p $PORT_LAN1 -c $IPADDR_LAN1 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN1.out 2>&1 &
 iperf -p $PORT_LAN2 -c $IPADDR_LAN2 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN2.out 2>&1 &
-iperf -p $PORT_LAN3 -c $IPADDR_LAN3 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN3.out 2>&1 &
+iperf -p $PORT_LAN7 -c $IPADDR_LAN7 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN7.out 2>&1 &
+iperf -p $PORT_LAN8 -c $IPADDR_LAN8 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN8.out 2>&1 &
 iperf -p $PORT_GE1 -c $IPADDR_GE1 $iperf_int -t $dur > /tmp/iperf.$PORT_GE1.out 2>&1 &
-iperf -p $PORT_GE2 -c $IPADDR_GE2 $iperf_int -t $dur > /tmp/iperf.$PORT_GE2.out 2>&1 &
 iperf -p $PORT_SFP1 -c $IPADDR_SFP1 $iperf_int -t $dur > /tmp/iperf.$PORT_SFP1.out 2>&1 &
-iperf -p $PORT_SFP2 -c $IPADDR_SFP2 $iperf_int -t $dur > /tmp/iperf.$PORT_SFP2.out 2>&1 &
 
 wait
 rm -f $SENTINEL

@@ -1,0 +1,639 @@
+Patch to replace zebra functionality with edged, via a message queue.
+From Arun S.
+
+diff -Naur quagga-0.99.24/configure.ac quagga-0.99.24.new/configure.ac
+--- quagga-0.99.24/configure.ac	2015-03-03 05:20:57.000000000 +0530
++++ quagga-0.99.24.new/configure.ac	2016-01-12 06:27:28.000000000 +0530
+@@ -277,6 +277,8 @@
+   AS_HELP_STRING([--enable-pcreposix], [enable using PCRE Posix libs for regex functions]))
+ AC_ARG_ENABLE(fpm,
+   AS_HELP_STRING([--enable-fpm], [enable Forwarding Plane Manager support]))
++AC_ARG_ENABLE(zebra-mq,
++  AS_HELP_STRING([--enable-zebra-mq], [enable Zebra message queue support]))
+ 
+ if test x"${enable_gcc_ultra_verbose}" = x"yes" ; then
+   CFLAGS="${CFLAGS} -W -Wcast-qual -Wstrict-prototypes"
+@@ -303,6 +305,11 @@
+    AC_DEFINE(HAVE_FPM,,Forwarding Plane Manager support)
+ fi
+ 
++if test "${enable_zebra_mq}" = "yes" && test "${enable_tcp_zebra}" = "yes" && test "${enable_zebra}" = "no" ; then
++   AC_DEFINE(HAVE_ZEBRA_MQ,,Zebra message queue support)
++fi
++
++
+ if test "${enable_tcp_zebra}" = "yes"; then
+   AC_DEFINE(HAVE_TCP_ZEBRA,,Use TCP for zebra communication)
+ fi
+diff -Naur quagga-0.99.24/lib/zclient.c quagga-0.99.24.new/lib/zclient.c
+--- quagga-0.99.24/lib/zclient.c	2015-03-03 05:20:57.000000000 +0530
++++ quagga-0.99.24.new/lib/zclient.c	2016-01-12 06:27:28.000000000 +0530
+@@ -967,6 +967,12 @@
+       if (zclient->ipv6_route_delete)
+ 	(*zclient->ipv6_route_delete) (command, zclient, length);
+       break;
++#ifdef HAVE_ZEBRA_MQ
++    case ZEBRA_PROTO_MQ:
++      if (zclient->proto_mq_recv)
++	(*zclient->proto_mq_recv) (command, zclient, length);
++      break;
++#endif
+     default:
+       break;
+     }
+diff -Naur quagga-0.99.24/lib/zclient.h quagga-0.99.24.new/lib/zclient.h
+--- quagga-0.99.24/lib/zclient.h	2015-03-03 05:20:57.000000000 +0530
++++ quagga-0.99.24.new/lib/zclient.h	2016-01-12 06:27:28.000000000 +0530
+@@ -82,6 +82,9 @@
+   int (*ipv4_route_delete) (int, struct zclient *, uint16_t);
+   int (*ipv6_route_add) (int, struct zclient *, uint16_t);
+   int (*ipv6_route_delete) (int, struct zclient *, uint16_t);
++#ifdef HAVE_ZEBRA_MQ
++  int (*proto_mq_recv) (int, struct zclient *, uint16_t);
++#endif
+ };
+ 
+ /* Zebra API message flag. */
+@@ -89,6 +92,11 @@
+ #define ZAPI_MESSAGE_IFINDEX  0x02
+ #define ZAPI_MESSAGE_DISTANCE 0x04
+ #define ZAPI_MESSAGE_METRIC   0x08
++#ifdef HAVE_ZEBRA_MQ
++// Protocol specific info
++#define ZAPI_MESSAGE_PROTO1   0x40
++#define ZAPI_MESSAGE_PROTO2   0x80
++#endif
+ 
+ /* Zserv protocol message header */
+ struct zserv_header
+diff -Naur quagga-0.99.24/lib/zebra.h quagga-0.99.24.new/lib/zebra.h
+--- quagga-0.99.24/lib/zebra.h	2015-03-03 05:20:57.000000000 +0530
++++ quagga-0.99.24.new/lib/zebra.h	2016-01-12 06:27:28.000000000 +0530
+@@ -412,7 +412,13 @@
+ #define ZEBRA_ROUTER_ID_UPDATE            22
+ #define ZEBRA_HELLO                       23
+ #define ZEBRA_IPV4_NEXTHOP_LOOKUP_MRIB    24
++
++#ifdef HAVE_ZEBRA_MQ
++#define ZEBRA_PROTO_MQ                    25
++#define ZEBRA_MESSAGE_MAX                 26
++#else 
+ #define ZEBRA_MESSAGE_MAX                 25
++#endif // ZEBRA_PROTO_MQ
+ 
+ /* Marker value used in new Zserv, in the byte location corresponding
+  * the command value in the old zserv header. To allow old and new
+diff -Naur quagga-0.99.24/ospfd/ospf_packet.c quagga-0.99.24.new/ospfd/ospf_packet.c
+--- quagga-0.99.24/ospfd/ospf_packet.c	2015-03-03 05:20:57.000000000 +0530
++++ quagga-0.99.24.new/ospfd/ospf_packet.c	2016-01-12 06:27:28.000000000 +0530
+@@ -49,6 +49,11 @@
+ #include "ospfd/ospf_flood.h"
+ #include "ospfd/ospf_dump.h"
+ 
++#ifdef HAVE_ZEBRA_MQ
++extern void
++ospf_zebra_mq_pkt(unsigned int ifindex, struct iovec *iov, int iov_cnt);
++#endif
++
+ /* Packet Type String. */
+ const struct message ospf_packet_type_str[] =
+ {
+@@ -673,9 +678,11 @@
+   assert (op);
+   assert (op->length >= OSPF_HEADER_SIZE);
+ 
++#ifndef HAVE_ZEBRA_MQ
+   if (op->dst.s_addr == htonl (OSPF_ALLSPFROUTERS)
+       || op->dst.s_addr == htonl (OSPF_ALLDROUTERS))
+       ospf_if_ipmulticast (ospf, oi->address, oi->ifp->ifindex);
++#endif
+     
+   /* Rewrite the md5 signature & update the seq */
+   ospf_make_md5_digest (oi, op);
+@@ -746,8 +753,11 @@
+   iov[0].iov_len = iph.ip_hl << OSPF_WRITE_IPHL_SHIFT;
+   iov[1].iov_base = STREAM_PNT (op->s);
+   iov[1].iov_len = op->length;
+-  
+-  /* Sadly we can not rely on kernels to fragment packets because of either
++ 
++#ifdef HAVE_ZEBRA_MQ
++  ospf_zebra_mq_pkt(oi->ifp->ifindex, &iov[0], 2);
++#else
++/* Sadly we can not rely on kernels to fragment packets because of either
+    * IP_HDRINCL and/or multicast destination being set.
+    */
+ #ifdef WANT_OSPF_WRITE_FRAGMENT
+@@ -766,6 +776,7 @@
+ 	       "id %d, off %d, len %d, interface %s, mtu %u: %s",
+ 	       inet_ntoa (iph.ip_dst), iph.ip_id, iph.ip_off, iph.ip_len,
+ 	       oi->ifp->name, oi->ifp->mtu, safe_strerror (errno));
++#endif
+ 
+   /* Show debug sending packet. */
+   if (IS_DEBUG_OSPF_PACKET (type - 1, SEND))
+@@ -2745,58 +2756,43 @@
+   return 0;
+ }
+ 
+-/* Starting point of packet process function. */
+-int
+-ospf_read (struct thread *thread)
++int 
++ospf_do_read(struct ospf *ospf, struct interface *ifp, struct stream *ibuf)
+ {
+   int ret;
+-  struct stream *ibuf;
+-  struct ospf *ospf;
+   struct ospf_interface *oi;
+   struct ip *iph;
+   struct ospf_header *ospfh;
+   u_int16_t length;
+-  struct interface *ifp;
+-
+-  /* first of all get interface pointer. */
+-  ospf = THREAD_ARG (thread);
+-
+-  /* prepare for next packet. */
+-  ospf->t_read = thread_add_read (master, ospf_read, ospf, ospf->fd);
+ 
+-  stream_reset(ospf->ibuf);
+-  if (!(ibuf = ospf_recv_packet (ospf->fd, &ifp, ospf->ibuf)))
+-    return -1;
+-  /* This raw packet is known to be at least as big as its IP header. */
+-  
+   /* Note that there should not be alignment problems with this assignment
+      because this is at the beginning of the stream data buffer. */
+   iph = (struct ip *) STREAM_DATA (ibuf);
+   /* Note that sockopt_iphdrincl_swab_systoh was called in ospf_recv_packet. */
+ 
+   if (ifp == NULL)
+-    /* Handle cases where the platform does not support retrieving the ifindex,
+-       and also platforms (such as Solaris 8) that claim to support ifindex
+-       retrieval but do not. */
+-    ifp = if_lookup_address (iph->ip_src);
+-  
++      /* Handle cases where the platform does not support retrieving the ifindex,
++         and also platforms (such as Solaris 8) that claim to support ifindex
++         retrieval but do not. */
++      ifp = if_lookup_address (iph->ip_src);
++
+   if (ifp == NULL)
+-    return 0;
++      return 0;
+ 
+   /* IP Header dump. */
+-    if (IS_DEBUG_OSPF_PACKET(0, RECV))
+-	    ospf_ip_header_dump (iph);
++  if (IS_DEBUG_OSPF_PACKET(0, RECV))
++      ospf_ip_header_dump (iph);
+ 
+   /* Self-originated packet should be discarded silently. */
+   if (ospf_if_lookup_by_local_addr (ospf, NULL, iph->ip_src))
+-    {
++  {
+       if (IS_DEBUG_OSPF_PACKET (0, RECV))
+-        {
++      {
+           zlog_debug ("ospf_read[%s]: Dropping self-originated packet",
+-                     inet_ntoa (iph->ip_src));
+-        }
++                  inet_ntoa (iph->ip_src));
++      }
+       return 0;
+-    }
++  }
+ 
+   /* Advance from IP header to OSPF header (iph->ip_hl has been verified
+      by ospf_recv_packet() to be correct). */
+@@ -2804,7 +2800,7 @@
+ 
+   ospfh = (struct ospf_header *) STREAM_PNT (ibuf);
+   if (MSG_OK != ospf_packet_examin (ospfh, stream_get_endp (ibuf) - stream_get_getp (ibuf)))
+-    return -1;
++      return -1;
+   /* Now it is safe to access all fields of OSPF packet header. */
+ 
+   /* associate packet with ospf interface */
+@@ -2817,26 +2813,26 @@
+ 
+   /* If incoming interface is passive one, ignore it. */
+   if (oi && OSPF_IF_PASSIVE_STATUS (oi) == OSPF_IF_PASSIVE)
+-    {
++  {
+       char buf[3][INET_ADDRSTRLEN];
+ 
+       if (IS_DEBUG_OSPF_EVENT)
+-	zlog_debug ("ignoring packet from router %s sent to %s, "
+-		    "received on a passive interface, %s",
+-		    inet_ntop(AF_INET, &ospfh->router_id, buf[0], sizeof(buf[0])),
+-		    inet_ntop(AF_INET, &iph->ip_dst, buf[1], sizeof(buf[1])),
+-		    inet_ntop(AF_INET, &oi->address->u.prefix4,
+-			      buf[2], sizeof(buf[2])));
++          zlog_debug ("ignoring packet from router %s sent to %s, "
++                  "received on a passive interface, %s",
++                  inet_ntop(AF_INET, &ospfh->router_id, buf[0], sizeof(buf[0])),
++                  inet_ntop(AF_INET, &iph->ip_dst, buf[1], sizeof(buf[1])),
++                  inet_ntop(AF_INET, &oi->address->u.prefix4,
++                      buf[2], sizeof(buf[2])));
+ 
+       if (iph->ip_dst.s_addr == htonl(OSPF_ALLSPFROUTERS))
+-	{
+-	  /* Try to fix multicast membership.
+-	   * Some OS:es may have problems in this area,
+-	   * make sure it is removed.
+-	   */
+-	  OI_MEMBER_JOINED(oi, MEMBER_ALLROUTERS);
+-	  ospf_if_set_multicast(oi);
+-	}
++      {
++          /* Try to fix multicast membership.
++           * Some OS:es may have problems in this area,
++           * make sure it is removed.
++           */
++          OI_MEMBER_JOINED(oi, MEMBER_ALLROUTERS);
++          ospf_if_set_multicast(oi);
++      }
+       return 0;
+   }
+ 
+@@ -2846,47 +2842,47 @@
+    * check for VLINK interface
+    */
+   if ( (oi == NULL) ||
+-      (OSPF_IS_AREA_ID_BACKBONE(ospfh->area_id)
+-      && !OSPF_IS_AREA_ID_BACKBONE(oi->area->area_id))
++          (OSPF_IS_AREA_ID_BACKBONE(ospfh->area_id)
++           && !OSPF_IS_AREA_ID_BACKBONE(oi->area->area_id))
+      )
+-    {
++  {
+       if ((oi = ospf_associate_packet_vl (ospf, ifp, iph, ospfh)) == NULL)
+-        {
++      {
+           if (IS_DEBUG_OSPF_EVENT)
+-            zlog_debug ("Packet from [%s] received on link %s"
+-                        " but no ospf_interface",
+-                        inet_ntoa (iph->ip_src), ifp->name);
++              zlog_debug ("Packet from [%s] received on link %s"
++                      " but no ospf_interface",
++                      inet_ntoa (iph->ip_src), ifp->name);
+           return 0;
+-        }
+-    }
++      }
++  }
+ 
+   /* else it must be a local ospf interface, check it was received on 
+    * correct link 
+    */
+   else if (oi->ifp != ifp)
+-    {
++  {
+       if (IS_DEBUG_OSPF_EVENT)
+-        zlog_warn ("Packet from [%s] received on wrong link %s",
+-                   inet_ntoa (iph->ip_src), ifp->name); 
++          zlog_warn ("Packet from [%s] received on wrong link %s",
++                  inet_ntoa (iph->ip_src), ifp->name); 
+       return 0;
+-    }
++  }
+   else if (oi->state == ISM_Down)
+-    {
++  {
+       char buf[2][INET_ADDRSTRLEN];
+       zlog_warn ("Ignoring packet from %s to %s received on interface that is "
+-      		 "down [%s]; interface flags are %s",
+-		 inet_ntop(AF_INET, &iph->ip_src, buf[0], sizeof(buf[0])),
+-		 inet_ntop(AF_INET, &iph->ip_dst, buf[1], sizeof(buf[1])),
+-	         ifp->name, if_flag_dump(ifp->flags));
++              "down [%s]; interface flags are %s",
++              inet_ntop(AF_INET, &iph->ip_src, buf[0], sizeof(buf[0])),
++              inet_ntop(AF_INET, &iph->ip_dst, buf[1], sizeof(buf[1])),
++              ifp->name, if_flag_dump(ifp->flags));
+       /* Fix multicast memberships? */
+       if (iph->ip_dst.s_addr == htonl(OSPF_ALLSPFROUTERS))
+-        OI_MEMBER_JOINED(oi, MEMBER_ALLROUTERS);
++          OI_MEMBER_JOINED(oi, MEMBER_ALLROUTERS);
+       else if (iph->ip_dst.s_addr == htonl(OSPF_ALLDROUTERS))
+-	OI_MEMBER_JOINED(oi, MEMBER_DROUTERS);
++          OI_MEMBER_JOINED(oi, MEMBER_DROUTERS);
+       if (oi->multicast_memberships)
+-	ospf_if_set_multicast(oi);
++          ospf_if_set_multicast(oi);
+       return 0;
+-    }
++  }
+ 
+   /*
+    * If the received packet is destined for AllDRouters, the packet
+@@ -2894,45 +2890,45 @@
+    * either DR or Backup -- endo.
+    */
+   if (iph->ip_dst.s_addr == htonl (OSPF_ALLDROUTERS)
+-  && (oi->state != ISM_DR && oi->state != ISM_Backup))
+-    {
++          && (oi->state != ISM_DR && oi->state != ISM_Backup))
++  {
+       zlog_warn ("Dropping packet for AllDRouters from [%s] via [%s] (ISM: %s)",
+-                 inet_ntoa (iph->ip_src), IF_NAME (oi),
+-                 LOOKUP (ospf_ism_state_msg, oi->state));
++              inet_ntoa (iph->ip_src), IF_NAME (oi),
++              LOOKUP (ospf_ism_state_msg, oi->state));
+       /* Try to fix multicast membership. */
+       SET_FLAG(oi->multicast_memberships, MEMBER_DROUTERS);
+       ospf_if_set_multicast(oi);
+       return 0;
+-    }
++  }
+ 
+   /* Verify more OSPF header fields. */
+   ret = ospf_verify_header (ibuf, oi, iph, ospfh);
+   if (ret < 0)
+   {
+-    if (IS_DEBUG_OSPF_PACKET (0, RECV))
+-      zlog_debug ("ospf_read[%s]: Header check failed, "
++      if (IS_DEBUG_OSPF_PACKET (0, RECV))
++          zlog_debug ("ospf_read[%s]: Header check failed, "
+                   "dropping.",
+                   inet_ntoa (iph->ip_src));
+-    return ret;
++      return ret;
+   }
+ 
+   /* Show debug receiving packet. */
+   if (IS_DEBUG_OSPF_PACKET (ospfh->type - 1, RECV))
+-    {
++  {
+       if (IS_DEBUG_OSPF_PACKET (ospfh->type - 1, DETAIL))
+-        {
++      {
+           zlog_debug ("-----------------------------------------------------");
+           ospf_packet_dump (ibuf);
+-        }
++      }
+ 
+       zlog_debug ("%s received from [%s] via [%s]",
+-                 LOOKUP (ospf_packet_type_str, ospfh->type),
+-                 inet_ntoa (ospfh->router_id), IF_NAME (oi));
++              LOOKUP (ospf_packet_type_str, ospfh->type),
++              inet_ntoa (ospfh->router_id), IF_NAME (oi));
+       zlog_debug (" src [%s],", inet_ntoa (iph->ip_src));
+       zlog_debug (" dst [%s]", inet_ntoa (iph->ip_dst));
+ 
+       if (IS_DEBUG_OSPF_PACKET (ospfh->type - 1, DETAIL))
+-	zlog_debug ("-----------------------------------------------------");
++          zlog_debug ("-----------------------------------------------------");
+   }
+ 
+   stream_forward_getp (ibuf, OSPF_HEADER_SIZE);
+@@ -2942,30 +2938,88 @@
+ 
+   /* Read rest of the packet and call each sort of packet routine. */
+   switch (ospfh->type)
++  {
++      case OSPF_MSG_HELLO:
++          ospf_hello (iph, ospfh, ibuf, oi, length);
++          break;
++      case OSPF_MSG_DB_DESC:
++          ospf_db_desc (iph, ospfh, ibuf, oi, length);
++          break;
++      case OSPF_MSG_LS_REQ:
++          ospf_ls_req (iph, ospfh, ibuf, oi, length);
++          break;
++      case OSPF_MSG_LS_UPD:
++          ospf_ls_upd (iph, ospfh, ibuf, oi, length);
++          break;
++      case OSPF_MSG_LS_ACK:
++          ospf_ls_ack (iph, ospfh, ibuf, oi, length);
++          break;
++      default:
++          zlog (NULL, LOG_WARNING,
++                  "interface %s: OSPF packet header type %d is illegal",
++                  IF_NAME (oi), ospfh->type);
++          break;
++  }
++
++  return 0;
++}
++
++#ifdef HAVE_ZEBRA_MQ
++int
++ospf_read_from_zebra_mq(struct ospf *ospf, unsigned int ifindex, char *buf, u_int16_t length)
++{
++  struct ip *iph;
++  u_int16_t ip_len;
++  struct stream *ibuf;
++  struct interface *ifp;
++  
++  stream_reset(ospf->ibuf);
++  ibuf = ospf->ibuf;
++
++  memcpy((ibuf->data + ibuf->endp), buf, length);
++  ibuf->endp += length;
++  
++  /* Note that there should not be alignment problems with this assignment
++     because this is at the beginning of the stream data buffer. */
++  iph = (struct ip *) STREAM_DATA(ibuf);
++  sockopt_iphdrincl_swab_systoh (iph);
++  
++  ip_len = iph->ip_len;
++  
++  ifp = if_lookup_by_index (ifindex);
++  
++  if (length != ip_len)
+     {
+-    case OSPF_MSG_HELLO:
+-      ospf_hello (iph, ospfh, ibuf, oi, length);
+-      break;
+-    case OSPF_MSG_DB_DESC:
+-      ospf_db_desc (iph, ospfh, ibuf, oi, length);
+-      break;
+-    case OSPF_MSG_LS_REQ:
+-      ospf_ls_req (iph, ospfh, ibuf, oi, length);
+-      break;
+-    case OSPF_MSG_LS_UPD:
+-      ospf_ls_upd (iph, ospfh, ibuf, oi, length);
+-      break;
+-    case OSPF_MSG_LS_ACK:
+-      ospf_ls_ack (iph, ospfh, ibuf, oi, length);
+-      break;
+-    default:
+-      zlog (NULL, LOG_WARNING,
+-	    "interface %s: OSPF packet header type %d is illegal",
+-	    IF_NAME (oi), ospfh->type);
+-      break;
++      zlog_warn ("ospf_recv_packet read length mismatch: ip_len is %d, "
++       		 "but recvmsg returned %d", ip_len, length);
++      return NULL;
+     }
++  
++  return ospf_do_read(ospf, ifp, ibuf);
++}
++#endif
+ 
+-  return 0;
++/* Starting point of packet process function. */
++int
++ospf_read (struct thread *thread)
++{
++  int ret;
++  struct stream *ibuf;
++  struct ospf *ospf;
++  struct interface *ifp;
++
++  /* first of all get interface pointer. */
++  ospf = THREAD_ARG (thread);
++
++  /* prepare for next packet. */
++  ospf->t_read = thread_add_read (master, ospf_read, ospf, ospf->fd);
++
++  stream_reset(ospf->ibuf);
++  if (!(ibuf = ospf_recv_packet (ospf->fd, &ifp, ospf->ibuf)))
++    return -1;
++  /* This raw packet is known to be at least as big as its IP header. */
++
++  return ospf_do_read(ospf, ifp, ibuf);
+ }
+ 
+ /* Make OSPF header. */
+diff -Naur quagga-0.99.24/ospfd/ospf_packet.h quagga-0.99.24.new/ospfd/ospf_packet.h
+--- quagga-0.99.24/ospfd/ospf_packet.h	2015-03-03 05:20:57.000000000 +0530
++++ quagga-0.99.24.new/ospfd/ospf_packet.h	2016-01-12 06:27:28.000000000 +0530
+@@ -173,5 +173,9 @@
+ 
+ extern const struct message ospf_packet_type_str[];
+ extern const size_t ospf_packet_type_str_max;
++#ifdef HAVE_ZEBRA_MQ
++extern int
++ospf_read_from_zebra_mq(struct ospf *ospf, unsigned int ifindex, char *buf, u_int16_t length);
++#endif
+ 
+ #endif /* _ZEBRA_OSPF_PACKET_H */
+diff -Naur quagga-0.99.24/ospfd/ospf_zebra.c quagga-0.99.24.new/ospfd/ospf_zebra.c
+--- quagga-0.99.24/ospfd/ospf_zebra.c	2015-03-03 05:20:57.000000000 +0530
++++ quagga-0.99.24.new/ospfd/ospf_zebra.c	2016-01-12 06:27:28.000000000 +0530
+@@ -349,6 +349,11 @@
+       if (distance)
+         SET_FLAG (message, ZAPI_MESSAGE_DISTANCE);
+ 
++#ifdef HAVE_ZEBRA_MQ
++      SET_FLAG (message, ZAPI_MESSAGE_PROTO1); // PROTO1 is OSPF cost
++      SET_FLAG (message, ZAPI_MESSAGE_PROTO2); // PROTO2 is OSPF path type
++#endif
++
+       /* Make packet. */
+       s = zclient->obuf;
+       stream_reset (s);
+@@ -416,6 +421,12 @@
+             stream_putl (s, or->cost);
+         }
+ 
++#ifdef HAVE_ZEBRA_MQ
++      stream_putl (s, or->cost);
++      
++      stream_putc (s, or->path_type);
++#endif
++
+       stream_putw_at (s, 0, stream_get_endp (s));
+ 
+       zclient_send_message(zclient);
+@@ -1292,6 +1303,74 @@
+   return 0;
+ }
+ 
++#ifdef HAVE_ZEBRA_MQ
++void
++ospf_zebra_mq_pkt(unsigned int ifindex, struct iovec *iov, int iov_cnt)
++{
++    int idx = 0;
++
++    // Format of ZEBRA_PROTO_MQ
++    //  ---------------------------------------------
++    // | 6-bytes Zebra Header | 4-bytes ifindex | PL |
++    //  ---------------------------------------------
++
++    stream_reset(zclient->obuf);
++    zclient_create_header(zclient->obuf, ZEBRA_PROTO_MQ);
++    stream_putl(zclient->obuf, ifindex);
++    
++    for(idx = 0; idx < iov_cnt; idx++) {
++        stream_write (zclient->obuf, (u_char *) iov[idx].iov_base, iov[idx].iov_len);
++    }
++    
++    /* Put length at the first point of the stream. */
++    stream_putw_at (zclient->obuf, 0, stream_get_endp (zclient->obuf));
++    zclient_send_message(zclient);
++}
++
++static int
++ospf_zebra_mq_recv (int command, struct zclient *zclient,
++                      zebra_size_t length)
++{
++    unsigned int ifindex;
++    struct interface *ifp = NULL;
++    struct route_node *node;
++    struct ospf_interface *oi = NULL;
++
++    ifindex = stream_getl(zclient->ibuf);
++
++    fprintf(stderr, "Recd cmd %d of length %u, ifindex=%d, pl len=%d\n", command, length, ifindex, (int) (zclient->ibuf->endp -
++                zclient->ibuf->getp));
++    
++    // 1. lookup interface
++    ifp = if_lookup_by_index(ifindex); 
++
++    if (!ifp) {
++        fprintf(stderr, "No ifp found for ifindex=%d\n", ifindex);
++        return 0;
++    }
++
++    // 2. from interface, lookup ospf_interface
++    for (node = route_top (IF_OIFS (ifp)); node; node = route_next (node))
++    {
++        if ((oi = node->info) == NULL) {
++            continue;
++        }
++
++        break;
++    }
++
++    // 3. Now get ospf from ospf_interface
++    if (oi) {
++        fprintf(stderr, "OI=%p, ospf=%p\n", oi, oi->ospf);
++        ospf_read_from_zebra_mq(oi->ospf, ifindex, (char *)(zclient->ibuf->data + zclient->ibuf->getp), (zclient->ibuf->endp - zclient->ibuf->getp));
++    }
++
++
++    return 0;
++}
++
++#endif
++
+ void
+ ospf_zebra_init ()
+ {
+@@ -1307,6 +1386,9 @@
+   zclient->interface_address_delete = ospf_interface_address_delete;
+   zclient->ipv4_route_add = ospf_zebra_read_ipv4;
+   zclient->ipv4_route_delete = ospf_zebra_read_ipv4;
++#ifdef HAVE_ZEBRA_MQ
++  zclient->proto_mq_recv = ospf_zebra_mq_recv;
++#endif
+ 
+   access_list_add_hook (ospf_filter_update);
+   access_list_delete_hook (ospf_filter_update);
+diff -Naur quagga-0.99.24/ospfd/ospf_zebra.h quagga-0.99.24.new/ospfd/ospf_zebra.h
+--- quagga-0.99.24/ospfd/ospf_zebra.h	2015-03-03 05:20:57.000000000 +0530
++++ quagga-0.99.24.new/ospfd/ospf_zebra.h	2016-01-12 06:27:28.000000000 +0530
+@@ -72,6 +72,10 @@
+ 			      const char *, const char *);
+ extern int ospf_distance_unset (struct vty *, struct ospf *, const char *,
+ 				const char *, const char *);
++#ifdef HAVE_ZEBRA_MQ
++extern void
++ospf_zebra_mq_pkt(unsigned int ifindex, struct iovec *iov, int iov_cnt);
++#endif
+ extern void ospf_zebra_init (void);
+ 
+ #endif /* _ZEBRA_OSPF_ZEBRA_H */

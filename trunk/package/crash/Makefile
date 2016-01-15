@@ -7,12 +7,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=crash
-PKG_VERSION:=7.1.0
+PKG_VERSION:=7.1.4
 
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/crash-utility/crash
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_VERSION:=7.1.4
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://people.redhat.com/anderson
-PKG_MD5SUM:=9f2584041a665eb8580de1e6c642c594
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_DEPENDS:=gdb less binutils ncurses
 
 

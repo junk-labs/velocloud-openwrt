@@ -7,6 +7,7 @@ include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
 
 # VMware packages:
 DEFAULT_PACKAGES += \
+	open-vm-tools \
 	kmod-pcnet32 \
 	kmod-e1000 \
 	kmod-e1000e \

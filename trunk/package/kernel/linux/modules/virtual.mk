@@ -280,3 +280,34 @@ endef
 
 $(eval $(call KernelPackage,vc_kvm_guest))
 
+define KernelPackage/vmware
+  SUBMENU:=$(VIRTUAL_MENU)
+  TITLE:=Support for VMware Virtual Machines
+  DEPENDS:=@TARGET_x64_vc_vmdk
+  DEFAULT:=y if (TARGET_x64_vc_vmdk)
+  KCONFIG:= \
+	CONFIG_VMWARE_PVSCSI=y
+endef
+
+define KernelPackage/vmware/description
+ Kernel settings for VMware guests
+endef
+
+$(eval $(call KernelPackage,vmware))
+
+
+define KernelPackage/vmxnet3
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=VMware VMXNET3 ethernet driver 
+  DEPENDS:=@(TARGET_x64_vc_vmdk&&PCI_SUPPORT)
+  DEFAULT:=y if (TARGET_x64_vc_vmdk)
+  KCONFIG:=CONFIG_VMXNET3
+  FILES:=$(LINUX_DIR)/drivers/net/vmxnet3/vmxnet3.ko
+  AUTOLOAD:=$(call AutoLoad,35,vmxnet3)
+endef
+
+define KernelPackage/vmxnet3/description
+ Kernel modules for VMware VMXNET3 ethernet adapters.
+endef
+
+$(eval $(call KernelPackage,vmxnet3))

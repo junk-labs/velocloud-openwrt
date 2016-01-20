@@ -1,0 +1,7 @@
+# Sierra devices (specific driver)
+
+TargetVendor=   0x1199
+SierraMode=1
+Configuration=1
+NoDriverLoading=1
+

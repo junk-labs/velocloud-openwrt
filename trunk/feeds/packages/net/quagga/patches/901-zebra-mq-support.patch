@@ -2,8 +2,8 @@ Patch to replace zebra functionality with edged, via a message queue.
 From Arun S.
 
 diff -Naur quagga-0.99.24/configure.ac quagga-0.99.24.new/configure.ac
---- quagga-0.99.24/configure.ac	2015-03-03 05:20:57.000000000 +0530
-+++ quagga-0.99.24.new/configure.ac	2016-01-12 06:27:28.000000000 +0530
+--- quagga-0.99.24/configure.ac	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/configure.ac	2016-01-18 22:53:14.206791867 -0800
 @@ -277,6 +277,8 @@
    AS_HELP_STRING([--enable-pcreposix], [enable using PCRE Posix libs for regex functions]))
  AC_ARG_ENABLE(fpm,
@@ -26,8 +26,8 @@ diff -Naur quagga-0.99.24/configure.ac quagga-0.99.24.new/configure.ac
    AC_DEFINE(HAVE_TCP_ZEBRA,,Use TCP for zebra communication)
  fi
 diff -Naur quagga-0.99.24/lib/zclient.c quagga-0.99.24.new/lib/zclient.c
---- quagga-0.99.24/lib/zclient.c	2015-03-03 05:20:57.000000000 +0530
-+++ quagga-0.99.24.new/lib/zclient.c	2016-01-12 06:27:28.000000000 +0530
+--- quagga-0.99.24/lib/zclient.c	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/lib/zclient.c	2016-01-18 22:53:14.206791867 -0800
 @@ -967,6 +967,12 @@
        if (zclient->ipv6_route_delete)
  	(*zclient->ipv6_route_delete) (command, zclient, length);
@@ -42,8 +42,8 @@ diff -Naur quagga-0.99.24/lib/zclient.c quagga-0.99.24.new/lib/zclient.c
        break;
      }
 diff -Naur quagga-0.99.24/lib/zclient.h quagga-0.99.24.new/lib/zclient.h
---- quagga-0.99.24/lib/zclient.h	2015-03-03 05:20:57.000000000 +0530
-+++ quagga-0.99.24.new/lib/zclient.h	2016-01-12 06:27:28.000000000 +0530
+--- quagga-0.99.24/lib/zclient.h	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/lib/zclient.h	2016-01-18 22:53:14.206791867 -0800
 @@ -82,6 +82,9 @@
    int (*ipv4_route_delete) (int, struct zclient *, uint16_t);
    int (*ipv6_route_add) (int, struct zclient *, uint16_t);
@@ -67,8 +67,8 @@ diff -Naur quagga-0.99.24/lib/zclient.h quagga-0.99.24.new/lib/zclient.h
  /* Zserv protocol message header */
  struct zserv_header
 diff -Naur quagga-0.99.24/lib/zebra.h quagga-0.99.24.new/lib/zebra.h
---- quagga-0.99.24/lib/zebra.h	2015-03-03 05:20:57.000000000 +0530
-+++ quagga-0.99.24.new/lib/zebra.h	2016-01-12 06:27:28.000000000 +0530
+--- quagga-0.99.24/lib/zebra.h	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/lib/zebra.h	2016-01-18 22:53:14.206791867 -0800
 @@ -412,7 +412,13 @@
  #define ZEBRA_ROUTER_ID_UPDATE            22
  #define ZEBRA_HELLO                       23
@@ -84,8 +84,8 @@ diff -Naur quagga-0.99.24/lib/zebra.h quagga-0.99.24.new/lib/zebra.h
  /* Marker value used in new Zserv, in the byte location corresponding
   * the command value in the old zserv header. To allow old and new
 diff -Naur quagga-0.99.24/ospfd/ospf_packet.c quagga-0.99.24.new/ospfd/ospf_packet.c
---- quagga-0.99.24/ospfd/ospf_packet.c	2015-03-03 05:20:57.000000000 +0530
-+++ quagga-0.99.24.new/ospfd/ospf_packet.c	2016-01-12 06:27:28.000000000 +0530
+--- quagga-0.99.24/ospfd/ospf_packet.c	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_packet.c	2016-01-18 22:53:14.210791867 -0800
 @@ -49,6 +49,11 @@
  #include "ospfd/ospf_flood.h"
  #include "ospfd/ospf_dump.h"
@@ -498,8 +498,8 @@ diff -Naur quagga-0.99.24/ospfd/ospf_packet.c quagga-0.99.24.new/ospfd/ospf_pack
  
  /* Make OSPF header. */
 diff -Naur quagga-0.99.24/ospfd/ospf_packet.h quagga-0.99.24.new/ospfd/ospf_packet.h
---- quagga-0.99.24/ospfd/ospf_packet.h	2015-03-03 05:20:57.000000000 +0530
-+++ quagga-0.99.24.new/ospfd/ospf_packet.h	2016-01-12 06:27:28.000000000 +0530
+--- quagga-0.99.24/ospfd/ospf_packet.h	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_packet.h	2016-01-18 22:53:14.210791867 -0800
 @@ -173,5 +173,9 @@
  
  extern const struct message ospf_packet_type_str[];
@@ -511,8 +511,8 @@ diff -Naur quagga-0.99.24/ospfd/ospf_packet.h quagga-0.99.24.new/ospfd/ospf_pack
  
  #endif /* _ZEBRA_OSPF_PACKET_H */
 diff -Naur quagga-0.99.24/ospfd/ospf_zebra.c quagga-0.99.24.new/ospfd/ospf_zebra.c
---- quagga-0.99.24/ospfd/ospf_zebra.c	2015-03-03 05:20:57.000000000 +0530
-+++ quagga-0.99.24.new/ospfd/ospf_zebra.c	2016-01-12 06:27:28.000000000 +0530
+--- quagga-0.99.24/ospfd/ospf_zebra.c	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_zebra.c	2016-01-18 22:53:14.210791867 -0800
 @@ -349,6 +349,11 @@
        if (distance)
          SET_FLAG (message, ZAPI_MESSAGE_DISTANCE);
@@ -624,8 +624,8 @@ diff -Naur quagga-0.99.24/ospfd/ospf_zebra.c quagga-0.99.24.new/ospfd/ospf_zebra
    access_list_add_hook (ospf_filter_update);
    access_list_delete_hook (ospf_filter_update);
 diff -Naur quagga-0.99.24/ospfd/ospf_zebra.h quagga-0.99.24.new/ospfd/ospf_zebra.h
---- quagga-0.99.24/ospfd/ospf_zebra.h	2015-03-03 05:20:57.000000000 +0530
-+++ quagga-0.99.24.new/ospfd/ospf_zebra.h	2016-01-12 06:27:28.000000000 +0530
+--- quagga-0.99.24/ospfd/ospf_zebra.h	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_zebra.h	2016-01-18 22:53:14.210791867 -0800
 @@ -72,6 +72,10 @@
  			      const char *, const char *);
  extern int ospf_distance_unset (struct vty *, struct ospf *, const char *,

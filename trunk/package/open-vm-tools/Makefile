@@ -107,6 +107,8 @@ define Package/open-vm-tools/install
 		$(PKG_INSTALL_DIR)/usr/lib/open-vm-tools/plugins/vmsvc/libguestInfo.so \
 		$(PKG_INSTALL_DIR)/usr/lib/open-vm-tools/plugins/vmsvc/libpowerOps.so \
 		$(1)/usr/lib/open-vm-tools/plugins/vmsvc
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/etc/init.d/openvmtools.init $(1)/etc/init.d/openvmtools
 endef
 
 $(eval $(call BuildPackage,open-vm-tools))

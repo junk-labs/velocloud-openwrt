@@ -99,6 +99,10 @@ CONFIGURE_ARGS += \
 	--disable-valgrindtk \
 	--without-included-gettext
 
+define Build/Install
+	$(call Build/Install/Default, install-strip)
+endef
+
 define Package/valgrind/install	
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/valgrind* $(1)/usr/bin/

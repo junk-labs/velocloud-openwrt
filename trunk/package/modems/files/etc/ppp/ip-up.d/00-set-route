@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. /etc/modems/modem_functions.sh
+
+case "$IFNAME" in
+    USB*)
+        METRIC=`get_route_metric $IFNAME`
+	route add default gw "$IPREMOTE" metric "$METRIC" "$IFNAME"
+	;;
+esac

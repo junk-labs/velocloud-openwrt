@@ -1,0 +1,27 @@
+
+config providers 'isp1'
+	option isp ''
+	option dialnumber '*99#'
+
+config providers 'isp2'
+        option isp 'Sierra'
+        option dialnumber '*99#'
+        option apn 'broadband'
+
+config providers 'isp3'
+	option isp 'Airtel'
+	option dialnumber '*99***1#'
+	option apn 'airtelgprs.com'
+
+config providers 'isp4'
+	option isp 'TataPhoton'
+	option dialnumber '#777'
+	option username 'internet'
+	option password 'internet'
+
+config providers 'isp5'
+	option isp 'mts'
+	option dialnumber '#777'
+	option username 'internet@internet.mtsindia.in'
+	option password 'MTS'
+

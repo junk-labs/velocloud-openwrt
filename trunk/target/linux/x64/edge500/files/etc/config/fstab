@@ -11,4 +11,4 @@ config mount
 	option device /dev/sda3
 	option fstype auto
 	option options rw,sync,noatime
-	option enabled 0
+	option enabled 1

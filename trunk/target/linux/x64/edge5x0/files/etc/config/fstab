@@ -8,7 +8,7 @@ config global autoswap
 
 config mount
 	option target /velocloud
-	option device /dev/sda3
+	option device /dev/sda6
 	option fstype auto
 	option options rw,sync,noatime
-	option enabled 0
+	option enabled 1

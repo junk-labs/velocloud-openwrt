@@ -1,0 +1,23 @@
+OpenWrt busybox does not have a "shutdown" program. Use the
+appropriate built-in replacement (reboot or poweroff).
+
++++ a/lib/system/systemLinux.c	2015-11-23 23:07:44.000000000 -0800
+--- b/lib/system/systemLinux.c	2016-01-19 16:08:59.907993516 -0800
+@@ -363,7 +363,7 @@
+ #elif defined(USERWORLD)
+       cmd = "/bin/reboot";
+ #else
+-      cmd = "/sbin/shutdown -r now";
++      cmd = "/sbin/reboot";
+ #endif
+    } else {
+ #if __FreeBSD__
+@@ -373,7 +373,7 @@
+ #elif defined(USERWORLD)
+       cmd = "/bin/halt";
+ #else
+-      cmd = "/sbin/shutdown -h now";
++      cmd = "/sbin/poweroff";
+ #endif
+    }
+    if (system(cmd) == -1) {

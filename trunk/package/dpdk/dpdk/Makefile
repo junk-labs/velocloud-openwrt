@@ -52,7 +52,6 @@ define Build/Compile
 endef
 
 define Build/InstallDev
-	echo FOO Build/InstallDev
 	$(INSTALL_DIR) \
 		$(1)/usr/dpdk/include \
 		$(1)/usr/dpdk/lib
@@ -64,11 +63,10 @@ define Build/InstallDev
 		$(1)/usr/dpdk/lib
 endef
 define Package/dpdk/install
-	echo FOO Package/dpdk/install
 	$(INSTALL_DIR) \
 		$(1)/usr/share/dpdk/app \
 		$(1)/usr/share/dpdk/kmod
-	$(CP) \
+	$(INSTALL_BIN) -s \
 		$(PKG_INSTALL_DIR)/$(T)/app/* \
 		$(1)/usr/share/dpdk/app
 	$(CP) \

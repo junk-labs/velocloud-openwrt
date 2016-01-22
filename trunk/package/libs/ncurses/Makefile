@@ -112,6 +112,7 @@ endef
 define Package/libncurses/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lib{curses,ncurses,panel,menu,form}.so* $(1)/usr/lib/
+	ln -sf libncurses.so.5.9 $(1)/usr/lib/libtinfo.so.5
 endef
 
 define Package/libncursesw/install

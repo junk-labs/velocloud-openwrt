@@ -185,7 +185,7 @@ CONFIGURE_ARGS+= \
 	--disable-ospfclient \
 	--disable-capabilities \
 	--disable-doc \
-	$(call autoconf_bool,CONFIG_PACKAGE_quagga-libzebra,zebra) \
+	$(call autoconf_bool,CONFIG_PACKAGE_quagga-zebra,zebra) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-libospf,ospfd) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-bgpd,bgpd) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-isisd,isisd) \
@@ -194,6 +194,9 @@ CONFIGURE_ARGS+= \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-ripngd,ripngd) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-babeld,babeld) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-vtysh,vtysh) \
+	--disable-zebra \
+	--enable-tcp-zebra \
+	--enable-zebra-mq \
 
 MAKE_FLAGS += \
 	CFLAGS="$(TARGET_CFLAGS) -std=gnu99"

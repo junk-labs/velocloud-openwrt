@@ -328,7 +328,8 @@ menu "Target Images"
 		string "Root partition on target device"
 		depends on OLPC_BOOTSCRIPT_IMAGES || GRUB_IMAGES
 		default "/dev/xvda2" if TARGET_x86_xen_domu || TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
-		default "/dev/sdb2" if TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge1000
+		default "/dev/sdb2" if TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge1000
+		default "/dev/sda2" if TARGET_x64_edge5x0
 		default "/dev/sda2" if ! TARGET_x86_xen_domu
 		help
 		  The root partition on the final device.  If you don't know,

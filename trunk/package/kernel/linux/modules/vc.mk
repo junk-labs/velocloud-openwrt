@@ -11,7 +11,8 @@ define KernelPackage/vc-nmi
   SUBMENU:=$(VC_MENU)
 #  CATEGORY:=VeloCloud
   TITLE:=VeloCloud NMI handler
-#  DEPENDS:=@TARGET_x86
+  DEPENDS:=@TARGET_x64_edge5x0
+  DEFAULT:=y if (TARGET_x64_edge5x0)
   KCONFIG:=CONFIG_VELOCLOUD_NMI
   FILES:=$(LINUX_DIR)/drivers/platform/x86/velocloud-nmi.ko
   AUTOLOAD:=$(call AutoLoad,06,velocloud-nmi)

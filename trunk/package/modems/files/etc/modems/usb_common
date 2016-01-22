@@ -1,0 +1,197 @@
+#!/bin/sh
+
+. /etc/modems/modem.path
+export PYTHONPATH=/opt/vc/lib/python
+local eventdir
+
+set_eventdir()
+{
+	eventdir=$1
+}
+
+log()
+{
+	logger -t "usbmodems" "$eventdir: $@"
+}
+
+usb_wan_naming()
+{
+    python - "$1" <<-EOF
+import hardware
+import sys
+usb = hardware.get_usb_by_path(sys.argv[1])
+if usb:
+    print usb
+EOF
+}
+
+at_get_imsi_number() {
+	local dialdevice=$1
+	local usbifname=$2
+	local imsi_tries=3
+	local tempfile="$tmpdir/$usbifname.siminfo"
+	local imsicmd="gcom -d $dialdevice -s /etc/gcom/vcgetimsi.gcom"
+	local imsi_number
+	while [ -z $imsi_number ] && [ "$imsi_tries" -ne 0 ]; do
+		$imsicmd | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
+		log "IMSI Info: $(cat $tempfile | xargs echo)"
+
+		imsi_number=$(cat $tempfile | awk '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}$/)){print $i;break} } }')
+		imsi_tries=$(expr $imsi_tries - 1)
+	done
+	log "IMSI: $imsi_number"
+	rm -f $tempfile
+	echo $imsi_number
+}
+
+at_get_apn()
+{
+	local dialdevice=$1
+	local usbifname=$2
+	local imsi=$(at_get_imsi_number $dialdevice $usbifname)
+	local mccmnc
+
+	# Look for a match with a 2-digit MNC (i.e. no PCS digit)
+	mccmnc="${imsi:0:5}"
+	if [ ! -z $mccmnc ]; then
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Look for a match with a 3-digit MNC (i.e. with PCS digit)
+	if [ -z $apn ]; then
+		mccmnc="${imsi:0:6}"
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Assume we got a 2 digit MNC from IMSI, so build a 3-digit MNC and recheck
+	if [ -z $apn ]; then
+		mccmnc="${imsi:0:3}0${imsi:3:2}"
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Note: if APN not found, use empty APN
+	echo $apn
+}
+
+check_device_config() {
+	local usbifname=$1
+	local ret="False"
+	uci -c $modem_path -X get modems.$usbifname.device 2>&1 >/dev/null
+	if [ "$?" == "0" ]; then
+		ret="True"
+	fi
+	echo $ret
+}
+
+get_modem_type()
+{
+	local ifname=$1 # full interface name
+	local interface=${1/[0-9]*} # ttyUSB or eth or wwan
+	local product=$2
+	local hymodemsfile=$modem_script_path/hybridmodems.list
+	local modemtype=""
+	local hybridtype
+
+	#log "get_modem_type: ifname=$ifname interface=$interface product=$product"
+	if [ -z "$product" ]; then
+		echo "ignore"
+		return
+	fi
+
+	if [ "$interface" == "ttyUSB" ]; then
+		modemtype="serial"
+		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
+		#log "get_modem_type: hybridtype=$hybridtype"
+		if [ "$hybridtype" = "ignore" ]; then
+			echo "ignore"
+			return
+		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" != "serial" ]; then
+			modemtype="None" # cdcether or qmiwwan
+		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
+			modemtype="qmihybrid"
+		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "sierranet" ]; then
+			modemtype="sierranet"
+		fi
+	fi
+
+	# Some initial modem type detection based on the current driver in use
+	if [ "$modemtype" == "" ]; then
+		local driverpath=$(readlink /sys/class/net/$ifname/device/driver)
+		driver=$(basename $driverpath)
+
+		#log "get_modem_type: driver is $driver"
+		if [ "$driver" = "huawei_cdc_ncm" ]; then
+			modemtype="huawei-ncm"
+		elif [ "$driver" = "qmi_wwan" ]; then
+			modemtype="qmiwwan"
+		fi
+	fi
+
+	if [ "$modemtype" == "" ]; then
+		local found=0
+		local index=1
+		local mtypes="eth=cdcether usb=cdcether wwan=qmiwwan"
+		local mtotal=$(echo $mtypes | awk '{print NF}')
+		local intf type
+
+		modemtype="None"
+		while [ $index -le $mtotal ]; do
+			intf=$(echo $mtypes | awk -v i=$index '{print $i}' | awk -F= '{print $1}')
+			if [ "$interface" == "$intf" ]; then
+				found=1
+				type=$(echo $mtypes | awk -v i=$index '{print $i}' | awk -F= '{print $2}')
+				break
+			fi
+			index=$(expr $index + 1)
+		done
+		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
+		if [ "$found" -eq 1 ]; then
+			modemtype=$type
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "serial" ]; then
+				modemtype="None" # cdcether or qmiwwan
+			fi
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
+				modemtype="qmihybrid"
+			fi
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "sierranet" ]; then
+				modemtype="sierranet"
+			fi
+		fi
+	fi
+	echo $modemtype
+}
+
+uci_get_modem_type()
+{
+	local usbifname=$1
+	local type
+	type=$(uci -c $modem_path get modems.$usbifname.type)
+	echo $type
+}
+
+uci_get_modem_product()
+{
+	local usbifname=$1
+	echo $(uci -c $modem_path get modems.$usbifname.product)
+}
+
+uci_get_modem_device()
+{
+	local usbifname=$1
+	echo $(uci -c $modem_path get modems.$usbifname.device)
+}
+
+uci_get_modem_ifname()
+{
+    local usbifname=$1
+    echo $(uci -c $modem_path get modems.$usbifname.ifname)
+}
+
+debug_hotplugevents()
+{
+	echo "HOTPLUG:`date`:$eventdir" >> /tmp/hotplug-events.txt
+	env | xargs echo >> /tmp/hotplug-events.txt
+}

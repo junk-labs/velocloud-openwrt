@@ -1,0 +1,9 @@
+#!/bin/sh
+
+case "$IFNAME" in
+    USB*)
+        # Route metric so as to allow separate default routes for each intf.
+        METRIC=`expr 50 + ${IFNAME//USB}`
+	route add default gw "$IPREMOTE" metric "$METRIC" "$IFNAME"
+	;;
+esac

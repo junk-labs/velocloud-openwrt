@@ -58,7 +58,7 @@ MAKE_FLAGS = \
 
 define Package/perf/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(LINUX_DIR)/tools/perf/perf $(1)/usr/bin/
+	$(INSTALL_BIN) -s $(LINUX_DIR)/tools/perf/perf $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,perf))

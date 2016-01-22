@@ -1,0 +1,779 @@
+{
+"Providers":
+	[
+      {
+        "ISP":"3",
+        "Country":"Australia",
+        "APN":"3netaccess",
+        "DialNumber":"",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"3",
+        "Country":"Austria",
+        "APN":"drei.at",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":"username and password can be empty"
+      },
+      {
+        "ISP":"3 Bredband",
+        "Country":"Sweden",
+        "APN":"bredband.tre.se",
+        "DialNumber":"*99#",
+        "Username":"dummy",
+        "Password":"dummy",
+        "Other information":"APN depends on contract: 3 Bredband Kontant is \"net.tre.se\", 3 Bredband is \"bredband.tre.se\"(the new autotool entered \"data.tre.se\"which also worked, deprecated address?) UPDATE: data.tre.se is for mobile phone usage (same speed though) and will only give you a NATed address. May have to enter DNS servers manually (please fix this bug): 80.251.192.244 and 80.251.192.245"
+      },
+      {
+        "ISP":"3 Kontant",
+        "Country":"Sweden",
+        "APN":"net.tre.se",
+        "DialNumber":"*99#",
+        "Username":"dummy",
+        "Password":"dummy",
+        "Other information":"APN depends on contract. 3 Bredband Kontant is \"net.tre.se\", 3 Bredband is \"bredband.tre.se\""
+      },
+      {
+        "ISP":"3",
+        "Country":"Italy",
+        "APN":"naviga.tre.it",
+        "DialNumber":"",
+        "Username":"anon",
+        "Password":"anon",
+        "Other information":""
+      },
+      {
+        "ISP":"3",
+        "Country":"Ireland",
+        "APN":"3ireland.ie",
+        "DialNumber":"",
+        "Username":"3ireland",
+        "Password":"3ireland",
+        "Other information":""
+      },
+      {
+        "ISP":"3",
+        "Country":"UK",
+        "APN":"three.co.uk",
+        "DialNumber":"",
+        "Username":"three",
+        "Password":"three",
+        "Other information":"APN is dependant on contract. PAYG is \"three.co.uk\"full contract is \"3internet\""
+      },
+      {
+        "ISP":"A1 (mobilkom)",
+        "Country":"Austria",
+        "APN":"a1.net",
+        "DialNumber":"*99#",
+        "Username":"ppp@a1plus.at",
+        "Password":"ppp",
+        "Other information":""
+      },
+      {
+        "ISP":"AT&T",
+        "Country":"USA",
+        "APN":"",
+        "DialNumber":"wap.cingular",
+        "Username":"WAP@CINGULARGPRS.COM",
+        "Password":"CINGULAR1",
+        "Other information":""
+      },
+      {
+        "ISP":"BiBoB",
+        "Country":"Denmark",
+        "APN":"internet.bibob.dk",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":"username and password can be empty"
+      },
+      {
+        "ISP":"China Mobile",
+        "Country":"China",
+        "APN":"cmnet",
+        "DialNumber":"",
+        "Username":"zte",
+        "Password":"zte",
+        "Other information":""
+      },
+      {
+        "ISP":"Claro",
+        "Country":"Brazil",
+        "APN":"claro.com.br",
+        "DialNumber":"*99#",
+        "Username":"claro",
+        "Password":"claro",
+        "Other information":"Have to manually edit the DNS servers in /etc/resolv.conf, ADD nameserver 200.255.121.39 nameserver 200.169.117.14"
+      },
+      {
+        "ISP":"Econet",
+        "Country":"Zimbabwe",
+        "APN":"econet.net",
+        "DialNumber":"*99***1#/*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Elisa",
+        "Country":"Finland",
+        "APN":"internet",
+        "DialNumber":"*99***1#",
+        "Username":"rlnet",
+        "Password":"internet",
+        "Other information":"username \"rlnet\"(apparently not needed), password \"internet\""
+      },
+      {
+        "ISP":"e-moble",
+        "Country":"Japan",
+        "APN":"emb.ne.jp",
+        "DialNumber":"*99***1#",
+        "Username":"em",
+        "Password":"em",
+        "Other information":""
+      },
+      {
+        "ISP":"Globe Visibility",
+        "Country":"Philippines",
+        "APN":"internet.globe.com.ph",
+        "DialNumber":"*99# or *99***1#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Kanguru",
+        "Country":"Portugal",
+        "APN":"myconnection",
+        "DialNumber":"*99***1#",
+        "Username":"",
+        "Password":"",
+        "Other information":"DNS Servers: 62.169.67.172 and 62.169.67.171"
+      },
+      {
+        "ISP":"Kanguru (fixo)",
+        "Country":"Portugal",
+        "APN":"kangurufixo",
+        "DialNumber":"*99***1#",
+        "Username":"",
+        "Password":"",
+        "Other information":"DNS Servers: 62.169.67.172 and 62.169.67.171"
+      },
+      {
+        "ISP":"ice.net",
+        "Country":"Sweden",
+        "APN":"",
+        "DialNumber":"#777",
+        "Username":"cdma",
+        "Password":"cdma",
+        "Other information":""
+      },
+      {
+        "ISP":"IM3",
+        "Country":"Indonesia",
+        "APN":"www.indosat-m3.net",
+        "DialNumber":"",
+        "Username":"im3",
+        "Password":"im3",
+        "Other information":""
+      },
+      {
+        "ISP":"Iusacell",
+        "Country":"Mexico",
+        "APN":"",
+        "DialNumber":"#777",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"M-Budget Mobile",
+        "Country":"Switzerland",
+        "APN":"gprs.swisscom.ch",
+        "DialNumber":"*99#",
+        "Username":"gprs",
+        "Password":"gprs",
+        "Other information":""
+      },
+      {
+        "ISP":"MCel",
+        "Country":"Mozambique",
+        "APN":"isp.mcel.mz",
+        "DialNumber":"*99#",
+        "Username":"guest",
+        "Password":"guest",
+        "Other information":""
+      },
+      {
+        "ISP":"MobileOne",
+        "Country":"Singapore",
+        "APN":"sunsurf",
+        "DialNumber":"",
+        "Username":"M1",
+        "Password":"M1",
+        "Other information":""
+      },
+      {
+        "ISP":"Movistar",
+        "Country":"Spain",
+        "APN":"movistar.es",
+        "DialNumber":"",
+        "Username":"movistar",
+        "Password":"movistar",
+        "Other information":""
+      },
+      {
+        "ISP":"MTN NG",
+        "Country":"Nigeria",
+        "APN":"web.gprs.mtnnigeria.net",
+        "DialNumber":"",
+        "Username":"web",
+        "Password":"web",
+        "Other information":"Use GPRS always; username: web; password: web"
+      },
+      {
+        "ISP":"Netcom",
+        "Country":"Norway",
+        "APN":"internet",
+        "DialNumber":"",
+        "Username":"internet",
+        "Password":"internet",
+        "Other information":""
+      },
+      {
+        "ISP":"o2",
+        "Country":"Germany",
+        "APN":"internet or surfo2 (see FAQ)",
+        "DialNumber":"",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"o2",
+        "Country":"Ireland",
+        "APN":"open.internet",
+        "DialNumber":"",
+        "Username":"gprs",
+        "Password":"gprs",
+        "Other information":""
+      },
+      {
+        "ISP":"Optimus",
+        "Country":"Portugal",
+        "APN":"myconnection",
+        "DialNumber":"*99***1#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"o2",
+        "Country":"UK",
+        "APN":"mobile.o2.co.uk",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"o2 PAYG",
+        "Country":"UK",
+        "APN":"m-bb.o2.co.uk",
+        "DialNumber":"*99#",
+        "Username":"o2bb",
+        "Password":"password",
+        "Other information":"Username & password may be anything"
+      },
+      {
+        "ISP":"Optus Prepaid",
+        "Country":"Australia",
+        "APN":"preconnect",
+        "DialNumber":"",
+        "Username":"",
+        "Password":"",
+        "Other information":"Needs to be able to recieve SMS\'s to activate the SIM. Windows utility has this capability. Works perfectly in Ubuntu when activated."
+      },
+      {
+        "ISP":"Orange (formerly ONE)",
+        "Country":"Austria",
+        "APN":"orange.web or fullspeed or web.one.at",
+        "DialNumber":"*99#",
+        "Username":"web",
+        "Password":"web",
+        "Other information":""
+      },
+      {
+        "ISP":"Orange",
+        "Country":"UK",
+        "APN":"orangeinternet or internetvpn (see FAQ)",
+        "DialNumber":"",
+        "Username":"orange",
+        "Password":"orange",
+        "Other information":""
+      },
+      {
+        "ISP":"Play",
+        "Country":"Poland",
+        "APN":"internet",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Powertel",
+        "Country":"Zimbabwe",
+        "APN":"",
+        "DialNumber":"#777",
+        "Username":"111",
+        "Password":"111",
+        "Other information":""
+      },
+      {
+        "ISP":"PT. SATelindo C",
+        "Country":"Indonesia",
+        "APN":"indosat3g",
+        "DialNumber":"",
+        "Username":"indosat",
+        "Password":"indosat",
+        "Other information":""
+      },
+      {
+        "ISP":"Pro XL",
+        "Country":"Indonesia",
+        "APN":"www.xlgprs.net",
+        "DialNumber":"",
+        "Username":"xlgprs",
+        "Password":"proxl",
+        "Other information":""
+      },
+      {
+        "ISP":"Proximus",
+        "Country":"Belgium",
+        "APN":"internet.proximus.be",
+        "DialNumber":"*99#",
+        "Username":"test",
+        "Password":"test",
+        "Other information":"May need \"Prefer GPRS\". Used Huawei e220"
+      },
+      {
+        "ISP":"Reliance NetConnect Broadband+",
+        "Country":"India",
+        "APN":"",
+        "DialNumber":"#777",
+        "Username":"Your_mobile_number",
+        "Password":"Your_mobile_number",
+        "Other information":"Enter the Username / Password before completing wizards"
+      },
+      {
+        "ISP":"Safaricom",
+        "Country":"Kenya",
+        "APN":"web.safaricom.com",
+        "DialNumber":"*99#",
+        "Username":"web",
+        "Password":"web",
+        "Other information":""
+      },
+      {
+        "ISP":"SFR",
+        "Country":"France",
+        "APN":"websfr",
+        "DialNumber":"",
+        "Username":"websfr",
+        "Password":"websfr",
+        "Other information":""
+      },
+      {
+        "ISP":"Smart",
+        "Country":"Philippines",
+        "APN":"Internet or SmartBro",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":"DNS Address preferably configured to OpenDNS or Google since ISPs\' DNS not reliable"
+      },
+      {
+        "ISP":"Sprint",
+        "Country":"USA",
+        "APN":"unknown",
+        "DialNumber":"#777",
+        "Username":"",
+        "Password":"",
+        "Other information":"number: #777 authenticates via ESN"
+      },
+      {
+        "ISP":"Simyo",
+        "Country":"Spain",
+        "APN":"gprs-service.com",
+        "DialNumber":"",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Sunrise",
+        "Country":"Switzerland",
+        "APN":"internet",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Swisscom",
+        "Country":"Switzerland",
+        "APN":"gprs.swisscom.ch",
+        "DialNumber":"*99#",
+        "Username":"gprs",
+        "Password":"gprs",
+        "Other information":""
+      },
+      {
+        "ISP":"T-Mobile",
+        "Country":"Czech Republic",
+        "APN":"internet.t-mobile.cz",
+        "DialNumber":"*99#",
+        "Username":"gprs",
+        "Password":"gprs",
+        "Other information":""
+      },
+      {
+        "ISP":"T-Mobile",
+        "Country":"USA",
+        "APN":"internet2.voicestream.com",
+        "DialNumber":"",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Tata Indicom Photon+",
+        "Country":"India",
+        "APN":"",
+        "DialNumber":"#777",
+        "Username":"internet",
+        "Password":"internet",
+        "Other information":""
+      },
+      {
+        "ISP":"Tele 2",
+        "Country":"Sweden",
+        "APN":"mobileinternet.tele2.se",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Telkomsel Flash - Time based",
+        "Country":"Indonesia",
+        "APN":"flash",
+        "DialNumber":"",
+        "Username":"flash",
+        "Password":"flash",
+        "Other information":""
+      },
+      {
+        "ISP":"Telkomsel Flash - Unlimited",
+        "Country":"Indonesia",
+        "APN":"internet",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"TeliaSonera",
+        "Country":"Sweden",
+        "APN":"online.telia.se",
+        "DialNumber":"",
+        "Username":"3G",
+        "Password":"internet",
+        "Other information":""
+      },
+      {
+        "ISP":"Telstra",
+        "Country":"Australia",
+        "APN":"Telstra.WAP or Telstra.Internet",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Telenor",
+        "Country":"Serbia",
+        "APN":"internet",
+        "DialNumber":"*99#",
+        "Username":"telenor",
+        "Password":"gprs",
+        "Other information":""
+      },
+      {
+        "ISP":"Telenor",
+        "Country":"Sweden",
+        "APN":"services.telenor.se",
+        "DialNumber":"",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Tigo",
+        "Country":"Colombia",
+        "APN":"web.colombiamovil.com.co",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"TIM",
+        "Country":"Italy",
+        "APN":"ibox.tim.it",
+        "DialNumber":"",
+        "Username":"anon",
+        "Password":"anon",
+        "Other information":""
+      },
+      {
+        "ISP":"TMN",
+        "Country":"Portugal",
+        "APN":"internet",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"TW Mobile",
+        "Country":"Taiwan",
+        "APN":"internet",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Verizon",
+        "Country":"USA",
+        "APN":"",
+        "DialNumber":"#777",
+        "Username":"<phonenum>@vzw3g.com",
+        "Password":"vzw",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodacom",
+        "Country":"South Africa",
+        "APN":"internet",
+        "DialNumber":"",
+        "Username":"vodafone",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Germany",
+        "APN":"web.vodafone.de",
+        "DialNumber":"",
+        "Username":"vodafone",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Hungary",
+        "APN":"standardnet.vodafone.net",
+        "DialNumber":"*99***1#",
+        "Username":"ANY",
+        "Password":"ANY",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Hungary",
+        "APN":"internet.vodafone.net",
+        "DialNumber":"*99***1#",
+        "Username":"ANY",
+        "Password":"ANY",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Hungary / Prepaid",
+        "APN":"vitamax.snet.vodafone.net",
+        "DialNumber":"*99***1#",
+        "Username":"ANY",
+        "Password":"ANY",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Hungary / Prepaid",
+        "APN":"vitamax.internet.vodafone.net",
+        "DialNumber":"*99***1#",
+        "Username":"ANY",
+        "Password":"ANY",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Italy",
+        "APN":"web.omnitel.it",
+        "DialNumber":"",
+        "Username":"vodafone",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Ireland",
+        "APN":"hs.vodafone.ie",
+        "DialNumber":"",
+        "Username":"vodafone",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Netherlands",
+        "APN":"live.vodafone.com",
+        "DialNumber":"",
+        "Username":"vodafone",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Portugal",
+        "APN":"internet.vodafone.pt",
+        "DialNumber":"",
+        "Username":"vodafone",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Romania",
+        "APN":"internet.vodafone.ro",
+        "DialNumber":"",
+        "Username":"internet.vodafone.ro",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"Spain",
+        "APN":"ac.vodafone.es",
+        "DialNumber":"",
+        "Username":"vodafone",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"Vodafone",
+        "Country":"UK",
+        "APN":"internet",
+        "DialNumber":"",
+        "Username":"vodafone",
+        "Password":"vodafone",
+        "Other information":""
+      },
+      {
+        "ISP":"VIP",
+        "Country":"Croatia",
+        "APN":"data.vip.hr",
+        "DialNumber":"",
+        "Username":"38591",
+        "Password":"38591",
+        "Other information":""
+      },
+      {
+        "ISP":"Virgin Mobile",
+        "Country":"Australia",
+        "APN":"virgininternet",
+        "DialNumber":"",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Virgin Mobile Prepaid",
+        "Country":"Australia",
+        "APN":"VirginBroadband",
+        "DialNumber":"",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Wana",
+        "Country":"Morocco",
+        "APN":"",
+        "DialNumber":"#777",
+        "Username":"wana",
+        "Password":"wana",
+        "Other information":""
+      },
+      {
+        "ISP":"Welho",
+        "Country":"Finland",
+        "APN":"internet.welho.fi",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Wind",
+        "Country":"Canada",
+        "APN":"internet.windmobile.ca",
+        "DialNumber":"*99#",
+        "Username":"",
+        "Password":"",
+        "Other information":""
+      },
+      {
+        "ISP":"Wind",
+        "Country":"Italy",
+        "APN":"internet.wind",
+        "DialNumber":"",
+        "Username":"anon",
+        "Password":"anon",
+        "Other information":""
+      },
+      {
+        "ISP":"XS4ALL",
+        "Country":"Netherlands",
+        "APN":"umts.xs4all.nl",
+        "DialNumber":"(umts/gprs default)",
+        "Username":"chosen username",
+        "Password":"chosen password",
+        "Other information":"Username and password are chosen when you register for the service."
+      },
+      {
+        "ISP":"Yesss",
+        "Country":"Austria",
+        "APN":"web.yesss.at",
+        "DialNumber":"*99#",
+        "Username":"dummy",
+        "Password":"dummy",
+        "Other information":""
+      },
+      {
+        "ISP":"Yoigo",
+        "Country":"Spain",
+        "APN":"internet",
+        "DialNumber":"*99***1#",
+        "Username":"yoigo",
+        "Password":"yoigo",
+        "Other information":""
+      }
+   ]
+}

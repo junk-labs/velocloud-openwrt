@@ -60,6 +60,7 @@ define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/libdw/libdw.{a,so*} $(1)/usr/lib/
 	$(CP) $(PKG_BUILD_DIR)/libelf/libelf.{a,so*} $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/libebl/libebl.a $(1)/usr/lib/
 endef
 
 define Package/libdw/install

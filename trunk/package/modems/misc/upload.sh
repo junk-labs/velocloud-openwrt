@@ -18,7 +18,6 @@ scp ${SSH_PREFS}                                 \
 
 scp ${SSH_PREFS}                                 \
     modem_support/modem_service.sh               \
-    modem_support/modem_functions.sh             \
     modem_support/modem.path                     \
     modem_support/usb_common                     \
     modem_support/hybridmodems.list              \

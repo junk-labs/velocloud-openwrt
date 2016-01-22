@@ -1,10 +1,9 @@
 #!/bin/sh
 
-. /etc/modems/modem_functions.sh
-
 case "$IFNAME" in
     USB*)
-        METRIC=`get_route_metric $IFNAME`
+        # Route metric so as to allow separate default routes for each intf.
+        METRIC=`expr 50 + ${IFNAME//USB}`
 	route add default gw "$IPREMOTE" metric "$METRIC" "$IFNAME"
 	;;
 esac

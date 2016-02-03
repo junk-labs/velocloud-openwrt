@@ -584,7 +584,7 @@ $(eval $(call KernelPackage,usb-serial-ch341))
 
 define KernelPackage/usb-serial-ftdi
   TITLE:=Support for FTDI devices
-  KCONFIG:=CONFIG_USB_SERIAL_FTDI_SIO
+  KCONFIG:=CONFIG_USB_SERIAL_FTDI_SIO CONFIG_GPIO_FTDI_CBUS
   FILES:=$(LINUX_DIR)/drivers/usb/serial/ftdi_sio.ko
   AUTOLOAD:=$(call AutoProbe,ftdi_sio)
   $(call AddDepends/usb-serial)

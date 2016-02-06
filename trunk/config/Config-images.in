@@ -278,6 +278,12 @@ menu "Target Images"
 		default y if TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
 		default y if TARGET_x86_vc_kvm_guest || TARGET_x64_vc_kvm_guest
 
+	config OVA_IMAGES
+		bool "Build VMware OVA (Open Virtualization Format) packages"
+		depends on TARGET_x86 || TARGET_x64
+		select VMDK_IMAGES
+		default y if TARGET_x86_vc_vmdk || TARGET_x64_vc_vmdk
+
 	config QCOW2_IMAGES
 		bool "Build KVM image files (qcow2)"
 		depends on TARGET_x86 || TARGET_x86_64 || TARGET_x64

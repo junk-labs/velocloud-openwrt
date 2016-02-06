@@ -174,6 +174,19 @@ ifneq ($(CONFIG_VMDK_IMAGES),)
 			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vmdk
     endif
   endef
+
+  ifneq ($(CONFIG_OVA_IMAGES),)
+    define Image/Build/ova
+      # left here because the image builder doesnt need these
+      ifeq ($(1),ext4)
+		chmod u+x ./gen_ova.sh
+		STAGING_DIR_HOST=$(STAGING_DIR_HOST) \
+		./gen_ova.sh \
+			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vmdk \
+			$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/ovf/VeloCloud-Edge.ovf
+      endif
+    endef
+  endif
 endif
 
 ifneq ($(CONFIG_QCOW2_IMAGES),)
@@ -289,7 +302,7 @@ endef
 
 ifneq ($(CONFIG_VELOCLOUD_MANUFACTURING_INSTALLER),)
   define Image/Build/velocloud-manufacturing
-	echo "Building Velocloud Manufacturing Image."
+	echo "Building VeloCloud Manufacturing Image."
 	$(call Image/Build/velocloud/grubcfg,root.grub,grub-manufacturing.cfg,grub.cfg)
 	$(call Image/Build/velocloud/gpt,$(1),$(IMG_PREFIX)-manufacturing-$(1).img)
   endef
@@ -297,7 +310,7 @@ endif
 
 ifneq ($(CONFIG_VELOCLOUD_INSTALLER),)
   define Image/Build/velocloud-installer
-	echo "Building Velocloud Installer Image."
+	echo "Building VeloCloud Installer Image."
 	$(call Image/Build/velocloud/grubcfg,root.grub,grub-installer.cfg,grub.cfg)
 	$(call Image/Build/velocloud/gpt,$(1),$(IMG_PREFIX)-installer-$(1).img)
   endef
@@ -357,6 +370,7 @@ define Image/Build
     endif
 	$(call Image/Build/vdi,$(1))
 	$(call Image/Build/vmdk,$(1))
+	$(call Image/Build/ova,$(1))
 	$(call Image/Build/qcow2,$(1))
 	$(call Image/Build/vc-ec2,$(1))
 	$(CP) $(KDIR)/root.$(1) $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img

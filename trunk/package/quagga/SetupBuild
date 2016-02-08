@@ -1,0 +1,61 @@
+#!/bin/sh
+
+MYDIR=`dirname $0`
+MYDIR=`bash -c "(pushd $MYDIR >/dev/null && pwd && popd >/dev/null)"`
+
+cd "$MYDIR"
+
+if [ -d build ] ; then
+    echo "build directory already exists. Remove it to re-run the setup"
+    exit 1
+else
+    mkdir -p build
+    cd build
+    rsync -av ../src/ .
+
+    export CFLAGS="-std=gnu99 -g -mtune=generic -fomit-frame-pointer -fno-caller-saves -Wno-error=unused-but-set-variable"
+
+    # Run autoreconf
+    [ -d ./autom4te.cache ] && rm -rf autom4te.cache
+    autoreconf -v -f -i -I m4 -I . .
+
+    ./configure \
+        --program-prefix="" \
+        --program-suffix="" \
+        --prefix=/usr \
+        --exec-prefix=/usr \
+        --bindir=/usr/bin \
+        --sbindir=/usr/sbin \
+        --libexecdir=/usr/lib \
+        --sysconfdir=/etc \
+        --datadir=/usr/share \
+        --localstatedir=/var \
+        --mandir=/usr/man \
+        --infodir=/usr/info \
+        --disable-nls   \
+        --localstatedir=/var/run/quagga \
+        --sysconfdir=/etc/quagga/ \
+        --enable-shared \
+        --disable-static \
+        --enable-user=network \
+        --enable-group=network \
+        --enable-pie=no \
+        --enable-multipath=8 \
+        --disable-ospfclient \
+        --disable-capabilities \
+        --disable-doc \
+        --disable-zebra \
+        --enable-libospf \
+        --enable-bgpd \
+        --disable-isisd \
+        --disable-ospf6d \
+        --disable-ripd \
+        --disable-ripngd \
+        --disable-babeld \
+        --disable-vtysh \
+        --enable-tcp-zebra \
+        --enable-zebra-mq
+
+echo "You can now cd into \"build\" and run \"make\" to build."
+fi
+

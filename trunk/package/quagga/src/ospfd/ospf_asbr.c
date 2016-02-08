@@ -178,6 +178,11 @@ void
 ospf_external_info_delete (u_char type, struct prefix_ipv4 p)
 {
   struct route_node *rn;
+  struct route_table *table = EXTERNAL_INFO (type);
+
+  if (!table) {
+	  return;
+  }
 
   rn = route_node_lookup (EXTERNAL_INFO (type), (struct prefix *) &p);
   if (rn)

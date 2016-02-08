@@ -72,6 +72,10 @@ extern int ospf_distance_set (struct vty *, struct ospf *, const char *,
 			      const char *, const char *);
 extern int ospf_distance_unset (struct vty *, struct ospf *, const char *,
 				const char *, const char *);
+#ifdef HAVE_ZEBRA_MQ
+extern void
+ospf_zebra_mq_pkt(unsigned int ifindex, struct iovec *iov, int iov_cnt);
+#endif
 extern void ospf_zebra_init (void);
 
 #endif /* _ZEBRA_OSPF_ZEBRA_H */

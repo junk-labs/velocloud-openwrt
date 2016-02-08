@@ -277,6 +277,8 @@ AC_ARG_ENABLE(pcreposix,
   AS_HELP_STRING([--enable-pcreposix], [enable using PCRE Posix libs for regex functions]))
 AC_ARG_ENABLE(fpm,
   AS_HELP_STRING([--enable-fpm], [enable Forwarding Plane Manager support]))
+AC_ARG_ENABLE(zebra-mq,
+  AS_HELP_STRING([--enable-zebra-mq], [enable Zebra message queue support]))
 
 if test x"${enable_gcc_ultra_verbose}" = x"yes" ; then
   CFLAGS="${CFLAGS} -W -Wcast-qual -Wstrict-prototypes"
@@ -302,6 +304,11 @@ fi
 if test "${enable_fpm}" = "yes"; then
    AC_DEFINE(HAVE_FPM,,Forwarding Plane Manager support)
 fi
+
+if test "${enable_zebra_mq}" = "yes" && test "${enable_tcp_zebra}" = "yes" && test "${enable_zebra}" = "no" ; then
+   AC_DEFINE(HAVE_ZEBRA_MQ,,Zebra message queue support)
+fi
+
 
 if test "${enable_tcp_zebra}" = "yes"; then
   AC_DEFINE(HAVE_TCP_ZEBRA,,Use TCP for zebra communication)

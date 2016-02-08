@@ -349,6 +349,11 @@ ospf_zebra_add (struct prefix_ipv4 *p, struct ospf_route *or)
       if (distance)
         SET_FLAG (message, ZAPI_MESSAGE_DISTANCE);
 
+#ifdef HAVE_ZEBRA_MQ
+      SET_FLAG (message, ZAPI_MESSAGE_PROTO1); // PROTO1 is OSPF cost
+      SET_FLAG (message, ZAPI_MESSAGE_PROTO2); // PROTO2 is OSPF path type
+#endif
+
       /* Make packet. */
       s = zclient->obuf;
       stream_reset (s);
@@ -415,6 +420,12 @@ ospf_zebra_add (struct prefix_ipv4 *p, struct ospf_route *or)
           else
             stream_putl (s, or->cost);
         }
+
+#ifdef HAVE_ZEBRA_MQ
+      stream_putl (s, or->cost);
+      
+      stream_putc (s, or->path_type);
+#endif
 
       stream_putw_at (s, 0, stream_get_endp (s));
 
@@ -1292,6 +1303,74 @@ ospf_distance_apply (struct prefix_ipv4 *p, struct ospf_route *or)
   return 0;
 }
 
+#ifdef HAVE_ZEBRA_MQ
+void
+ospf_zebra_mq_pkt(unsigned int ifindex, struct iovec *iov, int iov_cnt)
+{
+    int idx = 0;
+
+    // Format of ZEBRA_PROTO_MQ
+    //  ---------------------------------------------
+    // | 6-bytes Zebra Header | 4-bytes ifindex | PL |
+    //  ---------------------------------------------
+
+    stream_reset(zclient->obuf);
+    zclient_create_header(zclient->obuf, ZEBRA_PROTO_MQ);
+    stream_putl(zclient->obuf, ifindex);
+    
+    for(idx = 0; idx < iov_cnt; idx++) {
+        stream_write (zclient->obuf, (u_char *) iov[idx].iov_base, iov[idx].iov_len);
+    }
+    
+    /* Put length at the first point of the stream. */
+    stream_putw_at (zclient->obuf, 0, stream_get_endp (zclient->obuf));
+    zclient_send_message(zclient);
+}
+
+static int
+ospf_zebra_mq_recv (int command, struct zclient *zclient,
+                      zebra_size_t length)
+{
+    unsigned int ifindex;
+    struct interface *ifp = NULL;
+    struct route_node *node;
+    struct ospf_interface *oi = NULL;
+
+    ifindex = stream_getl(zclient->ibuf);
+
+    fprintf(stderr, "Recd cmd %d of length %u, ifindex=%d, pl len=%d\n", command, length, ifindex, (int) (zclient->ibuf->endp -
+                zclient->ibuf->getp));
+    
+    // 1. lookup interface
+    ifp = if_lookup_by_index(ifindex); 
+
+    if (!ifp) {
+        fprintf(stderr, "No ifp found for ifindex=%d\n", ifindex);
+        return 0;
+    }
+
+    // 2. from interface, lookup ospf_interface
+    for (node = route_top (IF_OIFS (ifp)); node; node = route_next (node))
+    {
+        if ((oi = node->info) == NULL) {
+            continue;
+        }
+
+        break;
+    }
+
+    // 3. Now get ospf from ospf_interface
+    if (oi) {
+        fprintf(stderr, "OI=%p, ospf=%p\n", oi, oi->ospf);
+        ospf_read_from_zebra_mq(oi->ospf, ifindex, (char *)(zclient->ibuf->data + zclient->ibuf->getp), (zclient->ibuf->endp - zclient->ibuf->getp));
+    }
+
+
+    return 0;
+}
+
+#endif
+
 void
 ospf_zebra_init ()
 {
@@ -1307,6 +1386,9 @@ ospf_zebra_init ()
   zclient->interface_address_delete = ospf_interface_address_delete;
   zclient->ipv4_route_add = ospf_zebra_read_ipv4;
   zclient->ipv4_route_delete = ospf_zebra_read_ipv4;
+#ifdef HAVE_ZEBRA_MQ
+  zclient->proto_mq_recv = ospf_zebra_mq_recv;
+#endif
 
   access_list_add_hook (ospf_filter_update);
   access_list_delete_hook (ospf_filter_update);

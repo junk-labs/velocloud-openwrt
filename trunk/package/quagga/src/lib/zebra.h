@@ -412,7 +412,13 @@ struct in_pktinfo
 #define ZEBRA_ROUTER_ID_UPDATE            22
 #define ZEBRA_HELLO                       23
 #define ZEBRA_IPV4_NEXTHOP_LOOKUP_MRIB    24
+
+#ifdef HAVE_ZEBRA_MQ
+#define ZEBRA_PROTO_MQ                    25
+#define ZEBRA_MESSAGE_MAX                 26
+#else 
 #define ZEBRA_MESSAGE_MAX                 25
+#endif // ZEBRA_PROTO_MQ
 
 /* Marker value used in new Zserv, in the byte location corresponding
  * the command value in the old zserv header. To allow old and new

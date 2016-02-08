@@ -82,6 +82,9 @@ struct zclient
   int (*ipv4_route_delete) (int, struct zclient *, uint16_t);
   int (*ipv6_route_add) (int, struct zclient *, uint16_t);
   int (*ipv6_route_delete) (int, struct zclient *, uint16_t);
+#ifdef HAVE_ZEBRA_MQ
+  int (*proto_mq_recv) (int, struct zclient *, uint16_t);
+#endif
 };
 
 /* Zebra API message flag. */
@@ -89,6 +92,11 @@ struct zclient
 #define ZAPI_MESSAGE_IFINDEX  0x02
 #define ZAPI_MESSAGE_DISTANCE 0x04
 #define ZAPI_MESSAGE_METRIC   0x08
+#ifdef HAVE_ZEBRA_MQ
+// Protocol specific info
+#define ZAPI_MESSAGE_PROTO1   0x40
+#define ZAPI_MESSAGE_PROTO2   0x80
+#endif
 
 /* Zserv protocol message header */
 struct zserv_header

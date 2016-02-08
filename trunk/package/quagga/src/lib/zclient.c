@@ -967,6 +967,12 @@ zclient_read (struct thread *thread)
       if (zclient->ipv6_route_delete)
 	(*zclient->ipv6_route_delete) (command, zclient, length);
       break;
+#ifdef HAVE_ZEBRA_MQ
+    case ZEBRA_PROTO_MQ:
+      if (zclient->proto_mq_recv)
+	(*zclient->proto_mq_recv) (command, zclient, length);
+      break;
+#endif
     default:
       break;
     }

@@ -173,5 +173,9 @@ extern int ospf_hello_reply_timer (struct thread *);
 
 extern const struct message ospf_packet_type_str[];
 extern const size_t ospf_packet_type_str_max;
+#ifdef HAVE_ZEBRA_MQ
+extern int
+ospf_read_from_zebra_mq(struct ospf *ospf, unsigned int ifindex, char *buf, u_int16_t length);
+#endif
 
 #endif /* _ZEBRA_OSPF_PACKET_H */

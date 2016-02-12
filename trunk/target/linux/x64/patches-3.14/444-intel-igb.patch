@@ -2217,7 +2217,7 @@
 +	ret = hw->phy.ops.write_reg(hw, M88E1000_PHY_PAGE22, 3);
 +	if(ret)
 +		goto fail;
-+	ret = hw->phy.ops.write_reg(hw, 16, 0x0837);
++	ret = hw->phy.ops.write_reg(hw, 16, 0x0817);
 +	if(ret)
 +		goto fail;
 +	ret = hw->phy.ops.write_reg(hw, 17, 0x0005);

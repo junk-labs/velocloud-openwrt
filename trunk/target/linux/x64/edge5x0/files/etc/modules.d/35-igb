@@ -1,1 +1,1 @@
-igb dsa=1
+igb dsa=1 phy_lst=250

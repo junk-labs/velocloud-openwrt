@@ -23,6 +23,14 @@
 #ifndef _ZEBRA_OSPF_FLOOD_H
 #define _ZEBRA_OSPF_FLOOD_H
 
+extern int
+ospf_flood_maxage_through_interface(struct ospf_interface *oi, struct ospf_lsa *lsa);
+extern int
+ospf_flood_through_interface_no_acl (struct ospf_interface *oi,
+			      struct ospf_neighbor *inbr,
+			      struct ospf_lsa *lsa);
+extern int
+ospf_interface_access_list_check(struct ospf_interface *oi, struct ospf_lsa *lsa);
 extern int ospf_flood (struct ospf *, struct ospf_neighbor *,
 		       struct ospf_lsa *, struct ospf_lsa *);
 extern int ospf_flood_through (struct ospf *, struct ospf_neighbor *,

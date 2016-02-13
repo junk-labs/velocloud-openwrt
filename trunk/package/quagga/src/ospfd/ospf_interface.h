@@ -74,6 +74,14 @@ struct ospf_if_params
   DECLARE_IF_PARAM (struct list *, auth_crypt);    /* List of Auth cryptographic data. */
   DECLARE_IF_PARAM (int, auth_type);               /* OSPF authentication type */
   
+  /* Interface access-list for outbound LSA-5 permit/deny */
+  struct 
+  {
+    char *name;
+    struct access_list *list;
+  } if_access_list;
+  u_char access_list__config:1;               /* OSPF interface access-list */
+  
   /* Other, non-configuration state */
   u_int32_t network_lsa_seqnum;		/* Network LSA seqnum */
 };
@@ -196,7 +204,7 @@ struct ospf_interface
     struct list *ls_ack;
     struct in_addr dst;
   } ls_ack_direct;
-
+  
   /* Timer values. */
   u_int32_t v_ls_ack;			/* Delayed Link State Acknowledgment */
 
@@ -263,6 +271,14 @@ extern struct ospf_if_params *ospf_get_if_params (struct interface *,
 						  struct in_addr);
 extern void ospf_del_if_params (struct ospf_if_params *);
 extern void ospf_free_if_params (struct interface *, struct in_addr);
+extern void
+ospf_if_set_access_list(struct interface *ifp, const char *access_list_name);
+extern void
+ospf_if_unset_access_list(struct interface *ifp, const char *access_list_name);
+extern void
+ospf_if_fire_interface_access_list_change_timer(struct ospf *ospf);
+extern int
+ospf_if_update_access_list(struct interface *ifp, struct ospf *ospf, char *name);
 extern void ospf_if_update_params (struct interface *, struct in_addr);
 
 extern int ospf_if_new_hook (struct interface *);

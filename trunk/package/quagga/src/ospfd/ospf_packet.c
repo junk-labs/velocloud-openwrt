@@ -3234,6 +3234,14 @@ ospf_make_db_desc (struct ospf_interface *oi, struct ospf_neighbor *nbr,
               }
 #endif /* HAVE_OPAQUE_LSA */
 
+            if (ospf_interface_access_list_check(oi, lsa)) {
+                zlog_debug ("make_db_desc: int: %s lsa key: %s",
+                        IF_NAME (oi), dump_lsa_key(lsa));
+                /* Remove LSA from DB summary list. */
+                ospf_lsdb_delete (lsdb, lsa);
+                continue;
+            }
+
 	    if (!CHECK_FLAG (lsa->flags, OSPF_LSA_DISCARD))
 	      {
 		struct lsa_header *lsah;

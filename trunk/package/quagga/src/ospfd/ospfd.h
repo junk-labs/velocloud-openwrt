@@ -208,6 +208,7 @@ struct ospf
   struct thread *t_spf_calc;	        /* SPF calculation timer. */
   struct thread *t_ase_calc;		/* ASE calculation timer. */
   struct thread *t_external_lsa;	/* AS-external-LSA origin timer. */
+  struct thread *t_interface_access_list_update;   /* Interface access list update timer. */
 #ifdef HAVE_OPAQUE_LSA
   struct thread *t_opaque_lsa_self;	/* Type-11 Opaque-LSAs origin event. */
 #endif /* HAVE_OPAQUE_LSA */

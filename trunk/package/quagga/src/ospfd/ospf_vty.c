@@ -5481,6 +5481,72 @@ ALIAS (ip_ospf_priority,
        "Router priority\n"
        "Priority\n")
 
+DEFUN (ip_ospf_access_list,
+       ip_ospf_access_list_cmd,
+       "ip ospf access-list WORD",
+       "IP Information\n"
+       "OSPF interface commands\n"
+       "Out access-list\n")
+{
+  struct interface *ifp = vty->index;
+  struct ospf_if_params *params;
+  struct ospf *ospf = ospf_lookup();
+      
+  params = IF_DEF_PARAMS (ifp);
+
+  fprintf(stderr, "Access-list name %s\n", argv[0]);
+
+  ospf_if_set_access_list(ifp, argv[0]);
+
+  SET_IF_PARAM (params, access_list);
+  
+  if (ospf) {
+      ospf_if_fire_interface_access_list_change_timer(ospf);
+  }
+
+  return CMD_SUCCESS;
+}
+
+ALIAS (ip_ospf_access_list,
+       ospf_access_list_cmd,
+       "ospf access-list WORD",
+       "IP Information\n"
+       "OSPF interface commands\n"
+       "Out access-list\n")
+
+DEFUN (no_ip_ospf_access_list,
+       no_ip_ospf_access_list_cmd,
+       "no ip ospf access-list WORD",
+       "IP Information\n"
+       "OSPF interface commands\n"
+       "Out access-list\n")
+{
+  struct interface *ifp = vty->index;
+  struct ospf_if_params *params;
+  struct ospf *ospf = ospf_lookup();
+      
+  params = IF_DEF_PARAMS (ifp);
+
+  fprintf(stderr, "No access-list name %s\n", argv[0]);
+
+  ospf_if_unset_access_list(ifp, argv[0]); 
+
+  UNSET_IF_PARAM (params, access_list);
+
+  if (ospf) {
+      ospf_if_fire_interface_access_list_change_timer(ospf);
+  }
+
+  return CMD_SUCCESS;
+}
+
+ALIAS (no_ip_ospf_access_list,
+       no_ospf_access_list_cmd,
+       "no ospf access-list WORD",
+       "IP Information\n"
+       "OSPF interface commands\n"
+       "Out access-list\n")
+
 DEFUN (no_ip_ospf_priority,
        no_ip_ospf_priority_addr_cmd,
        "no ip ospf priority A.B.C.D",
@@ -6871,7 +6937,13 @@ config_write_interface (struct vty *vty)
            vty_out (vty, " %s", inet_ntoa (rn->p.u.prefix4));
         vty_out (vty, "%s", VTY_NEWLINE);
       }
-
+    
+    if (OSPF_IF_PARAM_CONFIGURED (params, access_list)) {
+        if (params->if_access_list.name) {
+            vty_out (vty, " ip ospf access-list %s", params->if_access_list.name);
+        }
+        vty_out (vty, "%s", VTY_NEWLINE);
+    }
 
 	while (1)
 	  {
@@ -7487,6 +7559,12 @@ ospf_vty_if_init (void)
   install_element (INTERFACE_NODE, &ip_ospf_priority_cmd);
   install_element (INTERFACE_NODE, &no_ip_ospf_priority_addr_cmd);
   install_element (INTERFACE_NODE, &no_ip_ospf_priority_cmd);
+
+  /* "ip ospf access-list" commands. */
+  install_element (INTERFACE_NODE, &ip_ospf_access_list_cmd);
+  install_element (INTERFACE_NODE, &ospf_access_list_cmd);
+  install_element (INTERFACE_NODE, &no_ip_ospf_access_list_cmd);
+  install_element (INTERFACE_NODE, &no_ospf_access_list_cmd);
 
   /* "ip ospf retransmit-interval" commands. */
   install_element (INTERFACE_NODE, &ip_ospf_retransmit_interval_addr_cmd);

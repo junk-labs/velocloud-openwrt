@@ -340,9 +340,56 @@ ospf_flood (struct ospf *ospf, struct ospf_neighbor *nbr,
   return 0;
 }
 
+int
+ospf_interface_access_list_check(struct ospf_interface *oi, struct ospf_lsa *lsa)
+{
+    struct ospf_if_params *params;
+    struct prefix_ipv4 p = {.family = AF_INET, .prefixlen = 0};
+    struct in_addr mask;
+    char pstr[32] = {0};
+
+    if (OSPF_AS_EXTERNAL_LSA != lsa->data->type) {
+        return 0;
+    }
+
+    if (!oi->ifp) {
+        return 0;
+    }
+
+    params = IF_DEF_PARAMS (oi->ifp);
+
+    if (!params) {
+        return 0;
+    }
+
+    if (!params->access_list__config) {
+        return 0;
+    }
+
+    if (params->if_access_list.list) {
+        mask.s_addr = *(u_int32_t *) ((char *) lsa->data + sizeof (struct lsa_header));
+        
+        p.prefix.s_addr = lsa->data->id.s_addr;
+        p.prefixlen = ip_masklen(mask);
+        
+        prefix2str((const struct prefix *) &p, pstr, sizeof(pstr)); 
+
+        if (FILTER_DENY == access_list_apply(params->if_access_list.list, &p)) {
+            zlog_debug ("interface_access_list_check DENY: int: %s lsa key: %s",
+                    IF_NAME (oi), dump_lsa_key(lsa));
+            return 1;
+        } else {
+            zlog_debug ("interface_access_list_check PERMIT: int: %s lsa key: %s",
+                    IF_NAME (oi), dump_lsa_key(lsa));
+        }
+    }
+
+    return 0;
+}
+
 /* OSPF LSA flooding -- RFC2328 Section 13.3. */
-static int
-ospf_flood_through_interface (struct ospf_interface *oi,
+int
+ospf_flood_through_interface_no_acl (struct ospf_interface *oi,
 			      struct ospf_neighbor *inbr,
 			      struct ospf_lsa *lsa)
 {
@@ -351,7 +398,7 @@ ospf_flood_through_interface (struct ospf_interface *oi,
   int retx_flag;
 
   if (IS_DEBUG_OSPF_EVENT)
-    zlog_debug ("ospf_flood_through_interface(): "
+    zlog_debug ("ospf_flood_through_interface_no_acl(): "
 	       "considering int %s, INBR(%s), LSA[%s]",
 	       IF_NAME (oi), inbr ? inet_ntoa (inbr->router_id) : "NULL",
                dump_lsa_key (lsa));
@@ -374,7 +421,7 @@ ospf_flood_through_interface (struct ospf_interface *oi,
 
       onbr = rn->info;
       if (IS_DEBUG_OSPF_EVENT)
-	zlog_debug ("ospf_flood_through_interface(): considering nbr %s (%s)",
+	zlog_debug ("ospf_flood_through_interface_no_acl(): considering nbr %s (%s)",
 		   inet_ntoa (onbr->router_id),
                    LOOKUP (ospf_nsm_state_msg, onbr->state));
 
@@ -393,7 +440,7 @@ ospf_flood_through_interface (struct ospf_interface *oi,
       if (onbr->state < NSM_Full)
 	{
 	  if (IS_DEBUG_OSPF_EVENT)
-	    zlog_debug ("ospf_flood_through_interface(): nbr adj is not Full");
+	    zlog_debug ("ospf_flood_through_interface_no_acl(): nbr adj is not Full");
 	  ls_req = ospf_ls_request_lookup (onbr, lsa);
 	  if (ls_req != NULL)
 	    {
@@ -519,7 +566,7 @@ ospf_flood_through_interface (struct ospf_interface *oi,
       if (oi->state == ISM_Backup)
 	{
 	  if (IS_DEBUG_OSPF_NSSA)
-	    zlog_debug ("ospf_flood_through_interface(): "
+	    zlog_debug ("ospf_flood_through_interface_no_acl(): "
 		       "ISM_Backup NOT SEND to int %s", IF_NAME (oi));
 	  return 1;
 	}
@@ -533,7 +580,7 @@ ospf_flood_through_interface (struct ospf_interface *oi,
      value of MaxAge). */
   /* XXX HASSO: Is this IS_DEBUG_OSPF_NSSA really correct? */
   if (IS_DEBUG_OSPF_NSSA)
-    zlog_debug ("ospf_flood_through_interface(): "
+    zlog_debug ("ospf_flood_through_interface_no_acl(): "
 	       "DR/BDR sending upd to int %s", IF_NAME (oi));
 
   /*  RFC2328  Section 13.3
@@ -556,6 +603,51 @@ ospf_flood_through_interface (struct ospf_interface *oi,
     ospf_ls_upd_send_lsa (oi->nbr_self, lsa, OSPF_SEND_PACKET_INDIRECT);
 
   return 0;
+}
+
+/* OSPF LSA flooding -- RFC2328 Section 13.3. */
+static int
+ospf_flood_through_interface (struct ospf_interface *oi,
+			      struct ospf_neighbor *inbr,
+			      struct ospf_lsa *lsa)
+{
+
+  if (IS_DEBUG_OSPF_EVENT)
+    zlog_debug ("ospf_flood_through_interface(): "
+	       "considering int %s, INBR(%s), LSA[%s]",
+	       IF_NAME (oi), inbr ? inet_ntoa (inbr->router_id) : "NULL",
+               dump_lsa_key (lsa));
+
+  if (!ospf_if_is_enable (oi))
+    return 0;
+
+  if (ospf_interface_access_list_check(oi, lsa)) {
+      zlog_debug ("ospf_flood_through_interface DENY: int: %s lsa key: %s",
+              IF_NAME (oi), dump_lsa_key(lsa));
+      ospf_flood_maxage_through_interface(oi, lsa);
+      return 0;
+  }
+
+  return ospf_flood_through_interface_no_acl (oi, inbr, lsa);
+}
+
+/* OSPF MAXAGE flooding thro interface */
+int
+ospf_flood_maxage_through_interface(struct ospf_interface *oi, struct ospf_lsa *lsa)
+{
+    struct ospf_lsa *lsa_maxage = NULL;
+
+    if (!CHECK_FLAG (lsa->flags, OSPF_LSA_DISCARD)) {
+        lsa_maxage = ospf_lsa_dup(lsa); 
+        
+        lsa_maxage->data->ls_age = htons (OSPF_LSA_MAXAGE);
+        lsa_maxage->tv_recv = recent_relative_time ();
+        lsa_maxage->tv_orig = lsa->tv_recv;
+        ospf_flood_through_interface_no_acl(oi, NULL, lsa_maxage);
+
+    }
+
+    return 0;
 }
 
 int

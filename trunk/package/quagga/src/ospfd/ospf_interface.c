@@ -48,6 +48,7 @@
 #ifdef HAVE_SNMP
 #include "ospfd/ospf_snmp.h"
 #endif /* HAVE_SNMP */
+#include "ospfd/ospf_zebra.h"
 
 
 int
@@ -632,6 +633,90 @@ ospf_get_if_params (struct interface *ifp, struct in_addr addr)
     route_unlock_node (rn);
   
   return rn->info;
+}
+
+void
+ospf_if_set_access_list(struct interface *ifp, const char *access_list_name)
+{
+  struct ospf_if_params *params;
+      
+  params = IF_DEF_PARAMS (ifp);
+  
+  /* Lookup access-list for interface. */
+  params->if_access_list.list = access_list_lookup(AFI_IP, access_list_name);
+  
+  /* Clear previous access-list name. */
+  if (params->if_access_list.name) {
+      free(params->if_access_list.name);
+  }
+  
+  /* Set access-list name. */
+  params->if_access_list.name = strdup (access_list_name);
+  
+  zlog_debug ("%s() '%s' access-list is set to interface %s", __func__, access_list_name, ifp->name);
+
+  return;
+}
+
+void
+ospf_if_unset_access_list(struct interface *ifp, const char *access_list_name)
+{
+  struct ospf_if_params *params;
+      
+  params = IF_DEF_PARAMS (ifp);
+  
+  /* Unset access-list for interface. */
+  params->if_access_list.list = NULL;
+
+  /* Clear previous access-list name. */
+  if (params->if_access_list.name) {
+      free(params->if_access_list.name);
+  }
+
+  /* Set access-list name to NULL. */
+  params->if_access_list.name = NULL;
+  
+  zlog_debug ("%s() '%s' access-list is unset from interface %s", __func__, access_list_name, ifp->name);
+
+  return;
+}
+
+void
+ospf_if_fire_interface_access_list_change_timer(struct ospf *ospf)
+{
+    ospf_interface_access_list_update(ospf);
+    
+    return;
+}
+
+int
+ospf_if_update_access_list(struct interface *ifp, struct ospf *ospf, char *name)
+{
+  struct ospf_if_params *params;
+  struct access_list *old = NULL;
+      
+  params = IF_DEF_PARAMS (ifp);
+  
+  /* Clear previous access-list name. */
+  if (params->if_access_list.name) {
+      /* Lookup access-list for interface. */
+      old = params->if_access_list.list;
+
+      params->if_access_list.list = access_list_lookup(AFI_IP, params->if_access_list.name);
+
+      // No change... previously an empty list and now too an empty list
+      if (!old && !params->if_access_list.list) {
+          return 0;
+      }
+
+      // check if access list is removed or the list is modified
+      if (!params->if_access_list.list || (0 == strcmp(params->if_access_list.name, name))) {
+          zlog_debug ("ospf_if_update_access_list() '%s' access-list is updated for interface %s", params->if_access_list.name, ifp->name);
+          return 1;
+      }
+  }
+
+  return 0;
 }
 
 void

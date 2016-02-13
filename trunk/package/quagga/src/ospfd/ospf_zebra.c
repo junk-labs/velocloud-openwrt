@@ -970,6 +970,52 @@ ospf_distribute_list_out_unset (struct ospf *ospf, int type, const char *name)
   return CMD_SUCCESS;
 }
 
+/* interface access-list update timer. */
+static int
+ospf_access_list_update_timer (struct thread *thread)
+{
+  struct route_node *rn;
+  struct route_table *rt;
+  int type = 0;
+  struct ospf *ospf;
+  struct external_info *ei;
+  struct ospf_lsa *lsa;
+
+  ospf = ospf_lookup ();
+  if (ospf == NULL)
+    return 0;
+
+  ospf->t_interface_access_list_update = NULL;
+
+  zlog_info ("Zebra[Redistribute]: interface access-list update timer fired!");
+
+  /* foreach all external info. */
+  for (type = 0; type <= ZEBRA_ROUTE_MAX; type++)
+  {
+      if ((ZEBRA_ROUTE_STATIC == type) || (ZEBRA_ROUTE_KERNEL == type)) {
+          rt = EXTERNAL_INFO (type);
+          
+          if (!rt)
+              continue;
+          
+          for (rn = route_top (rt); rn; rn = route_next (rn))
+              if ((ei = rn->info) != NULL)
+              {
+                  if(NULL != (lsa = ospf_external_info_find_lsa (ospf, &ei->p))) {
+                      fprintf(stderr, "LSA_REFRESH_FORCE for found lsa\n");
+                      ospf_external_lsa_refresh (ospf, lsa, ei, LSA_REFRESH_FORCE);
+                  } else {
+                      fprintf(stderr, "No lsa found for prefix\n");
+                      ospf_external_lsa_originate (ospf, ei);
+                  }
+              }
+      }
+  }
+  
+  return 0;
+}
+
+
 /* distribute-list update timer. */
 static int
 ospf_distribute_list_update_timer (struct thread *thread)
@@ -1033,6 +1079,21 @@ ospf_distribute_list_update (struct ospf *ospf, uintptr_t type)
                       (void *) type, OSPF_DISTRIBUTE_UPDATE_DELAY);
 }
 
+/* Update interface access-list and set timer to apply access-list. */
+void
+ospf_interface_access_list_update (struct ospf *ospf)
+{
+  /* If exists previously invoked thread, then let it continue. */
+  if (ospf->t_interface_access_list_update)
+    return;
+
+  /* Set timer. */
+  ospf->t_interface_access_list_update =
+    thread_add_timer (master, ospf_access_list_update_timer,
+                      (void *) NULL, OSPF_DISTRIBUTE_UPDATE_DELAY);
+}
+
+
 /* If access-list is updated, apply some check. */
 static void
 ospf_filter_update (struct access_list *access)
@@ -1042,6 +1103,8 @@ ospf_filter_update (struct access_list *access)
   int abr_inv = 0;
   struct ospf_area *area;
   struct listnode *node;
+  struct interface *ifp;
+  int intf_list_update = 0;
 
   /* If OSPF instatnce does not exist, return right now. */
   ospf = ospf_lookup ();
@@ -1098,6 +1161,14 @@ ospf_filter_update (struct access_list *access)
           abr_inv++;
         }
     }
+  
+  /* Update interface access-list */
+  for (ALL_LIST_ELEMENTS_RO (iflist, node, ifp)) {
+      intf_list_update += ospf_if_update_access_list(ifp, ospf, access->name);
+  }
+  if (intf_list_update) {
+      ospf_if_fire_interface_access_list_change_timer(ospf);
+  }
 
   /* Schedule ABR tasks -- this will be changed -- takada. */
   if (IS_OSPF_ABR (ospf) && abr_inv)

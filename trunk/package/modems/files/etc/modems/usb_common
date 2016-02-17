@@ -73,7 +73,8 @@ at_get_apn()
 	echo $apn
 }
 
-check_device_config() {
+check_device_config()
+{
 	local usbifname=$1
 	local ret="False"
 	uci -c $modem_path -X get modems.$usbifname.device 2>&1 >/dev/null
@@ -81,6 +82,38 @@ check_device_config() {
 		ret="True"
 	fi
 	echo $ret
+}
+
+remove_device_config()
+{
+	log "Hotplug remove event: $usbifname"
+
+	local pidfile="/$tmpdir/$usbifname.pid"
+	if [ -f $pidfile ]; then
+		$modem_script_path/modem_service.sh $usbifname stop
+		rm -rf $pidfile
+		rm -rf /$tmpdir/$usbifname"_periodic.txt"
+		log "Stopped modem service: $usbifname"
+	fi
+
+	# ignore config removal request if already removed (may happen when a
+	# TTY+NET modem gets multiple hotplug events for each subsystem)
+	uci -c $modem_path -X get modems.$usbifname 2>&1 >/dev/null
+	if [ "$?" == "0" ]; then
+		uci -c $modem_path delete modems.$usbifname
+		uci -c $modem_path commit modems
+		log "Removed modem config: $usbifname"
+	fi
+
+	# ignore config removal request if nothing to remove (may happen when a
+	# TTY-only modem is being removed); note that this logic makes sure that
+	# only configuration of wwan-flagged devices is removed
+	network_type=$(uci -c /etc/config get network.$usbifname.type 2>/dev/null)
+	if [ "$network_type" == "wwan" ]; then
+		uci -c $network_config delete network.$usbifname
+		uci -c $network_config commit network
+		log "Removed network config: $usbifname"
+	fi
 }
 
 get_modem_type()

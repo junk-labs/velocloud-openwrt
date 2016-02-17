@@ -157,6 +157,7 @@ setup_wwan_modem()
 
 	uci -c /etc/config add network interface\\\ '"$usbifname"'
 	uci -c /etc/config set network.$usbifname=interface
+	uci -c /etc/config set network.$usbifname.type='wwan'
 	uci -c /etc/config set network.$usbifname.ifname=''"$etherdevice"''
 	uci -c /etc/config set network.$usbifname.proto='dhcp'
 	uci -c /etc/config set network.$usbifname.hostname=''"vc-$usbifname"''
@@ -320,34 +321,6 @@ add_to_config()
 	setup_wwan_modem "$modemtype" "$product"
 }
 
-remove_from_config()
-{
-	local modemtype
-	local ucigetmodem
-	local product=$(uci_get_modem_product $usbifname)
-	ucigetmodem=$(uci_get_modem_type $usbifname)
-	modemtype=$(get_modem_type "$DEVICENAME" "$product")
-
-	log "Hotplug remove event: $DEVICENAME: $product: $ucigetmodem"
-	if [ ! -z $ucigetmodem ] && [ "$modemtype" == "$ucigetmodem" ];then
-		local pidfile="$tmpdir/$usbifname.pid"
-		$modem_script_path/modem_service.sh $usbifname stop
-		uci -c $network_config delete network.$usbifname
-		uci -c $network_config commit network
-		log "Removed network config"
-		uci -c $modem_path delete modems.$usbifname
-		uci -c $modem_path commit modems
-		log "Removed modems config"
-
-		ubus call network reload
-		log "Reload network triggered"
-
-		rm -rf $pidfile
-		rm -rf $tmpdir/$usbifname"_periodic.txt"
-	fi
-
-}
-
 # Main starts here
 
 # Environmental Variables
@@ -372,7 +345,7 @@ debug_hotplugevents
 if [ "$ACTION" = add ]; then
 	add_to_config
 elif [ "$ACTION" = remove ]; then
-	remove_from_config
+	remove_device_config
 fi
 
 # Local Variables:

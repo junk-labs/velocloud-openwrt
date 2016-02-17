@@ -428,33 +428,6 @@ add_to_config() {
 	lock -u $lockfile
 }
 
-remove_from_config() {
-	local modemtype
-	local ucigetmodem
-	local product=$(uci_get_modem_product $usbifname)
-	ucigetmodem=$(uci_get_modem_type $usbifname)
-	modemtype=$(get_modem_type "$DEVICENAME" "$product")
-
-	log "Hotplug remove event: $DEVICENAME: $product: $ucigetmodem"
-	if [ ! -z $ucigetmodem ] && [ "$modemtype" == "$ucigetmodem" ];then
-		# QMI hybrid modems will also get a wwan net interface
-		# hotplug event as part of which these same sequence of steps
-		# will happen
-		if [ "$modemtype" == "qmihybrid" ]; then
-			return;
-		fi
-		local pidfile="/$tmpdir/$usbifname.pid"
-		$modem_script_path/modem_service.sh $usbifname stop
-		uci -c $modem_path delete modems.$usbifname
-		uci -c $modem_path commit modems
-		log "Removed modems config"
-
-		rm -rf $pidfile
-		rm -rf /$tmpdir/$usbifname"_periodic.txt"
-	fi
-
-}
-
 # Main starts here
 
 # Variables for Unit Test
@@ -486,7 +459,7 @@ case "$DEVICENAME" in
 	if [ "$ACTION" = add ]; then
 		add_to_config
 	elif [ "$ACTION" = remove ]; then
-		remove_from_config
+		remove_device_config
 	fi
 	;;
 esac

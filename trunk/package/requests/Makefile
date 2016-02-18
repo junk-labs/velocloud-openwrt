@@ -7,7 +7,6 @@ PKG_VERSION:=1.2.3
 PKG_RELEASE:=1
 
 
-https://pypi.python.org/packages/source/r/requests/requests-1.2.3.tar.gz#md5=adbd3f18445f7fe5e77f65c502e264fb
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://pypi.python.org/packages/source/r/requests/
 PKG_MD5SUM:=adbd3f18445f7fe5e77f65c502e264fb

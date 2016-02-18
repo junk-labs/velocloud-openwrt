@@ -22,10 +22,25 @@ define Package/tinyrpc
   CATEGORY:=Languages
   TITLE:=python-zmq
   URL:=http://pypi.python.org/pypi/tinyrpc/
-  DEPENDS:=+python +zeromq +requests
+  DEPENDS:=+python +requests
 endef
 
 define Package/tinyrpc/description
+  A small, modular, transport and protocol neutral
+  RPC library that, among other things, supports
+  JSON-RPC and zmq (zmq is separate in tinyrpc-zmq).
+endef
+
+define Package/tinyrpc-zmq
+  SUBMENU:=Python
+  SECTION:=lang
+  CATEGORY:=Languages
+  TITLE:=python-zmq
+  URL:=http://pypi.python.org/pypi/tinyrpc/
+  DEPENDS:=+python +requests +tinyrpc +zeromq
+endef
+
+define Package/tinyrpc-zmq/description
   A small, modular, transport and protocol neutral
   RPC library that, among other things, supports
   JSON-RPC and zmq.
@@ -43,7 +58,18 @@ define Package/tinyrpc/install
 	$(CP) \
 		$(PKG_INSTALL_DIR)$(PYTHON_PKG_DIR)/* \
 		$(1)$(PYTHON_PKG_DIR)
+	rm -f \
+		$(1)$(PYTHON_PKG_DIR)/tinyrpc/transports/INTEGRATE_ME.py \
+		$(1)$(PYTHON_PKG_DIR)/tinyrpc/transports/zmq.py
+endef
+
+define Package/tinyrpc-zmq/install
+	$(INSTALL_DIR) $(1)$(PYTHON_PKG_DIR)/tinyrpc/transports
+	$(CP) \
+		$(PKG_INSTALL_DIR)$(PYTHON_PKG_DIR)/tinyrpc/transports/zmq.py \
+		$(1)$(PYTHON_PKG_DIR)/tinyrpc/transports
 endef
 
 $(eval $(call BuildPackage,tinyrpc))
+$(eval $(call BuildPackage,tinyrpc-zmq))
 

@@ -49,6 +49,7 @@ between the two directories and see what files you have touched easily.
 
 
 2. Edit/Compile/Debug on other machines (without full OpenWrt builds):
+========================================================================
 
 I have checked in an alternate setup, where you can run a local script
 (SetupBuild) to set up a build directory locally (under package/quagga,
@@ -68,3 +69,24 @@ after you run "SetupBuild", so that you can do a recursive diff between
 the saved build directory and the current one.  You can run "make clean"
 in the build directory if you want to limit the chatter about object files
 in the diff output.
+
+3. Building Debian .deb
+==========================
+
+First follow step #2 above for building the package on a machine without the
+openwrt toochain. Then go to the build/ directory as mentioned there and 
+execute "debuild -i -us -uc -b -d" .. And you will get a .deb file in the parent
+of the build directory. The debian control files are bundled into debian.tgz here
+and used only when step #2 is done and NOT used in the standard openWRT build 
+process
+
+For the debian build to go through, the following packages are needed. Note that
+the last line with the long list of packages like texline etc.. were suggested 
+when a debuild clean was executed, I am not sure if all of that is needed, it took
+a hell of a long time to install all those packages
+
+  sudo apt-get install devscripts
+  sudo apt-get install debhelper 
+  sudo apt-get install dh-autoreconf
+  sudo apt-get install libreadline-dev
+  sudo apt-get install texlive-latex-base texlive-generic-recommended texlive-fonts-recommended libpam0g-dev libpam-dev libcap-dev imagemagick ghostscript groff libpcre3-dev chrpath libsnmp-dev

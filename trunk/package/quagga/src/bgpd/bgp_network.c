@@ -38,6 +38,12 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "bgpd/bgp_debug.h"
 #include "bgpd/bgp_network.h"
 
+#ifndef CLONE_NEWNET
+#define CLONE_NEWNET 0x40000000 /* New network namespace (lo, device, names sockets, etc) */
+#endif
+
+int bgp_default_fd = -1;
+
 extern struct zebra_privs_t bgpd_privs;
 
 /* BGP listening socket. */
@@ -46,6 +52,7 @@ struct bgp_listener
   int fd;
   union sockunion su;
   struct thread *thread;
+  struct bgp *bgp;
 };
 
 /*
@@ -225,7 +232,7 @@ bgp_accept (struct thread *thread)
     zlog_debug ("[Event] BGP connection from host %s", inet_sutop (&su, buf));
   
   /* Check remote IP address */
-  peer1 = peer_lookup (NULL, &su);
+  peer1 = peer_lookup (listener->bgp, &su);
   if (! peer1 || peer1->status == Idle)
     {
       if (BGP_DEBUG (events, EVENTS))
@@ -362,9 +369,21 @@ int
 bgp_connect (struct peer *peer)
 {
   unsigned int ifindex = 0;
+  int ret;
+
+  if (peer->bgp->name)
+    ret = setns (peer->bgp->fd, CLONE_NEWNET);
+    if (ret < 0)
+      zlog_err ("socket: setns 3 %s", safe_strerror (errno));
 
   /* Make socket for the peer. */
   peer->fd = sockunion_socket (&peer->su);
+
+  if (peer->bgp->name)
+    ret = setns (bgp_default_fd, CLONE_NEWNET);
+    if (ret < 0)
+      zlog_err ("socket: setns 4 %s", safe_strerror (errno));
+
   if (peer->fd < 0)
     return -1;
 
@@ -437,7 +456,7 @@ bgp_getsockname (struct peer *peer)
 
 
 static int
-bgp_listener (int sock, struct sockaddr *sa, socklen_t salen)
+bgp_listener (struct bgp *bgp, int sock, struct sockaddr *sa, socklen_t salen)
 {
   struct bgp_listener *listener;
   int ret, en;
@@ -479,6 +498,7 @@ bgp_listener (int sock, struct sockaddr *sa, socklen_t salen)
 
   listener = XMALLOC (MTYPE_BGP_LISTENER, sizeof(*listener));
   listener->fd = sock;
+  listener->bgp = bgp;
   memcpy(&listener->su, sa, salen);
   listener->thread = thread_add_read (master, bgp_accept, listener, sock);
   listnode_add (bm->listen_sockets, listener);
@@ -489,7 +509,7 @@ bgp_listener (int sock, struct sockaddr *sa, socklen_t salen)
 /* IPv6 supported version of BGP server socket setup.  */
 #ifdef HAVE_IPV6
 int
-bgp_socket (unsigned short port, const char *address)
+bgp_socket (struct bgp *bgp, unsigned short port, const char *address)
 {
   struct addrinfo *ainfo;
   struct addrinfo *ainfo_save;
@@ -518,8 +538,15 @@ bgp_socket (unsigned short port, const char *address)
 
       if (ainfo->ai_family != AF_INET && ainfo->ai_family != AF_INET6)
 	continue;
-     
+      
+      if (bgp->name)
+        setns (bgp->fd, CLONE_NEWNET);
+
       sock = socket (ainfo->ai_family, ainfo->ai_socktype, ainfo->ai_protocol);
+
+      if (bgp->name)
+        setns (bgp_default_fd, CLONE_NEWNET);
+
       if (sock < 0)
 	{
 	  zlog_err ("socket: %s", safe_strerror (errno));
@@ -529,7 +556,7 @@ bgp_socket (unsigned short port, const char *address)
       /* if we intend to implement ttl-security, this socket needs ttl=255 */
       sockopt_ttl (ainfo->ai_family, sock, MAXTTL);
       
-      ret = bgp_listener (sock, ainfo->ai_addr, ainfo->ai_addrlen);
+      ret = bgp_listener (bgp, sock, ainfo->ai_addr, ainfo->ai_addrlen);
       if (ret == 0)
 	++count;
       else
@@ -547,14 +574,29 @@ bgp_socket (unsigned short port, const char *address)
 #else
 /* Traditional IPv4 only version.  */
 int
-bgp_socket (unsigned short port, const char *address)
+bgp_socket (struct bgp *bgp, unsigned short port, const char *address)
 {
   int sock;
   int socklen;
   struct sockaddr_in sin;
   int ret, en;
 
+  if (bgp->name)
+   {
+    ret = setns (bgp->fd, CLONE_NEWNET);
+    if (ret < 0)
+      zlog_err ("socket: setns 1 %s", safe_strerror (errno));
+   }
+  
   sock = socket (AF_INET, SOCK_STREAM, 0);
+
+  if (bgp->name)
+   {
+    ret = setns (bgp_default_fd, CLONE_NEWNET);
+    if (ret < 0)
+      zlog_err ("socket: setns 2 %s", safe_strerror (errno));
+   }
+
   if (sock < 0)
     {
       zlog_err ("socket: %s", safe_strerror (errno));
@@ -579,7 +621,7 @@ bgp_socket (unsigned short port, const char *address)
   sin.sin_len = socklen;
 #endif /* HAVE_STRUCT_SOCKADDR_IN_SIN_LEN */
 
-  ret = bgp_listener (sock, (struct sockaddr *) &sin, socklen);
+  ret = bgp_listener (bgp, sock, (struct sockaddr *) &sin, socklen);
   if (ret < 0) 
     {
       close (sock);

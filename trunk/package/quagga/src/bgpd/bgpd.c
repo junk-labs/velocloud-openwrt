@@ -1946,6 +1946,7 @@ bgp_create (as_t *as, const char *name)
   struct bgp *bgp;
   afi_t afi;
   safi_t safi;
+  char namespace[256];
 
   if ( (bgp = XCALLOC (MTYPE_BGP, sizeof (struct bgp))) == NULL)
     return NULL;
@@ -1986,6 +1987,20 @@ bgp_create (as_t *as, const char *name)
 
   THREAD_TIMER_ON (master, bgp->t_startup, bgp_startup_timer_expire,
                    bgp, bgp->restart_time);
+
+  if (bgp->name)
+    {
+      strcpy(namespace, "/run/netns/");
+      strcat(namespace, bgp->name);
+
+      zlog_info ("BGP instance name %s", bgp->name);
+      zlog_info ("BGP netns name %s", namespace);
+
+      bgp->fd = open (namespace, O_RDONLY);
+
+      if (bgp->fd < 0)
+        zlog_err ("BGP name fd error %s", safe_strerror (errno));
+    }
 
   return bgp;
 }
@@ -2080,12 +2095,17 @@ bgp_get (struct bgp **bgp_val, as_t *as, const char *name)
   *bgp_val = bgp;
 
   /* Create BGP server socket, if first instance.  */
+  /*
   if (list_isempty(bm->bgp)
       && !bgp_option_check (BGP_OPT_NO_LISTEN))
     {
       if (bgp_socket (bm->port, bm->address) < 0)
 	return BGP_ERR_INVALID_VALUE;
     }
+    */
+
+  if (bgp_socket (bgp, bm->port, bm->address) < 0)
+	return BGP_ERR_INVALID_VALUE;
 
   listnode_add (bm->bgp, bgp);
 

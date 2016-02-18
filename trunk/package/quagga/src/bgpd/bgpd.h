@@ -71,6 +71,10 @@ struct bgp
   /* Name of this BGP instance.  */
   char *name;
   
+  int fd;
+
+  u_int32_t tid;
+
   /* Reference count to allow peer_delete to finish after bgp_delete */
   int lock;
 
@@ -831,6 +835,10 @@ enum bgp_clear_type
 #define BGP_ERR_NO_IBGP_WITH_TTLHACK		-31
 #define BGP_ERR_MAX				-32
 #define BGP_ERR_CANNOT_HAVE_LOCAL_AS_SAME_AS_REMOTE_AS    -33
+
+#define VRF_DEFAULT_NAME    "/proc/self/ns/net"
+
+extern int bgp_default_fd;
 
 extern struct bgp_master *bm;
 

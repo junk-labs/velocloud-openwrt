@@ -117,6 +117,8 @@ static const char *pid_file = PATH_BGPD_PID;
 int vty_port = BGP_VTY_PORT;
 char *vty_addr = NULL;
 
+int bgp_apiserver_enable;
+
 /* privileges */
 static zebra_capabilities_t _caps_p [] =  
 {
@@ -343,7 +345,7 @@ main (int argc, char **argv)
   /* Command line argument treatment. */
   while (1) 
     {
-      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vC", longopts, 0);
+      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:avC", longopts, 0);
     
       if (opt == EOF)
 	break;
@@ -400,7 +402,10 @@ main (int argc, char **argv)
 	  break;
 	case 'g':
 	  bgpd_privs.group = optarg;
-	  break;
+      break;
+    case 'a':
+      bgp_apiserver_enable = 1;
+      break;
 	case 'v':
 	  print_version (progname);
 	  exit (0);
@@ -457,6 +462,11 @@ main (int argc, char **argv)
 	       vty_port, 
 	       (bm->address ? bm->address : "<all>"),
 	       bm->port);
+
+  zlog_info("Opening with %s", VRF_DEFAULT_NAME );
+  bgp_default_fd = open (VRF_DEFAULT_NAME, O_RDONLY);
+  if (bgp_default_fd < 0)
+    zlog_err ("BGP default fd error %s", safe_strerror (errno));
 
   /* Start finite state machine, here we go! */
   while (thread_fetch (master, &thread))

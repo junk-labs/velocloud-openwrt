@@ -12,6 +12,7 @@ else
     mkdir -p build
     cd build
     rsync -av ../src/ .
+    tar -xvzf ../debian.tgz 
 
     export CFLAGS="-std=gnu99 -g -mtune=generic -fomit-frame-pointer -fno-caller-saves -Wno-error=unused-but-set-variable"
 

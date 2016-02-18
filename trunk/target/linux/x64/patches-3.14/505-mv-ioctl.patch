@@ -942,7 +942,7 @@
 +	out.cpu = 0x10;
 +	out.cross = ds->dsa_port_mask;
 +	out.lan = ds->phys_port_mask;
-+	out.ports = out.cpu | out.cross | out.ports;
++	out.ports = out.cpu | out.cross | out.lan;
 +
 +	if(copy_to_user(ifr->ifr_ifru.ifru_data, &out, sizeof(out)))
 +		return(-EFAULT);

@@ -76,14 +76,17 @@ in the diff output.
 First follow step #2 above for building the package on a machine without the
 openwrt toochain. Then go to the build/ directory as mentioned there and 
 execute "debuild -i -us -uc -b -d" .. And you will get a .deb file in the parent
-of the build directory. The debian control files are bundled into debian.tgz here
-and used only when step #2 is done and NOT used in the standard openWRT build 
+of the build directory. The debian control files are bundled into debian.tgz here and used only when step #2 is done and NOT used in the standard openWRT build 
 process
 
 For the debian build to go through, the following packages are needed. Note that
 the last line with the long list of packages like texline etc.. were suggested 
-when a debuild clean was executed, I am not sure if all of that is needed, it took
-a hell of a long time to install all those packages
+when a debuild clean was executed, I am not sure if all of that is needed, it took a hell of a long time to install all those packages
+
+NOTE: On 14.04 ubuntu, this debian package that gets built installs fine, but 
+on 12.04 it complains it needs iproute2, but 12.04 doesnt support iproute2, 
+instead it uses iproute. So in debian/control file in the Depends section,
+change iproute2 to iproute and rebuild debian specifically for 12.04
 
   sudo apt-get install devscripts
   sudo apt-get install debhelper 

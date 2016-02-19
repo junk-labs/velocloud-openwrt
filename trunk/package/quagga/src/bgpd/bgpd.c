@@ -1998,8 +1998,11 @@ bgp_create (as_t *as, const char *name)
 
       bgp->fd = open (namespace, O_RDONLY);
 
-      if (bgp->fd < 0)
+      if (bgp->fd < 0) {
         zlog_err ("BGP name fd error %s", safe_strerror (errno));
+      } else {
+        zlog_err ("BGP name %s, fd %d\n", namespace, bgp->fd, safe_strerror (errno));
+      }
     }
 
   return bgp;

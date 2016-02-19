@@ -55,6 +55,14 @@ struct bgp_listener
   struct bgp *bgp;
 };
 
+static inline int setns_raise(int fd, int nstype)
+{
+  if ( bgpd_privs.change (ZPRIVS_RAISE) ) {
+    zlog_err ("%s: could not raise privs", __func__);
+  }
+  return setns(fd, nstype);
+}
+
 /*
  * Set MD5 key for the socket, for the given IPv4 peer address.
  * If the password is NULL or zero-length, the option will be disabled.
@@ -371,18 +379,22 @@ bgp_connect (struct peer *peer)
   unsigned int ifindex = 0;
   int ret;
 
-  if (peer->bgp->name)
-    ret = setns (peer->bgp->fd, CLONE_NEWNET);
-    if (ret < 0)
-      zlog_err ("socket: setns 3 %s", safe_strerror (errno));
+  if (peer->bgp->name) {
+    ret = setns_raise (peer->bgp->fd, CLONE_NEWNET);
+    if (ret < 0) {
+      zlog_err ("socket: setns %d, 3 %s", peer->bgp->fd, safe_strerror (errno));
+    }
+  }
 
   /* Make socket for the peer. */
   peer->fd = sockunion_socket (&peer->su);
 
-  if (peer->bgp->name)
-    ret = setns (bgp_default_fd, CLONE_NEWNET);
-    if (ret < 0)
-      zlog_err ("socket: setns 4 %s", safe_strerror (errno));
+  if (peer->bgp->name) {
+    ret = setns_raise (bgp_default_fd, CLONE_NEWNET);
+    if (ret < 0) {
+      zlog_err ("socket: setns %d, 4 %s", bgp_default_fd, safe_strerror (errno));
+    }
+  }
 
   if (peer->fd < 0)
     return -1;
@@ -539,13 +551,19 @@ bgp_socket (struct bgp *bgp, unsigned short port, const char *address)
       if (ainfo->ai_family != AF_INET && ainfo->ai_family != AF_INET6)
 	continue;
       
-      if (bgp->name)
-        setns (bgp->fd, CLONE_NEWNET);
+      if (bgp->name) {
+        ret = setns_raise (bgp->fd, CLONE_NEWNET);
+        if (ret < 0) 
+          zlog_err ("socket: setns %d, 5 %s", bgp->fd, safe_strerror (errno));
+      }
 
       sock = socket (ainfo->ai_family, ainfo->ai_socktype, ainfo->ai_protocol);
 
-      if (bgp->name)
-        setns (bgp_default_fd, CLONE_NEWNET);
+      if (bgp->name) {
+        ret = setns_raise (bgp_default_fd, CLONE_NEWNET);
+        if (ret < 0) 
+          zlog_err ("socket: setns %d, 6 %s", bgp_default_fd, safe_strerror (errno));
+      }
 
       if (sock < 0)
 	{
@@ -582,20 +600,20 @@ bgp_socket (struct bgp *bgp, unsigned short port, const char *address)
   int ret, en;
 
   if (bgp->name)
-   {
-    ret = setns (bgp->fd, CLONE_NEWNET);
+  {
+    ret = setns_raise (bgp->fd, CLONE_NEWNET);
     if (ret < 0)
-      zlog_err ("socket: setns 1 %s", safe_strerror (errno));
-   }
+      zlog_err ("socket: setns %d, 1 %s", bgp->fd, safe_strerror (errno));
+  }
   
   sock = socket (AF_INET, SOCK_STREAM, 0);
 
   if (bgp->name)
-   {
-    ret = setns (bgp_default_fd, CLONE_NEWNET);
+  {
+    ret = setns_raise (bgp_default_fd, CLONE_NEWNET);
     if (ret < 0)
-      zlog_err ("socket: setns 2 %s", safe_strerror (errno));
-   }
+      zlog_err ("socket: setns %d, 2 %s", bgp_default_fd, safe_strerror (errno));
+  }
 
   if (sock < 0)
     {

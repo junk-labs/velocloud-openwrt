@@ -125,6 +125,7 @@ static zebra_capabilities_t _caps_p [] =
     ZCAP_BIND, 
     ZCAP_NET_RAW,
     ZCAP_NET_ADMIN,
+    ZCAP_SYS_ADMIN
 };
 
 struct zebra_privs_t bgpd_privs =
@@ -433,6 +434,16 @@ main (int argc, char **argv)
   vty_init (master);
   memory_init ();
 
+  if ( bgpd_privs.change (ZPRIVS_RAISE) ) {
+    zlog_err ("%s: could not raise privs to open default vrf", __func__);
+  }
+  zlog_info("Opening with %s", VRF_DEFAULT_NAME );
+  bgp_default_fd = open (VRF_DEFAULT_NAME, O_RDONLY);
+  if (bgp_default_fd < 0) {
+    zlog_err ("BGP default fd error %s", safe_strerror (errno));
+  } else {
+    zlog_err ("BGP default fd %d", bgp_default_fd);
+  }
   /* BGP related initialization.  */
   bgp_init ();
 
@@ -462,11 +473,6 @@ main (int argc, char **argv)
 	       vty_port, 
 	       (bm->address ? bm->address : "<all>"),
 	       bm->port);
-
-  zlog_info("Opening with %s", VRF_DEFAULT_NAME );
-  bgp_default_fd = open (VRF_DEFAULT_NAME, O_RDONLY);
-  if (bgp_default_fd < 0)
-    zlog_err ("BGP default fd error %s", safe_strerror (errno));
 
   /* Start finite state machine, here we go! */
   while (thread_fetch (master, &thread))

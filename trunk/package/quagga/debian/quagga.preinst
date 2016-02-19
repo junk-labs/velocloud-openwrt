@@ -31,29 +31,29 @@ if [ "$1" = "install" ]; then
   # Logfiles are group readable in case users were put into the quagga group.
   d=/var/log/quagga/
     mkdir -p $d
-    chown -R quagga:quagga $d
+    chown -R root:root $d
     chmod u=rwx,go=rx $d
     find $d -type f -print0 | xargs -0 --no-run-if-empty   chmod u=rw,g=r,o=
 
   # Strict permissions for the sockets.
   d=/var/run/quagga/
     mkdir -p $d
-    chown -R quagga:quagga $d
+    chown -R root:root $d
     chmod u=rwx,go=rx $d
     find $d -type f -print0 | xargs -0 --no-run-if-empty   chmod u=rw,go=
 
   # Config files. Vtysh does not have access to the individual daemons config file
   d=/etc/quagga/
     mkdir -p $d
-    chown quagga:quaggavty $d
+    chown root:root $d
     chmod ug=rwx,o=rx $d
-    find $d -type f -print0 | xargs -0 --no-run-if-empty   chown quagga:quagga
+    find $d -type f -print0 | xargs -0 --no-run-if-empty   chown root:root
     find $d -type f -print0 | xargs -0 --no-run-if-empty   chmod u=rw,g=r,o=
 
     # Exceptions for vtysh.
     f=$d/vtysh.conf
     if [ -f $f ]; then
-      chown quagga:quaggavty $f
+      chown root:root $f
       chmod u=rw,g=r,o= $f
     fi
 
@@ -63,7 +63,7 @@ if [ "$1" = "install" ]; then
       mv $d/Zebra.conf $f
     fi
     if [ -f $f ]; then
-      chown quagga:quaggavty $f
+      chown root:root $f
       chmod u=rw,g=r,o= $f
     fi
 fi

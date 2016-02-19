@@ -261,7 +261,7 @@ convert_daemon_prios
 
 if [ ! -d /var/run/quagga ]; then
     mkdir -p /var/run/quagga
-    chown quagga:quagga /var/run/quagga
+    chown root:root /var/run/quagga
     chmod 755 /var/run/quagga
 fi
 

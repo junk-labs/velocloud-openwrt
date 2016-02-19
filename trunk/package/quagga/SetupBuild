@@ -12,7 +12,7 @@ else
     mkdir -p build
     cd build
     rsync -av ../src/ .
-    tar -xvzf ../debian.tgz 
+    rsync -av ../debian .
 
     export CFLAGS="-std=gnu99 -g -mtune=generic -fomit-frame-pointer -fno-caller-saves -Wno-error=unused-but-set-variable"
 
@@ -20,6 +20,10 @@ else
     [ -d ./autom4te.cache ] && rm -rf autom4te.cache
     autoreconf -v -f -i -I m4 -I . .
 
+    # The quagga we use have some features which need to make use of a setns() linux namespace
+    # call. And that needs to run as a priviledged user, this SetupBuild at the moment is used
+    # only for R&D, so setting it to root for now, we need to figure out the right privileges
+    # to use at some point
     ./configure \
         --program-prefix="" \
         --program-suffix="" \
@@ -38,8 +42,8 @@ else
         --sysconfdir=/etc/quagga/ \
         --enable-shared \
         --disable-static \
-        --enable-user=network \
-        --enable-group=network \
+        --enable-user=root \
+        --enable-group=root \
         --enable-pie=no \
         --enable-multipath=8 \
         --disable-ospfclient \

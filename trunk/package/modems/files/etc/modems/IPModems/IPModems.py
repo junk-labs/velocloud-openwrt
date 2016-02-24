@@ -108,6 +108,9 @@ class IPModems():
     def runcmd(self, cmd):
 	return commands.getstatusoutput(cmd)[1].strip()
 
+    def get_profile_path(self):
+        return self.modem_path['modem_config_path'] + '/' + self.USB + '.profile'
+
     def get_uci_value(self, name):
         path = self.modem_path['modem_config_path']
         cmdget = "uci -c " + path + " get modems." + self.USB

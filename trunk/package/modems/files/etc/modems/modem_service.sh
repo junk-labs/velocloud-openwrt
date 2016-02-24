@@ -238,6 +238,8 @@ modem_start()
 
 	modems_plugin_add_rule "$USB"
 	log "$USB: started modem $type script sucessfully"
+
+	uci -c $modem_config_path set modems.$USB.started=''"1"''
 }
 
 modem_stop()
@@ -312,6 +314,8 @@ modem_stop()
 		logerr "$USB: couldn't stop"
 		exit 1
 	fi
+
+	uci -c $modem_config_path set modems.$USB.started=''"0"''
 }
 
 modem_restart()

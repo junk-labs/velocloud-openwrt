@@ -274,19 +274,23 @@ handle_qmi_hybrid() {
 		count=$(($count+1))
 	done
 
-	# In qmi-hybrid modems we trigger the profile generation as soon as we get
-	# the management TTY
-	apn=$(at_get_apn $ttydevice $usbifname)
-	PROFILE=/tmp/USB/${usbifname}.profile
-	echo "APN=$apn" > ${PROFILE}
-
 	lock $lockfile
 	touch $modem_config_path/modems
 	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
 	uci -c $modem_config_path set modems.$usbifname=interface
 	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
 	uci -c $modem_config_path commit modems
 	lock -u $lockfile
+
+	# In qmi-hybrid modems we trigger the profile generation as soon as we get
+	# the management TTY
+	#
+	# The profile is only created if there is no other profile already.
+	if [ ! -f $profile ]; then
+		apn=$(at_get_apn $ttydevice $usbifname)
+		${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
+	fi
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=qmihybrid"
 
@@ -331,23 +335,27 @@ handle_sierranet() {
 		count=$(($count+1))
 	done
 
-    if [ -z $imei ]; then
-        log "Cannot load IMEI from $ttydevice, ignoring device."
-        return
-    fi
-
-	# In sierranet modems we trigger the profile generation as soon as we get
-    # the management TTY
-	apn=$(at_get_apn $ttydevice $usbifname)
-	PROFILE=/tmp/USB/${usbifname}.profile
-	echo "APN=$apn" > ${PROFILE}
+	if [ -z $imei ]; then
+		log "Cannot load IMEI from $ttydevice, ignoring device."
+		return
+	fi
 
 	lock $lockfile
 	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
 	uci -c $modem_config_path set modems.$usbifname=interface
 	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
 	uci -c $modem_config_path commit modems
 	lock -u $lockfile
+
+	# In sierranet modems we trigger the profile generation as soon as we get
+	# the management TTY
+	#
+	# The profile is only created if there is no other profile already.
+	if [ ! -f $profile ]; then
+		apn=$(at_get_apn $ttydevice $usbifname)
+		${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
+	fi
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=sierranet"
 
@@ -382,6 +390,9 @@ add_to_config() {
 
 	# Common initialization
 	init_modem_support
+
+	# This is the common profile path
+	profile=${modem_config_path}/${usbifname}.profile
 
 	product=$(cat $usbpath/../uevent | awk -F= '/PRODUCT/ { print $2}')
 	if [ -z "$product" ]; then
@@ -427,6 +438,18 @@ add_to_config() {
 	else
 		update_dial_device "$ttydevice" "$product"
 	fi
+
+	# TODO: enable creating profile for PPP-based connection
+	# uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	# uci -c $modem_config_path commit modems
+	#
+	# # Create profile for the PPP based connection.
+	# #
+	# # The profile is only created if there is no other profile already.
+	# if [ ! -f $profile ]; then
+	# 	apn=$(at_get_apn $ttydevice $usbifname)
+	# 	${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
+	# fi
 
 	log "Starting pppd script for $ttydevice"
 	start_pppd_script

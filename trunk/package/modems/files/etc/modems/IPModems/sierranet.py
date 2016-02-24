@@ -129,7 +129,7 @@ class Sierranet(IPModems.IPModems):
 
 			# Get APN from profile
 			myvars = {}
-			with open("/tmp/USB/" + self.USB + ".profile") as myfile:
+			with open(self.get_profile_path()) as myfile:
 				for line in myfile:
 					name, var = line.partition("=")[::2]
 					myvars[name.strip()] = var.strip()

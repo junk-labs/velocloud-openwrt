@@ -1,11 +1,24 @@
 #!/bin/sh
 
+MYNAME=`readlink $0`
+MYDIR=`dirname "$MYNAME"`
+MYDIR=`(cd "$MYDIR" && pwd)`
+
 cat > /etc/config/network <<-EOF
 config interface 'loopback'
-       option ifname 'lo'
-       option proto 'static'
-       option ipaddr '127.0.0.1'
-       option netmask '255.0.0.0'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+	option ipv6 '0'
+
+config interface 'lan'
+	option ifname ''
+	option proto 'static'
+	option type 'bridge'
+	option ipaddr '192.168.2.1'
+	option netmask '255.255.255.0'
+	option ipv6 '0'
 
 EOF
 
@@ -23,8 +36,9 @@ for IFNAME in $LAN_IFLIST ; do
 	IX=$((IX+1))
 	cat >> /etc/config/network <<-EOF
 config interface 'LAN$IX'
-       option ifname '$IFNAME'
-       option proto 'static'
+	option ifname '$IFNAME'
+	option proto 'static'
+	option ipv6 '0'
 
 EOF
 done
@@ -34,8 +48,9 @@ for IFNAME in $GE_IFLIST ; do
 	IX=$((IX+1))
 	cat >> /etc/config/network <<-EOF
 config interface 'GE$IX'
-       option ifname '$IFNAME'
-       option proto 'static'
+	option ifname '$IFNAME'
+	option proto 'static'
+	option ipv6 '0'
 
 EOF
 done
@@ -45,11 +60,19 @@ for IFNAME in $SFP_IFLIST ; do
 	IX=$((IX+1))
 	cat >> /etc/config/network <<-EOF
 config interface 'SFP$IX'
-       option ifname '$IFNAME'
-       option proto 'static'
+	option ifname '$IFNAME'
+	option proto 'static'
+	option ipv6 '0'
 
 EOF
 done
+
+echo "Enabling password-based root sshd login"
+sed -i -e 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Copy a disabled wifi configuration by default
+echo "Disabling wi-fi by default. See /root/stress/wifi-cfg/README.wireless.txt"
+cp $MYDIR/wifi-cfg/wireless.emissions /etc/config/wireless
 
 if grep -q dsa=7 /etc/modules.d/35-igb > /dev/null 2>&1 ; then
     echo "Restarting network to apply new configuration"

@@ -22,8 +22,11 @@
 # valid values: daemon, trigger, cron
 # Recommended value daemon
 
-START=80
+START=15
 STOP=80
+
+USE_PROCD=1
+PROG=/usr/sbin/mcelog
 
 # additional options to pass to the daemon
 # this only works in daemon mode
@@ -31,17 +34,9 @@ STOP=80
 # set in /etc/mcelog.conf
 MCELOG_OPTIONS=""
 
-start() {
-	/usr/sbin/mcelog --daemon
+start_service() {
+	procd_open_instance
+	procd_set_param command $PROG --daemon --foreground --syslog-error
+	procd_set_param respawn
+	procd_close_instance
 }
-
-stop() {
-	killall mcelog
-}
-
-restart() {
-        stop
-        start
-}
-
-

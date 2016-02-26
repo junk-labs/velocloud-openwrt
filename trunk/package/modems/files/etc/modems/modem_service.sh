@@ -6,6 +6,12 @@ trigger=$2
 
 log() {
 	logger -t "usbmodems" "$@"
+	echo "$@"
+}
+
+logerr() {
+	logger -t "usbmodems" "error: $@"
+	echo "$@" 1>&2
 }
 
 get_bridge_interface() {
@@ -13,22 +19,28 @@ get_bridge_interface() {
 		      awk -F '=|\.' '/network.network[0-9]*=interface/ { print "br-"$2}')
 }
 
-get_usb_ifname() {
+get_usb_ifname()
+{
 	local usb=$1
-	echo $(uci -c $modem_path get modems.$usb.ifname)
+	# avoid uci stderr
+	echo $(uci -c $modem_path get modems.$usb.ifname 2>/dev/null)
 }
 
-get_usb_type() {
+get_usb_type()
+{
 	local usb=$1
-	echo $(uci -c $modem_path get modems.$usb.type)
+	# avoid uci stderr
+	echo $(uci -c $modem_path get modems.$usb.type 2>/dev/null)
 }
 
-get_all_available_usb() {
-	echo $(uci -c $modem_path show modems | \
-		      awk -F'=|\.' '/modems.*=interface/ {print $2}')
+get_all_available_usb()
+{
+	echo $(uci -c $modem_path show modems 2>/dev/null | \
+		awk -F'=|\.' '/modems.*=interface/ {print $2}')
 }
 
-get_edge_activatedstate() {
+get_edge_activatedstate()
+{
 	local pid=$(pgrep edged)
 	if [ ! -z $pid ]; then
 	# edged running
@@ -40,7 +52,8 @@ get_edge_activatedstate() {
 	echo 0
 }
 
-modems_forward_rule() {
+modems_forward_rule()
+{
 	local inInterface=$1
 	local outInterface=$2
 	local action=$3
@@ -48,13 +61,15 @@ modems_forward_rule() {
 	iptables -$action VCMP_FWD_ACL -i $inInterface -o $outInterface -j $rule
 }
 
-modems_postrouting_rule() {
+modems_postrouting_rule()
+{
 	local outInterface=$1
 	local action=$2
 	#iptables -tnat -$action POSTROUTING -o $outInterface -j MASQUERADE
 }
 
-modems_fwd_bridge_usblist() {
+modems_fwd_bridge_usblist()
+{
 	local usblist=$1
 	local insert_delete_rule=$2
 	local accept_drop_action=$3
@@ -75,7 +90,8 @@ modems_fwd_bridge_usblist() {
 	done
 }
 
-modems_nat_usblist() {
+modems_nat_usblist()
+{
 	local usblist=$1
 	local action=$2
 	local usb usbifname
@@ -90,7 +106,8 @@ modems_nat_usblist() {
 	done
 }
 
-modems_plugin_add_rule() {
+modems_plugin_add_rule()
+{
 	local usb=$1
 	local edgeactivated=$(get_edge_activatedstate)
 	if [ "$edgeactivated" == "1" ]; then
@@ -103,14 +120,17 @@ modems_plugin_add_rule() {
 	modems_nat_usblist "$usb" "I"
 }
 
-modems_plugout_delete_rule() {
+modems_plugout_delete_rule()
+{
 	local usb=$1
-	modems_fwd_bridge_usblist "$usb" "D" "ACCEPT"
-	modems_fwd_bridge_usblist "$usb" "D" "DROP"
-	modems_nat_usblist "$usb" "D"
+	# ignore errors when deleting, e.g. if we call multiple times
+	modems_fwd_bridge_usblist "$usb" "D" "ACCEPT" 2>/dev/null
+	modems_fwd_bridge_usblist "$usb" "D" "DROP" 2>/dev/null
+	modems_nat_usblist "$usb" "D" 2>/dev/null
 }
 
-modems_edged_run_add_rule() {
+modems_edged_run_add_rule()
+{
 	local usball=$(get_all_available_usb)
 	modems_fwd_bridge_usblist "$usball" "D" "ACCEPT"
 	modems_fwd_bridge_usblist "$usball" "D" "DROP"
@@ -128,7 +148,8 @@ modems_edged_run_add_rule() {
 	iptables -I INPUT -i vce1 -s 192.168.32.2 -p tcp --sport 80 -j DROP
 }
 
-modems_edged_kill_delete_rule() {
+modems_edged_kill_delete_rule()
+{
 	local usball=$(get_all_available_usb)
 	modems_fwd_bridge_usblist "$usball" "D" "ACCEPT"
 	modems_fwd_bridge_usblist "$usball" "D" "DROP"
@@ -139,77 +160,202 @@ modems_edged_kill_delete_rule() {
 	iptables -D INPUT -i vce1 -s 192.168.32.2 -p tcp --sport 80 -j DROP
 }
 
-modems_insert_fw_allusb() {
+modems_insert_fw_allusb()
+{
 	local usball=$(get_all_available_usb)
 	modems_plugin_add_rule "$usball"
 }
 
-modems_delete_fw_allusb() {
+modems_delete_fw_allusb()
+{
 	local usball=$(get_all_available_usb)
 	modems_plugout_delete_rule "$usball"
 }
 
-modems_start() {
-	local type
-	modems_stop
-	type=$(get_usb_type $USB)
-	log "$USB: Start the modem $type script"
-	if [ "$type" == "serial" ];then
-		nohup $modem_script_path/TTYModems/ppp_run.sh -ifname $USB 2>&1 >/dev/null &
-	else
-		nohup $modem_script_path/IPModems/IPModemsRun.py $USB 2>&1 >/dev/null &
-	fi
-	modems_plugin_add_rule "$USB"
-	log "$USB: Started modem $type script sucessfully"
-}
+load_modem_status()
+{
+	# Load modem status:
+	#   UNAVAILABLE
+	#   RUNNING
+	#   STOPPED
+	#   UNKNOWN
 
-modems_stop() {
-	local type=$(get_usb_type $USB)
-	if [ -f /$tmpdir/$USB.pid ]; then
-		local pid=$(cat /$tmpdir/$USB.pid)
-		kill -SIGTERM $pid
-	fi
-	modems_plugout_delete_rule "$USB"
-	log "$USB: Kill modem $type script"
-}
-
-modems_restart() {
-	local type=$(get_usb_type $USB)
-	log "$USB: Restarting the modem $type script"
-	modems_stop
-	sleep 5
-	modems_start
-	log "$USB: Restart done."
-}
-
-modems_status() {
-	local type=$(get_usb_type $USB)
-	log "$USB: Check for the modem $type status"
 	$(uci -c $modem_path get modems.$USB.ifname >/dev/null 2>&1)
 	if [ $? != 0 ]; then
-		# Modem not detected or not inserted
-		echo "None"
+		STATUS="UNAVAILABLE"
 		return
 	fi
-	if [ -f /$tmpdir/$USB.pid ];then
-		echo "Running"
-	else
-		echo "Stopped"
+
+	# Check if the PID file exists
+	if [ -f /$tmpdir/$USB.pid ]; then
+		# kill -0 checks whether the process is running
+		local pid=$(cat /$tmpdir/$USB.pid)
+
+		if [ -z $pid ]; then
+			STATUS="UNKNOWN"
+			return
+		fi
+
+		kill -0 $pid
+		if [ $? -eq 0 ]; then
+			STATUS="RUNNING"
+			return
+		fi
 	fi
+
+	STATUS="STOPPED"
+}
+
+modem_start()
+{
+	log "$USB: starting..."
+
+	# Avoid starting if already running
+	load_modem_status
+	if [ "$STATUS" == "RUNNING" ]; then
+		logerr "$USB: already running, cannot start"
+		exit 1
+	fi
+	if [ "$STATUS" == "UNAVAILABLE" ]; then
+		logerr "$USB: modem not detected, cannot start"
+		exit 1
+	fi
+
+	# Don't go on if type is empty (i.e. no config for USB#)
+	local type=$(get_usb_type $USB)
+	if [ -z "$type" ]; then
+		logerr "$USB: Unknown modem type, cannot start"
+		exit 1
+	fi
+
+	if [ "$type" == "serial" ]; then
+		log "$USB: starting PPP modem support"
+		nohup $modem_script_path/TTYModems/ppp_run.sh -ifname $USB 2>&1 >/dev/null &
+	else
+		log "$USB: starting WWAN modem support"
+		nohup $modem_script_path/IPModems/IPModemsRun.py $USB 2>&1 >/dev/null &
+	fi
+
+	modems_plugin_add_rule "$USB"
+	log "$USB: started modem $type script sucessfully"
+}
+
+modem_stop()
+{
+	log "$USB: stopping..."
+
+	load_modem_status
+	if [ "$STATUS" == "UNAVAILABLE" ]; then
+		logerr "$USB: modem not detected, cannot stop"
+		exit 1
+	fi
+
+	if [ -f /$tmpdir/$USB.pid ]; then
+		local pid=$(cat /$tmpdir/$USB.pid)
+		if [ -z $pid ]; then
+			logerr "$USB: empty pid file found"
+			rm -f /$tmpdir/$USB.pid
+		else
+			# Check if process is running
+			kill -0 $pid > /dev/null 2>&1
+			if [ $? -ne 0 ]; then
+				# Already stopped, good!
+				log "$USB: process with pid $pid is already stopped"
+				rm -f /$tmpdir/$USB.pid
+			else
+				# Retry to kill up to 10 times
+				local count=0
+
+				while [ $count -le 10 ]; do
+					# 0,1,2,3. SIGTERM
+					if [ $count -le 3 ]; then
+						log "$USB: stopping process with pid $pid (SIGTERM)"
+						kill -SIGTERM $pid
+					# 4,5,6, SIGINT
+					elif [ $count -le 6 ]; then
+						log "$USB: stopping process with pid $pid (SIGINT)"
+						kill -SIGINT $pid
+					# 7,8,9, SIGHUP
+					elif [ $count -le 9 ]; then
+						log "$USB: stopping process with pid $pid (SIGHUP)"
+						kill -SIGHUP $pid
+					# 10, SIGKILL
+					else
+						log "$USB: stopping process with pid $pid (SIGKILL)"
+						kill -SIGKILL $pid
+					fi
+
+					sleep 1
+
+					kill -0 $pid > /dev/null 2>&1
+					if [ $? -ne 0 ]; then
+						# Already stopped, good!
+						log "$USB: process with pid $pid now stopped"
+						rm -f /$tmpdir/$USB.pid
+						break
+					fi
+
+					# Still running
+					count=$((count + 1))
+				done
+			fi
+		fi
+	else
+		log "$USB: already stopped"
+	fi
+
+	modems_plugout_delete_rule "$USB"
+
+	# If still not flagged as stopped, return error
+	load_modem_status
+	if [ "$STATUS" != "STOPPED" ]; then
+		logerr "$USB: couldn't stop"
+		exit 1
+	fi
+}
+
+modem_restart()
+{
+	log "$USB: restarting..."
+	modem_stop
+	sleep 5
+	modem_start
+	log "$USB: restarted."
+}
+
+modem_status()
+{
+	load_modem_status
+	case "$STATUS" in
+		"RUNNING")
+			log "$USB: modem script running"
+			;;
+		"STOPPED")
+			log "$USB: modem script not running"
+			;;
+		"UNAVAILABLE")
+			log "$USB: modem not found"
+			exit 1
+			;;
+		*)
+			log "$USB: unknown status"
+			exit 2
+			;;
+	esac
 }
 
 case "$trigger" in
 	'start')
-		modems_start
+		modem_start
 	  ;;
 	'stop')
-		modems_stop
+		modem_stop
 	  ;;
 	'restart')
-		modems_restart
+		modem_restart
 	  ;;
 	'status')
-		modems_status
+		modem_status
 	  ;;
 	'edged')
 		modems_edged_run_add_rule

@@ -292,6 +292,9 @@ add_to_config()
 
 	log "Hotplug add event: network device $usbpath"
 
+	# Common initialization
+	init_modem_support
+
 	product=$(cat $usbpath/../../uevent | awk -F= '/PRODUCT/ { print $2}' | tr '/' ':')
 	product=${product%:*}
 

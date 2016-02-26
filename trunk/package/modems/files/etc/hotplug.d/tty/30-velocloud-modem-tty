@@ -378,6 +378,10 @@ add_to_config() {
 		return
 	fi
 	log "Hotplug add event: serial"
+
+	# Common initialization
+	init_modem_support
+
 	product=$(cat $usbpath/../uevent | awk -F= '/PRODUCT/ { print $2}')
 	if [ -z "$product" ]; then
 		log "Ignoring tty device, no product: DEVICENAME:$DEVICENAME"

@@ -883,3 +883,19 @@ define KernelPackage/thermal-x86-pkg-temp/description
 endef
 
 $(eval $(call KernelPackage,thermal-x86-pkg-temp))
+
+
+define KernelPackage/mce-inject
+  SUBMENU:=$(OTHER_MENU)
+  TITLE:=MCE Injection Helper
+  DEPENDS:=@TARGET_x86||TARGET_x64
+  KCONFIG:=CONFIG_X86_MCE_INJECT
+  FILES:=$(LINUX_DIR)/arch/x86/kernel/cpu/mcheck/mce-inject.ko
+  AUTOLOAD:=$(call AutoProbe,mce_inject)
+endef
+
+define KernelPackage/mce-inject/description
+ Module for injecting MCEs into the Kernel
+endef
+
+$(eval $(call KernelPackage,mce-inject))

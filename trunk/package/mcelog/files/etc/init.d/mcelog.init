@@ -36,7 +36,7 @@ MCELOG_OPTIONS=""
 
 start_service() {
 	procd_open_instance
-	procd_set_param command $PROG --daemon --foreground --syslog-error
+	procd_set_param command $PROG --daemon --foreground --syslog-error --no-dmi
 	procd_set_param respawn
 	procd_close_instance
 }

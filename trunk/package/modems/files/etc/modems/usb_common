@@ -22,13 +22,88 @@ init_modem_support()
 
 usb_wan_naming()
 {
-    python - "$1" <<-EOF
+	local usbpath="$1"
+	local usbname=""
+
+	if [ -r $PYTHONPATH/hardware.py ]; then
+		usbname=$(python - "$usbpath" <<-EOF
 import hardware
 import sys
 usb = hardware.get_usb_by_path(sys.argv[1])
 if usb:
     print usb
 EOF
+)
+	fi
+	if [ ! -z "$usbname" ]; then
+		echo $usbname
+		return
+	fi
+
+	# common usb device path
+	# we consider the fact that a usb device has multiple ports, e.g.:
+	#
+	#    /sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3/1-1.3:1.0/ttyUSB0
+	#    /sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3/1-1.3:1.2/ttyUSB1
+	#    /sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3/1-1.3:1.3/ttyUSB2
+	#    /sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3/1-1.3:1.8/net/wwan0
+	#
+	# what we get is:
+	#    1-1.3
+	#
+	# we abuse the fact that usb devce paths will have a ':' and port names
+	# won't.
+	#
+	local shortusbpath=''
+	local tmpusbpath=$usbpath
+	while [ 1 ]; do
+		# the path item with ':' is the one given the port number of each port
+		if [ $(echo $(basename $tmpusbpath) | grep ":" | wc -l) -ne 0 ]; then
+			shortusbpath=$(dirname $tmpusbpath)
+			shortusbpath=$(basename $shortusbpath)
+			break
+		fi
+		tmpusbpath=$(dirname $tmpusbpath)
+		if [ -z "$tmpusbpath" ]; then
+			# error out somehow
+			echo "error"
+			return
+		fi
+	done
+
+	# create runtime database of shortusbpath vs usbname mappings
+	# e.g.:
+	#   1-1.3 MODEM1
+	#   1-1.4 MODEM2
+	#
+	local usbpaths=/tmp/usbpaths
+	touch $usbpaths
+
+	while read line; do
+		local path=$(echo $line | awk '{print $1}')
+		local name=$(echo $line | awk '{print $2}')
+
+		if [ "$path" == "$shortusbpath" ]; then
+			# found!
+			echo $name
+			return
+		fi
+	done < $usbpaths
+
+	# get the highest existing MODEMx modem from /etc/config/modems/modems
+	# list of modems called MODEMx:
+	local highest=`cat $usbpaths 2>/dev/null | \
+		 grep 'MODEM[0-9]*' | \
+		 awk '{print $2}' | \
+		 sed 's/^MODEM//' | \
+		 sort -nr | \
+		 head -1`
+
+	# store new mapping
+	usbname=$(echo MODEM$((highest+1)))
+	echo "$shortusbpath $usbname" >> $usbpaths
+
+	echo $usbname
 }
 
 at_get_imsi_number() {

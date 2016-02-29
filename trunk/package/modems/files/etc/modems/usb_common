@@ -64,7 +64,7 @@ EOF
 			break
 		fi
 		tmpusbpath=$(dirname $tmpusbpath)
-		if [ -z "$tmpusbpath" ]; then
+		if [ -z "$tmpusbpath" ] || [ "$tmpusbpath" == "/" ]; then
 			# error out somehow
 			echo "error"
 			return

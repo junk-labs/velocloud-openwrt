@@ -40,6 +40,13 @@ EOF
 		return
 	fi
 
+	# if the path is not a usb path, ignore
+	if [ $(echo $usbpath | grep "usb" | wc -l) -eq 0 ]; then
+		# error out somehow
+		echo "error"
+		return
+	fi
+
 	# common usb device path
 	# we consider the fact that a usb device has multiple ports, e.g.:
 	#

@@ -121,9 +121,20 @@ class Qmihybrid(IPModems.IPModems):
 			logging.debug("[dev=%s]: setting %s device down...", self.USB, self.ifname)
 			self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " down")
 
+			# Get APN from profile
+			myvars = {}
+			with open(self.get_profile_path()) as myfile:
+				for line in myfile:
+					name, var = line.partition("=")[::2]
+					myvars[name.strip()] = var.strip()
+
 			# Launch connection
 			logging.debug("[dev=%s]: restarting connection...", self.USB)
-			cmd = "MODE=\"AT$NWQMICONNECT=,,\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
+
+			cmdparams=",,"
+			if myvars['APN']:
+				cmdparams = ",,,,,," + myvars['APN'] + ",,," + myvars['APN_USER'] + "," + myvars['APN_PASS']
+			cmd = "MODE=\"AT$NWQMICONNECT=" + cmdparams + "\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
 			self.runcmd(cmd)
 
 			self.reload_connection_status()

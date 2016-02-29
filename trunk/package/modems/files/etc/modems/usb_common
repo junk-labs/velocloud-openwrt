@@ -51,7 +51,7 @@ EOF
 	# what we get is:
 	#    1-1.3
 	#
-	# we abuse the fact that usb devce paths will have a ':' and port names
+	# we abuse the fact that usb device paths will have a ':' and port names
 	# won't.
 	#
 	local shortusbpath=''

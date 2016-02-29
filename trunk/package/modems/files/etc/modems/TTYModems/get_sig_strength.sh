@@ -4,7 +4,7 @@
 USB=$1
 
 while [[ 1 ]]; do
-        device=$(uci -c $modem_path get modems.$USB.mgmt)
+        device=$(uci -c $modem_config_path get modems.$USB.mgmt)
 	if [ ! -n "$device" ]; then
 		continue
 	fi
@@ -30,4 +30,3 @@ while [[ 1 ]]; do
         echo -n '{ "SigStrength" : '"$strength"', "SigPercentage" : '"$sigpercentage"', "Rxbytes" : '"$rxbytes"', "Txbytes" : '"$txbytes"' }' > "$tmpdir/""$USB"_periodic.txt
         sleep 3
 done
-

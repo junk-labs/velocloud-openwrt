@@ -49,7 +49,7 @@ getvalues_default_providers() {
 
 # Get the total number of Backups
 getvalues_backup_totalcfgs() {
-        echo $(ls -d $modem_path/$wanstring* | wc -l)
+        echo $(ls -d $modem_config_path/$wanstring* | wc -l)
 }
 
 # Get the values one by one with the interface corresponding as first
@@ -77,9 +77,8 @@ restart_pppd() {
         local retval
         local useroverride
 
-
-        ttydevice=$(uci -c $modem_path get modems.$ifname.device) # Note only ifname
-        useroverride=$(uci -c $modem_path get modems.$ifname.userOverride)
+        ttydevice=$(uci -c $modem_config_path get modems.$ifname.device) # Note only ifname
+        useroverride=$(uci -c $modem_config_path get modems.$ifname.userOverride)
 
         total_default_providers=$(getvalues_default_providers)
         total_backup_config=$(getvalues_backup_totalcfgs)
@@ -130,10 +129,10 @@ restart_pppd() {
                         ifconfig | grep $ifname 2>/dev/null
                         retval=$?
                         if [ $retval -eq 0 ]; then
-                                uci -c $modem_path set modems.$ifname.apn=''"$apntmp"''
-                                uci -c $modem_path set modems.$ifname.username=''"$usernametmp"''
-                                uci -c $modem_path set modems.$ifname.password=''"$passwordtmp"''
-                                uci -c $modem_path set modems.$ifname.dialnumber=''"$dialnumbertmp"''
+                                uci -c $modem_config_path set modems.$ifname.apn=''"$apntmp"''
+                                uci -c $modem_config_path set modems.$ifname.username=''"$usernametmp"''
+                                uci -c $modem_config_path set modems.$ifname.password=''"$passwordtmp"''
+                                uci -c $modem_config_path set modems.$ifname.dialnumber=''"$dialnumbertmp"''
                                 STATUSVALUE="CONNECTED SUCCESSFULLY"
                                 index=1         # Reset to 1 so when disconnected let it try from backup
                                 status=0        # To stop entering to 'NO CARRIER'
@@ -150,8 +149,8 @@ restart_pppd() {
                                 fi
                         fi
 
-                        uci -c $modem_path set modems.$ifname.status="$STATUSVALUE"
-                        uci -c $modem_path commit modems
+                        uci -c $modem_config_path set modems.$ifname.status="$STATUSVALUE"
+                        uci -c $modem_config_path commit modems
                 fi
 
         done
@@ -204,4 +203,3 @@ cleanup_oldprocess
 pid="65536" # Just an not running id, to enter the first check
 echo $$ > $pidfile
 restart_pppd
-

@@ -51,13 +51,13 @@ get_hw_details() {
 
 update_mgmt_config() {
 	local mgmtdevice=$1
-	uci -c $modem_path set modems.$usbifname.mgmt="$mgmtdevice"
-	uci -c $modem_path commit modems
+	uci -c $modem_config_path set modems.$usbifname.mgmt="$mgmtdevice"
+	uci -c $modem_config_path commit modems
 }
 
 update_mgmt_device() {
 	local mgmtdevice=$1
-	uci -c $modem_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
+	uci -c $modem_config_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
 	if [ "$?" != "0" ]; then
 		update_mgmt_config "$mgmtdevice"
 		log "Mgmt device $mgmtdevice updated"
@@ -117,19 +117,19 @@ uci_commit_backup() {
 uci_import_modems_config() {
 	uci -c $db_dir export $usbifname > /$tmpdir/modems.uci
 	sed -i 's/package.*/package modems/' /$tmpdir/modems.uci
-	uci -c $modem_path import -m modems < /$tmpdir/modems.uci
+	uci -c $modem_config_path import -m modems < /$tmpdir/modems.uci
 }
 
 uci_dialdevice_modems_config() {
 	local dialdevice=$1
-	uci -c $modem_path set modems.$usbifname.device="$dialdevice"
+	uci -c $modem_config_path set modems.$usbifname.device="$dialdevice"
 }
 
 uci_commit_modems() {
 	local dialdevice=$1
 	uci_import_modems_config
 	uci_dialdevice_modems_config $dialdevice
-	uci -c $modem_path commit modems
+	uci -c $modem_config_path commit modems
 }
 
 get_cdma_gsm() {
@@ -281,11 +281,11 @@ handle_qmi_hybrid() {
 	echo "APN=$apn" > ${PROFILE}
 
 	lock $lockfile
-	touch $modem_path/modems
-	uci -c $modem_path add modems interface\\\ '"$usbifname"'
-	uci -c $modem_path set modems.$usbifname=interface
-	uci -c $modem_path set modems.$usbifname.device=''"$ttydevice"''
-	uci -c $modem_path commit modems
+	touch $modem_config_path/modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path commit modems
 	lock -u $lockfile
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=qmihybrid"
@@ -343,10 +343,10 @@ handle_sierranet() {
 	echo "APN=$apn" > ${PROFILE}
 
 	lock $lockfile
-	uci -c $modem_path add modems interface\\\ '"$usbifname"'
-	uci -c $modem_path set modems.$usbifname=interface
-	uci -c $modem_path set modems.$usbifname.device=''"$ttydevice"''
-	uci -c $modem_path commit modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path commit modems
 	lock -u $lockfile
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=sierranet"
@@ -377,6 +377,7 @@ add_to_config() {
 		# log "Not a modem:devpath=$DEVPATH"
 		return
 	fi
+
 	log "Hotplug add event: serial"
 
 	# Common initialization

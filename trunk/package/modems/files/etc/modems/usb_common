@@ -165,7 +165,7 @@ check_device_config()
 {
 	local usbifname=$1
 	local ret="False"
-	uci -c $modem_path -X get modems.$usbifname.device 2>&1 >/dev/null
+	uci -c $modem_config_path -X get modems.$usbifname.device 2>&1 >/dev/null
 	if [ "$?" == "0" ]; then
 		ret="True"
 	fi
@@ -186,10 +186,10 @@ remove_device_config()
 
 	# ignore config removal request if already removed (may happen when a
 	# TTY+NET modem gets multiple hotplug events for each subsystem)
-	uci -c $modem_path -X get modems.$usbifname 2>&1 >/dev/null
+	uci -c $modem_config_path -X get modems.$usbifname 2>&1 >/dev/null
 	if [ "$?" == "0" ]; then
-		uci -c $modem_path delete modems.$usbifname
-		uci -c $modem_path commit modems
+		uci -c $modem_config_path delete modems.$usbifname
+		uci -c $modem_config_path commit modems
 		log "Removed modem config: $usbifname"
 	fi
 
@@ -289,26 +289,26 @@ uci_get_modem_type()
 {
 	local usbifname=$1
 	local type
-	type=$(uci -c $modem_path get modems.$usbifname.type)
+	type=$(uci -c $modem_config_path get modems.$usbifname.type)
 	echo $type
 }
 
 uci_get_modem_product()
 {
 	local usbifname=$1
-	echo $(uci -c $modem_path get modems.$usbifname.product)
+	echo $(uci -c $modem_config_path get modems.$usbifname.product)
 }
 
 uci_get_modem_device()
 {
 	local usbifname=$1
-	echo $(uci -c $modem_path get modems.$usbifname.device)
+	echo $(uci -c $modem_config_path get modems.$usbifname.device)
 }
 
 uci_get_modem_ifname()
 {
-    local usbifname=$1
-    echo $(uci -c $modem_path get modems.$usbifname.ifname)
+	local usbifname=$1
+	echo $(uci -c $modem_config_path get modems.$usbifname.ifname)
 }
 
 debug_hotplugevents()

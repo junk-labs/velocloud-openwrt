@@ -166,21 +166,21 @@ setup_wwan_modem()
 
 	manufacturer=$(cat /sys$DEVPATH/../../../manufacturer)
 
-	touch $modem_path/modems
-	uci -c $modem_path add modems interface\\\ '"$usbifname"'
-	uci -c $modem_path set modems.$usbifname=interface
-	uci -c $modem_path set modems.$usbifname.ifname=''"$etherdevice"''
-	uci -c $modem_path set modems.$usbifname.manufacturer=''"$manufacturer"''
-	uci -c $modem_path set modems.$usbifname.type=''"$modemtype"''
-	uci -c $modem_path set modems.$usbifname.product=''"$product"''
-	uci -c $modem_path commit modems
+	touch $modem_config_path/modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.ifname=''"$etherdevice"''
+	uci -c $modem_config_path set modems.$usbifname.manufacturer=''"$manufacturer"''
+	uci -c $modem_config_path set modems.$usbifname.type=''"$modemtype"''
+	uci -c $modem_config_path set modems.$usbifname.product=''"$product"''
+	uci -c $modem_config_path commit modems
 
 	# huawei-ncm devices are AT-controlled NET devices
 	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
 	if [ $modemtype == "huawei-ncm" ]; then
 		local device=$(ls $usbpath/../../usbmisc)
-		uci -c $modem_path set modems.$usbifname.device=''"/dev/$device"''
-		uci -c $modem_path commit modems
+		uci -c $modem_config_path set modems.$usbifname.device=''"/dev/$device"''
+		uci -c $modem_config_path commit modems
 
 		# huawei profile generation
 		# In this case we don't rely on a TTY that may be notified afterwards;
@@ -201,8 +201,8 @@ setup_wwan_modem()
 	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
 	if [ $modemtype == "qmiwwan" ]; then
 		local device=$(ls $usbpath/../../usbmisc)
-		uci -c $modem_path set modems.$usbifname.device=''"/dev/$device"''
-		uci -c $modem_path commit modems
+		uci -c $modem_config_path set modems.$usbifname.device=''"/dev/$device"''
+		uci -c $modem_config_path commit modems
 
 		# Start with a sync, so that we reset the endpoint
 		qmi_set_ctl_sync /dev/$device
@@ -271,8 +271,8 @@ setup_wwan_modem()
 	# connected by default (e.g. a MiFi) without a control port.
 	ubus call network reload
 	status="CONNECTED SUCCESSFULLY"
-	uci -c $modem_path set modems.$usbifname.status=''"$status"''
-	uci -c $modem_path commit modems
+	uci -c $modem_config_path set modems.$usbifname.status=''"$status"''
+	uci -c $modem_config_path commit modems
 
 	log "Unmanaged network device: $status"
 	$modem_script_path/modem_service.sh $usbifname start

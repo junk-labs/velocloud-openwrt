@@ -23,19 +23,19 @@ get_usb_ifname()
 {
 	local usb=$1
 	# avoid uci stderr
-	echo $(uci -c $modem_path get modems.$usb.ifname 2>/dev/null)
+	echo $(uci -c $modem_config_path get modems.$usb.ifname 2>/dev/null)
 }
 
 get_usb_type()
 {
 	local usb=$1
 	# avoid uci stderr
-	echo $(uci -c $modem_path get modems.$usb.type 2>/dev/null)
+	echo $(uci -c $modem_config_path get modems.$usb.type 2>/dev/null)
 }
 
 get_all_available_usb()
 {
-	echo $(uci -c $modem_path show modems 2>/dev/null | \
+	echo $(uci -c $modem_config_path show modems 2>/dev/null | \
 		awk -F'=|\.' '/modems.*=interface/ {print $2}')
 }
 
@@ -180,7 +180,7 @@ load_modem_status()
 	#   STOPPED
 	#   UNKNOWN
 
-	$(uci -c $modem_path get modems.$USB.ifname >/dev/null 2>&1)
+	$(uci -c $modem_config_path get modems.$USB.ifname >/dev/null 2>&1)
 	if [ $? != 0 ]; then
 		STATUS="UNAVAILABLE"
 		return

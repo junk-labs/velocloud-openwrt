@@ -109,7 +109,7 @@ class IPModems():
 	return commands.getstatusoutput(cmd)[1].strip()
 
     def get_uci_value(self, name):
-        path = self.modem_path['modem_path']
+        path = self.modem_path['modem_config_path']
         cmdget = "uci -c " + path + " get modems." + self.USB
         pipe = os.popen(cmdget + "." + name)
         value = ""
@@ -187,14 +187,14 @@ class IPModems():
         pass # It will be inherited by derived class
 
     def set_modem_status(self):
-        path = self.modem_path['modem_path']
+        path = self.modem_path['modem_config_path']
         cmd = "uci -c " + path + " set modems." + self.USB
         os.system(cmd + ".status='CONNECTED SUCCESSFULLY'")
         os.system("uci -c " + path + " commit modems")
 
     def set_static_values_uci(self):
         # This has to be in uci network file as its one time config
-        path = self.modem_path['modem_path']
+        path = self.modem_path['modem_config_path']
         cmd = "uci -c " + path + " set modems." + self.USB
 
         modem_manufacturer = self.modem_name + " " + self.modem_version
@@ -211,7 +211,7 @@ class IPModems():
     def set_dynamic_values_uci(self):
         # This is tempory solution to update to uci network file
         # Shared memory or the json print text ????
-        path = self.modem_path['modem_path']
+        path = self.modem_path['modem_config_path']
         cmd = "uci -c " + path + " set modems." + self.USB
 
         if self.signal_strength:
@@ -301,7 +301,7 @@ class IPModems():
             time.sleep(self.timer)
 
     def set_link_id(self):
-        path = self.modem_path['modem_path']
+        path = self.modem_path['modem_config_path']
         cmd = "uci -c " + path + " set modems." + self.USB
         os.system(cmd + ".linkid='" + self.product.lower() + self.USB.lower() + "'")
         os.system("uci -c " + path + " commit modems")

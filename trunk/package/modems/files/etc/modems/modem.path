@@ -1,4 +1,4 @@
-modem_path=/etc/config/modems/
+modem_config_path=/etc/config/modems/
 db_dir=/etc/config/modems/USB/
 modem_script_path=/etc/modems/
 network_config=/etc/config/

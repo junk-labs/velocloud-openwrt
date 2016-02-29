@@ -445,11 +445,17 @@ add_to_config() {
 #ACTION=add
 
 . /etc/modems/usb_common # has the USB numbering
+
 local usbpath="/sys/$DEVPATH/"
 local dialdevice=""
 local mgmtdevice=""
 local usbifname=$(usb_wan_naming $usbpath) # Will get the bus and port number
 local lockfile="$tmpdir/$usbifname.lck"
+
+# ignore event if we cannot get a USBX or MODEMX name
+if [ -z "$usbifname" ] || [ "$usbifname" == "error" ]; then
+	return
+fi
 
 set_eventdir "$usbifname: usb: $DEVICENAME"
 

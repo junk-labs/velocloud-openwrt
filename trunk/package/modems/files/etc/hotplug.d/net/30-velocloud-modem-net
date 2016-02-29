@@ -341,6 +341,11 @@ add_to_config()
 local usbpath="/sys$DEVPATH"
 local usbifname=$(usb_wan_naming $usbpath) # The USB number fixed to the board
 
+# ignore event if we cannot get a USBX or MODEMX name
+if [ -z "$usbifname" ] || [ "$usbifname" == "error" ]; then
+	return
+fi
+
 set_eventdir "$usbifname: net: $INTERFACE"
 
 debug_hotplugevents

@@ -337,6 +337,13 @@ zebra_hello_send (struct zclient *zclient)
   return 0;
 }
 
+void
+zclient_interface_request (struct zclient *zclient)
+{
+  /* We need interface information. */
+  zebra_message_send (zclient, ZEBRA_INTERFACE_ADD);
+}
+
 /* Make connection to zebra daemon. */
 int
 zclient_start (struct zclient *zclient)
@@ -472,6 +479,8 @@ zapi_ipv4_route (u_char cmd, struct zclient *zclient, struct prefix_ipv4 *p,
   
   zclient_create_header (s, cmd);
   
+  stream_put (s, api->iname, INSTANCE_NAMSIZ);
+
   /* Put type and nexthop. */
   stream_putc (s, api->type);
   stream_putc (s, api->flags);
@@ -533,6 +542,8 @@ zapi_ipv6_route (u_char cmd, struct zclient *zclient, struct prefix_ipv6 *p,
   stream_reset (s);
 
   zclient_create_header (s, cmd);
+
+  stream_put (s, api->iname, INSTANCE_NAMSIZ);
 
   /* Put type and nexthop. */
   stream_putc (s, api->type);
@@ -723,6 +734,15 @@ zebra_interface_state_read (struct stream *s)
 void
 zebra_interface_if_set_value (struct stream *s, struct interface *ifp)
 {
+  char iname_tmp[INSTANCE_NAMSIZ + 1];
+  size_t namelen;
+
+  /* Read instance name. */
+  stream_get (iname_tmp, s, INSTANCE_NAMSIZ);
+  namelen = strnlen(iname_tmp, INSTANCE_NAMSIZ);
+  strncpy (ifp->iname, iname_tmp, namelen);
+  ifp->iname[namelen] = '\0';
+
   /* Read interface's index. */
   ifp->ifindex = stream_getl (s);
   ifp->status = stream_getc (s);

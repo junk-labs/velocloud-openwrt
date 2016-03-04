@@ -62,6 +62,8 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "bgpd/bgp_snmp.h"
 #endif /* HAVE_SNMP */
 
+extern struct zclient *zclient;
+
 /* BGP process wide configuration.  */
 static struct bgp_master bgp_master;
 
@@ -1988,6 +1990,9 @@ bgp_create (as_t *as, const char *name)
   THREAD_TIMER_ON (master, bgp->t_startup, bgp_startup_timer_expire,
                    bgp, bgp->restart_time);
 
+  bgp->bgp_connected_table[AFI_IP] = bgp_table_init (AFI_IP, SAFI_UNICAST);
+  bgp->bgp_connected_table[AFI_IP6] = bgp_table_init (AFI_IP6, SAFI_UNICAST);
+
   if (bgp->name)
     {
       strcpy(namespace, "/run/netns/");
@@ -2003,6 +2008,8 @@ bgp_create (as_t *as, const char *name)
       } else {
         zlog_err ("BGP name %s, fd %d\n", namespace, bgp->fd, safe_strerror (errno));
       }
+
+      zclient_interface_request (zclient);
     }
 
   return bgp;
@@ -2041,7 +2048,7 @@ bgp_lookup_by_name (const char *name)
 
   for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp))
     if ((bgp->name == NULL && name == NULL)
-	|| (bgp->name && name && strcmp (bgp->name, name) == 0))
+	|| (bgp->name && name && strncmp (bgp->name, name, strlen (bgp->name)) == 0))
       return bgp;
   return NULL;
 }
@@ -2174,6 +2181,11 @@ bgp_delete (struct bgp *bgp)
   listnode_delete (bm->bgp, bgp);
   if (list_isempty(bm->bgp))
     bgp_close ();
+
+  bgp_table_unlock (bgp->bgp_connected_table[AFI_IP]);
+  bgp->bgp_connected_table[AFI_IP] = NULL;
+  bgp_table_unlock (bgp->bgp_connected_table[AFI_IP6]);
+  bgp->bgp_connected_table[AFI_IP6] = NULL;
 
   bgp_unlock(bgp);  /* initial reference */
   

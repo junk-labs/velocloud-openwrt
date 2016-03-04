@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 */
 
 #define INTERFACE_NAMSIZ      20
+#define INSTANCE_NAMSIZ       128
 #define INTERFACE_HWADDR_MAX  20
 
 #ifdef HAVE_PROC_NET_DEV
@@ -79,6 +80,7 @@ struct interface
      interface does not exist in the kernel.
    */
   char name[INTERFACE_NAMSIZ + 1];
+  char iname[INSTANCE_NAMSIZ + 1];
 
   /* Interface index (should be IFINDEX_INTERNAL for non-kernel or
      deleted interfaces). */

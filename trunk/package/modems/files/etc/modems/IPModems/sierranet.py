@@ -139,6 +139,16 @@ class Sierranet(IPModems.IPModems):
 			logging.debug("[dev=%s]: defining PDP context... cmd: '%s'", self.USB, cmd)
 			self.runcmd(cmd)
 
+			# Authenticate if needed
+			if myvars['APN_USER']:
+				# 1: CID
+				# 2: Auth type (0 none, 1 PAP, 2 CHAP)
+				# 3: Password
+				# 4: Username
+				cmd = "MODE=\"AT$QCPDPP=1,1,\\\""  + myvars['APN_PASS']+ "\\\",\\\"" + myvars['APN_USER'] + "\\\"\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
+				logging.debug("[dev=%s]: authenticating PDP context... cmd: '%s'", self.USB, cmd)
+				self.runcmd(cmd)
+
 			# Launch connection
 			cmd = "MODE=\"AT!SCACT=1,1\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
 			logging.debug("[dev=%s]: restarting connection... cmd: '%s'", self.USB, cmd)

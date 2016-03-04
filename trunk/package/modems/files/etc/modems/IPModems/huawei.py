@@ -131,7 +131,13 @@ class Huawei(IPModems.IPModems):
 
 			# Launch connection
 			logging.debug("[dev=%s]: restarting connection...", self.USB)
-			cmd = "MODE=\"AT^NDISDUP=1,1,\\\"" + myvars['APN'] + "\\\"\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
+			cmdparams=",\\\"" + myvars['APN'] + "\\\""
+			if myvars['APN_USER']:
+				cmdparams += ",\\\"" + myvars['APN_USER'] + "\\\""
+				if myvars['APN_PASS']:
+					cmdparams += ",\\\"" + myvars['APN_PASS'] + "\\\""
+			cmd = "MODE=\"AT^NDISDUP=1,1" + cmdparams + "\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
+			logging.debug("[dev=%s]: launching connection: %s", self.USB, cmd)
 			self.runcmd(cmd)
 
 			self.reload_connection_status()

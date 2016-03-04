@@ -137,6 +137,7 @@ class Sierranet(IPModems.IPModems):
 			# Define PDP context
 			cmd = "MODE=\"AT+CGDCONT=1,\\\"IP\\\",\\\"" + myvars['APN'] + "\\\"\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
 			logging.debug("[dev=%s]: defining PDP context... cmd: '%s'", self.USB, cmd)
+			self.runcmd(cmd)
 
 			# Launch connection
 			cmd = "MODE=\"AT!SCACT=1,1\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"

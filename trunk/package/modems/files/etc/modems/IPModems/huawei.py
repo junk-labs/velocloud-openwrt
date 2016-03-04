@@ -24,6 +24,9 @@ class Huawei(IPModems.IPModems):
 			cmd = "gcom -d " + self.device + " -s /etc/gcom/huaweistatus.gcom"
 			new_connection_status = self.runcmd(cmd)
 			if new_connection_status == 'connected':
+				if self.connection_status == 'disconnected':
+					self.reconnected()
+					logging.warning("[dev=%s]: reconnected", self.USB)
 				self.connection_status_check_errors = 0
 				self.connection_status = new_connection_status
 				return

@@ -22,7 +22,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/clib/Default
   SECTION:=devel
   CATEGORY:=Development
-  DEPENDS:=@i386||x86_64 +libpthread 
+  DEPENDS:=+libpthread 
   URL:=https://fd.io/
 endef
 
@@ -50,17 +50,17 @@ endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) \
-		$(1)/usr/clib/include \
-		$(1)/usr/clib/lib
+		$(1)/usr/include/clib \
+		$(1)/usr/lib
 	$(CP) \
 		$(PKG_BUILD_DIR)/clib/*.h \
-		$(1)/usr/clib/include
+		$(1)/usr/include/clib
 	$(CP) \
 		$(PKG_BUILD_DIR)/.libs/libclib.a \
-		$(1)/usr/clib/lib
+		$(1)/usr/lib
 endef
 
-define Package/qemu/install
+define Package/clib/install
 endef
 
 $(eval $(call BuildPackage,clib))

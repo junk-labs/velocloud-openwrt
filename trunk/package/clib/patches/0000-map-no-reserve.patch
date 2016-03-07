@@ -1,0 +1,13 @@
+diff --git a/clib/vm_unix.h b/clib/vm_unix.h
+index 1dd5d90..7f0341d 100644
+--- a/clib/vm_unix.h
++++ b/clib/vm_unix.h
+@@ -31,7 +31,7 @@
+ always_inline void * clib_mem_vm_alloc (uword size)
+ {
+   void * mmap_addr;
+-  uword flags = MAP_PRIVATE;
++  uword flags = MAP_PRIVATE | MAP_NORESERVE;
+ 
+ #ifdef MAP_ANONYMOUS
+   flags |= MAP_ANONYMOUS;

@@ -992,7 +992,7 @@ bgp_announce_check (struct bgp_info *ri, struct peer *peer, struct prefix *p,
                IN6_IS_ADDR_UNSPECIFIED(&attr->extra->mp_nexthop_global))
 #endif /* HAVE_IPV6 */
 	   || (peer->sort == BGP_PEER_EBGP
-	       && bgp_multiaccess_check_v4 (bgp, attr->nexthop, peer->host) == 0))
+	       && bgp_multiaccess_check_v4 (attr->nexthop, peer->host) == 0))
     {
       /* Set IPv4 nexthop. */
       if (p->family == AF_INET)
@@ -2157,7 +2157,7 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
       /* If the peer is EBGP and nexthop is not on connected route,
 	 discard it.  */
       if (peer->sort == BGP_PEER_EBGP && peer->ttl == 1
-	  && ! bgp_nexthop_onlink (peer->bgp, afi, &new_attr)
+	  && ! bgp_nexthop_onlink (afi, &new_attr)
 	  && ! CHECK_FLAG (peer->flags, PEER_FLAG_DISABLE_CONNECTED_CHECK))
 	{
 	  reason = "non-connected next-hop;";

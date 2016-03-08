@@ -141,9 +141,6 @@ struct bgp
   /* BGP routing information base.  */
   struct bgp_table *rib[AFI_MAX][SAFI_MAX];
 
-  /* Route table for connected route. */
-  struct bgp_table *bgp_connected_table[AFI_MAX];
-
   /* BGP redistribute configuration. */
   u_char redist[AFI_MAX][ZEBRA_ROUTE_MAX];
 

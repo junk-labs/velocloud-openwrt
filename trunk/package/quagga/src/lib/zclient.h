@@ -113,8 +113,6 @@ struct zserv_header
 /* Zebra IPv4 route message API. */
 struct zapi_ipv4
 {
-  char iname[INSTANCE_NAMSIZ];
-
   u_char type;
 
   u_char flags;
@@ -141,7 +139,6 @@ extern int zclient_start (struct zclient *);
 extern void zclient_stop (struct zclient *);
 extern void zclient_reset (struct zclient *);
 extern void zclient_free (struct zclient *);
-extern void zclient_interface_request (struct zclient *);
 
 extern int  zclient_socket_connect (struct zclient *);
 extern void zclient_serv_path_set  (char *path);
@@ -176,8 +173,6 @@ extern int zapi_ipv4_route (u_char, struct zclient *, struct prefix_ipv4 *,
 
 struct zapi_ipv6
 {
-  char iname[INSTANCE_NAMSIZ];
-
   u_char type;
 
   u_char flags;

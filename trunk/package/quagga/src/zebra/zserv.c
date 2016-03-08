@@ -145,7 +145,6 @@ zserv_encode_interface (struct stream *s, struct interface *ifp)
 {
   /* Interface information. */
   stream_put (s, ifp->name, INTERFACE_NAMSIZ);
-  stream_put (s, ifp->iname, INSTANCE_NAMSIZ);
   stream_putl (s, ifp->ifindex);
   stream_putc (s, ifp->status);
   stream_putq (s, ifp->flags);

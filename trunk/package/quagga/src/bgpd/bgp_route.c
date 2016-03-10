@@ -1609,9 +1609,8 @@ bgp_process_main (struct work_queue *wq, void *data)
       bgp_process_announce_selected (peer, new_select, rn, afi, safi);
     }
 
-  /* FIB update. */
-  if ((safi == SAFI_UNICAST || safi == SAFI_MULTICAST) && (! bgp->name &&
-      ! bgp_option_check (BGP_OPT_NO_FIB)))
+  /* FIB update. */ /*Updating for view too */
+  if (safi == SAFI_UNICAST || safi == SAFI_MULTICAST)
     {
       if (new_select 
 	  && new_select->type == ZEBRA_ROUTE_BGP 

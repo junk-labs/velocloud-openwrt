@@ -181,6 +181,8 @@ ifneq ($(CONFIG_VMDK_IMAGES),)
       ifeq ($(1),ext4)
 		chmod u+x ./gen_ova.sh
 		STAGING_DIR_HOST=$(STAGING_DIR_HOST) \
+		IMG_PREFIX=$(IMG_PREFIX) \
+		ARCH=$(ARCH) \
 		./gen_ova.sh \
 			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vmdk \
 			$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/ovf/VeloCloud-Edge.ovf

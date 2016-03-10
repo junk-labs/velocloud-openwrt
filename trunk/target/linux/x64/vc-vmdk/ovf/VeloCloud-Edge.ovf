@@ -63,23 +63,16 @@
         <rasd:ResourceType>6</rasd:ResourceType>
       </Item>
       <Item>
-        <rasd:Address>1</rasd:Address>
-        <rasd:Description>IDE Controller</rasd:Description>
-        <rasd:ElementName>IDE 1</rasd:ElementName>
-        <rasd:InstanceID>4</rasd:InstanceID>
-        <rasd:ResourceType>5</rasd:ResourceType>
-      </Item>
-      <Item>
         <rasd:Address>0</rasd:Address>
         <rasd:Description>IDE Controller</rasd:Description>
         <rasd:ElementName>IDE 0</rasd:ElementName>
-        <rasd:InstanceID>5</rasd:InstanceID>
+        <rasd:InstanceID>4</rasd:InstanceID>
         <rasd:ResourceType>5</rasd:ResourceType>
       </Item>
       <Item ovf:required="false">
         <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
         <rasd:ElementName>Video card</rasd:ElementName>
-        <rasd:InstanceID>6</rasd:InstanceID>
+        <rasd:InstanceID>5</rasd:InstanceID>
         <rasd:ResourceType>24</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="enable3DSupport" vmw:value="false"/>
         <vmw:Config ovf:required="false" vmw:key="use3dRenderer" vmw:value="automatic"/>
@@ -89,7 +82,7 @@
       <Item ovf:required="false">
         <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
         <rasd:ElementName>VMCI device</rasd:ElementName>
-        <rasd:InstanceID>7</rasd:InstanceID>
+        <rasd:InstanceID>6</rasd:InstanceID>
         <rasd:ResourceSubType>vmware.vmci</rasd:ResourceSubType>
         <rasd:ResourceType>1</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="allowUnrestrictedCommunication" vmw:value="false"/>
@@ -100,7 +93,7 @@
         <rasd:Connection>LAN</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter on &quot;LAN&quot;</rasd:Description>
         <rasd:ElementName>Network adapter 1</rasd:ElementName>
-        <rasd:InstanceID>8</rasd:InstanceID>
+        <rasd:InstanceID>7</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
         <rasd:ResourceType>10</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="false"/>
@@ -111,7 +104,7 @@
         <rasd:Connection>WAN1</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter on &quot;WAN1&quot;</rasd:Description>
         <rasd:ElementName>Network adapter 2</rasd:ElementName>
-        <rasd:InstanceID>9</rasd:InstanceID>
+        <rasd:InstanceID>8</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
         <rasd:ResourceType>10</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
@@ -122,7 +115,7 @@
         <rasd:Connection>WAN2</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter on &quot;WAN2&quot;</rasd:Description>
         <rasd:ElementName>Network adapter 3</rasd:ElementName>
-        <rasd:InstanceID>10</rasd:InstanceID>
+        <rasd:InstanceID>9</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
         <rasd:ResourceType>10</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
@@ -133,7 +126,7 @@
         <rasd:Connection>WAN3</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter on &quot;WAN3&quot;</rasd:Description>
         <rasd:ElementName>Network adapter 4</rasd:ElementName>
-        <rasd:InstanceID>11</rasd:InstanceID>
+        <rasd:InstanceID>10</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
         <rasd:ResourceType>10</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
@@ -142,8 +135,8 @@
         <rasd:AddressOnParent>0</rasd:AddressOnParent>
         <rasd:ElementName>Hard disk 1</rasd:ElementName>
         <rasd:HostResource>ovf:/disk/vmdisk1</rasd:HostResource>
-        <rasd:InstanceID>12</rasd:InstanceID>
-        <rasd:Parent>5</rasd:Parent>
+        <rasd:InstanceID>11</rasd:InstanceID>
+        <rasd:Parent>3</rasd:Parent>
         <rasd:ResourceType>17</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="backing.writeThrough" vmw:value="false"/>
       </Item>
@@ -165,5 +158,13 @@
       <vmw:Config ovf:required="false" vmw:key="tools.syncTimeWithHost" vmw:value="true"/>
       <vmw:Config ovf:required="false" vmw:key="tools.toolsUpgradePolicy" vmw:value="manual"/>
     </VirtualHardwareSection>
+    <ProductSection>
+      <Info>Product Information</Info>
+      <Product>VeloCloud Edge</Product>
+      <Vendor>VeloCloud Networks</Vendor>
+      <Version>@VERSION@</Version>
+      <FullVersion>@FULLVERSION@</FullVersion>
+      <VendorUrl>http://www.velocloud.com</VendorUrl>
+    </ProductSection>
   </VirtualSystem>
 </Envelope>                     

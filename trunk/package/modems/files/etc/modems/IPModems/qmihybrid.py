@@ -3,6 +3,8 @@
 import logging
 import commands
 import IPModems
+import os
+import time
 
 class Qmihybrid(IPModems.IPModems):
 
@@ -12,6 +14,7 @@ class Qmihybrid(IPModems.IPModems):
 		self.timer = 3
 		self.connection_status = 'disconnected'
 		self.connection_errors = 0
+		self.ipaddr = 0
 
 		# If we have 10 consecutive checks (~30s) without a proper connection, we request a hard reset
 		self.hard_reset_threshold = 10
@@ -23,8 +26,11 @@ class Qmihybrid(IPModems.IPModems):
 		try:
 			# Support auto-connected devices
 			if self.product == '1410:9022':
+				self.hard_reset_threshold = 40
 				logging.debug("[dev=%s]: QMI hybrid modem is set to autoconnect...", self.USB)
 				self.connection_status = 'connected'
+				f = os.popen('ifconfig %s | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1' % self.ifname)
+				self.ipaddr = f.read().rstrip()
 				return
 
 			# Query the modem
@@ -111,6 +117,22 @@ class Qmihybrid(IPModems.IPModems):
 		if self.connection_status != 'connected':
 			logging.warning("[dev=%s]: not connected in network", self.USB)
 			wwan_down = True
+
+		# If modem has had no ip address for a while, hard reset it 
+		if self.product == '1410:9022':
+			if (self.ipaddr == "") or (self.ipaddr == "192.168.1.2"):
+				self.connection_errors += 1
+                		if self.connection_errors == self.hard_reset_threshold:
+                        		self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " down")
+					time.sleep(5)
+                        		self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " down")
+					time.sleep(5)
+                        		logging.warning("[dev=%s]: too many connection errors (%d), ipaddr (%s): requesting hard reset", self.USB, self.connection_errors, self.ipaddr)
+                        		cmd = "gcom -d " + self.device + " -s /etc/gcom/atreset.gcom"
+                        		self.runcmd(cmd)
+                        		self.connection_errors = 0
+			else:
+				self.connection_errors = 0
 
 		# Do we need to force a full explicit disconnection of all our state info?
 		if wwan_down:

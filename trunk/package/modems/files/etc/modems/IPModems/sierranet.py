@@ -10,15 +10,15 @@ class Sierranet(IPModems.IPModems):
 		IPModems.IPModems.__init__(self, USB)
 		self.modem_str = 'sierranet'
 		self.timer = 3
-                self.connection_status_check_errors = 0
-                self.connection_status = 'disconnected'
+		self.connection_status_check_errors = 0
+		self.connection_status = 'disconnected'
 		self.connection_errors = 0
 
 		# If we have 10 consecutive checks (~30s) without a proper connection, we request a hard reset
 		self.hard_reset_threshold = 10
 
-                # If we have 10 consecutive checks (~30s) without a proper connection, we request assume disconnected
-                self.connection_status_check_threshold = 10
+		# If we have 10 consecutive checks (~30s) without a proper connection, we request assume disconnected
+		self.connection_status_check_threshold = 10
 
 	def runcmd(self, cmd):
 		return commands.getstatusoutput(cmd)[1].strip()
@@ -27,23 +27,23 @@ class Sierranet(IPModems.IPModems):
 		try:
 			cmd = "gcom -d " + self.device + " -s /etc/gcom/sierranetstatus.gcom"
 			new_connection_status = self.runcmd(cmd)
-                        if new_connection_status == 'connected':
-                                self.connection_status_check_errors = 0
-                                self.connection_status = new_connection_status
-                                return
-                        # If we were already disconnected, nothing to do
-                        if self.connection_status == 'disconnected':
-                                return
-                        # If we're reported disconnected N consecutive times times, flag disconnected
-                        self.connection_status_check_errors += 1
-                        if self.connection_status_check_errors == self.connection_status_check_threshold:
-                                logging.debug("[dev=%s]: too many checks reported disconnection...", self.USB)
-                                self.connection_status_check_errors = 0
-                                self.connection_status = 'disconnected'
-                                return
-                        # Otherwise, do nothing else, we don't consider the new state change to
-                        # disconnected until the 10th try
-                        logging.debug("[dev=%s]: disconnection reported (%d)...", self.USB, self.connection_status_check_errors)
+			if new_connection_status == 'connected':
+				self.connection_status_check_errors = 0
+				self.connection_status = new_connection_status
+				return
+			# If we were already disconnected, nothing to do
+			if self.connection_status == 'disconnected':
+				return
+			# If we're reported disconnected N consecutive times times, flag disconnected
+			self.connection_status_check_errors += 1
+			if self.connection_status_check_errors == self.connection_status_check_threshold:
+				logging.debug("[dev=%s]: too many checks reported disconnection...", self.USB)
+				self.connection_status_check_errors = 0
+				self.connection_status = 'disconnected'
+				return
+			# Otherwise, do nothing else, we don't consider the new state change to
+			# disconnected until the 10th try
+			logging.debug("[dev=%s]: disconnection reported (%d)...", self.USB, self.connection_status_check_errors)
 
 		except RuntimeError:
 			logging.warning("[dev=%s]: couldn't load connection status", self.USB)
@@ -129,14 +129,25 @@ class Sierranet(IPModems.IPModems):
 
 			# Get APN from profile
 			myvars = {}
-			with open("/tmp/USB/" + self.USB + ".profile") as myfile:
+			with open(self.get_profile_path()) as myfile:
 				for line in myfile:
 					name, var = line.partition("=")[::2]
 					myvars[name.strip()] = var.strip()
 
-                        # Define PDP context
-                        cmd = "MODE=\"AT+CGDCONT=1,\\\"IP\\\",\\\"" + myvars['APN'] + "\\\"\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
-                        logging.debug("[dev=%s]: defining PDP context... cmd: '%s'", self.USB, cmd)
+			# Define PDP context
+			cmd = "MODE=\"AT+CGDCONT=1,\\\"IP\\\",\\\"" + myvars['APN'] + "\\\"\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
+			logging.debug("[dev=%s]: defining PDP context... cmd: '%s'", self.USB, cmd)
+			self.runcmd(cmd)
+
+			# Authenticate if needed
+			if myvars['APN_USER']:
+				# 1: CID
+				# 2: Auth type (0 none, 1 PAP, 2 CHAP)
+				# 3: Password
+				# 4: Username
+				cmd = "MODE=\"AT$QCPDPP=1,1,\\\""  + myvars['APN_PASS']+ "\\\",\\\"" + myvars['APN_USER'] + "\\\"\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"
+				logging.debug("[dev=%s]: authenticating PDP context... cmd: '%s'", self.USB, cmd)
+				self.runcmd(cmd)
 
 			# Launch connection
 			cmd = "MODE=\"AT!SCACT=1,1\" gcom -d " + self.device + " -s /etc/gcom/setmode.gcom"

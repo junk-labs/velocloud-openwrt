@@ -27,13 +27,3 @@ config interface 'sta'
 	option proto 'dhcp'
 	option hostname 'vc-sta'
 
-config interface 'wan'
-	option ifname 'ppp0'
-	option proto '3g'
-	option device /dev/ttyUSB0
-	option username 4084895987@vzw4g.com
-	option password vzw
-	option defaultroute 1
-	option peerdns 1
-	option pppd_options 'hide-password noauth noipdefault'
-

@@ -51,13 +51,13 @@ get_hw_details() {
 
 update_mgmt_config() {
 	local mgmtdevice=$1
-	uci -c $modem_path set modems.$usbifname.mgmt="$mgmtdevice"
-	uci -c $modem_path commit modems
+	uci -c $modem_config_path set modems.$usbifname.mgmt="$mgmtdevice"
+	uci -c $modem_config_path commit modems
 }
 
 update_mgmt_device() {
 	local mgmtdevice=$1
-	uci -c $modem_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
+	uci -c $modem_config_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
 	if [ "$?" != "0" ]; then
 		update_mgmt_config "$mgmtdevice"
 		log "Mgmt device $mgmtdevice updated"
@@ -117,19 +117,19 @@ uci_commit_backup() {
 uci_import_modems_config() {
 	uci -c $db_dir export $usbifname > /$tmpdir/modems.uci
 	sed -i 's/package.*/package modems/' /$tmpdir/modems.uci
-	uci -c $modem_path import -m modems < /$tmpdir/modems.uci
+	uci -c $modem_config_path import -m modems < /$tmpdir/modems.uci
 }
 
 uci_dialdevice_modems_config() {
 	local dialdevice=$1
-	uci -c $modem_path set modems.$usbifname.device="$dialdevice"
+	uci -c $modem_config_path set modems.$usbifname.device="$dialdevice"
 }
 
 uci_commit_modems() {
 	local dialdevice=$1
 	uci_import_modems_config
 	uci_dialdevice_modems_config $dialdevice
-	uci -c $modem_path commit modems
+	uci -c $modem_config_path commit modems
 }
 
 get_cdma_gsm() {
@@ -274,19 +274,23 @@ handle_qmi_hybrid() {
 		count=$(($count+1))
 	done
 
+	lock $lockfile
+	touch $modem_config_path/modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	uci -c $modem_config_path commit modems
+	lock -u $lockfile
+
 	# In qmi-hybrid modems we trigger the profile generation as soon as we get
 	# the management TTY
-	apn=$(at_get_apn $ttydevice $usbifname)
-	PROFILE=/tmp/USB/${usbifname}.profile
-	echo "APN=$apn" > ${PROFILE}
-
-	lock $lockfile
-	touch $modem_path/modems
-	uci -c $modem_path add modems interface\\\ '"$usbifname"'
-	uci -c $modem_path set modems.$usbifname=interface
-	uci -c $modem_path set modems.$usbifname.device=''"$ttydevice"''
-	uci -c $modem_path commit modems
-	lock -u $lockfile
+	#
+	# The profile is only created if there is no other profile already.
+	if [ ! -f $profile ]; then
+		apn=$(at_get_apn $ttydevice $usbifname)
+		${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
+	fi
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=qmihybrid"
 
@@ -331,23 +335,27 @@ handle_sierranet() {
 		count=$(($count+1))
 	done
 
-    if [ -z $imei ]; then
-        log "Cannot load IMEI from $ttydevice, ignoring device."
-        return
-    fi
-
-	# In sierranet modems we trigger the profile generation as soon as we get
-    # the management TTY
-	apn=$(at_get_apn $ttydevice $usbifname)
-	PROFILE=/tmp/USB/${usbifname}.profile
-	echo "APN=$apn" > ${PROFILE}
+	if [ -z $imei ]; then
+		log "Cannot load IMEI from $ttydevice, ignoring device."
+		return
+	fi
 
 	lock $lockfile
-	uci -c $modem_path add modems interface\\\ '"$usbifname"'
-	uci -c $modem_path set modems.$usbifname=interface
-	uci -c $modem_path set modems.$usbifname.device=''"$ttydevice"''
-	uci -c $modem_path commit modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	uci -c $modem_config_path commit modems
 	lock -u $lockfile
+
+	# In sierranet modems we trigger the profile generation as soon as we get
+	# the management TTY
+	#
+	# The profile is only created if there is no other profile already.
+	if [ ! -f $profile ]; then
+		apn=$(at_get_apn $ttydevice $usbifname)
+		${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
+	fi
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=sierranet"
 
@@ -377,7 +385,15 @@ add_to_config() {
 		# log "Not a modem:devpath=$DEVPATH"
 		return
 	fi
+
 	log "Hotplug add event: serial"
+
+	# Common initialization
+	init_modem_support
+
+	# This is the common profile path
+	profile=${modem_config_path}/${usbifname}.profile
+
 	product=$(cat $usbpath/../uevent | awk -F= '/PRODUCT/ { print $2}')
 	if [ -z "$product" ]; then
 		log "Ignoring tty device, no product: DEVICENAME:$DEVICENAME"
@@ -423,6 +439,18 @@ add_to_config() {
 		update_dial_device "$ttydevice" "$product"
 	fi
 
+	# TODO: enable creating profile for PPP-based connection
+	# uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	# uci -c $modem_config_path commit modems
+	#
+	# # Create profile for the PPP based connection.
+	# #
+	# # The profile is only created if there is no other profile already.
+	# if [ ! -f $profile ]; then
+	# 	apn=$(at_get_apn $ttydevice $usbifname)
+	# 	${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
+	# fi
+
 	log "Starting pppd script for $ttydevice"
 	start_pppd_script
 	lock -u $lockfile
@@ -441,11 +469,17 @@ add_to_config() {
 #ACTION=add
 
 . /etc/modems/usb_common # has the USB numbering
+
 local usbpath="/sys/$DEVPATH/"
 local dialdevice=""
 local mgmtdevice=""
 local usbifname=$(usb_wan_naming $usbpath) # Will get the bus and port number
 local lockfile="$tmpdir/$usbifname.lck"
+
+# ignore event if we cannot get a USBX or MODEMX name
+if [ -z "$usbifname" ] || [ "$usbifname" == "error" ]; then
+	return
+fi
 
 set_eventdir "$usbifname: usb: $DEVICENAME"
 

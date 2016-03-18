@@ -22,6 +22,7 @@ define Package/modems
   SECTION:=devel
   CATEGORY:=Development
   TITLE:=Modem support for OpenWrt
+  DEPENDS:=+comgt +libqmi
   URL:=http://openwrt.org/
   VERSION:=$(PKG_RELEASE)-$(REVISION)
 endef

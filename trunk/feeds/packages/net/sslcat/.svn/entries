@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/sslcat
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/sslcat
+svn://svn.mein.io/openwrt
 
 
 

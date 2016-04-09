@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/wrt55agv2-spidevs
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/kernel/wrt55agv2-spidevs
+svn://svn.mein.io/openwrt
 
 
 

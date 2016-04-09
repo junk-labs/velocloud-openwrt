@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/libs/popt
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/libs/popt
+svn://svn.mein.io/openwrt
 
 
 

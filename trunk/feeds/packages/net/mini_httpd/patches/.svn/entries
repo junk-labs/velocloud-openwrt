@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/mini_httpd/patches
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/mini_httpd/patches
+svn://svn.mein.io/openwrt
 
 
 

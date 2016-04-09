@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/hostap-driver/files/lib/wifi
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/kernel/hostap-driver/files/lib/wifi
+svn://svn.mein.io/openwrt
 
 
 

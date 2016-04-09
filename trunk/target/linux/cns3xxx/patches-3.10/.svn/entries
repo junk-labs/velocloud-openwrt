@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/cns3xxx/patches-3.10
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/target/linux/cns3xxx/patches-3.10
+svn://svn.mein.io/openwrt
 
 
 

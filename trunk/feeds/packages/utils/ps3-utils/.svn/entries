@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/utils/ps3-utils
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/utils/ps3-utils
+svn://svn.mein.io/openwrt
 
 
 

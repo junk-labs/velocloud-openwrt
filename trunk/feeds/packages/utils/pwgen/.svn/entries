@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/utils/pwgen
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/utils/pwgen
+svn://svn.mein.io/openwrt
 
 
 

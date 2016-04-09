@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/scanlogd
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/scanlogd
+svn://svn.mein.io/openwrt
 
 
 

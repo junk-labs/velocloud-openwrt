@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/lang/cython
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/lang/cython
+svn://svn.mein.io/openwrt
 
 
 

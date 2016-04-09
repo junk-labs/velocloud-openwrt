@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/ar7-atm/patches-D7.04.03.00
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/kernel/ar7-atm/patches-D7.04.03.00
+svn://svn.mein.io/openwrt
 
 
 

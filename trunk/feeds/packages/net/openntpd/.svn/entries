@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/openntpd
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/openntpd
+svn://svn.mein.io/openwrt
 
 
 

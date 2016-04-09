@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/orion/files/arch/arm/mach-orion5x
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/target/linux/orion/files/arch/arm/mach-orion5x
+svn://svn.mein.io/openwrt
 
 
 

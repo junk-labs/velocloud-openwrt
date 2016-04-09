@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/ppc40x/base-files/lib/upgrade
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/target/linux/ppc40x/base-files/lib/upgrade
+svn://svn.mein.io/openwrt
 
 
 

@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/utils/cpusage
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/utils/cpusage
+svn://svn.mein.io/openwrt
 
 
 

@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/ptunnel
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/ptunnel
+svn://svn.mein.io/openwrt
 
 
 

@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/lang/perl-www
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/lang/perl-www
+svn://svn.mein.io/openwrt
 
 
 

@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/l2tpns
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/l2tpns
+svn://svn.mein.io/openwrt
 
 
 

@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/sound/madplay
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/sound/madplay
+svn://svn.mein.io/openwrt
 
 
 

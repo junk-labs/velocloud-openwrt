@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/nocatauth/files
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/nocatauth/files
+svn://svn.mein.io/openwrt
 
 
 

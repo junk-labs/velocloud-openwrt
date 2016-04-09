@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/generic/files/include/linux/platform_data
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/target/linux/generic/files/include/linux/platform_data
+svn://svn.mein.io/openwrt
 
 
 

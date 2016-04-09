@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/x86/base-files/etc/defconfig/net4826
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/target/linux/x86/base-files/etc/defconfig/net4826
+svn://svn.mein.io/openwrt
 
 
 

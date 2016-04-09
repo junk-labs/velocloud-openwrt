@@ -2,8 +2,8 @@
 
 dir
 47252
-svn://svn.openwrt.org/openwrt/branches/chaos_calmer/package/system/procd
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/chaos_calmer/package/system/procd
+svn://svn.mein.io/openwrt
 
 
 

@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/target/linux/cns3xxx/files/arch/arm/mach-cns3xxx/include
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/target/linux/cns3xxx/files/arch/arm/mach-cns3xxx/include
+svn://svn.mein.io/openwrt
 
 
 

@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/libs/libftdi
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/libs/libftdi
+svn://svn.mein.io/openwrt
 
 
 

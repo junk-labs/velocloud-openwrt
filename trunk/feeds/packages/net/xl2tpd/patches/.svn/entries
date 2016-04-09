@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/xl2tpd/patches
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/xl2tpd/patches
+svn://svn.mein.io/openwrt
 
 
 

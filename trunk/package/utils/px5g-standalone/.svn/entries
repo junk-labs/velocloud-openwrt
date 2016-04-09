@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/utils/px5g-standalone
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/utils/px5g-standalone
+svn://svn.mein.io/openwrt
 
 
 

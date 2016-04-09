@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/utils/hdparm
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/utils/hdparm
+svn://svn.mein.io/openwrt
 
 
 

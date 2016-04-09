@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/utils/dbus
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/utils/dbus
+svn://svn.mein.io/openwrt
 
 
 

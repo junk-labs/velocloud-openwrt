@@ -2,8 +2,8 @@
 
 dir
 43223
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/network/config/ltq-vdsl-app/files
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/network/config/ltq-vdsl-app/files
+svn://svn.mein.io/openwrt
 
 
 

@@ -2,8 +2,8 @@
 
 dir
 0
-svn://svn.openwrt.org/openwrt/branches/barrier_breaker/package/kernel/mac80211/scripts
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/kernel/mac80211/scripts
+svn://svn.mein.io/openwrt
 add
 
 

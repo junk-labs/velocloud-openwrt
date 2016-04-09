@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/multimedia/gphoto2/patches
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/multimedia/gphoto2/patches
+svn://svn.mein.io/openwrt
 
 
 

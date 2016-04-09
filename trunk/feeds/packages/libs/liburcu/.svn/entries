@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/libs/liburcu
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/libs/liburcu
+svn://svn.mein.io/openwrt
 
 
 

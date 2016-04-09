@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/net/udp-broadcast-relay
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/net/udp-broadcast-relay
+svn://svn.mein.io/openwrt
 
 
 

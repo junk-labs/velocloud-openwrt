@@ -2,8 +2,8 @@
 
 dir
 40995
-svn://svn.openwrt.org/openwrt/packages/utils/less
-svn://svn.openwrt.org/openwrt
+svn://svn.mein.io/openwrt/packages/utils/less
+svn://svn.mein.io/openwrt
 
 
 

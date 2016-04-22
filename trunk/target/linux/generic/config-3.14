@@ -1355,6 +1355,7 @@ CONFIG_HZ_100=y
 # CONFIG_IFB is not set
 # CONFIG_IGB is not set
 # CONFIG_IGBVF is not set
+# CONFIG_IGB_VC_PM is not set
 # CONFIG_IIO is not set
 # CONFIG_IIO_BUFFER_CB is not set
 CONFIG_IIO_CONSUMERS_PER_TRIGGER=2

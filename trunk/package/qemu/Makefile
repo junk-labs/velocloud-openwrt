@@ -18,10 +18,10 @@ include $(INCLUDE_DIR)/package.mk
 define Package/qemu
   SECTION:=base
   CATEGORY:=VeloCloud
-  VERSION:=1.0-$(PKG_RELEASE)
+  VERSION:=$(PKG_VERSION)-$(PKG_RELEASE)
   TITLE:=QEMU for virtual machine guests.
   URL:=http://velocloud.net
-  DEPENDS:=+USE_EGLIBC +libz +libuuid +libcurl +libncurses +glib2 +libgthread-2.0 +libusb-1.0
+  DEPENDS:=@USE_EGLIBC +zlib +libuuid +libcurl +libncurses +glib2 +libusb-1.0
 endef
 
 define Package/qemu/description
@@ -35,6 +35,7 @@ CONFIGURE_ARGS = \
 	--cross-prefix=$(GNU_TARGET_NAME) \
 	--target-list=x86_64-softmmu \
 	--host-cc=gcc \
+	--disable-debug-info \
 	--disable-brlapi \
 	--disable-sdl \
 	--disable-xen \

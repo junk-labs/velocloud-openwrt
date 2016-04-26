@@ -17,7 +17,8 @@ if [ -z "$VC_BOARD" ]; then
     # DMI_PRODUCT=`cat /sys/class/dmi/id/product_name`
 
     IFM_BOARD="S1600JP"
-    SM_BOARD="X10SRW-F"
+    SM_1000_BOARD="X10SRW-F"
+    SM_800_BOARD="X10SDV-F"
 
     # Could be an IFM system, or a SuperMicro system
     # The SuperMicro system could have 8 GbE + 2 SFP, or 8 GbE + 4 GbE.
@@ -26,7 +27,12 @@ if [ -z "$VC_BOARD" ]; then
 	exit 0
     fi
 
-    if [ "$DMI_BOARD" != "$SM_BOARD" ]; then
+    if [ "$DMI_BOARD" = "$SM_800_BOARD" ]; then
+	echo "edge800sm"
+	exit 0
+    fi
+
+    if [ "$DMI_BOARD" != "$SM_1000_BOARD" ]; then
 	# Huh?
 	echo "edge1000ifm"
 	exit 1
@@ -35,8 +41,11 @@ fi
 
 # A supermicro board
 ETH8_DRIVER=`ethtool -i eth8 2>/dev/null|awk '/driver/{print $2;}'`
+ETH6_DRIVER=`ethtool -i eth6 2>/dev/null|awk '/driver/{print $2;}'`
 if [ "$ETH8_DRIVER" = "ixgbe" ]; then
     echo "edge1000sm-sfp"   # 8 GbE + 2 SFP+
+elif [ "$ETH6_DRIVER" = "ixgbe" ]; then
+    echo "edge1000sm-qat"   # 6 GbE + 2 SFP+ + QAT
 else
     echo "edge1000sm-gbe"   # 8 GbE + 4 GbE
 fi

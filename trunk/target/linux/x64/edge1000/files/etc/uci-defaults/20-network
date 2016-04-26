@@ -7,22 +7,35 @@
 
 if ! fgrep -q '### DUMMY CONFIGURATION' /etc/config/network 2>/dev/null; then
 	# Not the dummy config. All is OK; just exit and remove this script.
-	exit 0
+	exit 1
 fi
 
 EDGETYPE=`/etc/edgetype`
 
+if fgrep -q "### DUMMY CONFIGURATION $EDGETYPE" /etc/config/network 2>/dev/null; then
+	# Already the default configuration for this edge type
+	exit 1
+fi
+
+echo "### DUMMY CONFIGURATION $EDGETYPE" > /etc/config/network
 case "$EDGETYPE" in
     edge1000ifm)
-        cp /etc/config-defaults/edge1000ifm/network /etc/config/network
+        cat /etc/config-defaults/edge1000ifm/network >> /etc/config/network
+        ;;
+    edge800sm)
+        cat /etc/config-defaults/edge800sm/network >> /etc/config/network
         ;;
     edge1000sm-sfp)
-        cp /etc/config-defaults/edge1000sm-sfp/network /etc/config/network
+        cat /etc/config-defaults/edge1000sm-sfp/network >> /etc/config/network
+        ;;
+    edge1000sm-qat)
+        cat /etc/config-defaults/edge1000sm-qat/network >> /etc/config/network
         ;;
     edge1000sm-gbe)
-        cp /etc/config-defaults/edge1000sm-gbe/network /etc/config/network
+        cat /etc/config-defaults/edge1000sm-gbe/network >> /etc/config/network
         ;;
     *)  # something else?
-        cp /etc/config-defaults/edge1000ifm/network /etc/config/network
+        cat /etc/config-defaults/edge1000ifm/network >> /etc/config/network
         ;;
 esac
+exit 1

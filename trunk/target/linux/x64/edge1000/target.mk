@@ -9,7 +9,7 @@ include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
 DEFAULT_PACKAGES += \
 	kmod-igb \
 	kmod-dsa-core \
-	kmod-ixgbe \
+	kmod-intel-ixgbe \
 	kmod-e1000e \
 	kmod-hwmon-core \
 	kmod-hwmon-coretemp \

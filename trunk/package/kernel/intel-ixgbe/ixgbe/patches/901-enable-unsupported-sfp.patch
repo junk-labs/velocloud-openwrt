@@ -1,0 +1,41 @@
+Default allow_unsupported_sfp to ENABLED.   Also, if an unsupported
+SFP is seen, and this option is DISABLED, don't unregister the netdev;
+that is very hostile and requires reboots for simple human mistakes.
+
+--- a/src/ixgbe_param.c	2016-03-22 17:29:54.000000000 -0700
++++ b/src/ixgbe_param.c	2016-04-27 12:11:41.635587369 -0700
+@@ -327,7 +327,7 @@
+  * Default Value: 0
+  */
+ IXGBE_PARAM(allow_unsupported_sfp, "Allow unsupported and untested "
+-	    "SFP+ modules on 82599 based adapters, default 0 = Disable");
++	    "SFP+ modules on 82599 based adapters, default 1 = Enable");
+ 
+ /* Enable/disable support for DMA coalescing
+  *
+@@ -1140,8 +1140,8 @@
+ 	struct ixgbe_option opt = {
+ 			.type = enable_option,
+ 			.name = "allow_unsupported_sfp",
+-			.err  = "defaulting to Disabled",
+-			.def  = OPTION_DISABLED
++			.err  = "defaulting to Enabled",
++			.def  = OPTION_ENABLED
+ 		};
+ #ifdef module_param_array
+ 		if (num_allow_unsupported_sfp > bd) {
+--- a/src/ixgbe_main.c	2016-03-22 17:29:54.000000000 -0700
++++ b/src/ixgbe_main.c	2016-04-27 12:40:48.996047242 -0700
+@@ -7933,10 +7933,12 @@
+ 	    adapter->netdev_registered) {
+ 		e_dev_err("failed to initialize because an unsupported "
+ 			  "SFP+ module type was detected.\n");
++#if 0
+ 		e_dev_err("Reload the driver after installing a "
+ 			  "supported module.\n");
+ 		unregister_netdev(adapter->netdev);
+ 		adapter->netdev_registered = false;
++#endif
+ 	}
+ }
+ 

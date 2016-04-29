@@ -112,6 +112,27 @@ mfg_t Mfg[] = {
 	  { 1, 630, 0 }, 6,
 	  { 0xF0,0x8E,0xDB,0x01,0x41,0x00 }, { 0xF0,0x8E,0xDB,0x01,0x4f,0xff }, },
 
+// 520/540 need 6 MACs: 4 (igb), 2 (i350);
+	// adi/cm revB proto;
+	{ "520b-prod",
+	  "edge520b",
+	  { "eth0", "eth4", },
+	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
+	  { 0x8086, 0x8086, },
+	  { 0x1f41, 0x151f, },
+	  { 1001, 11922, 1001 }, 6,
+	  { 0xF0,0x8E,0xDB,0x02,0x00,0x00 }, { 0xF0,0x8E,0xDB,0x02,0xff,0xff }, },
+          // next batch starts at 11923 ^^
+	{ "540b-prod",
+	  "edge540b",
+	  { "eth0", "eth4", },
+	  { "atom-c2000-igb-sgmii.bin", "i350-igb-sfp.bin", },
+	  { 0x8086, 0x8086, },
+	  { 0x1f41, 0x151f, },
+	  { 1001, 11922, 1001 }, 6,
+	  { 0xF0,0x8E,0xDB,0x03,0x00,0x00 }, { 0xF0,0x8E,0xDB,0x03,0xff,0xff }, },
+          // next batch starts at 11923 ^^
+
 	// start a new 16k block 01:50:00..01:8f:ff for pw-mp2 for units 2500..6595;
 	{ "pw-mp2",
 	  "edge500",

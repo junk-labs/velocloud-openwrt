@@ -258,7 +258,7 @@ menu "Target Images"
 		depends on GRUB_IMAGES
 		depends on TARGET_x86 || TARGET_x64
 		depends on TARGET_ROOTFS_EXT4FS
-		default y if TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge1000
+		default y if TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge8x0 || TARGET_x64_edge1000
 
 	config VELOCLOUD_MANUFACTURING_INSTALLER
 		bool "Build Velocloud manufacturing installer image"

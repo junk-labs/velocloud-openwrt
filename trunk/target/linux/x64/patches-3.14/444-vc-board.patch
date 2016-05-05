@@ -53,7 +53,7 @@ diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 --- a/drivers/platform/x86/velocloud.c	1969-12-31 16:00:00.000000000 -0800
 +++ b/drivers/platform/x86/velocloud.c	2015-10-29 10:36:31.707579633 -0700
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,184 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -109,15 +109,10 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	  },
 +	  VC_EDGE_ID(VC_EDGE1000SM),
 +	},
-+	{ .ident = "edge300",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE300"),
++	{ .ident = "edge800sm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-F"),
 +	  },
-+	  VC_EDGE_ID(VC_EDGE300),
-+	},
-+	{ .ident = "edge800",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE800"),
-+	  },
-+	  VC_EDGE_ID(VC_EDGE800),
++	  VC_EDGE_ID(VC_EDGE800SM),
 +	},
 +	{ .ident = "edge520b",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
@@ -4188,7 +4183,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
 --- a/include/misc/velocloud.h	1969-12-31 16:00:00.000000000 -0800
 +++ b/include/misc/velocloud.h	2015-10-29 10:36:31.711579447 -0700
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,41 @@
 +/*
 + * velocloud.h
 + * Copyright (C) 2015 VeloCloud Inc
@@ -4220,8 +4215,7 @@ diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
 +	VC_EDGE_NEXCOM,
 +	VC_EDGE1000IFM,
 +	VC_EDGE1000SM,
-+	VC_EDGE300,
-+	VC_EDGE800,
++	VC_EDGE800SM,
 +	VC_EDGE520,
 +	VC_EDGE540,
 +	VC_EDGE520B,

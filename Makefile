@@ -20,6 +20,7 @@ OPENWRT_TSYS = \
 	vc-xen-aws \
 	pw-dev \
 	edge1000 \
+	edge8x0 \
 	edge5x0 \
 	edge500 \
 
@@ -30,6 +31,7 @@ DEFAULT_OPENWRT_TSYS = \
 	vc-xen-aws \
 	pw-dev \
 	edge1000 \
+	edge8x0 \
 	edge5x0 \
 	edge500 \
 

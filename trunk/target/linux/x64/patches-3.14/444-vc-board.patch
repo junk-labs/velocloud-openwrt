@@ -109,8 +109,8 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	  },
 +	  VC_EDGE_ID(VC_EDGE1000SM),
 +	},
-+	{ .ident = "edge800sm",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-F"),
++	{ .ident = "edge840sm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-F"), // Supermicro 800
 +	  },
 +	  VC_EDGE_ID(VC_EDGE800SM),
 +	},

@@ -3,14 +3,13 @@
 #
 
 include $(TOPDIR)/rules.mk
-include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=clib
 PKG_VERSION:=2013-11-09
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL=git@github.com:vnet/clib.git
+PKG_SOURCE_URL=https://github.com/vnet/clib
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION=94d225a9bf869e4d795be4057be6e8aa7c006b9d

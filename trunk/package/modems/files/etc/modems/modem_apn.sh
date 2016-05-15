@@ -67,7 +67,7 @@ run_set()
 	echo "PROXY=yes" >> ${profile}
 
 	# If modem script running, restart it to use the new APN info
-	if [ "$(uci -c /etc/config/modems get modems.MODEM1.started 2>/dev/null)" == "1" ]; then
+	if [ "$(uci -c /etc/config/modems get modems.$USB.started 2>/dev/null)" == "1" ]; then
 		log "$USB: restarting modem service after APN update"
 		${modem_script_path}/modem_service.sh $USB restart
 	fi

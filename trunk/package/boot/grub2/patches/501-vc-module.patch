@@ -1,0 +1,1093 @@
+--- a/grub-core/Makefile.core.def
++++ b/grub-core/Makefile.core.def
+@@ -510,6 +510,12 @@
+ };
+ 
+ module = {
++  name = vc;
++  x86 = commands/vc.c;
++  enable = x86;
++};
++
++module = {
+   name = libusb;
+   emu = bus/usb/emu/usb.c;
+   enable = emu;
+--- /dev/null
++++ b/grub-core/commands/vc.c
+@@ -0,0 +1,1075 @@
++// vc.c
++// velocloud specific commands;
++
++#include <grub/pci.h>
++#include <grub/dl.h>
++#include <grub/env.h>
++#include <grub/misc.h>
++#include <grub/extcmd.h>
++#include <grub/i18n.h>
++#include <grub/mm.h>
++#include <grub/cmos.h>
++
++enum cmos_offs {
++	CMOS_FRESET = 0x10,
++	CMOS_WDT = 0x11,
++	CMOS_DG = 0x12,
++};
++
++GRUB_MOD_LICENSE ("GPLv3+");
++
++extern const char *grub_smbios_board_name(void);
++
++static int vc_verbose = 0;
++static const struct grub_arg_option options[] = {
++	{ "verbose", 'v', 0, N_("verbose output"), 0, 0 },
++	{ "wdt", 'w', 0, N_("watchdog timeout"), N_("wdt"), ARG_TYPE_INT},
++	{ 0, 0, 0, 0, 0, 0 },
++};
++
++typedef struct vc_brd vc_brd_t;
++typedef struct sio_chip sio_chip_t;
++typedef struct pcu pcu_t;
++typedef struct vc500_priv vc500_priv_t;
++
++// board specific handlers;
++
++struct vc_brd {
++	const char *board;		// board name;
++	grub_err_t (*init)(void);	// init board;
++	grub_err_t (*logo)(grub_uint32_t);	// logo LED handler;
++	const char *(*rb)(void);	// reset button handler;
++	grub_err_t (*wdt)(void);	// wdt arming code;
++	unsigned int to;		// wdt timeout in secs;
++};
++
++// pcu defs;
++
++#define PCU_GPIO_SC 0	// core domain;
++#define PCU_GPIO_SUS 1	// suspend domain;
++
++// gp_lvl is BROKEN! in hardware;
++// when in output mode, previously written bits read back as 0;
++// need to cache all output writes in memory;
++// this creates issues with firmware!
++
++enum pcu_regs {
++	PCU_REG_USESEL = 0x00,
++	PCU_REG_IOSEL = 0x04,
++	PCU_REG_GPLVL = 0x08,
++	PCU_REG_TPE = 0x0c,
++	PCU_REG_TNE = 0x10,
++	PCU_REG_TS = 0x14,
++};
++
++#define PCU_USE_SEL_NATIVE 0	// use native function;
++#define PCU_USE_SEL_CUSTOM 1	// use custom GPIO function;
++
++#define PCU_IO_SEL_OUT 0	// output;
++#define PCU_IO_SEL_IN 1		// input;
++
++#define PCU_GP_LVL_0 0		// 0;
++#define PCU_GP_LVL_1 1		// 1;
++
++// edge500;
++
++#define EDGE500_BB_I2C_SCL (1<<14)
++#define EDGE500_BB_I2C_SDA (1<<13)
++#define EDGE500_BB_I2C (EDGE500_BB_I2C_SCL | EDGE500_BB_I2C_SDA)
++
++#define EDGE500_PCU_GPIO_MASK_SC 0 | EDGE500_BB_I2C
++#define EDGE500_PCU_GPIO_CLEAR_SC 0
++#define EDGE500_PCU_GPIO_IOSEL_SC 0x00028401
++#define EDGE500_PCU_GPIO_OUT_SC 0 | EDGE500_BB_I2C
++
++#define EDGE500_PCU_GPIO_MASK_SUS 0
++#define EDGE500_PCU_GPIO_CLEAR_SUS ((1<<24) | (1<<25) |(1<<26) | (1<<27))
++#define EDGE500_PCU_GPIO_IOSEL_SUS 0x00f80016
++#define EDGE500_PCU_GPIO_OUT_SUS 0
++
++struct pcu {
++	grub_uint32_t abase;		// acpi base;
++	grub_uint32_t pbase;		// pmc base;
++	grub_uint32_t gbase;		// gpio base;
++	grub_uint32_t mask[2];		// bit need to be 1;
++	grub_uint32_t clear[2];		// bits need to be 0;
++	grub_uint32_t iosel[2];		// io direction;
++	grub_uint32_t out[2];		// cached output values;
++};
++
++struct vc500_priv {
++	sio_chip_t *sio;		// sio chip;
++	pcu_t pcu;
++};
++
++
++static const char *board = NULL;
++static vc_brd_t *brd = NULL;
++static vc500_priv_t vc500_priv = {
++	.pcu = {
++		.mask = { EDGE500_PCU_GPIO_MASK_SC, EDGE500_PCU_GPIO_MASK_SUS },
++		.clear = { EDGE500_PCU_GPIO_CLEAR_SC, EDGE500_PCU_GPIO_CLEAR_SUS },
++		.iosel = { EDGE500_PCU_GPIO_IOSEL_SC, EDGE500_PCU_GPIO_IOSEL_SUS },
++		.out = { EDGE500_PCU_GPIO_OUT_SC, EDGE500_PCU_GPIO_OUT_SUS },
++	},
++};
++
++// sio support for edge500;
++
++// smart-fan controls;
++
++#define EDGE500_FAN1_SEL 0x004a
++#define EDGE500_FAN1_SEL_SYSTIN (0 << 5)
++#define EDGE500_FAN1_SEL_CPUTIN (1 << 5)
++#define EDGE500_FAN1_SEL_AUXTIN (2 << 5)
++
++#define EDGE500_FAN1_CUR 0x0061
++#define EDGE500_FAN1_TOL 0x0062
++#define EDGE500_FAN1_TGTMP 0x0063
++#define EDGE500_FAN1_STOPV 0x0064
++#define EDGE500_FAN1_START 0x0065
++#define EDGE500_FAN1_STOPT 0x0066
++#define EDGE500_FAN1_MAX 0x0069
++#define EDGE500_FAN1_OSTEP 0x006a
++
++#define EDGE500_FAN_SDT 0x000e
++#define EDGE500_FAN_SUT 0x000f
++#define EDGE500_FAN_KMIN 0x0012
++#define EDGE500_FAN_KMIN_0 0x10
++#define EDGE500_FAN_KMIN_1 0x40
++
++// super-io defs;
++
++#define SIO_HWM_OFFSET 0x05	// hwm addr/data reg offset;
++
++#define SIO_REG_DEVID 0x20	// device id, 2-bytes;
++#define SIO_REG_VSBPWR 0x2c	// vsb/power config reg;
++
++#define SIO_REG_LDSEL 0x07	// select logical device reg;
++#define SIO_LD_GPIO2345 0x09	// logical device gpio 2,3,4,5;
++#define SIO_LD_ACPI 0x0a	// logical device acpi;
++#define	SIO_LD_HWM 0x0b		// logical device hw monitor;
++#define SIO_REG_ENABLE 0x30	// logical device enable reg;
++#define SIO_REG_ADDR_H 0x60	// logical device address, high;
++#define SIO_REG_ADDR_L 0x61	// logical device address, low;
++#define SIO_REG_BANK 0x4e	// HWM bank register;
++
++#define SIO_GPIO3_STS 0xe7	// gpio3 status reg;
++#define SIO_GPIO3_IO 0xf0	// gpio3 io reg, 0=out 1=in;
++#define SIO_GPIO3_DATA 0xf1	// gpio3 data reg;
++#define SIO_GPIO3_INV 0xf2	// gpio3 data inversion reg;
++#define SIO_GPIO3_DEB 0xfe	// gpio3 debouncer reg;
++
++#define SIO_ACPI_E4 0xe4	// acpi function reg;
++
++// super-io access functions;
++
++static inline void
++sio_outb(int ioreg, int reg, int val)
++{
++	grub_outb(reg, ioreg);
++	grub_outb(val, ioreg + 1);
++}
++
++static inline int
++sio_inb(int ioreg, int reg)
++{
++	grub_outb(reg, ioreg);
++	return grub_inb(ioreg + 1);
++}
++
++static inline void
++sio_select(int ioreg, int ld)
++{
++	grub_outb(SIO_REG_LDSEL, ioreg);
++	grub_outb(ld, ioreg + 1);
++}
++
++static inline void
++sio_enter(int ioreg)
++{
++	grub_outb(0x87, ioreg);
++	grub_outb(0x87, ioreg);
++}
++
++static inline void
++sio_exit(int ioreg)
++{
++	grub_outb(0xaa, ioreg);
++	grub_outb(0x02, ioreg);
++	grub_outb(0x02, ioreg + 1);
++}
++
++// find super-io;
++
++#define SIO_ID_MASK 0xFFF0
++
++struct sio_chip {
++	grub_uint16_t id;
++	grub_uint16_t addr;
++	grub_uint16_t hwm;
++	grub_uint16_t rid;
++	const char *name;
++	grub_uint8_t rb;
++};
++
++static sio_chip_t sio_chips[] = {
++	{ .id = 0x8850, .name = "w83627ehf" },
++	{ .id = 0x8860, .name = "w83627ehg" },
++	{ .id = 0xa020, .name = "w83627dhg" },
++	{ .id = 0xb070, .name = "w83627dhg-p" },
++	{ .id = 0xa230, .name = "w83627uhg" },
++	{ .id = 0xa510, .name = "w83667hg" },
++	{ .id = 0xb350, .name = "w83667hg-b" },
++	{ .id = 0, .name = NULL },
++};
++
++// find sio;
++
++static sio_chip_t *
++sio_find(int addr)
++{
++	grub_uint16_t id;
++	sio_chip_t *sio;
++	const char *name;
++
++	// find supported devices;
++
++	sio_enter(addr);
++	id = (sio_inb(addr, SIO_REG_DEVID) << 8)
++		| sio_inb(addr, SIO_REG_DEVID + 1);
++	for(sio = sio_chips; (name = sio->name); sio++) {
++		if((id & SIO_ID_MASK) == sio->id) {
++			sio->addr = addr;
++			sio->rid = id;
++			sio_exit(addr);
++			return(sio);
++		}
++	}
++	sio_exit(addr);
++	return(NULL);
++}
++
++// set HWM bank;
++
++static inline void
++sio_set_bank(int ioreg, grub_uint16_t reg)
++{
++	grub_uint8_t bank = reg >> 8;
++
++	grub_outb(SIO_REG_BANK, ioreg);
++	grub_outb(bank, ioreg + 1);
++}
++
++// read banked register;
++// upper byte of reg is bank;
++
++static inline grub_uint8_t
++sio_bin8(int ioreg, grub_uint16_t reg)
++{
++	grub_uint8_t val, addr = reg & 0xff;
++
++	sio_set_bank(ioreg, reg);
++	grub_outb(addr, ioreg);
++	val = grub_inb(ioreg + 1);
++	return(val);
++}
++
++// write banked register;
++// upper byte of reg is bank;
++
++static void
++sio_bout8(int ioreg, grub_uint16_t reg, grub_uint8_t val)
++{
++	grub_uint8_t addr = reg & 0xff;
++
++	sio_set_bank(ioreg, reg);
++	grub_outb(addr, ioreg);
++	grub_outb(val, ioreg + 1);
++}
++
++// scale temp sensor readings;
++// per Portwell, sensors PT5,6,7 are off by +6C;
++
++static inline grub_uint8_t
++vc500_t2v(grub_uint8_t temp)
++{
++	return(temp + 6);
++}
++// initialize edge500 SIO;
++
++static grub_err_t
++vc500_sio_init(void)
++{
++	sio_chip_t *sio;
++	grub_uint16_t val;
++
++	sio = sio_find(0x2e);
++	if( !sio)
++		sio = sio_find(0x4e);
++	if( !sio)
++		return grub_error(GRUB_ERR_UNKNOWN_DEVICE, N_("sio not found"));
++
++	vc500_priv.sio = sio;
++	if(vc_verbose)
++		grub_printf("found %s sio (id=0x%x)\n", sio->name, sio->rid);
++
++	sio_enter(sio->addr);
++
++	// check that bios activated the hw monitor;
++	// activate logical device if not active;
++
++	sio_select(sio->addr, SIO_LD_HWM);
++	val = sio_inb(sio->addr, SIO_REG_ENABLE) & 0x01;
++	if( !(val & 0x01)) {
++		if(vc_verbose)
++			grub_printf("forcing HWMON enable, FIX BIOS!\n");
++		sio_outb(sio->addr, SIO_REG_ENABLE, val | 0x01);
++	}
++	sio->hwm = (sio_inb(sio->addr, SIO_REG_ADDR_H) << 8)
++		| sio_inb(sio->addr, SIO_REG_ADDR_L);
++	if(vc_verbose)
++		grub_printf("hwm @%x\n", sio->hwm);
++	sio->hwm += SIO_HWM_OFFSET;
++
++	// the only fan is on CPUFANOUT1;
++	// overwrite BIOS settings, which the w83xxx driver will continue with later;
++	// set temperature cruise mode, which will turn fan off below Tmin;
++
++	val = sio_bin8(sio->hwm, EDGE500_FAN_KMIN);
++	val &= ~EDGE500_FAN_KMIN_1;
++	sio_bout8(sio->hwm, EDGE500_FAN_KMIN, val);
++
++	// fan becomes unstable below pwm 130;
++
++	sio_bout8(sio->hwm, EDGE500_FAN1_TOL, 0 | 0x00 | 2);
++	sio_bout8(sio->hwm, EDGE500_FAN1_TGTMP, vc500_t2v(42));
++	sio_bout8(sio->hwm, EDGE500_FAN1_START, 150);
++	sio_bout8(sio->hwm, EDGE500_FAN1_STOPV, 140);
++	sio_bout8(sio->hwm, EDGE500_FAN1_STOPT, 20);
++	sio_bout8(sio->hwm, EDGE500_FAN1_MAX, 255);
++	sio_bout8(sio->hwm, EDGE500_FAN1_OSTEP, 1);
++	sio_bout8(sio->hwm, EDGE500_FAN1_TOL, 0 | 0x10 | 2);
++
++	// check that bios activated gpio3 logical device;
++	// activate logical device only if we are sure;
++	// warn about it anyways;
++
++	sio_select(sio->addr, SIO_LD_ACPI);
++	val = sio_inb(sio->addr, SIO_ACPI_E4);
++	if(val & 0x10) {
++		if(vc_verbose)
++			grub_printf("VSBGATE was enabled, forcing off, FIX BIOS!\n");
++		sio_outb(sio->addr, SIO_ACPI_E4, val & ~0x10);
++	}
++
++	sio_select(sio->addr, SIO_LD_GPIO2345);
++	val = sio_inb(sio->addr, SIO_REG_ENABLE) & 0x0f;
++	if( !(val & 0x02)) {
++		if(vc_verbose)
++			grub_printf("forcing GPIO3 enable, FIX BIOS!\n");
++		sio_outb(sio->addr, SIO_REG_ENABLE, val | 0x02);
++	}
++
++	// set defaults;
++
++	sio_outb(sio->addr, SIO_GPIO3_IO, 0x29);
++	sio_outb(sio->addr, SIO_GPIO3_DATA, 0xd4);
++	sio_outb(sio->addr, SIO_GPIO3_INV, 0x00);
++	sio_outb(sio->addr, SIO_GPIO3_DEB, 0x08);
++
++	// read and cache reset button bit;
++
++	val = sio_inb(sio->addr, SIO_GPIO3_DATA);
++	if(vc_verbose)
++		grub_printf("gpio3 data 0x%x\n", val);
++	sio->rb = (val & 0x20)? 0 : 1;
++
++	// reset i2c LED drivers;
++
++	val &= ~0xc0;
++	sio_outb(sio->addr, SIO_GPIO3_DATA, val);
++	grub_millisleep(1);
++	val |= 0x80;
++	sio_outb(sio->addr, SIO_GPIO3_DATA, val);
++
++	sio_exit(sio->addr);
++
++	return GRUB_ERR_NONE;
++}
++
++// LPC defines;
++
++#define REG_LPC_ABASE 0x40
++#define REG_LPC_ABASE_EN 0x02		// BAR GBASE is enabled;
++#define REG_LPC_ABASE_IO 0x01		// BAR is i/o mapped;
++#define REG_LPC_ABASE_MASK 0xff80
++
++#define LPC_ABASE_SMI_OFF 0x30
++#define LPC_ABASE_SMI_END (LPC_ABASE_SMI_OFF + 3)
++#define LPC_ABASE_TCO_OFF 0x60
++#define LPC_ABASE_TCO_END (LPC_ABASE_TCO_OFF + 0x1f)
++
++#define REG_LPC_PMC 0x44
++#define REG_LPC_PMC_MASK 0xfffffe00
++
++#define LPC_PBASE_PMC_OFF 0x08
++#define LPC_PBASE_PMC_END (LPC_PBASE_PMC_OFF + 4)
++
++#define REG_LPC_GBASE 0x48		// GBASE in 00:1f.0 config space;
++#define REG_LPC_GBASE_EN 0x02		// BAR GBASE is enabled;
++#define REG_LPC_GBASE_IO 0x01		// BAR is i/o mapped;
++#define REG_LPC_GBASE_MASK 0xff00	// GBASE in 00:1f.0 config space;
++
++// core well and suspend well registers have the same structure;
++// core well: GBASE + 0x00;
++// suspend well: GBASE + 0x80;
++
++#define PCU_REG_ADDR(idx,reg) (pcu->gbase + (0x80*(idx)) + reg)
++
++// check bios sanity with re to gpio setup;
++// returns mask of bad bits;
++
++static grub_uint32_t
++pcu_check_use_sel(pcu_t *pcu, int idx)
++{
++	grub_uint32_t addr, val, bad, mask;
++
++	addr = PCU_REG_ADDR(idx, PCU_REG_USESEL);
++	val = grub_inl(addr);
++
++	// bits that must be 1;
++
++	mask = pcu->mask[idx];
++	bad = ((val & mask) ^ mask);
++	val |= mask;
++
++	// bits that must be 0;
++
++	mask = pcu->clear[idx];
++	bad |= (val & mask);
++	val &= ~mask;
++
++	if(bad)
++		grub_outl(val, addr);
++	return(bad);
++}
++
++// warn about bad firmware setup;
++
++static inline void
++pcu_warn_use_sel(const char *name, grub_uint32_t bad)
++{
++	if(vc_verbose)
++		grub_printf("%s use_sel fixed bits 0x%x\n", name, bad);
++}
++
++// check bios sanity io_sel;
++// returns mask of bad bits;
++
++static grub_uint32_t
++pcu_check_io_sel(pcu_t *pcu, int idx)
++{
++	grub_uint32_t addr, val, bad, cfg;
++
++	addr = PCU_REG_ADDR(idx, PCU_REG_IOSEL);
++	val = grub_inl(addr);
++
++	cfg = pcu->iosel[idx];
++	bad = val ^ cfg;
++	if(bad)
++		grub_outl(cfg, addr);
++	return(bad);
++}
++
++// warn about bad firmware setup;
++
++static inline void
++pcu_warn_io_sel(const char *name, grub_uint32_t bad)
++{
++	if(vc_verbose)
++		grub_printf("%s io_sel fixed bits 0x%x\n", name, bad);
++}
++
++// write initial gp_lvl bits;
++// all written bits must be cached in pcu->out[];
++
++static inline void
++pcu_gp_lvl(pcu_t *pcu, int idx)
++{
++	grub_uint32_t addr;
++
++	addr = PCU_REG_ADDR(idx, PCU_REG_GPLVL);
++	grub_outl(pcu->out[idx], addr);
++}
++
++
++// edge500: init gpio and i2c;
++
++static grub_err_t
++vc500_gpio_init(void)
++{
++	grub_pci_device_t dev;
++	grub_pci_address_t addr;
++	grub_pci_id_t id;
++	grub_uint32_t abase, pbase, gbase;
++	grub_uint32_t bad;
++	pcu_t *pcu = &vc500_priv.pcu;
++
++	dev.bus = 0x00;
++	dev.device = 0x1f;
++	dev.function = 0;
++
++	// check pci id;
++
++	addr = grub_pci_make_address(dev, GRUB_PCI_REG_PCI_ID);
++	id = grub_pci_read(addr);
++	if(id != 0x1f388086)
++		return GRUB_ERR_UNKNOWN_DEVICE;
++
++	// check abase is valid;
++
++	addr = grub_pci_make_address(dev, REG_LPC_ABASE);
++	abase = grub_pci_read(addr);
++	if(vc_verbose)
++		grub_printf("abase 0x%x\n", abase);
++	if((abase & (REG_LPC_ABASE_EN | REG_LPC_ABASE_IO)) != (REG_LPC_ABASE_EN | REG_LPC_ABASE_IO))
++		return grub_error(GRUB_ERR_BAD_DEVICE, N_("abase not enabled"));
++	abase &= REG_LPC_ABASE_MASK;
++
++	// check pbase is valid;
++
++	addr = grub_pci_make_address(dev, REG_LPC_PMC);
++	pbase = grub_pci_read(addr);
++	if(vc_verbose)
++		grub_printf("pbase 0x%x\n", pbase);
++	pbase &= REG_LPC_PMC_MASK;
++
++	// check gbase is valid;
++
++	addr = grub_pci_make_address(dev, REG_LPC_GBASE);
++	gbase = grub_pci_read(addr);
++	if(vc_verbose)
++		grub_printf("gbase 0x%x\n", gbase);
++	gbase &= REG_LPC_GBASE_MASK;
++
++	if( !abase || !pbase || !gbase)
++		return grub_error(GRUB_ERR_BAD_DEVICE, N_("abase/pbase/gbase invalid"));
++
++	vc500_priv.pcu.abase = abase;
++	vc500_priv.pcu.pbase = pbase;
++	vc500_priv.pcu.gbase = gbase;
++
++	// check use_sel programming;
++
++	bad = pcu_check_use_sel(pcu, PCU_GPIO_SC);
++	if(bad)
++		pcu_warn_use_sel("sc", bad);
++	bad = pcu_check_use_sel(pcu, PCU_GPIO_SUS);
++	if(bad)
++		pcu_warn_use_sel("sus", bad);
++
++	// check io_sel programming;
++
++	bad = pcu_check_io_sel(pcu, PCU_GPIO_SC);
++	if(bad)
++		pcu_warn_io_sel("sc", bad);
++	bad = pcu_check_io_sel(pcu, PCU_GPIO_SUS);
++	if(bad)
++		pcu_warn_io_sel("sus", bad);
++
++	// the output register is broken;
++	// need to remember all writes to it;
++	// do initial output value assignment here;
++
++	pcu_gp_lvl(pcu, PCU_GPIO_SC);
++	pcu_gp_lvl(pcu, PCU_GPIO_SUS);
++
++	return GRUB_ERR_NONE;
++}
++
++// i2c bitbang driver;
++// delays 1/2 bit period;
++
++static inline void
++vc500_i2c_delay(void)
++{
++	grub_uint8_t val __attribute__ ((unused));
++
++	val = grub_inb(0x80);
++}
++
++// i2c start condition;
++// both sda/scl must be outputs driving hi already;
++
++static void
++vc500_i2c_start(pcu_t *pcu)
++{
++	grub_uint32_t lvl, val;
++
++	lvl = PCU_REG_ADDR(PCU_GPIO_SC, PCU_REG_GPLVL);
++	val = pcu->out[PCU_GPIO_SC];
++	val |= EDGE500_BB_I2C_SCL;
++	val &= ~EDGE500_BB_I2C_SDA;
++	grub_outl(val, lvl);
++	vc500_i2c_delay();
++	vc500_i2c_delay();
++	val &= ~EDGE500_BB_I2C_SCL;
++	pcu->out[PCU_GPIO_SC] = val;
++	grub_outl(val, lvl);
++}
++
++// i2c stop condition;
++
++static void
++vc500_i2c_stop(pcu_t *pcu)
++{
++	grub_uint32_t lvl, val;
++
++	lvl = PCU_REG_ADDR(PCU_GPIO_SC, PCU_REG_GPLVL);
++	val = pcu->out[PCU_GPIO_SC];
++	val |= EDGE500_BB_I2C_SCL;
++	val &= ~EDGE500_BB_I2C_SDA;
++	grub_outl(val, lvl);
++	vc500_i2c_delay();
++
++	val |= EDGE500_BB_I2C_SDA;
++	pcu->out[PCU_GPIO_SC] = val;
++	grub_outl(val, lvl);
++	vc500_i2c_delay();
++	vc500_i2c_delay();
++	vc500_i2c_delay();
++}
++
++// send single byte;
++// returns <0 timeout, 0=nak, 1=ack;
++
++static int
++vc500_i2c_tx(pcu_t *pcu, grub_uint8_t byte)
++{
++	grub_uint32_t lvl, dir, val;
++	int bit, ack;
++
++	lvl = PCU_REG_ADDR(PCU_GPIO_SC, PCU_REG_GPLVL);
++	val = pcu->out[PCU_GPIO_SC];
++	for(bit = 0x80; bit >= 0x01; bit >>= 1) {
++
++		// sda data bit;
++
++		if(byte & bit)
++			val |= EDGE500_BB_I2C_SDA;
++		else
++			val &= ~EDGE500_BB_I2C_SDA;
++		grub_outl(val, lvl);
++		vc500_i2c_delay();
++
++		// clock pulse, do not arbitrate;
++		// no clock stretching;
++
++		val |= EDGE500_BB_I2C_SCL;
++		grub_outl(val, lvl);
++		vc500_i2c_delay();
++		val &= ~EDGE500_BB_I2C_SCL;
++		grub_outl(val, lvl);
++		vc500_i2c_delay();
++	}
++
++	// ack, drive sda lo and release;
++	// let bus pullup drive hi in case of NAK;
++
++	val &= ~EDGE500_BB_I2C_SDA;
++	grub_outl(val, lvl);
++	dir = PCU_REG_ADDR(PCU_GPIO_SC, PCU_REG_IOSEL);
++	grub_outl(pcu->iosel[PCU_GPIO_SC] | EDGE500_BB_I2C_SDA, dir);
++	vc500_i2c_delay();
++
++	// output clock pulse for ack;
++	// let slave drive SDA low;
++
++	val |= EDGE500_BB_I2C_SCL;
++	grub_outl(val, lvl);
++	vc500_i2c_delay();
++	ack = !(grub_inl(lvl) & EDGE500_BB_I2C_SDA);
++	val &= ~EDGE500_BB_I2C_SCL;
++	grub_outl(val, lvl);
++	vc500_i2c_delay();
++
++	// drive sda again;
++
++	pcu->out[PCU_GPIO_SC] = val;
++	grub_outl(pcu->iosel[PCU_GPIO_SC], dir);
++
++	return(ack);
++}
++
++// i2c write;
++
++static int
++vc500_i2c_write(pcu_t *pcu, grub_uint8_t *buf, int len)
++{
++	int ret;
++
++	vc500_i2c_start(pcu);
++	while(len--) {
++		ret = vc500_i2c_tx(pcu, *buf++);
++		if(ret != 1)
++			break;
++	}
++	vc500_i2c_stop(pcu);
++	return(ret);
++}
++
++// edge500 i2c addresses;
++
++enum vc500_i2c_addr {
++	VC_I2C_0_ADDR = 0x20 << 1,
++	VC_I2C_1_ADDR = 0x24 << 1,
++	VC_I2C_2_ADDR = 0x64 << 1,
++	VC_I2C_WR = 0x00,
++	VC_I2C_RD = 0x01,
++};
++
++// max7314 registers;
++
++#define MAX7314_READ_INPUT_L 0x00
++#define MAX7314_READ_INPUT_H 0x01
++#define MAX7314_BLINK_PH0_L 0x02
++#define MAX7314_BLINK_PH0_H 0x03
++#define MAX7314_CONFIG_L 0x06
++#define MAX7314_CONFIG_H 0x07
++#define MAX7314_BLINK_PH1_L 0x0a
++#define MAX7314_BLINK_PH1_H 0x0b
++#define MAX7314_MASTER_O16 0x0e
++#define MAX7314_CONFIG 0x0f
++#define MAX7314_INTENS_1_0 0x10
++#define MAX7314_INTENS_3_2 0x11
++#define MAX7314_INTENS_5_4 0x12
++#define MAX7314_INTENS_7_6 0x13
++#define MAX7314_INTENS_9_8 0x14
++#define MAX7314_INTENS_11_10 0x15
++#define MAX7314_INTENS_13_12 0x16
++#define MAX7314_INTENS_15_14 0x17
++
++#define MAX7314_CFG 0x12
++
++// edge500: init i2c for LEDs;
++// we only care about the logo LED;
++
++static grub_err_t
++vc500_i2c_init(void)
++{
++	pcu_t *pcu = &vc500_priv.pcu;
++	int ret;
++	static grub_uint8_t vc500_cfg[] = {
++		VC_I2C_0_ADDR | VC_I2C_WR,
++		MAX7314_CONFIG,
++		MAX7314_CFG,
++	};
++	static grub_uint8_t vc500_cfg16[] = {
++		VC_I2C_0_ADDR | VC_I2C_WR,
++		MAX7314_CONFIG_L,
++		0x00, 0x00,
++	};
++	static grub_uint8_t vc500_o16[] = {
++		VC_I2C_0_ADDR | VC_I2C_WR,
++		MAX7314_MASTER_O16,
++		0xf0,
++	};
++
++	// write config byte;
++
++	ret = vc500_i2c_write(pcu, vc500_cfg, sizeof(vc500_cfg));
++	if(ret != 1)
++		goto out;
++
++	// configure all ports as outputs;
++
++	ret = vc500_i2c_write(pcu, vc500_cfg16, sizeof(vc500_cfg16));
++	if(ret != 1)
++		goto out;
++
++	// use BLINK=1 to be able to all LEDs fully off, but only 15/16 on;
++	// master intensity;
++
++	ret = vc500_i2c_write(pcu, vc500_o16, sizeof(vc500_o16));
++	if(ret != 1)
++		goto out;
++
++out:
++	if(ret < 0)
++		return GRUB_ERR_TIMEOUT;
++	if(ret == 0)
++		return GRUB_ERR_BAD_DEVICE;
++	return GRUB_ERR_NONE;
++}
++
++// edge500: init system;
++
++static grub_err_t
++grub_vc500_init(void)
++{
++	vc500_sio_init();
++	vc500_gpio_init();
++	vc500_i2c_init();
++	return GRUB_ERR_NONE;
++}
++
++// edge500: logo led handler;
++
++static grub_err_t
++grub_vc500_logo(grub_uint32_t xrgb)
++{
++	pcu_t *pcu = &vc500_priv.pcu;
++	int ret, nb, bdel;
++	static grub_uint8_t vc500_logo[] = {
++		VC_I2C_0_ADDR | VC_I2C_WR,
++		MAX7314_INTENS_13_12,
++		0x00, 0x00,
++	};
++	static grub_uint8_t vc500_loff[] = {
++		VC_I2C_0_ADDR | VC_I2C_WR,
++		MAX7314_INTENS_13_12,
++		0xff, 0xff,
++	};
++
++	vc500_logo[2] = ~(((xrgb & 0x00f00000) >> 20) | ((xrgb & 0x0000f000) >> 8));
++	vc500_logo[3] = ~((xrgb & 0x000000f0) >> 4);
++
++	// optionally blink;
++	// bits[31:28] number of blinks;
++	// bits[27:24] on/off time in 100ms;
++
++	xrgb >>= 24;
++	nb = xrgb >> 4;
++	bdel = (xrgb & 0xf) * 100;
++	do {
++		ret = vc500_i2c_write(pcu, vc500_loff, sizeof(vc500_loff));
++		if(ret != 1)
++			break;
++		if( !bdel)
++			break;
++		grub_millisleep(bdel);
++		ret = vc500_i2c_write(pcu, vc500_logo, sizeof(vc500_logo));
++		if(ret != 1)
++			break;
++		grub_millisleep(bdel);
++	} while(nb--);
++
++	if(ret < 0)
++		return GRUB_ERR_TIMEOUT;
++	if(ret == 0)
++		return GRUB_ERR_BAD_DEVICE;
++
++	return GRUB_ERR_NONE;
++}
++
++// freset values;
++
++static const char *fr_bad = "x";
++static const char *fr_no = "0";
++static const char *fr_yes = "1";
++
++// edge500: need to read real button gpio;
++// blink logo blue for factory reset;
++
++static const char *
++grub_vc500_rb(void)
++{
++	sio_chip_t *sio = vc500_priv.sio;
++
++	// read sio gpio;
++
++	if( !sio)
++		return fr_bad;
++	return (sio->rb? fr_yes : fr_no);
++}
++
++// edge500: arm watchdog;
++// BIOS does not enable watchdog,
++// do it here to cover boot/kernel hangs;
++
++static grub_err_t
++grub_vc500_wdt(void)
++{
++	grub_pci_device_t dev;
++	grub_pci_address_t addr;
++	grub_pci_id_t id;
++
++	dev.bus = 0x00;
++	dev.device = 0x1f;
++	dev.function = 0;
++
++	addr = grub_pci_make_address (dev, GRUB_PCI_REG_PCI_ID);
++	id = grub_pci_read(addr);
++	if(id != 0x1f388086)
++		return GRUB_ERR_UNKNOWN_DEVICE;
++
++
++grub_printf("# id = %x\n", id);
++//XXX
++return GRUB_ERR_NONE;
++}
++
++// edge5x0: read CMOS byte which was saved button state from coreboot;
++// CMOS_FRESET=1 if coreboot demands factory reset;
++
++static const char *
++grub_vc5x0_rb(void)
++{
++	grub_err_t err;
++	grub_uint8_t value;
++
++	err = grub_cmos_read(CMOS_FRESET, &value);
++	if(err)
++		return fr_bad;
++	if(value)
++		return fr_yes;
++	return(fr_no);
++}
++
++// known boards;
++
++static struct vc_brd vc_brds[] = {
++	{ "EDGE500", grub_vc500_init, grub_vc500_logo, grub_vc500_rb, grub_vc500_wdt, 3*60, },
++	{ "EDGE520", NULL, NULL, grub_vc5x0_rb, NULL, 3*60, },
++	{ "EDGE540", NULL, NULL, grub_vc5x0_rb, NULL, 3*60, },
++	{ NULL, NULL, NULL, NULL, NULL, 0, },
++};
++
++// lookup board by name;
++
++static vc_brd_t *
++grub_vc_brd(void)
++{
++	const char *name;
++
++	board = grub_smbios_board_name();
++	if( !board)
++		return NULL;
++
++	for(brd = vc_brds; (name = brd->board); brd++) {
++		if( !grub_strcmp(board, name))
++			return brd;
++	}
++	return(NULL);
++}
++
++// get board name;
++// assign env variable 'board';
++
++static grub_err_t
++grub_vc_board(void)
++{
++	grub_env_set("board", board);
++	grub_printf("%s\n", board);
++	return GRUB_ERR_NONE;
++}
++
++// set logo LED;
++// assign env variable 'freset';
++
++static grub_err_t
++grub_vc_logo(int argc, char **args)
++{
++	grub_err_t err;
++	grub_uint32_t xrgb;
++
++	// default is white if no color given;
++
++	xrgb = 0x80ffffff;
++	if(argc >= 2)
++		xrgb = grub_strtoul(args[1], NULL, 0);
++
++	err = GRUB_ERR_UNKNOWN_DEVICE;
++	if(brd->logo)
++		err = brd->logo(xrgb);
++	if(err)
++		grub_error(err, N_("logo LED failed"));
++	return(err);
++}
++
++// check if reset button still pressed;
++// assign env variable 'freset';
++
++static grub_err_t
++grub_vc_freset(void)
++{
++	const char *value;
++
++	value = fr_bad;
++	if(brd->rb)
++		value = brd->rb();
++	grub_env_set("freset", value);
++	return GRUB_ERR_NONE;
++}
++
++// watchdog timer;
++// edge500: arm watchdog to cover boot/kernel hang;
++// edge5x0: is covered by coreboot watchdog;
++
++static grub_err_t
++grub_vc_wdt(int argc, char **args)
++{
++	grub_err_t err;
++
++	err = GRUB_ERR_UNKNOWN_DEVICE;
++	if(brd->wdt)
++		err = brd->wdt();
++	if(err)
++		grub_error(err, N_("wdt setup failed"));
++	else if(vc_verbose)
++		grub_printf("wdt armed, %u secs\n", brd->to);
++	return err;
++}
++
++// main entry;
++
++static grub_err_t
++grub_cmd_vc(grub_extcmd_context_t ctxt __attribute__ ((unused)), int argc, char **args)
++{
++	struct grub_arg_list *state = ctxt->state;
++
++	if(argc < 1)
++		return(GRUB_ERR_NONE);
++
++	if(state[0].set)
++		vc_verbose = 1;
++
++	// determine vc board;
++
++	if( !brd) {
++		brd = grub_vc_brd();
++		if(brd && brd->init)
++			brd->init();
++	}
++	if( !brd)
++		return grub_error(GRUB_ERR_UNKNOWN_DEVICE, N_("unsupported board '%s'"), board);
++
++	// handle commands;
++
++	if( !grub_strcmp(args[0], "board"))
++		return(grub_vc_board());
++	else if( !grub_strcmp(args[0], "logo"))
++		return(grub_vc_logo(argc, args));
++	else if( !grub_strcmp(args[0], "freset"))
++		return(grub_vc_freset());
++	else if( !grub_strcmp(args[0], "wdt"))
++		return(grub_vc_wdt(argc, args));
++	return grub_error(GRUB_ERR_BAD_ARGUMENT, N_("unkownn command `%s'"), args[0]);
++}
++
++// command registration;
++
++static grub_extcmd_t cmd;
++
++GRUB_MOD_INIT(vc)
++{
++	cmd = grub_register_extcmd("vc", grub_cmd_vc, 0,
++		"[-v]",
++		N_("Velocloud extensions."), options);
++}
++
++GRUB_MOD_FINI(vc)
++{
++	grub_unregister_extcmd(cmd);
++}

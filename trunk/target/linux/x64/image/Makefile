@@ -9,7 +9,7 @@ include $(INCLUDE_DIR)/image.mk
 
 export PATH=$(TARGET_PATH):/sbin
 
-GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos part_gpt reboot vga
+GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos part_gpt reboot vga acpi smbios vc
 GRUB2_MODULES_ISO = biosdisk boot chain configfile iso9660 linux ls part_msdos reboot vga
 GRUB_TERMINALS =
 GRUB_SERIAL_CONFIG =

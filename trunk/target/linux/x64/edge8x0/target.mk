@@ -1,4 +1,4 @@
-BOARDNAME:=edge1000
+BOARDNAME:=edge8x0
 
 FEATURES:=ext4 pci usb
 
@@ -10,10 +10,8 @@ DEFAULT_PACKAGES += \
 	kmod-igb \
 	kmod-dsa-core \
 	kmod-intel-ixgbe \
-	kmod-e1000e \
 	kmod-hwmon-core \
 	kmod-hwmon-coretemp \
-	kmod-hwmon-w83627ehf \
 	igb-eeprom \
 
 # Enable QAT for this platform
@@ -22,6 +20,6 @@ DEFAULT_PACKAGES += \
 	intel-qat \
 
 define Target/Description
-	Build firmware images for the Edge 1000 and similar systems
+	Build firmware images for the Edge 800 and similar systems
 endef
 

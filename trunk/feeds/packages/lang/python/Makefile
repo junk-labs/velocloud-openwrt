@@ -124,7 +124,7 @@ endef
 define Package/python-readline
 $(call Package/python/Default)
  TITLE:=Python support for readline
- DEPENDS+=+python-mini +libreadline +libncurses @BROKEN
+ DEPENDS+=+python-mini +libreadline +libncurses
 endef
 
 define Package/python-ncurses

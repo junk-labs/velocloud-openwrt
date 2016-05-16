@@ -19,6 +19,9 @@
     <Network ovf:name="WAN2">
       <Description>The WAN2 network</Description>
     </Network>
+    <Network ovf:name="WAN3">
+      <Description>The WAN3 network</Description>
+    </Network>
   </NetworkSection>
   <VirtualSystem ovf:id="VeloCloud-Edge">
     <Info>A virtual machine</Info>
@@ -118,10 +121,21 @@
         <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
       </Item>
       <Item>
+        <rasd:AddressOnParent>10</rasd:AddressOnParent>
+        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
+        <rasd:Connection>WAN3</rasd:Connection>
+        <rasd:Description>VmxNet3 ethernet adapter on &quot;WAN3&quot;</rasd:Description>
+        <rasd:ElementName>Network adapter 4</rasd:ElementName>
+        <rasd:InstanceID>10</rasd:InstanceID>
+        <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
+        <rasd:ResourceType>10</rasd:ResourceType>
+        <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
+      </Item>
+      <Item>
         <rasd:AddressOnParent>0</rasd:AddressOnParent>
         <rasd:ElementName>Hard disk 1</rasd:ElementName>
         <rasd:HostResource>ovf:/disk/vmdisk1</rasd:HostResource>
-        <rasd:InstanceID>10</rasd:InstanceID>
+        <rasd:InstanceID>11</rasd:InstanceID>
         <rasd:Parent>3</rasd:Parent>
         <rasd:ResourceType>17</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="backing.writeThrough" vmw:value="false"/>

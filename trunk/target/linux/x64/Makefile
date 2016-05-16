@@ -10,7 +10,7 @@ ARCH:=x86_64
 BOARD:=x64
 BOARDNAME:=x64
 FEATURES:=squashfs ext4 vdi vmdk pcmcia targz
-SUBTARGETS=generic edge500 edge5x0 edge1000 pw-dev vc-vmdk vc-xen-aws vc-kvm-guest
+SUBTARGETS=generic edge500 edge5x0 edge8x0 edge1000 pw-dev vc-vmdk vc-xen-aws vc-kvm-guest
 
 KERNEL_PATCHVER:=3.14
 

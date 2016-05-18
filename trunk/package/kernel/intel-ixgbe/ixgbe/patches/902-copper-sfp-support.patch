@@ -1,0 +1,25 @@
+--- intel-ixgbe-4.3.15/src/ixgbe_x550.c	2016-03-22 17:29:56.000000000 -0700
++++ /home/sberndt/intel-ixgbe-4.3.15/src/ixgbe_x550.c	2016-05-18 13:13:15.961099187 -0700
+@@ -1091,9 +1091,12 @@
+ 	case ixgbe_sfp_type_1g_lx_core1:
+ 		*linear = false;
+ 		break;
+-	case ixgbe_sfp_type_unknown:
++	// 1g copper SFP support;
+ 	case ixgbe_sfp_type_1g_cu_core0:
+ 	case ixgbe_sfp_type_1g_cu_core1:
++		*linear = false;
++		break;
++	case ixgbe_sfp_type_unknown:
+ 	default:
+ 		return IXGBE_ERR_SFP_NOT_SUPPORTED;
+ 	}
+@@ -1201,6 +1204,8 @@
+ 		/* Check if 1G SFP module. */
+ 		if (hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core0 ||
+ 		    hw->phy.sfp_type == ixgbe_sfp_type_1g_sx_core1
++		    || hw->phy.sfp_type == ixgbe_sfp_type_1g_cu_core0
++		    || hw->phy.sfp_type == ixgbe_sfp_type_1g_cu_core1
+ 		    || hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core0 ||
+ 		    hw->phy.sfp_type == ixgbe_sfp_type_1g_lx_core1) {
+ 			*speed = IXGBE_LINK_SPEED_1GB_FULL;

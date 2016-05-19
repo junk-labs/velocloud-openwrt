@@ -1,0 +1,9 @@
+config mcode '262001'
+	option apn 'internet.t-mobile'
+
+config mcode '311480'
+        option apn 'vzwinternet'
+
+config mcode '50501'
+    option apn 'telstra.internet'
+

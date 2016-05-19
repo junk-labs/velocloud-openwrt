@@ -1,0 +1,6 @@
+modem_path=/etc/config/modems/
+db_dir=/etc/config/modems/USB/
+modem_script_path=/opt/vc/modems/
+network_config=/etc/config/
+modem_string=USB
+tmpdir=/tmp/USB/

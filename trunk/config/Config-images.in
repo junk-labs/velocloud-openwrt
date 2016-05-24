@@ -288,6 +288,7 @@ menu "Target Images"
 		bool "Build KVM image files (qcow2)"
 		depends on TARGET_x86 || TARGET_x86_64 || TARGET_x64
 		select GRUB_IMAGES
+		select VMDK_IMAGES
 		select TARGET_IMAGES_PAD
 		select PACKAGE_kmod-e1000
 		select PACKAGE_kmod-pcnet32
@@ -343,8 +344,14 @@ menu "Target Images"
 
 	config TARGET_ROOTFS_INSTSIZE
 		int "Installed root partition size (in MB)"
-		depends on GRUB_IMAGES && TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge8x0 || TARGET_x64_edge1000
+		depends on GRUB_IMAGES && TARGET_x64
+		#default 512 if TARGET_x64_vc_vmdk || TARGET_x64_vc_xen_aws || TARGET_x64_vc_kvm_guest
 		default 1024
+
+	config TARGET_VDISK_SIZE
+		int "Total virtual disk size for installed virtual images (in MB)"
+		depends on GRUB_IMAGES
+		default 8192
 
 	menuconfig TARGET_ROOTFS_INCLUDE_KERNEL
 		bool "Include kernel in root filesystem"

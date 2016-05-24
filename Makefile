@@ -141,6 +141,8 @@ define OpenwrtConfig
 		-e '/CONFIG_TARGET_x\(86\|64\)/d' \
 		-e '/CONFIG_TARGET_BOARD/d' \
 		-e '/CONFIG_TARGET_ROOTFS_PARTNAME/d' \
+		-e '/CONFIG_TARGET_ROOTFS_INSTSIZE/d' \
+		-e '/CONFIG_TARGET_VDISK_SIZE/d' \
 		-e '/CONFIG_X\(64\|86\)_/d' \
 		-e '/CONFIG_GRUB_/d' \
 		-e '/CONFIG_VMDK_/d' \

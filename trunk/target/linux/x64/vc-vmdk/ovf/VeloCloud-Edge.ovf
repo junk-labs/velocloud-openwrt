@@ -6,21 +6,24 @@
   </References>
   <DiskSection>
     <Info>Virtual disk information</Info>
-    <Disk ovf:capacity="320" ovf:capacityAllocationUnits="byte * 2^20" ovf:diskId="vmdisk1" ovf:fileRef="file1" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized"/>
+    <Disk ovf:capacity="8192" ovf:capacityAllocationUnits="byte * 2^20" ovf:diskId="vmdisk1" ovf:fileRef="file1" ovf:format="http://www.vmware.com/interfaces/specifications/vmdk.html#streamOptimized"/>
   </DiskSection>
   <NetworkSection>
     <Info>The list of logical networks</Info>
-    <Network ovf:name="LAN">
-      <Description>The LAN network</Description>
+    <Network ovf:name="GE1">
+      <Description>GE1 - switched by default</Description>
     </Network>
-    <Network ovf:name="WAN1">
-      <Description>The WAN1 network</Description>
+    <Network ovf:name="GE2">
+      <Description>GE2 - switched by default</Description>
     </Network>
-    <Network ovf:name="WAN2">
-      <Description>The WAN2 network</Description>
+    <Network ovf:name="GE3">
+      <Description>GE3 - routed by default</Description>
     </Network>
-    <Network ovf:name="WAN3">
-      <Description>The WAN3 network</Description>
+    <Network ovf:name="GE4">
+      <Description>GE4 - routed by default</Description>
+    </Network>
+    <Network ovf:name="GE5">
+      <Description>GE5 - routed by default</Description>
     </Network>
   </NetworkSection>
   <VirtualSystem ovf:id="VeloCloud-Edge">
@@ -41,18 +44,18 @@
       <Item>
         <rasd:AllocationUnits>hertz * 10^6</rasd:AllocationUnits>
         <rasd:Description>Number of Virtual CPUs</rasd:Description>
-        <rasd:ElementName>1 virtual CPU(s)</rasd:ElementName>
+        <rasd:ElementName>2 virtual CPU(s)</rasd:ElementName>
         <rasd:InstanceID>1</rasd:InstanceID>
         <rasd:ResourceType>3</rasd:ResourceType>
-        <rasd:VirtualQuantity>1</rasd:VirtualQuantity>
+        <rasd:VirtualQuantity>2</rasd:VirtualQuantity>
       </Item>
       <Item>
         <rasd:AllocationUnits>byte * 2^20</rasd:AllocationUnits>
         <rasd:Description>Memory Size</rasd:Description>
-        <rasd:ElementName>1024MB of memory</rasd:ElementName>
+        <rasd:ElementName>4096MB of memory</rasd:ElementName>
         <rasd:InstanceID>2</rasd:InstanceID>
         <rasd:ResourceType>4</rasd:ResourceType>
-        <rasd:VirtualQuantity>1024</rasd:VirtualQuantity>
+        <rasd:VirtualQuantity>4096</rasd:VirtualQuantity>
       </Item>
       <Item>
         <rasd:Address>0</rasd:Address>
@@ -90,8 +93,8 @@
       <Item>
         <rasd:AddressOnParent>7</rasd:AddressOnParent>
         <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
-        <rasd:Connection>LAN</rasd:Connection>
-        <rasd:Description>VmxNet3 ethernet adapter on &quot;LAN&quot;</rasd:Description>
+        <rasd:Connection>GE1</rasd:Connection>
+        <rasd:Description>VmxNet3 ethernet adapter GE1</rasd:Description>
         <rasd:ElementName>Network adapter 1</rasd:ElementName>
         <rasd:InstanceID>7</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
@@ -101,8 +104,8 @@
       <Item>
         <rasd:AddressOnParent>8</rasd:AddressOnParent>
         <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
-        <rasd:Connection>WAN1</rasd:Connection>
-        <rasd:Description>VmxNet3 ethernet adapter on &quot;WAN1&quot;</rasd:Description>
+        <rasd:Connection>GE2</rasd:Connection>
+        <rasd:Description>VmxNet3 ethernet adapter GE2</rasd:Description>
         <rasd:ElementName>Network adapter 2</rasd:ElementName>
         <rasd:InstanceID>8</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
@@ -112,8 +115,8 @@
       <Item>
         <rasd:AddressOnParent>9</rasd:AddressOnParent>
         <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
-        <rasd:Connection>WAN2</rasd:Connection>
-        <rasd:Description>VmxNet3 ethernet adapter on &quot;WAN2&quot;</rasd:Description>
+        <rasd:Connection>GE3</rasd:Connection>
+        <rasd:Description>VmxNet3 ethernet adapter GE3</rasd:Description>
         <rasd:ElementName>Network adapter 3</rasd:ElementName>
         <rasd:InstanceID>9</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
@@ -123,10 +126,21 @@
       <Item>
         <rasd:AddressOnParent>10</rasd:AddressOnParent>
         <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
-        <rasd:Connection>WAN3</rasd:Connection>
-        <rasd:Description>VmxNet3 ethernet adapter on &quot;WAN3&quot;</rasd:Description>
+        <rasd:Connection>GE4</rasd:Connection>
+        <rasd:Description>VmxNet3 ethernet adapter GE4</rasd:Description>
         <rasd:ElementName>Network adapter 4</rasd:ElementName>
         <rasd:InstanceID>10</rasd:InstanceID>
+        <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
+        <rasd:ResourceType>10</rasd:ResourceType>
+        <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
+      </Item>
+      <Item>
+        <rasd:AddressOnParent>11</rasd:AddressOnParent>
+        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
+        <rasd:Connection>GE5</rasd:Connection>
+        <rasd:Description>VmxNet3 ethernet adapter GE5</rasd:Description>
+        <rasd:ElementName>Network adapter 4</rasd:ElementName>
+        <rasd:InstanceID>11</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
         <rasd:ResourceType>10</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
@@ -135,7 +149,7 @@
         <rasd:AddressOnParent>0</rasd:AddressOnParent>
         <rasd:ElementName>Hard disk 1</rasd:ElementName>
         <rasd:HostResource>ovf:/disk/vmdisk1</rasd:HostResource>
-        <rasd:InstanceID>11</rasd:InstanceID>
+        <rasd:InstanceID>12</rasd:InstanceID>
         <rasd:Parent>3</rasd:Parent>
         <rasd:ResourceType>17</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="backing.writeThrough" vmw:value="false"/>

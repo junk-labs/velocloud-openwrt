@@ -8,3 +8,11 @@ START=05
 # turn all RGB LEDs off;
 #echo 0 > /sys/devices/platform/vc/leds/off
 
+VC_PART=`block info | fgrep 'LABEL="user"' | sed -e 's/:.*$//'`
+if [ -b "$VC_PART" ]; then
+    echo "" > /dev/kmsg
+    echo "FIRST TIME: EXPANDING /velocloud, TAKES A FEW MINUTES ..." > /dev/kmsg
+    resize2fs "$VC_PART"
+    echo "... DONE" > /dev/kmsg
+    echo "" > /dev/kmsg
+fi

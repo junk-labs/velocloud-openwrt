@@ -164,45 +164,6 @@ ifneq ($(CONFIG_VDI_IMAGES),)
   endef
 endif
 
-ifneq ($(CONFIG_VMDK_IMAGES),)
-  define Image/Build/vmdk
-    # left here because the image builder doesnt need these
-    ifeq ($(1),ext4)
-		rm $(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vmdk || true
-		qemu-img convert -f raw -O vmdk \
-			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img \
-			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vmdk
-    endif
-  endef
-
-  ifneq ($(CONFIG_OVA_IMAGES),)
-    define Image/Build/ova
-      # left here because the image builder doesnt need these
-      ifeq ($(1),ext4)
-		chmod u+x ./gen_ova.sh
-		STAGING_DIR_HOST=$(STAGING_DIR_HOST) \
-		IMG_PREFIX=$(IMG_PREFIX) \
-		ARCH=$(ARCH) \
-		./gen_ova.sh \
-			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vmdk \
-			$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/ovf/VeloCloud-Edge.ovf
-      endif
-    endef
-  endif
-endif
-
-ifneq ($(CONFIG_QCOW2_IMAGES),)
-  define Image/Build/qcow2
-    # left here because the image builder doesnt need these
-    ifeq ($(1),ext4)
-		rm $(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).qcow2 || true
-		qemu-img convert -f raw -O qcow2 \
-			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img \
-			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).qcow2
-    endif
-  endef
-endif
-
 define Image/Build/gzip
 	gzip -f9 $(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img
 	gzip -f9 $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img
@@ -302,6 +263,31 @@ define Image/Build/velocloud/gpt
 	$(call Image/Build/grub/$(1))
 endef
 
+define Image/Build/velocloud/updatable-gpt
+	chmod u+x ./gen_image_vc_virtual.sh
+	PATH="$(TARGET_PATH)" \
+	STAGING_DIR_HOST=$(STAGING_DIR_HOST) \
+	INCLUDE_DIR=$(INCLUDE_DIR) \
+		./gen_image_vc_virtual.sh \
+		$(BIN_DIR)/$(2) \
+		$(CONFIG_TARGET_KERNEL_PARTSIZE) $(KDIR)/inst.grub \
+		$(CONFIG_TARGET_ROOTFS_INSTSIZE) $(TARGET_DIR) \
+		$(CONFIG_TARGET_VDISK_SIZE)
+	grub-mkimage \
+		-d $(STAGING_DIR_HOST)/lib/grub/i386-pc \
+		-o $(KDIR)/inst.grub/boot/grub/core.img \
+		-O i386-pc \
+		-c ./grub-gpt-early.cfg \
+		$(GRUB2_MODULES) test echo loadenv
+	echo '(hd0) $(BIN_DIR)/$(2)' > $(KDIR)/inst.grub/boot/grub/device.map
+	grub-bios-setup \
+		--device-map="$(KDIR)/inst.grub/boot/grub/device.map" \
+		-d "$(KDIR)/inst.grub/boot/grub" \
+		-r "hd0,gpt2" \
+		"$(BIN_DIR)/$(2)"
+	$(call Image/Build/grub/$(1))
+endef
+
 ifneq ($(CONFIG_VELOCLOUD_MANUFACTURING_INSTALLER),)
   define Image/Build/velocloud-manufacturing
 	echo "Building VeloCloud Manufacturing Image."
@@ -335,6 +321,43 @@ ifneq ($(CONFIG_EC2_IMAGES),)
 	$(STAGING_DIR_HOST)/bin/genext2fs -U -B $(CONFIG_TARGET_EXT4_BLOCKSIZE) -b $(E2SIZE) -N $(CONFIG_TARGET_EXT4_MAXINODE) -m $(CONFIG_TARGET_EXT4_RESERVED_PCT) -d $(TARGET_DIR)/ $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
 	$(STAGING_DIR_HOST)/bin/tune2fs -O extents,uninit_bg,dir_index $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
 	$(STAGING_DIR_HOST)/bin/e2fsck -fy $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
+  endef
+endif
+
+ifneq ($(CONFIG_VMDK_IMAGES),)
+  define Image/Build/vmdk
+	echo "Building VeloCloud Updatable Virtual Image."
+	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
+	$(call Image/Build/velocloud/updatable-gpt,$(1),$(IMG_PREFIX)-updatable-$(1).img)
+	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vmdk || true
+	qemu-img convert -f raw -O vmdk \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vmdk
+  endef
+
+  ifneq ($(CONFIG_OVA_IMAGES),)
+    define Image/Build/ova
+	chmod u+x ./gen_ova.sh
+	STAGING_DIR_HOST=$(STAGING_DIR_HOST) \
+	IMG_PREFIX=$(IMG_PREFIX) \
+	ARCH=$(ARCH) \
+	./gen_ova.sh \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vmdk \
+		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/ovf/VeloCloud-Edge.ovf
+    endef
+  endif
+endif
+
+# QCOW2 assumes VMDK images
+ifneq ($(CONFIG_QCOW2_IMAGES),)
+  define Image/Build/qcow2
+	echo "Building VeloCloud Updatable Virtual Image."
+	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
+	$(call Image/Build/velocloud/updatable-gpt,$(1),$(IMG_PREFIX)-updatable-$(1).img)
+	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).qcow2 || true
+	qemu-img convert -f raw -O qcow2 \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).qcow2
   endef
 endif
 
@@ -375,6 +398,8 @@ define Image/Build
 	$(call Image/Build/ova,$(1))
 	$(call Image/Build/qcow2,$(1))
 	$(call Image/Build/vc-ec2,$(1))
+	# not needed any more:
+	rm -f $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img
 	$(CP) $(KDIR)/root.$(1) $(BIN_DIR)/$(IMG_PREFIX)-rootfs-$(1).img
   else
 	$(CP) $(KDIR)/root.iso $(BIN_DIR)/$(IMG_PREFIX).iso

@@ -48,8 +48,6 @@ define Package/intel-qat/description
   Intel Quickassist user libs and tools.
 endef
 
-TARGET_CFLAGS += -ggdb3
-
 # kernel land;
 
 define KernelPackage/intel-qat
@@ -102,6 +100,7 @@ MAKE_OPTS:= \
 	KERNEL_SOURCE_ROOT="$(LINUX_DIR)" \
 	LIB_EXTRA_PATH="$(TARGET_LDFLAGS)" \
 	ICP_ROOT="$(PKG_BUILD_DIR)" \
+	ICP_ARCH_USER="$(LINUX_KARCH)" \
 	ICP_BUILDSYSTEM_PATH="$(PKG_BUILD_DIR)/quickassist/build_system" \
 	ICP_BUILD_OUTPUT="$(PKG_BUILD_DIR)" \
 	ICP_TOOLS_TARGET=accelcomp \
@@ -116,6 +115,7 @@ endef
 define Build/Compile/intel-qat
 	$(MAKE) -C "$(PKG_BUILD_DIR)/quickassist" \
 		$(MAKE_OPTS) \
+		cmd_line_cflags="$(TARGET_CFLAGS) -g" \
 		user
 endef
 
@@ -144,7 +144,7 @@ endef
 
 define Package/intel-qat/install
 	$(INSTALL_DIR) $(1)/bin/ $(1)/lib/ $(1)/etc/qat
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/adf_ctl $(1)/bin/
+	$(INSTALL_BIN) -s $(PKG_BUILD_DIR)/adf_ctl $(1)/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/libicp_qa_al_s.so $(1)/lib/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/quickassist/lookaside/access_layer/src/sample_code/build/cpa_sample_code $(1)/bin/
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/quickassist/config/c2xxx_qa_dev0_single_ae.conf $(1)/etc/qat/c2xxx_qa_dev0.conf

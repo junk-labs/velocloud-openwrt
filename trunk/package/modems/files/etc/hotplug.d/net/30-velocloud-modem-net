@@ -67,9 +67,11 @@ qmi_get_apn()
 			apn=$(uci -c /etc/config/modems get mcodemap.${mcc}${mnc2}.apn)
 		fi
 	fi
-	if [ -z $apn ]; then
-		apn="broadband"
-	fi
+
+	# Note: if APN not found in the mcodemap file, we default to using an
+	# empty APN string (i.e. the automatic one, if stored in the SIM card).
+	# This approach is better than just trying with some random APN.
+
 	echo $apn
 }
 

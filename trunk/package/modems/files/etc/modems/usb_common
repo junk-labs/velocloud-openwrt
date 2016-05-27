@@ -157,7 +157,10 @@ at_get_apn()
 		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
 	fi
 
-	# Note: if APN not found, use empty APN
+	# Note: if APN not found in the mcodemap file, we default to using an
+	# empty APN string (i.e. the automatic one, if stored in the SIM card).
+	# This approach is better than just trying with some random APN.
+
 	echo $apn
 }
 

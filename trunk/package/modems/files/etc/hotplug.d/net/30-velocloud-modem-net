@@ -190,11 +190,8 @@ setup_wwan_modem()
 		# instead, we already have access to the AT-capable cdc-wdm device, so
 		# we create the profile here in the net device handler.
 		#
-		# The profile is only created if there is no other profile already.
-		if [ ! -f $profile ]; then
-			apn=$(at_get_apn $device $usbifname)
-			${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
-		fi
+		apn=$(at_get_apn $device $usbifname)
+		${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
 
 		# For Huawei NCM modems, we just create the profile at this point.
 		# The modem_service.sh script will launch the connection.
@@ -223,12 +220,8 @@ setup_wwan_modem()
 		# qmi-network profile generation
 		# We don't need to wait for any other control port being notified, we can
 		# already gather the APN to use via QMI.
-		#
-		# The profile is only created if there is no other profile already.
-		if [ ! -f $profile ]; then
-			apn=$(qmi_get_apn $device)
-			${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
-		fi
+		apn=$(qmi_get_apn $device)
+		${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
 
 		# For QMI modems, we just create the profile at this point.
 		# The modem_service.sh script will launch the connection.

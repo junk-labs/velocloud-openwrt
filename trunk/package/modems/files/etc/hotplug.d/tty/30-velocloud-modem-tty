@@ -285,12 +285,8 @@ handle_qmi_hybrid() {
 
 	# In qmi-hybrid modems we trigger the profile generation as soon as we get
 	# the management TTY
-	#
-	# The profile is only created if there is no other profile already.
-	if [ ! -f $profile ]; then
-		apn=$(at_get_apn $ttydevice $usbifname)
-		${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
-	fi
+	apn=$(at_get_apn $ttydevice $usbifname)
+	${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=qmihybrid"
 
@@ -350,12 +346,8 @@ handle_sierranet() {
 
 	# In sierranet modems we trigger the profile generation as soon as we get
 	# the management TTY
-	#
-	# The profile is only created if there is no other profile already.
-	if [ ! -f $profile ]; then
-		apn=$(at_get_apn $ttydevice $usbifname)
-		${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
-	fi
+	apn=$(at_get_apn $ttydevice $usbifname)
+	${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
 
 	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=sierranet"
 
@@ -445,11 +437,8 @@ add_to_config() {
 	#
 	# # Create profile for the PPP based connection.
 	# #
-	# # The profile is only created if there is no other profile already.
-	# if [ ! -f $profile ]; then
-	# 	apn=$(at_get_apn $ttydevice $usbifname)
-	# 	${modem_script_path}/modem_apn.sh $usbifname set "$apn" "" ""
-	# fi
+	# apn=$(at_get_apn $ttydevice $usbifname)
+	# ${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
 
 	log "Starting pppd script for $ttydevice"
 	start_pppd_script

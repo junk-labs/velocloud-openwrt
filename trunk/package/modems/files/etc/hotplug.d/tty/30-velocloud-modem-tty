@@ -133,16 +133,34 @@ uci_commit_modems() {
 }
 
 get_cdma_gsm() {
-	local tempfile=$1
-	local imei_number
-	local cdma_gsm
-	imei_number=$(awk '{if(match($0, "ESN:")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
-	if [ ! -z $imei_number ];then
-		cdma_gsm="CDMA"
-	else
-		cdma_gsm="GSM"
-	fi
-	echo $cdma_gsm
+	local tries=0
+	local device=$1
+	while [ $tries -le 3 ]; do
+		# Run AT+GCAP to query device capabilities
+		local gcap_output=$(gcom -d "$device" -s /etc/gcom/getcaps.gcom 2>/dev/null)
+		if [ $? -ne 0 ]; then
+			tries=$((tries + 1))
+			continue;
+		fi
+		# 3GPP device?
+		for key in "GSM" "LTE"; do
+			if [ $(echo $gcap_output 2>/dev/null | grep $key | wc -l) -eq 1 ]; then
+				echo "GSM"
+				return
+			fi
+		done
+		# 3GPP2 device?
+		for key in "IS707" "IS-856" "CDMA"; do
+			if [ $(echo $gcap_output 2>/dev/null | grep $key | wc -l) -eq 1 ]; then
+				echo "CDMA"
+				return
+			fi
+		done
+		# so...
+		break
+	done
+
+	echo "unknown"
 }
 
 get_imei_number() {

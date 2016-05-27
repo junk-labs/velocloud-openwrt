@@ -57,6 +57,7 @@ ${SCP_CMD}                                           \
     root@${VELOCLOUD}:/etc/modems/IPModems/
 
 ${SCP_CMD}                                           \
+    ./files/etc/gcom/getcaps.gcom                    \
     ./files/etc/gcom/huaweistatus.gcom               \
     ./files/etc/gcom/qmihybridstatus.gcom            \
     ./files/etc/gcom/sierranetstatus.gcom            \

@@ -4,8 +4,11 @@
 USB=$1
 
 while [[ 1 ]]; do
+    # If management device not given, just sleep a longer time.
+    # We keep the process, but doing nothing.
     device=$(uci -c $modem_config_path get modems.$USB.mgmt)
-    if [ ! -n "$device" ]; then
+    if [ -z "$device" ]; then
+        sleep 100
         continue
     fi
 

@@ -257,12 +257,6 @@ handle_qmi_hybrid() {
 	local ttydevice
 	local ifname
 
-	ttydevice=$(gettty_device)
-	if [ -z "$ttydevice" ]; then
-		log "No TTY device: $usbpath"
-		return
-	fi
-
 	count=1
 	while [ $count -le 10 ];
 	do
@@ -313,12 +307,6 @@ handle_qmi_hybrid() {
 handle_sierranet() {
 	local ttydevice
 	local ifname
-
-	ttydevice=$(gettty_device)
-	if [ -z "$ttydevice" ]; then
-		log "No TTY device: $usbpath"
-		return
-	fi
 
 	count=1
 	while [ $count -le 3 ];
@@ -395,6 +383,13 @@ add_to_config() {
 	# Normalize the USB ID so that it's ####:#### (4 chars each)
 	product=$(printf "%04x:%04x" "0x${product%/*}" "0x${product#*/}")
 
+	# Ignore if no device file
+	ttydevice=$(gettty_device)
+	if [ -z "$ttydevice" ]; then
+		log "No TTY device: $usbpath"
+		return
+	fi
+
 	modemtype=$(get_modem_type "$DEVICENAME" "$product")
 	#log "product = $product, modem type = $modemtype"
 	if [ "$modemtype" == "ignore" ]; then
@@ -408,12 +403,6 @@ add_to_config() {
 		return
 	elif [ "$modemtype" == "None" ]; then
 		log "Hybrid modem selected for $modemtype: DEVICENAME:$DEVICENAME"
-		return
-	fi
-
-	ttydevice=$(gettty_device)
-	if [ -z "$ttydevice" ]; then
-		log "No TTY device: $usbpath"
 		return
 	fi
 

@@ -57,6 +57,10 @@ ${SCP_CMD}                                           \
     root@${VELOCLOUD}:/etc/modems/IPModems/
 
 ${SCP_CMD}                                           \
+    ./files/etc/modems/TTYModems/ppp_run.sh          \
+    root@${VELOCLOUD}:/etc/modems/TTYModems/
+
+${SCP_CMD}                                           \
     ./files/etc/gcom/getcaps.gcom                    \
     ./files/etc/gcom/huaweistatus.gcom               \
     ./files/etc/gcom/qmihybridstatus.gcom            \

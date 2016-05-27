@@ -38,100 +38,6 @@ gettty_device() {
 	echo $ttydevice
 }
 
-get_hw_details() {
-	local dialdevice=$1
-	local tempfile=$2
-	local cardinfocmd="gcom -d $dialdevice -s /etc/gcom/vcgetcardinfo.gcom"
-	local cardinfo_tries=3
-	while [ ! -s $tempfile ] && [ "$cardinfo_tries" -ne 0 ]; do
-		$cardinfocmd | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
-		cardinfo_tries=$(expr $cardinfo_tries - 1)
-	done
-}
-
-update_mgmt_config() {
-	local mgmtdevice=$1
-	uci -c $modem_config_path set modems.$usbifname.mgmt="$mgmtdevice"
-	uci -c $modem_config_path commit modems
-}
-
-update_mgmt_device() {
-	local mgmtdevice=$1
-	uci -c $modem_config_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
-	if [ "$?" != "0" ]; then
-		update_mgmt_config "$mgmtdevice"
-		log "Mgmt device $mgmtdevice updated"
-	else
-		log "Mgmt device already detected"
-	fi
-}
-
-update_backup_user_config() {
-	local product=$1
-	local username="dummy"
-	local password="dummy"
-	local dialnumber="#777"
-
-	touch $db_dir/$usbifname
-
-	uci -c $db_dir add $usbifname interface\\\ '"$usbifname"'
-	uci -c $db_dir set $usbifname.$usbifname=interface
-	uci -c $db_dir set $usbifname.$usbifname.ifname=''"$usbifname"''
-	uci -c $db_dir set $usbifname.$usbifname.dialnumber=''"$dialnumber"''
-	uci -c $db_dir set $usbifname.$usbifname.username=''"$username"''
-	uci -c $db_dir set $usbifname.$usbifname.password=''"$password"''
-	uci -c $db_dir set $usbifname.$usbifname.status="Trying to connect ..."
-	uci -c $db_dir set $usbifname.$usbifname.type='serial'
-	uci -c $db_dir set $usbifname.$usbifname.product=''"$product"''
-}
-
-update_dialdevice_to_config() {
-	local dialdevice=$1
-	uci -c $db_dir set $usbifname.$usbifname.device="$dialdevice"
-}
-
-update_backup() {
-	local variable=$1
-	local value=$2
-	uci -c $db_dir set $usbifname.$usbifname.$variable=''"$value"''
-}
-
-update_backup_hw_config() {
-	local manufacturer=$1
-	local model_number=$2
-	local revision_number=$3
-	local cdma_gsm=$4
-	local linkid=$5
-
-	uci -c $db_dir set $usbifname.$usbifname.manufacturer=''"$manufacturer"''
-	uci -c $db_dir set $usbifname.$usbifname.modelnumber=''"$model_number"''
-	uci -c $db_dir set $usbifname.$usbifname.revisionnumber=''"$revision_number"''
-	uci -c $db_dir set $usbifname.$usbifname.cdmagsm=''"$cdma_gsm"''
-	uci -c $db_dir set $usbifname.$usbifname.linkid=''"$linkid"''
-}
-
-uci_commit_backup() {
-	uci -c $db_dir commit $usbifname
-}
-
-uci_import_modems_config() {
-	uci -c $db_dir export $usbifname > /$tmpdir/modems.uci
-	sed -i 's/package.*/package modems/' /$tmpdir/modems.uci
-	uci -c $modem_config_path import -m modems < /$tmpdir/modems.uci
-}
-
-uci_dialdevice_modems_config() {
-	local dialdevice=$1
-	uci -c $modem_config_path set modems.$usbifname.device="$dialdevice"
-}
-
-uci_commit_modems() {
-	local dialdevice=$1
-	uci_import_modems_config
-	uci_dialdevice_modems_config $dialdevice
-	uci -c $modem_config_path commit modems
-}
-
 get_cdma_gsm() {
 	local tries=0
 	local device=$1
@@ -165,30 +71,34 @@ get_cdma_gsm() {
 
 get_imei_number() {
 	local tempfile=$1
-	local cdma_string=$(get_cdma_gsm $tempfile)
-	local imei_number
-	if [ $cdma_string == "GSM" ];then
+	local cdmagsm=$2
+	local imei_number=""
+	if [ $cdmagsm == "GSM" ]; then
 		imei_number=$(awk '{if(match($0, "IMEI:")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
-	else
+	elif [ $cdmagsm == "CDMA" ]; then
 		imei_number=$(awk '{if(match($0, "ESN:")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
 	fi
 	echo $imei_number
 }
 
 get_imsi_number() {
-	local dialdevice=$1
+    # IMSI N/A in CDMA/EVDO devices without SIM
+    if [ $cdmagsm == "CDMA" ]; then
+        echo ""
+        return
+    fi
+
+	local device=$1
+    local cdmagsm=$2
 	local imsi_tries=3
 	local tempfile="$tmpdir/$usbifname.siminfo"
 	local imsicmd="gcom -d $dialdevice -s /etc/gcom/vcgetimsi.gcom"
 	local imsi_number
 	while [ -z $imsi_number ] && [ "$imsi_tries" -ne 0 ]; do
 		$imsicmd | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
-		log "IMSI Info: $(cat $tempfile | xargs echo)"
-
 		imsi_number=$(cat $tempfile | awk '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}$/)){print $i;break} } }')
 		imsi_tries=$(expr $imsi_tries - 1)
 	done
-	log "IMSI: $imsi_number"
 	rm -f $tempfile
 	echo $imsi_number
 }
@@ -198,66 +108,58 @@ get_linkid() {
 	local imei_number=$2
 	local linkid
 
-	if [ "$imsi_number" == "" ] || [ "$imsi_number" == "ERROR" ];then
+	if [ -z "$imsi_number" ] || [ "$imsi_number" == "ERROR" ] || [ "$imsi_number" == "N/A" ]; then
 		linkid=$imei_number
 	else
 		linkid=$imsi_number
 	fi
-	log "Linkid: $linkid, IMEI: $imei_number"
 	echo $linkid
 }
 
-get_manufacturer() {
-	local tempfile=$1
-	echo $(awk '{if(match(tolower($0), "manufacturer")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
-}
-
-get_model_number() {
-	local tempfile=$1
-	echo $(awk '{if(match(tolower($0), "model")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
-}
-
-get_revision_number() {
-	local tempfile=$1
-	echo $(awk '{if(match(tolower($0), "revision")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
-}
-
-update_hwinfo_config() {
+update_hardware_info() {
+    device=$1
+    cdmagsm=$2
 	local tempfile="$tmpdir/$usbifname.cardinfo"
-	local manufacturer model_number revision_number
-	local cdma_string
-	local cdma_gsm="CDMA"
-	# If Electronic Signal Number is present then its CDMA
-	local imei_number imsi_number
-	# If ESN is present get the number after that for CDMA else get from IMEI for GSM
 
-	get_hw_details $dialdevice $tempfile
+    # Read hardware details into a temporary file
+	local cardinfo_tries=3
+	while [ ! -s $tempfile ] && [ "$cardinfo_tries" -ne 0 ]; do
+	    gcom -d $device -s /etc/gcom/vcgetcardinfo.gcom | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
+		cardinfo_tries=$(expr $cardinfo_tries - 1)
+	done
+    if [ ! -s $tempfile ]; then
+        log "Couldn't read hardware info"
+        return
+    fi
 
-	manufacturer=$(get_manufacturer $tempfile)
-	model_number=$(get_model_number $tempfile)
-	revision_number=$(get_revision_number $tempfile)
-	imei_number=$(get_imei_number $tempfile)
-	imsi_number=$(get_imsi_number $dialdevice)
-	cdma_gsm=$(get_cdma_gsm $tempfile)
+    # Basic hardware details
+	local man=$(awk '{if(match(tolower($0), "manufacturer")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+	local mod=$(awk '{if(match(tolower($0), "model"))        {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+	local rev=$(awk '{if(match(tolower($0), "revision"))     {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
 
-	log "Card Info: $(cat $tempfile | xargs echo)"
+    log "Manufacturer: $man"
+    log "Model: $mod"
+    log "Revision: $rev"
+
+    # Build link id.
+    # Notes:
+    #  * IMSI is only applicable when the device has a SIM, so 3GPP-only
+    #  * IMEI is only applicable when the device is 3GPP
+    #  * ESN may be used as unique device id for 3GPP2 devices
+    #
+	local imei_number=$(get_imei_number $tempfile $cdmagsm)
+	local imsi_number=$(get_imsi_number $device $cdmagsm)
+	local linkid=$(get_linkid "$imsi_number" "$imei_number")
+	log "Link ID: $linkid"
+
 	rm -f $tempfile
 
-	linkid=$(get_linkid "$imsi_number" "$imei_number")
-	update_backup_hw_config "$manufacturer" "$model_number" "$revision_number" "$cdma_gsm" "$linkid"
+	uci -c $modem_config_path set modems.$usbifname.manufacturer=''"$man"''
+	uci -c $modem_config_path set modems.$usbifname.modelnumber=''"$mod"''
+	uci -c $modem_config_path set modems.$usbifname.revisionnumber=''"$rev"''
+	uci -c $modem_config_path set modems.$usbifname.linkid=''"$linkid"''
+	uci -c $modem_config_path commit modems
 }
-
-update_dial_device() {
-	local dialdevice=$1
-	local product=$2
-
-	update_backup_user_config $product
-	update_hwinfo_config $dialdevice
-	#update_dialdevice_to_config $dialdevice
-	uci_commit_backup
-	uci_commit_modems $dialdevice
-}
-
 
 start_pppd_script() {
 	$modem_script_path/modem_service.sh $usbifname start 2>&1 >/dev/null &
@@ -286,14 +188,12 @@ handle_qmi_hybrid() {
 		count=$(($count+1))
 	done
 
-	lock $lockfile
 	touch $modem_config_path/modems
 	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
 	uci -c $modem_config_path set modems.$usbifname=interface
 	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
 	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
 	uci -c $modem_config_path commit modems
-	lock -u $lockfile
 
 	# In qmi-hybrid modems we trigger the profile generation as soon as we get
 	# the management TTY
@@ -342,13 +242,11 @@ handle_sierranet() {
 		return
 	fi
 
-	lock $lockfile
 	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
 	uci -c $modem_config_path set modems.$usbifname=interface
 	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
 	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
 	uci -c $modem_config_path commit modems
-	lock -u $lockfile
 
 	# In sierranet modems we trigger the profile generation as soon as we get
 	# the management TTY
@@ -424,32 +322,51 @@ add_to_config() {
 		return
 	fi
 
-	log "DEVICE=$DEVICENAME: TYPE=$modemtype"
+	log "DEVICE=$DEVICENAME: TYPE=$modemtype, VID/PID: $product"
 
-	lock $lockfile
 	ret=$(check_device_config $usbifname)
 	if [ "$ret" == "True" ]; then
-		# Already dialup tty detected
-		log "Dial device already detected"
-		update_mgmt_device $ttydevice
-		lock -u $lockfile
-		return
-	else
-		update_dial_device "$ttydevice" "$product"
-	fi
+		# We got a TTY for dial-up already; so use this second one for management,
+        # unless there is one already
+	    uci -c $modem_config_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
+	    if [ $? -ne 0 ]; then
+		    log "Device $ttydevice set to be used as management device"
+	        uci -c $modem_config_path set modems.$usbifname.mgmt="$ttydevice"
+	        uci -c $modem_config_path commit modems
+		    return
+        fi
 
-	# TODO: enable creating profile for PPP-based connection
-	# uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
-	# uci -c $modem_config_path commit modems
-	#
-	# # Create profile for the PPP based connection.
-	# #
-	# apn=$(at_get_apn $ttydevice $usbifname)
-	# ${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
+		log "Device $ttydevice not needed (dial-up and management TTYs already set)"
+        return
+    fi
+
+    # 3GPP or 3GPP2?
+    local cdmagsm=$(get_cdma_gsm $ttydevice)
+
+	log "Device $ttydevice set to be used as dial-up device ($cdmagsm)"
+
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.ifname=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.cdmagsm=''"$cdmagsm"''
+	uci -c $modem_config_path set modems.$usbifname.type=''"serial"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	uci -c $modem_config_path commit modems
+
+    # Update other hardware configuration
+    update_hardware_info $ttydevice $cdmagsm
+
+	# Create profile for the PPP based connection, but look for APN only if this
+    # is a GSM/3GPP device (not needed for CDMA/3GPP2 devices).
+    local apn=""
+    if [ "$cdmagsm" == "GSM" ]; then
+	    apn=$(at_get_apn $ttydevice $usbifname)
+    fi
+	${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
 
 	log "Starting pppd script for $ttydevice"
 	start_pppd_script
-	lock -u $lockfile
 }
 
 # Main starts here
@@ -470,7 +387,6 @@ local usbpath="/sys/$DEVPATH/"
 local dialdevice=""
 local mgmtdevice=""
 local usbifname=$(usb_wan_naming $usbpath) # Will get the bus and port number
-local lockfile="$tmpdir/$usbifname.lck"
 
 # ignore event if we cannot get a USBX or MODEMX name
 if [ -z "$usbifname" ] || [ "$usbifname" == "error" ]; then

@@ -11,6 +11,7 @@ log()
 print_usage()
 {
 	echo "usage: $PROGRAM USB<number> check"
+	echo "usage: $PROGRAM USB<number> get"
 	echo "usage: $PROGRAM USB<number> set [apn] [username] [password]"
 }
 

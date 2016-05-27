@@ -30,10 +30,16 @@ print_usage()
 
 get_apn_supported()
 {
-	local ifname=$(uci -c $modem_config_path get modems.$USB.ifname 2>/dev/null)
-	if [ ! -z "$ifname" ]; then
-	    echo $(uci -c $modem_config_path get modems.$USB.apn_supported)
+	# For ModemManager managed modems, we don't check ifname, as ifname is only
+	# set once the modem has been connected.
+	if [ "$TYPE" != "modemmanager" ]; then
+		local ifname=$(uci -c $modem_config_path get modems.$USB.ifname >/dev/null 2>&1)
+		if [ -z "$ifname" ]; then
+			return
+		fi
 	fi
+
+	echo $(uci -c $modem_config_path get modems.$USB.apn_supported)
 }
 
 run_check()
@@ -110,6 +116,13 @@ ACTION=$2
 if [ "$#" -lt 2 ]; then
 	echo "error: missing arguments" 1>&2
 	print_usage
+	exit 1
+fi
+
+# Don't go on if type is empty (i.e. no config for USB#)
+TYPE=$(echo $(uci -c $modem_config_path get modems.$USB.type 2>/dev/null))
+if [ -z "$TYPE" ]; then
+	logerr "$USB: Unknown modem type, cannot run modem apn operation"
 	exit 1
 fi
 

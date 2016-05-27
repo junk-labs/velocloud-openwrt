@@ -1,0 +1,581 @@
+#!/bin/sh
+#
+# This file will be sourced by the mm_run.sh script, so we can rely on having
+# all the globals set in that script.
+#
+
+# Define global if debug logging should be enabled
+# LOG_DEBUG=1
+
+# Define global if syslog logging should be enabled
+# LOG_SYSLOG=1
+
+# Define global if stdout/stderr logging should be enabled
+# LOG_STDOUT=1
+
+# Define global if /tmp logging should be enabled
+LOG_TMP=1
+
+# Some globals
+MODEM_STATUS=""
+BEARER_STATUS=""
+LOG_TAG="MMModem ${USB}"
+LOG_TMP_PATH=${tmpdir}/${USB}.log
+
+log_debug()
+{
+    if [ -z "${LOG_DEBUG}" ]; then
+        return
+    fi
+
+    if [ -n "${LOG_SYSLOG}" ]; then
+        logger -t "${LOG_TAG}" -p 7 "$@"
+    fi
+
+    if [ -n "${LOG_STDOUT}" ]; then
+        echo "${LOG_TAG} debug: $@"
+    fi
+
+    if [ -n "${LOG_TMP}" ]; then
+        echo "${LOG_TAG} debug: $@" >> ${LOG_TMP_PATH}
+    fi
+}
+
+log_info()
+{
+    if [ -n "${LOG_SYSLOG}" ]; then
+        logger -t "${LOG_TAG}" -p 5 "$@"
+    fi
+
+    if [ -n "${LOG_STDOUT}" ]; then
+        echo "${LOG_TAG} info: $@"
+    fi
+
+    if [ -n "${LOG_TMP}" ]; then
+        echo "${LOG_TAG} info: $@" >> ${LOG_TMP_PATH}
+    fi
+}
+
+log_error()
+{
+    if [ -n "${LOG_SYSLOG}" ]; then
+        logger -t "${LOG_TAG}" -p 3 -s "$@"
+    fi
+
+    if [ -n "${LOG_STDOUT}" ]; then
+        >2& echo "${LOG_TAG} error: $@"
+    fi
+
+    if [ -n "${LOG_TMP}" ]; then
+        echo "${LOG_TAG} error: $@" >> ${LOG_TMP_PATH}
+    fi
+}
+
+# Initialize mmcli
+MMCLI=$(which mmcli)
+if [ -z "$MMCLI" ]; then
+    echo "error: ModemManager CLI not found"
+    exit 1
+fi
+
+# Note: won't work with multi-line values
+helper_get_field()
+{
+    TEXT=$1
+    INBLOCK=$2
+    INFIELD=$3
+
+    if [ -z "${TEXT}" ] || [ -z "${INFIELD}" ] || [ -z "${INBLOCK}" ]; then
+        return 1
+    fi
+
+    # Sample output:
+    #
+    # /org/freedesktop/ModemManager1/Modem/0 (device id '391a4fbdb14113ecdd101a23c927ab1e82c51a8e')
+    #   -------------------------
+    #   Hardware |   manufacturer: 'QUALCOMM INCORPORATED'
+    #            |          model: '8'
+    #            |       revision: '8200C-FACPASZQ-30350  1  [Dec 15 2011 15:00:00]'
+    #            |      supported: 'gsm-umts'
+    #            |        current: 'gsm-umts'
+    #            |   equipment id: '863745010845895'
+    #   -------------------------
+    #   System   |         device: '/sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3'
+    #            |        drivers: 'option, qmi_wwan'
+    #            |         plugin: 'Generic'
+    #            |   primary port: 'cdc-wdm0'
+    #            |          ports: 'ttyUSB0 (qcdm), ttyUSB2 (at), cdc-wdm0 (qmi), wwan0 (net)'
+    #   -------------------------
+    #   Numbers  |           own : 'unknown'
+    #   -------------------------
+    #   Status   |           lock: 'sim-pin2'
+    #            | unlock retries: 'sim-pin (3), sim-pin2 (3), sim-puk (10), sim-puk2 (10)'
+    #            |          state: 'registered'
+    #            |    power state: 'on'
+    #            |    access tech: 'umts'
+    #            | signal quality: '54' (recent)
+    #   -------------------------
+    #   Modes    |      supported: 'allowed: 2g; preferred: none
+    #            |                  allowed: 3g; preferred: none
+    #            |                  allowed: 2g, 3g; preferred: none
+    #            |                  allowed: 2g, 3g; preferred: 2g
+    #            |                  allowed: 2g, 3g; preferred: 3g'
+    #            |        current: 'allowed: any; preferred: none'
+    #   -------------------------
+    #   Bands    |      supported: 'unknown'
+    #            |        current: 'unknown'
+    #   -------------------------
+    #   IP       |      supported: 'ipv4, ipv6, ipv4v6'
+    #   -------------------------
+    #   3GPP     |           imei: '863745010845895'
+    #            |  enabled locks: 'none'
+    #            |    operator id: '21401'
+    #            |  operator name: 'vodafone ES'
+    #            |   subscription: 'unknown'
+    #            |   registration: 'home'
+    #   -------------------------
+    #   SIM      |           path: '/org/freedesktop/ModemManager1/SIM/0'
+    #
+    #   -------------------------
+    #   Bearers  |          paths: 'none'
+
+    # Iterate block by block
+    echo ${TEXT} | awk '{
+          split($0,array,"-------------------------")
+          for(i in array) {
+              print array[i];
+          }
+      }' | while read -r LINE ; do
+        # Look for a matching block title
+        local BLOCK=$(echo ${LINE} | awk -F '\|' '{print $1}')
+        BLOCK="$(echo -e "${BLOCK}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+        if [ "${BLOCK}" == "${INBLOCK}" ]; then
+            # Iterate field by field
+            echo ${LINE} | awk '{
+                  split($0,array,"|")
+                  for(i in array) {
+                      print array[i];
+                  }
+              }' | while read -r SUBLINE ; do
+                local FIELD=$(echo ${SUBLINE} | awk -F ':' '{print $1}')
+                FIELD="$(echo -e "${FIELD}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+                if [ "${FIELD}" == "${INFIELD}" ]; then
+                    local VALUE=$(echo ${SUBLINE} | awk -F "'" '{print $2}')
+                    echo "$VALUE"
+                    return 0
+                fi
+            done
+        fi
+    done
+
+    # Not found
+    return 2
+}
+
+update_modem_status()
+{
+    MODEM_STATUS=$(${MMCLI} --modem ${DBUSPATH})
+    if [ -z "${MODEM_STATUS}" ]; then
+        log_error "couldn't load modem status"
+        return 1
+    fi
+
+    return 0
+}
+
+update_bearer_status()
+{
+    local BEARERS=$(${MMCLI} -m ${DBUSPATH} --list-bearers | grep "/org/freedesktop/ModemManager1/Bearer/")
+    local N_BEARERS=$(echo "${BEARERS}" | wc -l)
+    if [ ${N_BEARERS} -gt 1 ]; then
+        BEARER_STATUS=""
+        log_error "too many bearers"
+        return
+    elif [ ${N_BEARERS} -eq 0 ]; then
+        BEARER_STATUS=""
+        log_error "no bearers"
+        return
+    fi
+    local BEARER_DBUSPATH=${BEARERS}
+
+    BEARER_STATUS=$(${MMCLI} --bearer ${BEARER_DBUSPATH})
+    if [ -z "${BEARER_STATUS}" ]; then
+        log_error "couldn't load bearer status"
+    fi
+}
+
+modem_disable()
+{
+    log_debug "disabling modem..."
+    ${MMCLI} -m ${DBUSPATH} --disable >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        log_info "modem disabled"
+    else
+        log_error "couldn't disable modem"
+    fi
+}
+
+modem_enable()
+{
+    log_debug "enabling modem..."
+    ${MMCLI} -m ${DBUSPATH} --enable >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        log_info "modem enabled"
+    else
+        log_error "couldn't enable modem"
+    fi
+}
+
+modem_disconnect()
+{
+    log_debug "disconnecting modem..."
+    ${MMCLI} -m ${DBUSPATH} --simple-disconnect >/dev/null 2>&1
+}
+
+modem_connect()
+{
+    # Load profile
+    local PROFILE=${modem_config_path}/${USB}.profile
+    if [ -f ${PROFILE} ]; then
+        log_debug "loading profile: ${PROFILE}"
+        . ${PROFILE}
+    fi
+
+    log_debug "connecting modem..."
+    log_debug "   apn:      '${APN}'"
+    log_debug "   user:     '${APN_USER}'"
+    log_debug "   password: '${APN_PASS}'"
+
+    local SIMPLE_CONNECT_ARGS="apn=${APN}"
+    if [ -n "${APN_USER}" ] && [ -n "${APN_PASS}" ]; then
+        SIMPLE_CONNECT_ARGS="${SIMPLE_CONNECT_ARGS},user=${APN_USER},password=${APN_PASS}"
+    fi
+
+    ${MMCLI} -m ${DBUSPATH} --timeout 120 --simple-connect ${SIMPLE_CONNECT_ARGS} >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        log_info "modem connected"
+    else
+        log_error "couldn't connect modem"
+    fi
+}
+
+setup_network_interface_dhcp()
+{
+    local IFACE=$1
+
+    log_info "network interface ${IFACE} setup with dynamic IP configuration"
+
+    /usr/sbin/ip link set dev "${IFACE}" down >/dev/null 2>&1
+
+    uci -c /etc/config add network interface\\\ '"${USB}"' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}=interface >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.type='wwan' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.ifname=''"${IFACE}"'' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.proto='dhcp' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.hostname=''"vc-${USB}"'' >/dev/null 2>&1
+    uci -c /etc/config commit network >/dev/null 2>&1
+}
+
+cdr2mask ()
+{
+   # Number of args to shift, 255..255, first non-255 byte, zeroes
+   set -- $(( 5 - ($1 / 8) )) 255 255 255 255 $(( (255 << (8 - ($1 % 8))) & 255 )) 0 0 0
+   [ $1 -gt 1 ] && shift $1 || shift
+   echo ${1-0}.${2-0}.${3-0}.${4-0}
+}
+
+setup_network_interface_static()
+{
+    local IFACE=$1
+    local ADDRESS=$2
+    local PREFIX=$3
+    local GATEWAY=$4
+    local MTU=$5
+
+    if [ -z "${ADDRESS}" ]; then
+        log_error "ADDRESS not set in static IP configuration"
+        return
+    fi
+
+    if [ -z "${PREFIX}" ]; then
+        log_error "PREFIX not set in static IP configuration"
+        return
+    fi
+
+    # CIDR prefix to netmask
+    local NETMASK=""
+    if [ -n "${PREFIX}" ]; then
+        NETMASK=$(cdr2mask ${PREFIX})
+    fi
+
+    log_info "network interface ${IFACE} setup with static IP configuration"
+    log_info "   address: ${ADDRESS}"
+    log_info "   netmask: ${NETMASK}"
+    if [ -n "${GATEWAY}" ]; then
+        log_info "   gateway: ${GATEWAY}"
+    fi
+    if [ -n "${MTU}" ]; then
+        log_info "   mtu: ${MTU}"
+    fi
+
+    /usr/sbin/ip link set dev "${IFACE}" down >/dev/null 2>&1
+
+    uci -c /etc/config add network interface\\\ '"${USB}"' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}=interface >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.type='wwan' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.ifname=''"${IFACE}"'' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.proto='static' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.ipaddr=''"${ADDRESS}"'' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.netmask=''"${NETMASK}"'' >/dev/null 2>&1
+    if [ -n "${GATEWAY}" ]; then
+        uci -c /etc/config set network.${USB}.gateway=''"${GATEWAY}"'' >/dev/null 2>&1
+    fi
+    if [ -n "${MTU}" ]; then
+        uci -c /etc/config set network.${USB}.mtu=''"${MTU}"'' >/dev/null 2>&1
+    fi
+    uci -c /etc/config set network.${USB}.hostname=''"vc-${USB}"'' >/dev/null 2>&1
+    uci -c /etc/config commit network >/dev/null 2>&1
+}
+
+setup_network_interface_ppp()
+{
+    local IFACE=$1
+
+    log_info "interface ${IFACE} setup with PPP configuration"
+
+    uci -c /etc/config add network interface\\\ '"${USB}"' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}=interface >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.type='wwan' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.device=''"${IFACE}"'' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.proto='ppp' >/dev/null 2>&1
+    if [ -n "${APN_USER}" ] && [ -n "${APN_PASS}" ]; then
+        uci -c /etc/config set network.${USB}.username=''"${APN_USER}"'' >/dev/null 2>&1
+        uci -c /etc/config set network.${USB}.password=''"${APN_PASS}"'' >/dev/null 2>&1
+    fi
+    uci -c /etc/config set network.${USB}.hostname=''"vc-${USB}"'' >/dev/null 2>&1
+    uci -c /etc/config commit network >/dev/null 2>&1
+}
+
+modem_connected()
+{
+    update_bearer_status
+    if [ -z "${BEARER_STATUS}" ]; then
+        log_error "no bearer status"
+        return
+    fi
+
+    local IFACE=$(helper_get_field "${BEARER_STATUS}" "Status" "interface")
+    if [ -z "${IFACE}" ]; then
+        log_error "iface not set, cannot setup connection"
+    fi
+
+    local NETWORK_TYPE=$(uci -c /etc/config get network.${USB}.type 2>/dev/null)
+    if [ "${NETWORK_TYPE}" == "wwan" ]; then
+        log_debug "connection already set up: ${IFACE}"
+        return
+    fi
+
+    # Show the iface in the modem config
+    uci -c ${modem_config_path} set modems.${USB}.ifname=''"${IFACE}"'' >/dev/null 2>&1
+    uci -c ${modem_config_path} commit modems
+
+    local METHOD=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "method")
+    case "${METHOD}" in
+        "dhcp")
+            setup_network_interface_dhcp "${IFACE}"
+            ;;
+        "static")
+            local ADDRESS=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "address")
+            local PREFIX=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "prefix")
+            local GATEWAY=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "gateway")
+            local MTU=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "mtu")
+            setup_network_interface_static "${IFACE}" "${ADDRESS}" "${PREFIX}" "${GATEWAY}" "${MTU}"
+            ;;
+        "ppp")
+            setup_network_interface_ppp "${IFACE}"
+            ;;
+        *)
+            echo "error: ${USB} unknown connection method"
+            ;;
+    esac
+
+    # ifup the USBX/MODEMX interface itself
+    log_info "bringing interface up..."
+    /sbin/ifup "${USB}" >/dev/null 2>&1
+}
+
+process_initial_state()
+{
+    update_modem_status
+    local STATE=$(helper_get_field "${MODEM_STATUS}" "Status" "state")
+    log_info "initial modem state: ${STATE}"
+
+    case "${STATE}" in
+        "failed")
+            log_error "modem is in failed state: unusable"
+            ;;
+        "locked")
+            log_error "modem is locked: unlock code required"
+            ;;
+        "disabled")
+            ;;
+        *)
+            # Always start with the modem disconnected and disabled
+            log_info "reseting modem state..."
+            modem_disconnect
+            modem_disable
+            ;;
+    esac
+
+    # Set static configurations on initial state loading
+
+    local MANUFACTURER=$(helper_get_field "${MODEM_STATUS}" "Status" "manufacturer")
+    log_debug "modem manufacturer: ${MANUFACTURER}"
+
+    local MODEL=$(helper_get_field "${MODEM_STATUS}" "Status" "model")
+    log_debug "modem model: ${MODEL}"
+
+    if [ -n "${MANUFACTURER}" ] && [ -n "${MODEL}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.modelnumber=''"${MANUFACTURER} ${MODEL}"''
+    fi
+
+    local EQUIPMENT_ID=$(helper_get_field "${MODEM_STATUS}" "Status" "equipment id")
+    log_debug "modem equipment id: ${EQUIPMENT_ID}"
+
+    if [ -n "${EQUIPMENT_ID}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.linkid=''"${EQUIPMENT_ID}"''
+    fi
+
+    uci -c ${modem_config_path} set modems.${USB}.activated='activated'
+    uci -c ${modem_config_path} commit modems
+}
+
+cleanup_modem()
+{
+    local NETWORK_TYPE=$(uci -c /etc/config get network.${USB}.type 2>/dev/null)
+    if [ "${NETWORK_TYPE}" == "wwan" ]; then
+        # Silently bring down interface
+        /sbin/ifdown "${USB}" >/dev/null 2>&1
+
+        # Remove network configuration
+        uci -c /etc/config delete network.${USB} >/dev/null 2>&1
+        uci -c /etc/config commit network >/dev/null 2>&1
+
+        # Remove ifname from modem config
+        uci -c ${modem_config_path} delete modems.${USB}.ifname >/dev/null 2>&1
+        uci -c ${modem_config_path} commit modems
+    fi
+}
+
+process_modem()
+{
+    if [ -z "${USB}" ]; then
+        log_error "USB not set"
+        return 1
+    fi
+
+    if [ -z "${DBUSPATH}" ]; then
+        log_error "DBUSPATH not set"
+        return 1
+    fi
+
+    log_info "Processing modem at ${DBUSPATH}"
+    process_initial_state
+
+    while [ 1 ]; do
+        update_modem_status
+        if [ $? -ne 0 ]; then
+            log_info "no longer processing modem at ${DBUSPATH}"
+            return 0
+        fi
+        local STATE=$(helper_get_field "${MODEM_STATUS}" "Status" "state")
+        log_debug "modem state: ${STATE}"
+        uci -c ${modem_config_path} set modems.${USB}.status=''"${STATE}"''
+
+        local SIGNAL_QUALITY=$(helper_get_field "${MODEM_STATUS}" "Status" "signal quality")
+        if [ -n "${SIGNAL_QUALITY}" ]; then
+            log_debug "signal quality: ${SIGNAL_QUALITY}"
+            uci -c ${modem_config_path} set modems.${USB}.sigpercentage=''"${SIGNAL_QUALITY}"''
+        else
+            uci -c ${modem_config_path} delete modems.${USB}.sigpercentage
+        fi
+
+        local ACCESS_TECH=$(helper_get_field "${MODEM_STATUS}" "Status" "access tech")
+        if [ -n "${ACCESS_TECH}" ]; then
+            log_debug "access tech: ${ACCESS_TECH}"
+            uci -c ${modem_config_path} set modems.${USB}.accesstech=''"${ACCESS_TECH}"''
+        else
+            uci -c ${modem_config_path} delete modems.${USB}.accesstech
+        fi
+
+        local OPERATOR_NAME=$(helper_get_field "${MODEM_STATUS}" "3GPP" "operator name")
+        if [ -n "${OPERATOR_NAME}" ]; then
+            log_debug "operator name: ${OPERATOR_NAME}"
+            uci -c ${modem_config_path} set modems.${USB}.isp=''"${OPERATOR_NAME}"''
+        else
+            uci -c ${modem_config_path} delete modems.${USB}.isp
+        fi
+
+        uci -c ${modem_config_path} commit modems
+
+        TIMEOUT=1
+        case "${STATE}" in
+            "failed")
+                # Avoid high frequency looping if the modem is unusable
+                TIMEOUT=300
+                ;;
+            "locked")
+                # Avoid high frequency looping if the modem is unusable
+                TIMEOUT=300
+                ;;
+            "disabled")
+                modem_enable
+                ;;
+            "enabled")
+                # Cleanup previous, if any
+                cleanup_modem
+                # Not yet registered, do nothing
+                log_debug "modem not yet registered in the network"
+                ;;
+            "registered")
+                # Cleanup previous, if any
+                cleanup_modem
+                # Launch connection
+                modem_connect
+                ;;
+            "connected")
+                # Once connected, lower loop frequency
+                TIMEOUT=30
+                modem_connected
+                ;;
+            *)
+                ;;
+        esac
+
+        # Avoid high frequency looping if the modem is unusable
+        sleep ${TIMEOUT}
+    done
+}
+
+process_modem_list()
+{
+    # Get sysfs path of the given USBX or MODEMX id
+    local SYSFS_PATH=$(uci -c ${modem_config_path} -X get modems.${USB}.sysfs)
+    if [ -z "$SYSFS_PATH" ]; then
+        log_error "modem sysfs path unavailable"
+        exit 2
+    fi
+
+    # Monitor list of modems reported by ModemManager, looking for the one with the
+    # expected sysfs path
+    while [ 1 ]; do
+        ${MMCLI} --list-modems | grep "/org/freedesktop/ModemManager1/Modem" | awk '{print $1}' | while read -r DBUSPATH ; do
+            local MODEM_SYSFS_PATH=$(${MMCLI} --modem ${DBUSPATH} | grep "device:" | grep "/sys" | awk -F "'" '{print $2}')
+            if [ "${MODEM_SYSFS_PATH}" == "${SYSFS_PATH}" ]; then
+                process_modem
+            fi
+        done
+        # Iterate until we have the sysfs path match
+        sleep 5
+    done
+}

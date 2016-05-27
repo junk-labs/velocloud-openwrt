@@ -1,6 +1,8 @@
 #!/bin/sh
 
-. /etc/modems/modem.path
+if [ -f /etc/modems/modem.path ]; then
+	. /etc/modems/modem.path
+fi
 
 log()
 {

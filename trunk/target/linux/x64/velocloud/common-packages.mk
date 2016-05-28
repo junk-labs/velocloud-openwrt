@@ -8,6 +8,8 @@ DEFAULT_PACKAGES += \
 	iputils-traceroute6 \
 	iputils-tracepath \
 	iputils-tracepath6 \
+	kmod-igb \
+	kmod-intel-ixgbe \
 	net-tools-arp \
 	net-tools-ifconfig \
 	net-tools-netstat \

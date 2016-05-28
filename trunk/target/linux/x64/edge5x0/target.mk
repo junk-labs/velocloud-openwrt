@@ -9,7 +9,6 @@ include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
 DEFAULT_PACKAGES += \
 	dmi-tool \
 	flashrom \
-	kmod-igb \
 	kmod-dsa-core \
 	kmod-dsa-velocloud \
 	kmod-i2c-i801 \

@@ -7,9 +7,7 @@ include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
 
 # edge500-specific packages:
 DEFAULT_PACKAGES += \
-	kmod-igb \
 	kmod-dsa-core \
-	kmod-intel-ixgbe \
 	kmod-e1000e \
 	kmod-hwmon-core \
 	kmod-hwmon-coretemp \

@@ -1,6 +1,8 @@
 #!/bin/sh
 
-. /etc/modems/modem.path
+if [ -f /etc/modems/modem.path ]; then
+	. /etc/modems/modem.path
+fi
 
 log()
 {
@@ -10,8 +12,20 @@ log()
 
 print_usage()
 {
-	echo "usage: $PROGRAM USB<number> check"
-	echo "usage: $PROGRAM USB<number> set [apn] [username] [password]"
+	echo ""
+	echo "Usage: $PROGRAM [USB] [ACTION] [ACTION ARGS...]"
+	echo ""
+	echo "  [USB] may be given as [USB<number>] or [MODEM<number>], whatever applies."
+	echo ""
+	echo "  Supported [ACTION] values are:"
+	echo "    check                             Checks whether APN setting is supported."
+	echo "    get                               Retrieves current APN settings."
+	echo "    set  [apn] [username] [password]  Sets user-provided APN settings."
+	echo "    auto [apn] [username] [password]  Sets automatically detected APN settings."
+	echo ""
+	echo "  Note: user-provided settings always take preference over the automatically set"
+	echo "  ones, so once 'set' has been run once, any other 'auto' run will be ignored."
+	echo ""
 }
 
 get_apn_supported()
@@ -49,6 +63,7 @@ run_get()
 	echo "  APN:  '$APN'"
 	echo "  user: '$APN_USER'"
 	echo "  pass: '$APN_PASS'"
+	echo "  type: '$APN_TYPE'"
 	exit 0
 }
 
@@ -56,18 +71,31 @@ run_set()
 {
 	local profile=${modem_config_path}/$USB.profile
 
-	log "$USB: setting APN '$APN' user '$USER' pass '$PASS': $profile"
+	# Load previous, if any found
+	if [ -f ${profile} ]; then
+		. ${profile}
+	fi
+
+	# If we are trying to set an 'automatic' profile, only allow it if no
+	# 'manual' profile has ever been set before.
+	if [ "${NEW_APN_TYPE}" == "automatic" ] && [ "${APN_TYPE}" == "manual" ]; then
+		log "$USB: avoiding to override manual APN with an automatic one."
+		exit 1
+	fi
+
+	log "$USB: setting ${NEW_APN_TYPE} APN '${NEW_APN}' user '${NEW_APN_USER}' pass '${NEW_APN_PASS}': $profile"
 
 	mkdir -p $(dirname $profile) >/dev/null 2>&1
 
-	echo "APN=$APN"	      >	 ${profile}
-	echo "APN_USER=$USER" >> ${profile}
-	echo "APN_PASS=$PASS" >> ${profile}
+	echo "APN=${NEW_APN}"	        >  ${profile}
+	echo "APN_USER=${NEW_APN_USER}" >> ${profile}
+	echo "APN_PASS=${NEW_APN_PASS}" >> ${profile}
+	echo "APN_TYPE=${NEW_APN_TYPE}" >> ${profile}
 	# PROXY only applicable to QMI modems
 	echo "PROXY=yes" >> ${profile}
 
 	# If modem script running, restart it to use the new APN info
-	if [ "$(uci -c /etc/config/modems get modems.MODEM1.started 2>/dev/null)" == "1" ]; then
+	if [ "$(uci -c /etc/config/modems get modems.$USB.started 2>/dev/null)" == "1" ]; then
 		log "$USB: restarting modem service after APN update"
 		${modem_script_path}/modem_service.sh $USB restart
 	fi
@@ -114,9 +142,24 @@ case "$ACTION" in
 			exit 1
 		fi
 
-		APN=$3
-		USER=$4
-		PASS=$5
+		NEW_APN=$3
+		NEW_APN_USER=$4
+		NEW_APN_PASS=$5
+		NEW_APN_TYPE="manual"
+		run_set
+		;;
+	'auto')
+		# Allows between 2 and 5 arguments
+		if [ $? -gt 5 ]; then
+			echo "error: too many arguments in 'auto' action" 1>&2
+			print_usage
+			exit 1
+		fi
+
+		NEW_APN=$3
+		NEW_APN_USER=$4
+		NEW_APN_PASS=$5
+		NEW_APN_TYPE="automatic"
 		run_set
 		;;
 	*)

@@ -2,22 +2,6 @@
 # Copyright (C) 2013 Veloccloud.net
 set -x
 
-echo -- "=== `date` ===" > /tmp/vcimg.out
-
-env >> /tmp/vcimg.out
-echo -- "===" >> /tmp/vcimg.out
-echo 1="$1" >> /tmp/vcimg.out
-echo 2="$2" >> /tmp/vcimg.out
-echo 3="$3" >> /tmp/vcimg.out
-echo 4="$4" >> /tmp/vcimg.out
-echo 5="$5" >> /tmp/vcimg.out
-echo 6="$6" >> /tmp/vcimg.out
-echo 7="$7" >> /tmp/vcimg.out
-echo 8="$8" >> /tmp/vcimg.out
-echo 9="$9" >> /tmp/vcimg.out
-#exit 0
-
-
 [ $# -eq 6 ] || {
     echo "SYNTAX: $0 <file> <boot size> <boot dir> <install root size> <install dirs> <vdisk size>"
     exit 1
@@ -155,6 +139,7 @@ sed \
 	-e "s#@ROOT1_DEV@#$ROOT1_RUN#g" \
 	-e "s#@ROOT2_DEV@#$ROOT2_RUN#g" \
 	-e "s#root=@PARTUUID@##g" \
+	-e "s#console=tty0 console=\([^ ]*\)#console=\1 console=tty1#g" \
 	$BOOT_DIR/boot/grub/grub-velocloud.cfg \
 	> $BOOT_DIR/boot/grub/grub.cfg
 

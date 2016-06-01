@@ -14,7 +14,7 @@ DEFAULT_PACKAGES += \
 	net-tools-ifconfig \
 	net-tools-netstat \
 	net-tools-route \
-	openssh-server \
+	openssh-server-pam \
 	openssh-client \
 	openssl-util \
 	uuidgen \

@@ -7,7 +7,6 @@ include $(PLATFORM_SUBDIR)/../velocloud/common-packages.mk
 
 # pw-dev-specific packages:
 DEFAULT_PACKAGES += \
-	kmod-igb \
 	kmod-dsa-core \
 	kmod-dsa-velocloud \
 	kmod-hwmon-core \

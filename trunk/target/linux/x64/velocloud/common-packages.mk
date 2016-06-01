@@ -8,11 +8,13 @@ DEFAULT_PACKAGES += \
 	iputils-traceroute6 \
 	iputils-tracepath \
 	iputils-tracepath6 \
+	kmod-igb \
+	kmod-intel-ixgbe \
 	net-tools-arp \
 	net-tools-ifconfig \
 	net-tools-netstat \
 	net-tools-route \
-	openssh-server \
+	openssh-server-pam \
 	openssh-client \
 	openssl-util \
 	uuidgen \

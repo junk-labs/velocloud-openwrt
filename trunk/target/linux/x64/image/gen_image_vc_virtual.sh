@@ -84,6 +84,9 @@ ROOT2_PARTUUID=`sgdisk -i 5 $OUTPUT | grep 'unique GUID' | sed -e 's/^.*: //'`
 VELOCLOUD_PARTUUID=`sgdisk -i 6 $OUTPUT | grep 'unique GUID' | sed -e 's/^.*: //'`
 VELOCLOUD_UUID=`uuidgen`
 
+# set the proper perms on / and /root
+chmod 0755 "$INST_DIR" "$INST_DIR/root"
+
 # configure fstab-velocloud into fstab, if present
 
 if [ -r "$INST_DIR/etc/config/fstab-velocloud" ]; then

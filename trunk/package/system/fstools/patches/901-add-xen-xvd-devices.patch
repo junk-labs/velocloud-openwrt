@@ -1,0 +1,13 @@
+Add /dev/xvd* (Xen/EC2-style disk paths) to the pattern list.
+
+diff -r -u fstools-2014-06-22.ORIG/block.c fstools-2014-06-22/block.c
+--- a/block.c	2014-08-06 16:40:17.000000000 -0700
++++ b/block.c	2016-06-01 15:48:36.913796323 -0700
+@@ -480,6 +480,7 @@
+ 	}
+ 	_cache_load("/dev/mmcblk*");
+ 	_cache_load("/dev/sd*");
++	_cache_load("/dev/xvd*");
+ 	_cache_load("/dev/hd*");
+ 	_cache_load("/dev/md*");
+ 	_cache_load("/dev/mapper/*");

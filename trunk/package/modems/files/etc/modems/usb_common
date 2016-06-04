@@ -319,3 +319,41 @@ debug_hotplugevents()
 	echo "HOTPLUG:`date`:$eventdir" >> /tmp/hotplug-events.txt
 	env | xargs echo >> /tmp/hotplug-events.txt
 }
+
+modem_cleanup() {
+        . /etc/modems/modem.path
+        if [ ! -d $modem_config_path ]; then
+                mkdir -p $modem_config_path
+        fi
+        if [ ! -d $db_dir ]; then
+                mkdir -p $db_dir
+        fi
+        if [ ! -d $tmpdir ];then
+                mkdir -p $tmpdir
+        fi
+
+        # Remove USB1 to USB4 if exists in /etc/config/network
+        for i in 1 2 3 4; do
+                uci delete network.$modem_string$i
+        done
+        uci commit network
+        # Create a fresh file for every reboot
+        > $modem_config_path/modems
+        # USB modem support End
+}
+
+cleanup_etc_config_modems() {
+    (
+        # Take an exclusive lock of fd 9 (connected to /tmp/.modem_cleanup.lock below)
+        # Wait upto 60 seconds for any concurrent scripts to finish
+        #FLOCK_WAIT="-w 60"   # busybox flock doesn't support this
+        FLOCK_WAIT=""
+        flock -x $FLOCK_WAIT 9 || FATAL "Timed out waiting for other hotplug script"
+
+        if [ ! -f /tmp/.modem_hotplug.init  ];
+        then
+            date >> /tmp/.modem_hotplug.init 
+            modem_cleanup
+        fi
+    ) < /dev/null 9> /tmp/.modem_cleanup.lock
+}

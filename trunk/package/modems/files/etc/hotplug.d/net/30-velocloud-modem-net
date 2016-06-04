@@ -354,6 +354,7 @@ fi
 set_eventdir "$usbifname: net: $INTERFACE"
 
 debug_hotplugevents
+cleanup_etc_config_modems
 
 if [ "$ACTION" = add ]; then
 	add_to_config

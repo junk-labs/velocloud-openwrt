@@ -10,6 +10,8 @@ DEFAULT_PACKAGES += \
 	kmod-e1000 \
 	kmod-virtio-net \
 	kmod-virtio-random \
+	kmod-igbvf \
+	kmod-intel-ixgbevf \
 
 
 define Target/Description

@@ -12,6 +12,8 @@ DEFAULT_PACKAGES += \
 	kmod-e1000 \
 	kmod-e1000e \
 	kmod-vmxnet3 \
+	kmod-igbvf \
+	kmod-intel-ixgbevf \
 
 
 define Target/Description

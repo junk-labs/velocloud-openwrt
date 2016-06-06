@@ -10,6 +10,8 @@ DEFAULT_PACKAGES += \
 	kmod-xen-fs \
 	kmod-xen-evtchn \
 	kmod-xen-netdev \
+	kmod-igbvf \
+	kmod-intel-ixgbevf \
 
 
 define Target/Description

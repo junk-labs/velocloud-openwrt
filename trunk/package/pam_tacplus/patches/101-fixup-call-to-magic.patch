@@ -1,0 +1,31 @@
+
+Looks like one spot was missed by kravietz, when he replaced magic()
+with openssl calls in 789cf4a85266dcb426ed133b2d07df86d0a55972.
+
+--- a/pam_tacplus.c	2016-05-29 19:01:30.000000000 -0700
++++ b/pam_tacplus.c	2016-06-06 10:46:46.377343811 -0700
+@@ -41,6 +41,12 @@
+   #include "config.h"
+ #endif
+ 
++#if defined(HAVE_OPENSSL_RAND_H) && defined(HAVE_LIBCRYPTO)
++# include <openssl/rand.h>
++#else
++# include "magic.h"
++#endif
++
+ /* address of server discovered by pam_sm_authenticate */
+ static tacplus_server_t active_server;
+ 
+@@ -672,7 +678,11 @@
+ int pam_sm_open_session (pam_handle_t * pamh, int flags,
+     int argc, const char **argv) {
+ 
++#if defined(HAVE_OPENSSL_RAND_H) && defined(HAVE_LIBCRYPTO)
++    RAND_pseudo_bytes((unsigned char *) &task_id, sizeof(task_id));
++#else
+     task_id=(short int) magic();
++#endif
+     return _pam_account(pamh, argc, argv, TAC_PLUS_ACCT_FLAG_START, NULL);
+ }    /* pam_sm_open_session */
+ 

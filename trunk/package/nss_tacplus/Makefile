@@ -35,7 +35,7 @@ define Package/nss_tacplus/description
 	TACACS+ NSS Plugin
 endef
 
-TARGET_CFLAGS += -fPIC -std=gnu99 -D_FORTIFY_SOURCE=2 -fstack-protector
+TARGET_CFLAGS += -fPIC -std=gnu99 -D_FORTIFY_SOURCE=2 -fstack-protector -g -O0
 MAKE_FLAGS += $(MAKE_VARS)
 
 define Package/nss_tacplus/install

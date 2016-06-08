@@ -191,7 +191,12 @@ handle_qmi_hybrid() {
 	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
 	uci -c $modem_config_path set modems.$usbifname=interface
 	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
-	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	# Modems that are set to auto-connect don't support APN setting
+	if [ "$product" != "1410:9022" ]; then
+		uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	else
+		log "Modem with PID/VID $product doesn't support APN management"
+	fi
 	uci -c $modem_config_path commit modems
 
 	# In qmi-hybrid modems we trigger the profile generation as soon as we get

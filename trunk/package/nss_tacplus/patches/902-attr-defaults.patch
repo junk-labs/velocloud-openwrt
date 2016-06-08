@@ -1,0 +1,330 @@
+A patch to add the ability to provide default or override
+values for the mandatory attributes UID, GID, HOME and SHELL.
+
+If "uid", "gid", "home", or "shell" are specified in /etc/tacplus.conf,
+these override anything returned from the tacacs+ server.  If, instead,
+they are specified as "defuid", "defgid", "defhome" or "defshell", then
+they provide values in case the tacacs+ server does not return anything
+for them.
+
+For the VeloCloud use-case, we should be using the overrides to force
+all tacacs+ users to look like "admin" (but with their own authentication).
+
+And note that /etc/tacplus.conf cannot exceed 1024 bytes..
+
+--- a/src/nss_tacplus.c	2016-06-06 22:39:49.832873789 -0700
++++ b/src/nss_tacplus.c	2016-06-07 16:37:56.453456281 -0700
+@@ -45,6 +45,16 @@
+     uint8_t debug_level;
+     char *service;
+     char *protocol;
++
++    uid_t override_uid;
++    gid_t override_gid;
++    char *override_shell;
++    char *override_home;
++
++    uid_t default_uid;
++    gid_t default_gid;
++    char *default_shell;
++    char *default_home;
+ } G_tacplus_conf;
+ 
+ static const char CONFKEY_SERVER[]   = "server";
+@@ -54,6 +64,16 @@
+ static const char CONFKEY_SERVICE[]  = "service";
+ static const char CONFKEY_PROTOCOL[] = "protocol";
+ 
++static const char CONFKEY_UID[] = "uid"; /* override tacacs server reply */
++static const char CONFKEY_GID[] = "gid"; /* ditto */
++static const char CONFKEY_HOME[] = "home"; /* ditto */
++static const char CONFKEY_SHELL[] = "shell"; /* ditto */
++
++static const char CONFKEY_DEFUID[] = "defuid"; /* only if not sent by tacacs */
++static const char CONFKEY_DEFGID[] = "defgid"; /* ditto */
++static const char CONFKEY_DEFHOME[] = "defhome"; /* ditto */
++static const char CONFKEY_DEFSHELL[] = "defshell"; /* ditto */
++
+ static const char NO_PASSWD[] = "x";
+ 
+ /**
+@@ -145,6 +165,10 @@
+     {
+         G_tacplus_conf.mtime = conf_stat.st_mtime;
+     }
++    G_tacplus_conf.override_uid = (uid_t)-1;
++    G_tacplus_conf.override_gid = (gid_t)-1;
++    G_tacplus_conf.default_uid = (uid_t)-1;
++    G_tacplus_conf.default_gid = (gid_t)-1;
+ 
+     // ensure that we have a timeout, by default
+     tac_readtimeout_enable = 1;
+@@ -325,6 +349,101 @@
+             }
+             bufleft = buflen - (++offset - buffer);
+         }
++
++        else if (0 == strncmp(key, CONFKEY_UID, sizeof(CONFKEY_UID)))
++        {
++            unsigned long ulval;
++            if (0 == _safe_convert_ulong(val , &ulval))
++            {
++                G_tacplus_conf.override_uid = ulval;
++            }
++        }
++        else if (0 == strncmp(key, CONFKEY_GID, sizeof(CONFKEY_GID)))
++        {
++            unsigned long ulval;
++            if (0 == _safe_convert_ulong(val , &ulval))
++            {
++                G_tacplus_conf.override_gid = ulval;
++            }
++        }
++        else if (0 == strncmp(key, CONFKEY_HOME, sizeof(CONFKEY_HOME)))
++        {
++            if (bufleft < strlen(val) + 1)
++            {
++                errno = ERANGE;
++                status = NSS_STATUS_TRYAGAIN;
++                break;
++            }
++            G_tacplus_conf.override_home = offset;
++            while ('\0' != *val)
++            {
++                *offset++ = *val++;
++            }
++            bufleft = buflen - (++offset - buffer);
++        }
++        else if (0 == strncmp(key, CONFKEY_SHELL, sizeof(CONFKEY_SHELL)))
++        {
++            if (bufleft < strlen(val) + 1)
++            {
++                errno = ERANGE;
++                status = NSS_STATUS_TRYAGAIN;
++                break;
++            }
++            G_tacplus_conf.override_shell = offset;
++            while ('\0' != *val)
++            {
++                *offset++ = *val++;
++            }
++            bufleft = buflen - (++offset - buffer);
++        }
++
++        else if (0 == strncmp(key, CONFKEY_DEFUID, sizeof(CONFKEY_DEFUID)))
++        {
++            unsigned long ulval;
++            if (0 == _safe_convert_ulong(val , &ulval))
++            {
++                G_tacplus_conf.default_uid = ulval;
++            }
++        }
++        else if (0 == strncmp(key, CONFKEY_DEFGID, sizeof(CONFKEY_DEFGID)))
++        {
++            unsigned long ulval;
++            if (0 == _safe_convert_ulong(val , &ulval))
++            {
++                G_tacplus_conf.default_gid = ulval;
++            }
++        }
++        else if (0 == strncmp(key, CONFKEY_DEFHOME, sizeof(CONFKEY_DEFHOME)))
++        {
++            if (bufleft < strlen(val) + 1)
++            {
++                errno = ERANGE;
++                status = NSS_STATUS_TRYAGAIN;
++                break;
++            }
++            G_tacplus_conf.default_home = offset;
++            while ('\0' != *val)
++            {
++                *offset++ = *val++;
++            }
++            bufleft = buflen - (++offset - buffer);
++        }
++        else if (0 == strncmp(key, CONFKEY_DEFSHELL, sizeof(CONFKEY_DEFSHELL)))
++        {
++            if (bufleft < strlen(val) + 1)
++            {
++                errno = ERANGE;
++                status = NSS_STATUS_TRYAGAIN;
++                break;
++            }
++            G_tacplus_conf.default_shell = offset;
++            while ('\0' != *val)
++            {
++                *offset++ = *val++;
++            }
++            bufleft = buflen - (++offset - buffer);
++        }
++
+         else
+         {
+             syslog(LOG_WARNING, "%s: unknown configuration key=`%s'",
+@@ -462,6 +581,37 @@
+         }                                                \
+     }
+ 
++#define is_attr_good(attrptr) ({                         \
++    int present = 0;                                     \
++    for (size_t i = 0; i < REQUIRED_TAC_ATTRS_LEN; ++i)  \
++    {                                                    \
++        if ((attrptr) == attr_good[i])                   \
++        {                                                \
++            present = 1;                                 \
++            break;                                       \
++        }                                                \
++    }                                                    \
++    present; })
++
++#define set_pw_char_field(field,attrptr,value)           \
++    if (bufleft < strlen(value) + 1)                     \
++    {                                                    \
++        goto buffer_full;                                \
++    }                                                    \
++                                                         \
++    pw->field = offset;                                  \
++    while ('\0' != *value)                               \
++    {                                                    \
++        *offset++ = *value++;                            \
++    }                                                    \
++    bufleft = buflen - (++offset - buffer);              \
++    mark_attr_good(attrptr);
++
++
++#define set_pw_int_field(field,attrptr,value)            \
++    pw->field = value;                                   \
++    mark_attr_good(attrptr);
++
+     // nullify the attr_good variable
+     memset(attr_good, 0, sizeof(attr_good));
+ 
+@@ -485,6 +635,20 @@
+     // password is always notset, so use a constant
+     pw->pw_passwd = (char*)NO_PASSWD;
+ 
++    /* fill in override attributes right now */
++    if (G_tacplus_conf.override_uid != (uid_t)-1) {
++        set_pw_int_field(pw_uid, TAC_ATTR_UID, G_tacplus_conf.override_uid);
++    }
++    if (G_tacplus_conf.override_gid != (gid_t)-1) {
++        set_pw_int_field(pw_gid, TAC_ATTR_GID, G_tacplus_conf.override_gid);
++    }
++    if (G_tacplus_conf.override_home != 0) {
++        set_pw_char_field(pw_dir, TAC_ATTR_HOME, G_tacplus_conf.override_home);
++    }
++    if (G_tacplus_conf.override_shell != 0) {
++        set_pw_char_field(pw_shell, TAC_ATTR_SHELL, G_tacplus_conf.override_shell);
++    }
++
+     attr = reply->attr;
+     while (NULL != attr && NSS_STATUS_SUCCESS == status)
+     {
+@@ -505,13 +669,12 @@
+ 
+             _normalize_name(attr->attr, namsz, tmp, sizeof(tmp));
+ 
+-            if (0 == strcmp(tmp, TAC_ATTR_UID))
++            if (0 == strcmp(tmp, TAC_ATTR_UID) && G_tacplus_conf.override_uid != (uid_t)-1)
+             {
+                 unsigned long ulval;
+                 if (0 == _safe_convert_ulong(value , &ulval))
+                 {
+-                    pw->pw_uid = ulval;
+-                    mark_attr_good(TAC_ATTR_UID);
++                    set_pw_int_field(pw_uid, TAC_ATTR_UID, ulval);
+                 }
+                 else
+                 {
+@@ -519,13 +682,12 @@
+                     status = NSS_STATUS_TRYAGAIN;
+                 }
+             }
+-            if (0 == strcmp(tmp, TAC_ATTR_GID))
++            if (0 == strcmp(tmp, TAC_ATTR_GID) && G_tacplus_conf.override_gid != (gid_t)-1)
+             {
+                 unsigned long ulval;
+                 if (0 == _safe_convert_ulong(value, &ulval))
+                 {
+-                    pw->pw_gid = ulval;
+-                    mark_attr_good(TAC_ATTR_GID);
++                    set_pw_int_field(pw_gid, TAC_ATTR_GID, ulval);
+                 }
+                 else
+                 {
+@@ -533,35 +695,13 @@
+                     status = NSS_STATUS_TRYAGAIN;
+                 }
+             }
+-            if (0 == strcmp(tmp, TAC_ATTR_HOME))
++            if (0 == strcmp(tmp, TAC_ATTR_HOME) && G_tacplus_conf.override_home != 0)
+             {
+-                if (bufleft < strlen(value) + 1)
+-                {
+-                    goto buffer_full;
+-                }
+-
+-                pw->pw_dir = offset;
+-                while ('\0' != *value)
+-                {
+-                    *offset++ = *value++;
+-                }
+-                bufleft = buflen - (++offset - buffer);
+-                mark_attr_good(TAC_ATTR_HOME);
++                set_pw_char_field(pw_dir, TAC_ATTR_HOME, value);
+             }
+-            if (0 == strcmp(tmp, TAC_ATTR_SHELL))
++            if (0 == strcmp(tmp, TAC_ATTR_SHELL) && G_tacplus_conf.override_shell != 0)
+             {
+-                if (bufleft < strlen(value) + 1)
+-                {
+-                    goto buffer_full;
+-                }
+-
+-                pw->pw_shell = offset;
+-                while ('\0' != *value)
+-                {
+-                    *offset++ = *value++;
+-                }
+-                bufleft = buflen - (++offset - buffer);
+-                mark_attr_good(TAC_ATTR_SHELL);
++                set_pw_char_field(pw_shell, TAC_ATTR_SHELL, value);
+             }
+         }
+         else
+@@ -574,21 +714,25 @@
+         attr = attr->next;
+     }
+ 
++    /* fill in override attributes right now */
++    if (G_tacplus_conf.default_uid != (uid_t)-1 && !is_attr_good(TAC_ATTR_UID)) {
++        set_pw_int_field(pw_uid, TAC_ATTR_UID, G_tacplus_conf.default_uid);
++    }
++    if (G_tacplus_conf.default_gid != (gid_t)-1 && !is_attr_good(TAC_ATTR_GID)) {
++        set_pw_int_field(pw_gid, TAC_ATTR_GID, G_tacplus_conf.default_gid);
++    }
++    if (G_tacplus_conf.default_home != 0 && !is_attr_good(TAC_ATTR_HOME)) {
++        set_pw_char_field(pw_dir, TAC_ATTR_HOME, G_tacplus_conf.default_home);
++    }
++    if (G_tacplus_conf.default_shell != 0 && !is_attr_good(TAC_ATTR_SHELL)) {
++        set_pw_char_field(pw_shell, TAC_ATTR_SHELL, G_tacplus_conf.default_shell);
++    }
+     for (size_t o = 0; NULL != REQUIRED_TAC_ATTRS[o]; ++o)
+     {
+         const char *cur = REQUIRED_TAC_ATTRS[o];
+         bool seen = false;
+ 
+-        for (size_t i = 0; NULL != attr_good[i]; ++i)
+-        {
+-            if (cur == attr_good[i])
+-            {
+-                seen = true;
+-                break;
+-            }
+-        }
+-
+-        if (!seen)
++        if (!is_attr_good(cur))
+         {
+             syslog(LOG_WARNING, "%s: missing required attribute '%s'",
+                    __FILE__, cur);

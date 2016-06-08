@@ -174,7 +174,6 @@ start_pppd_script() {
 # set the mgmt device parameter here and call it a day, rest all gets
 # done from 30-usb_ip
 handle_qmi_hybrid() {
-	local ttydevice
 	local ifname
 
 	count=1
@@ -223,7 +222,6 @@ handle_qmi_hybrid() {
 # "control" interface for this mode, so we just set the mgmt device parameter
 # here and call it a day, rest all gets done from 30-usb_ip
 handle_sierranet() {
-	local ttydevice
 	local ifname
 
 	count=1

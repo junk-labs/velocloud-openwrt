@@ -92,7 +92,7 @@
       </Item>
       <Item>
         <rasd:AddressOnParent>7</rasd:AddressOnParent>
-        <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
+        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
         <rasd:Connection>GE1</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter GE1</rasd:Description>
         <rasd:ElementName>Network adapter 1</rasd:ElementName>
@@ -103,7 +103,7 @@
       </Item>
       <Item>
         <rasd:AddressOnParent>8</rasd:AddressOnParent>
-        <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
+        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
         <rasd:Connection>GE2</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter GE2</rasd:Description>
         <rasd:ElementName>Network adapter 2</rasd:ElementName>
@@ -114,7 +114,7 @@
       </Item>
       <Item>
         <rasd:AddressOnParent>9</rasd:AddressOnParent>
-        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
+        <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
         <rasd:Connection>GE3</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter GE3</rasd:Description>
         <rasd:ElementName>Network adapter 3</rasd:ElementName>
@@ -125,7 +125,7 @@
       </Item>
       <Item>
         <rasd:AddressOnParent>10</rasd:AddressOnParent>
-        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
+        <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
         <rasd:Connection>GE4</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter GE4</rasd:Description>
         <rasd:ElementName>Network adapter 4</rasd:ElementName>

@@ -84,6 +84,10 @@ ROOT2_PARTUUID=`sgdisk -i 5 $OUTPUT | grep 'unique GUID' | sed -e 's/^.*: //'`
 VELOCLOUD_PARTUUID=`sgdisk -i 6 $OUTPUT | grep 'unique GUID' | sed -e 's/^.*: //'`
 VELOCLOUD_UUID=`uuidgen`
 
+TUNE2FS_OPTS="-c -1 \
+              -j -o user_xattr,acl \
+              -O dir_index,filetype,extent,flex_bg,sparse_super,large_file,huge_file,uninit_bg,dir_nlink,extra_isize"
+
 # set the proper perms on / and /root
 chmod 0755 "$INST_DIR" "$INST_DIR/root"
 
@@ -108,13 +112,15 @@ $STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$IROOT" -B "$BLOCK_SIZE" -b "$BLO
 rm -rf "$IROOT"
 $STAGING_DIR_HOST/bin/genext2fs -U -x "$OUTPUT.inst" $inst_dirs -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.inst" -m 0 -D $INCLUDE_DIR/device_table.txt || exit 1
 ROOT0_UUID=`uuidgen`
-$STAGING_DIR_HOST/bin/tune2fs -O extents,uninit_bg,dir_index -L root0 -U $ROOT0_UUID "$OUTPUT.inst" || exit 1
+$STAGING_DIR_HOST/bin/tune2fs $TUNE2FS_OPTS -L root0 -U $ROOT0_UUID "$OUTPUT.inst" || exit 1
 # FIXME ADD JOURNAL
 $STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.inst"
 $STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.inst"   # twice because the first will have added lost+found
 
 dd if="$OUTPUT.inst" of="$OUTPUT" bs=1M seek="$ROOT0_OFF" conv=notrunc || exit 1
 ROOT1_UUID=`uuidgen`
+# tune2fs: we have already done the conversion above, so no TUNE2FS_OPTS.
+# Just set the label and uuid.
 $STAGING_DIR_HOST/bin/tune2fs -L root1 -U $ROOT1_UUID "$OUTPUT.inst" || exit 1
 $STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.inst"
 dd if="$OUTPUT.inst" of="$OUTPUT" bs=1M seek="$ROOT1_OFF" conv=notrunc || exit 1
@@ -152,7 +158,7 @@ BLOCK_SIZE=4096
 BLOCKS="$(($BOOT_SIZE * 1024 / 4))"
 
 $STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$BOOT_DIR" -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.boot" -m 0 || exit 1
-$STAGING_DIR_HOST/bin/tune2fs -O extents,uninit_bg,dir_index -L boot -U $BOOT_UUID "$OUTPUT.boot" || exit 1
+$STAGING_DIR_HOST/bin/tune2fs $TUNE2FS_OPTS -L boot -U $BOOT_UUID "$OUTPUT.boot" || exit 1
 $STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.boot"
 $STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.boot"
 dd if="$OUTPUT.boot" of="$OUTPUT" bs=1M seek="$BOOT_OFF" conv=notrunc || exit 1
@@ -160,12 +166,14 @@ rm -f "$OUTPUT.boot"
 
 BLOCK_SIZE=4096
 #VELOCLOUD_SIZE="$(($VELOCLOUD_END - $VELOCLOUD_OFF))"
-VELOCLOUD_SIZE="1"
+VELOCLOUD_SIZE="16"
 BLOCKS="$(($VELOCLOUD_SIZE * 1024 / 4))"
 
-$STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.user" -m 0 || exit 1
-$STAGING_DIR_HOST/bin/tune2fs -O extents,uninit_bg,dir_index -L user -U $VELOCLOUD_UUID "$OUTPUT.user" || exit 1
-$STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.user"
-$STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.user"
+# For creating /velocloud ("user"), use the actual mkfs.ext4 to create
+# an empty filesystem on a preallocated zeroed file.  This ensures that
+# all the right flags are set on the filesystem, so that an online resize
+# after deployment works, _and_ is nearly instantaneous.
+dd if=/dev/zero of="$OUTPUT.user" bs=1M count=$VELOCLOUD_SIZE || exit 1
+$STAGING_DIR_HOST/bin/mkfs.ext4 -F -i 8192 -b "$BLOCK_SIZE" -L user -U $VELOCLOUD_UUID "$OUTPUT.user"
 dd if="$OUTPUT.user" of="$OUTPUT" bs=1M seek="$VELOCLOUD_OFF" conv=notrunc || exit 1
 rm -f "$OUTPUT.user"

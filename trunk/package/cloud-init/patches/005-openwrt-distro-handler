@@ -1,7 +1,7 @@
 diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cloudinit/distros/openwrt.py
 --- cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py	1970-01-01 05:30:00.000000000 +0530
-+++ cloud-init-0.7.2/cloudinit/distros/openwrt.py	2013-06-13 20:33:06.211274974 +0530
-@@ -0,0 +1,134 @@
++++ cloud-init-0.7.2/cloudinit/distros/openwrt.py	2016-06-13 20:33:06.211274974 +0530
+@@ -0,0 +1,148 @@
 +# vi: ts=4 expandtab
 +#
 +#    Copyright (C) 2012 Canonical Ltd.
@@ -37,19 +37,32 @@ diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cl
 +
 +LOG = logging.getLogger(__name__)
 +
-+
-+
-+
++# meta-data
++#
++# network-interfaces:
++#   GE4:
++#      type: dhcp
++#
++# or
++#
++# network-interfaces:
++#   GE4:
++#      type: static
++#      ipaddr: 192.168.150.5
++#      netmask: 255.255.255.0
++#      gateway: 192.168.150.1
++#
++# or
++#
++# network-interfaces:
++#   GE4:
++#      type: pppoe
++#      username: user
++#      passwd: pass
++#
 +
 +
 +class Distro(distros.Distro):
-+    hostname_conf_fn = "/etc/hostname"
-+    locale_conf_fn = "/etc/default/locale" # This _isnt_ there on OWRT
-+    network_conf_fn = "/etc/network/interfaces"
-+    tz_conf_fn = "/etc/timezone" # This _isnt_ there on OWRT
-+    tz_local_fn = "/etc/localtime"
-+    tz_zone_dir = "/usr/share/zoneinfo"
-+
 +
 +    def __init__(self, name, cfg, paths):
 +        distros.Distro.__init__(self, name, cfg, paths)
@@ -57,17 +70,30 @@ diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cl
 +        self.osfamily = 'openwrt'
 +
 +    def apply_locale(self, locale, out_fn=None):
-+        return
++        raise NotImplementedError()
 +
 +    def install_packages(self, pkglist):
-+        return
++        raise NotImplementedError()
 +
 +    def update_package_sources(self):
-+        return
++        raise NotImplementedError()
 +
 +    def _write_network(self, settings):
-+        util.write_file(self.network_conf_fn, settings)
-+        return ['all']
++        # util.write_file(self.network_conf_fn, settings)
++        for (intf, intf_conf) in settings.items():
++            cmd_wan_config = ["/opt/vc/bin/set_wan_config.sh", intf]
++            type = intf_conf["type"]
++            # [DHCP | STATIC ipaddr netmask gateway | PPPOE username passwd]
++            if type == "dhcp":
++                cmd_wan_config.append("DHCP")
++            elif type == "static":
++                cmd_wan_config.extend(("STATIC", intf_conf["ipaddr"], intf_conf["netmask"], intf_conf["gateway"]))
++	    elif type == "pppoe":
++	        cmd_wan_config.extend(("PPPOE", intf_conf["username"], intf_conf["passwd"]))
++            else:
++	        raise ValueError("invalid interface type: %s" % type)
++	    util.subp(cmd_wan_config)
++        return settings.keys()
 +
 +    def _select_hostname(self, hostname, fqdn):
 +        if not hostname:
@@ -118,21 +144,9 @@ diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cl
 +        return "127.0.0.1"
 +
 +    def set_timezone(self, tz):
-+        # timezone on openwrt is written in /etc/config/system
-+        # under:
-+        # config system
-+        #       option timezone <timezone>
-+        # We should use UCI to update this:
-+        # uci set system.timezone=<timezone>
-+        #
-+        cmd = ['uci', 'set', 'system.@system[0].timezone=']
-+        try:
-+            util.subp(cmd)
-+            util.subp(['uci', 'commit', 'system'])
-+        except IOError:
-+            pass
++        raise NotImplementedError()
 +
 +    def package_command(self, command, args=None, pkgs=None):
-+        pass
++        raise NotImplementedError()
 +
 +

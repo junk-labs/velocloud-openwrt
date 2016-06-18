@@ -774,7 +774,10 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 	  api.distance = distance;
 	}
 
-      bgp_attr_buf.local_pref = info->attr->local_pref;
+      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_LOCAL_PREF))
+        bgp_attr_buf.local_pref = info->attr->local_pref;
+      else
+        bgp_attr_buf.local_pref = bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
       api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
 
@@ -927,6 +930,13 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       SET_FLAG (api.message, ZAPI_MESSAGE_METRIC);
       api.metric = info->attr->med;
 
+      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_LOCAL_PREF))
+        bgp_attr_buf.local_pref = info->attr->local_pref;
+      else
+        bgp_attr_buf.local_pref = peer->bgp->default_local_pref;
+      bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
+
       if (BGP_DEBUG(zebra, ZEBRA))
 	{
 	  char buf[2][INET_ADDRSTRLEN];
@@ -988,6 +998,13 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       api.ifindex = &ifindex;
       SET_FLAG (api.message, ZAPI_MESSAGE_METRIC);
       api.metric = info->attr->med;
+
+      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_LOCAL_PREF))
+        bgp_attr_buf.local_pref = info->attr->local_pref;
+      else
+        bgp_attr_buf.local_pref = peer->bgp->default_local_pref;
+      bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
 
       if (BGP_DEBUG(zebra, ZEBRA))
 	{

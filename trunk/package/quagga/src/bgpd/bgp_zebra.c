@@ -46,6 +46,8 @@ struct in_addr router_id_zebra;
 /* Growable buffer for nexthops sent to zebra */
 struct stream *bgp_nexthop_buf = NULL;
 
+struct zapi_bgp_attr bgp_attr_buf;
+
 /* Router-id update message from zebra. */
 static int
 bgp_router_id_update (int command, struct zclient *zclient, zebra_size_t length)
@@ -83,7 +85,7 @@ bgp_interface_add (int command, struct zclient *zclient, zebra_size_t length)
   ifp = zebra_interface_add_read (zclient->ibuf);
 
   if (BGP_DEBUG(zebra, ZEBRA) && ifp)
-    zlog_debug("Zebra rcvd: interface add %s", ifp->name);
+    zlog_debug("Zebra rcvd: interface add %s instance %s", ifp->name, ifp->iname);
 
   return 0;
 }
@@ -187,12 +189,14 @@ bgp_interface_address_add (int command, struct zclient *zclient,
     {
       char buf[128];
       prefix2str(ifc->address, buf, sizeof(buf));
-      zlog_debug("Zebra rcvd: interface %s address add %s",
-		 ifc->ifp->name, buf);
+      zlog_debug("Zebra rcvd: interface %s instance %s address add %s",
+		 ifc->ifp->name, ifc->ifp->iname, buf);
     }
 
   if (if_is_operative (ifc->ifp))
-    bgp_connected_add (ifc);
+    {
+      bgp_connected_add (ifc);
+    }
 
   return 0;
 }
@@ -232,9 +236,18 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
   struct zapi_ipv4 api;
   struct in_addr nexthop;
   struct prefix_ipv4 p;
+  char iname_tmp[INSTANCE_NAMSIZ + 1];
+  size_t namelen;
+  struct bgp *bgp;
 
   s = zclient->ibuf;
   nexthop.s_addr = 0;
+
+  /* Read instance name. */
+  stream_get (iname_tmp, s, INSTANCE_NAMSIZ);
+  namelen = strnlen(iname_tmp, INSTANCE_NAMSIZ);
+  strncpy (api.iname, iname_tmp, namelen);
+  api.iname[namelen] = '\0';
 
   /* Type, flags, message. */
   api.type = stream_getc (s);
@@ -265,6 +278,16 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
   else
     api.metric = 0;
 
+  zlog_debug("Zebra rcvd: Instance %s", api.iname);
+
+  bgp = bgp_lookup_by_name (api.iname);
+  
+  if (!bgp)
+    {
+      zlog_debug("Zebra rcvd: Instance not found");
+      return 0;
+    }
+
   if (command == ZEBRA_IPV4_ROUTE_ADD)
     {
       if (BGP_DEBUG(zebra, ZEBRA))
@@ -277,7 +300,7 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
 		     inet_ntop(AF_INET, &nexthop, buf[1], sizeof(buf[1])),
 		     api.metric);
 	}
-      bgp_redistribute_add((struct prefix *)&p, &nexthop, NULL,
+      bgp_redistribute_add(bgp, (struct prefix *)&p, &nexthop, NULL,
 			   api.metric, api.type);
     }
   else
@@ -293,7 +316,7 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
 		     inet_ntop(AF_INET, &nexthop, buf[1], sizeof(buf[1])),
 		     api.metric);
 	}
-      bgp_redistribute_delete((struct prefix *)&p, api.type);
+      bgp_redistribute_delete(bgp, (struct prefix *)&p, api.type);
     }
 
   return 0;
@@ -308,9 +331,18 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
   struct zapi_ipv6 api;
   struct in6_addr nexthop;
   struct prefix_ipv6 p;
+  char iname_tmp[INSTANCE_NAMSIZ + 1];
+  size_t namelen;
+  struct bgp *bgp;
 
   s = zclient->ibuf;
   memset (&nexthop, 0, sizeof (struct in6_addr));
+
+  /* Read instance name. */
+  stream_get (iname_tmp, s, INSTANCE_NAMSIZ);
+  namelen = strnlen(iname_tmp, INSTANCE_NAMSIZ);
+  strncpy (api.iname, iname_tmp, namelen);
+  api.iname[namelen] = '\0';
 
   /* Type, flags, message. */
   api.type = stream_getc (s);
@@ -347,6 +379,8 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
   if (IN6_IS_ADDR_LINKLOCAL (&p.prefix))
     return 0;
 
+  bgp = bgp_lookup_by_name (api.iname);
+
   if (command == ZEBRA_IPV6_ROUTE_ADD)
     {
       if (BGP_DEBUG(zebra, ZEBRA))
@@ -359,7 +393,7 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
 		     inet_ntop(AF_INET, &nexthop, buf[1], sizeof(buf[1])),
 		     api.metric);
 	}
-      bgp_redistribute_add ((struct prefix *)&p, NULL, &nexthop,
+      bgp_redistribute_add (bgp, (struct prefix *)&p, NULL, &nexthop,
 			    api.metric, api.type);
     }
   else
@@ -375,7 +409,7 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
 		     inet_ntop(AF_INET6, &nexthop, buf[1], sizeof(buf[1])),
 		     api.metric);
 	}
-      bgp_redistribute_delete ((struct prefix *) &p, api.type);
+      bgp_redistribute_delete (bgp, (struct prefix *) &p, api.type);
     }
   
   return 0;
@@ -718,6 +752,10 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 	  stream_put (bgp_nexthop_buf, &nexthop, sizeof (struct in_addr *));
 	}
 
+      if (peer->bgp->name)
+         strncpy (api.iname, peer->bgp->name, strnlen(peer->bgp->name, INSTANCE_NAMSIZ));
+      else
+         api.iname[0] = '\0';
       api.type = ZEBRA_ROUTE_BGP;
       api.message = 0;
       api.safi = safi;
@@ -735,6 +773,10 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 	  SET_FLAG (api.message, ZAPI_MESSAGE_DISTANCE);
 	  api.distance = distance;
 	}
+
+      bgp_attr_buf.local_pref = info->attr->local_pref;
+      bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
 
       if (BGP_DEBUG(zebra, ZEBRA))
 	{
@@ -798,6 +840,10 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 	}
 
       /* Make Zebra API structure. */
+      if (peer->bgp->name)
+         strncpy (api.iname, peer->bgp->name, strnlen(peer->bgp->name, INSTANCE_NAMSIZ));
+      else
+         api.iname[0] = '\0';
       api.flags = flags;
       api.type = ZEBRA_ROUTE_BGP;
       api.message = 0;
@@ -810,6 +856,13 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
       api.ifindex = &ifindex;
       SET_FLAG (api.message, ZAPI_MESSAGE_METRIC);
       api.metric = info->attr->med;
+
+      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_LOCAL_PREF))
+        bgp_attr_buf.local_pref = info->attr->local_pref;
+      else
+        bgp_attr_buf.local_pref = bgp->default_local_pref;
+      bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
 
       if (BGP_DEBUG(zebra, ZEBRA))
 	{
@@ -860,6 +913,10 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       api.flags = flags;
       nexthop = &info->attr->nexthop;
 
+      if (peer->bgp->name)
+         strncpy (api.iname, peer->bgp->name, strnlen(peer->bgp->name, INSTANCE_NAMSIZ));
+      else
+         api.iname[0] = '\0';
       api.type = ZEBRA_ROUTE_BGP;
       api.message = 0;
       api.safi = safi;
@@ -915,6 +972,10 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
 	if (info->peer->ifname)
 	  ifindex = if_nametoindex (info->peer->ifname);
 
+      if (peer->bgp->name)
+         strncpy (api.iname, peer->bgp->name, strnlen(peer->bgp->name, INSTANCE_NAMSIZ));
+      else
+         api.iname[0] = '\0';
       api.flags = flags;
       api.type = ZEBRA_ROUTE_BGP;
       api.message = 0;

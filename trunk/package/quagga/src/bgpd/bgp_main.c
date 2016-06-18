@@ -239,14 +239,7 @@ bgp_exit (int status)
   for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp))
     bgp_delete (bgp);
   list_free (bm->bgp);
-
-  /* reverse bgp_master_init */
-  for (ALL_LIST_ELEMENTS_RO(bm->listen_sockets, node, socket))
-    {
-      if (close ((int)(long)socket) == -1)
-        zlog_err ("close (%d): %s", (int)(long)socket, safe_strerror (errno));
-    }
-  list_delete (bm->listen_sockets);
+  bm->bgp = NULL;
 
   /* reverse bgp_zebra_init/if_init */
   if (retain_mode)

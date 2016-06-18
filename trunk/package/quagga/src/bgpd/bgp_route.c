@@ -992,7 +992,7 @@ bgp_announce_check (struct bgp_info *ri, struct peer *peer, struct prefix *p,
                IN6_IS_ADDR_UNSPECIFIED(&attr->extra->mp_nexthop_global))
 #endif /* HAVE_IPV6 */
 	   || (peer->sort == BGP_PEER_EBGP
-	       && bgp_multiaccess_check_v4 (attr->nexthop, peer->host) == 0))
+	       && bgp_multiaccess_check_v4 (bgp, attr->nexthop, peer->host) == 0))
     {
       /* Set IPv4 nexthop. */
       if (p->family == AF_INET)
@@ -2157,7 +2157,7 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
       /* If the peer is EBGP and nexthop is not on connected route,
 	 discard it.  */
       if (peer->sort == BGP_PEER_EBGP && peer->ttl == 1
-	  && ! bgp_nexthop_onlink (afi, &new_attr)
+	  && ! bgp_nexthop_onlink (peer->bgp, afi, &new_attr)
 	  && ! CHECK_FLAG (peer->flags, PEER_FLAG_DISABLE_CONNECTED_CHECK))
 	{
 	  reason = "non-connected next-hop;";
@@ -5371,12 +5371,11 @@ ALIAS (no_ipv6_aggregate_address_summary_only,
 
 /* Redistribute route treatment. */
 void
-bgp_redistribute_add (struct prefix *p, const struct in_addr *nexthop,
-		      const struct in6_addr *nexthop6,
-		      u_int32_t metric, u_char type)
+bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
+                      const struct in_addr *nexthop,
+		              const struct in6_addr *nexthop6,
+		              u_int32_t metric, u_char type)
 {
-  struct bgp *bgp;
-  struct listnode *node, *nnode;
   struct bgp_info *new;
   struct bgp_info *bi;
   struct bgp_info info;
@@ -5403,8 +5402,6 @@ bgp_redistribute_add (struct prefix *p, const struct in_addr *nexthop,
   attr.med = metric;
   attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC);
 
-  for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp))
-    {
       afi = family2afi (p->family);
 
       if (bgp->redist[afi][type])
@@ -5440,7 +5437,7 @@ bgp_redistribute_add (struct prefix *p, const struct in_addr *nexthop,
 		  /* Unintern original. */
 		  aspath_unintern (&attr.aspath);
 		  bgp_attr_extra_free (&attr);
-		  bgp_redistribute_delete (p, type);
+		  bgp_redistribute_delete (bgp, p, type);
 		  return;
 		}
 	    }
@@ -5503,7 +5500,6 @@ bgp_redistribute_add (struct prefix *p, const struct in_addr *nexthop,
 	  bgp_unlock_node (bn);
 	  bgp_process (bgp, bn, afi, SAFI_UNICAST);
 	}
-    }
 
   /* Unintern original. */
   aspath_unintern (&attr.aspath);
@@ -5511,16 +5507,12 @@ bgp_redistribute_add (struct prefix *p, const struct in_addr *nexthop,
 }
 
 void
-bgp_redistribute_delete (struct prefix *p, u_char type)
+bgp_redistribute_delete (struct bgp *bgp, struct prefix *p, u_char type)
 {
-  struct bgp *bgp;
-  struct listnode *node, *nnode;
   afi_t afi;
   struct bgp_node *rn;
   struct bgp_info *ri;
 
-  for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp))
-    {
       afi = family2afi (p->family);
 
       if (bgp->redist[afi][type])
@@ -5540,7 +5532,6 @@ bgp_redistribute_delete (struct prefix *p, u_char type)
 	    }
 	  bgp_unlock_node (rn);
 	}
-    }
 }
 
 /* Withdraw specified route type's route. */

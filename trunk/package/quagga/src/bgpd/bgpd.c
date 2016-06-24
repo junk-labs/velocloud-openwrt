@@ -2009,7 +2009,7 @@ bgp_create (as_t *as, const char *name)
         zlog_err ("BGP name %s, fd %d\n", namespace, bgp->fd);
       }
 
-      zclient_interface_request (zclient);
+      //zclient_interface_request (zclient);
     }
 
   return bgp;

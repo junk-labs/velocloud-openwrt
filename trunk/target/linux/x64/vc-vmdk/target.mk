@@ -14,6 +14,8 @@ DEFAULT_PACKAGES += \
 	kmod-vmxnet3 \
 	kmod-igbvf \
 	kmod-intel-ixgbevf \
+	kmod-fs-vfat \
+	kmod-fs-isofs \
 
 
 define Target/Description

@@ -12,6 +12,8 @@ DEFAULT_PACKAGES += \
 	kmod-virtio-random \
 	kmod-igbvf \
 	kmod-intel-ixgbevf \
+	kmod-fs-vfat \
+	kmod-fs-isofs \
 
 
 define Target/Description

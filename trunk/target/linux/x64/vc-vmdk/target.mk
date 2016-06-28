@@ -16,6 +16,10 @@ DEFAULT_PACKAGES += \
 	kmod-intel-ixgbevf \
 	kmod-fs-vfat \
 	kmod-fs-isofs \
+	kmod-nls-cp437 \
+	kmod-nls-cp850 \
+	kmod-nls-iso8859-1 \
+	kmod-nls-iso8859-15 \
 
 
 define Target/Description

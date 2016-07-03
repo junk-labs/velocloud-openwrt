@@ -1,0 +1,22 @@
+diff --git a/lib/librte_mempool/rte_mempool.c b/lib/librte_mempool/rte_mempool.c
+index cf7ed76..163e918 100644
+--- a/lib/librte_mempool/rte_mempool.c
++++ b/lib/librte_mempool/rte_mempool.c
+@@ -480,7 +480,16 @@ rte_mempool_xmem_create(const char *name, unsigned n, unsigned elt_size,
+ 	 * running as a secondary process etc., so no checks made
+ 	 * in this function for that condition */
+ 	snprintf(rg_name, sizeof(rg_name), RTE_MEMPOOL_MZ_FORMAT, name);
+-	r = rte_ring_create(rg_name, rte_align32pow2(n+1), socket_id, rg_flags);
++    r = rte_ring_lookup(rg_name);
++    if (r) {
++        if (rte_align32pow2(n+1) > r->prod.size) {
++            RTE_LOG(ERR, MEMPOOL, "Ring %s exists with size %d, requested %d\n",
++                    rg_name, r->prod.size, rte_align32pow2(n+1));
++            goto exit;        
++        }
++    } else {
++	    r = rte_ring_create(rg_name, rte_align32pow2(n+1), socket_id, rg_flags);
++    }
+ 	if (r == NULL)
+ 		goto exit;
+ 

@@ -1,0 +1,10 @@
+#
+# List of USB modem devices identified by idVendor:idProduct which will never be
+# used through ModemManager.
+#
+# After the idVendor:idProduct, a explicit message may be optionally given which
+# will be logged whenever the events for the device are ignored.
+#
+
+# Pantech UML295
+10a9:6064 no control interface on device

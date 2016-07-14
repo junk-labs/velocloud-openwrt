@@ -1,0 +1,1462 @@
+From e81a6f546035b341d310eb1c82fd6c9e1dda3313 Mon Sep 17 00:00:00 2001
+From: Aleksander Morgado <aleksander@aleksander.es>
+Date: Mon, 25 Jul 2016 16:26:31 +0200
+Subject: [PATCH 06/12] build: allow disabling OMA interface support
+
+---
+ cli/Makefile.am                   |   5 +-
+ cli/mmcli.c                       |   6 +
+ cli/mmcli.h                       |   2 +
+ configure.ac                      |  15 ++
+ include/Makefile.am               |   4 +
+ include/ModemManager-enums-oma.h  | 125 ++++++++++++++++
+ include/ModemManager-enums.h      |  92 ------------
+ include/ModemManager-version.h.in |  15 ++
+ include/ModemManager.h            |   3 +
+ introspection/Makefile.am         |   5 +
+ libmm-glib/Makefile.am            |  20 ++-
+ libmm-glib/generated/Makefile.am  |  19 ++-
+ libmm-glib/libmm-glib.h           |   4 +-
+ libmm-glib/mm-common-helpers.c    | 308 +++++++++++++++++++-------------------
+ libmm-glib/mm-common-helpers.h    |  27 ++--
+ libmm-glib/mm-helper-types.h      |   4 +
+ libmm-glib/mm-manager.c           |   2 +
+ libmm-glib/mm-object.c            |   4 +
+ libmm-glib/mm-object.h            |  11 +-
+ src/Makefile.am                   |   9 +-
+ src/mm-broadband-modem-qmi.c      |  21 ++-
+ src/mm-broadband-modem.c          |  40 ++++-
+ src/mm-modem-helpers-qmi.c        |   4 +
+ src/mm-modem-helpers-qmi.h        |   4 +
+ 24 files changed, 476 insertions(+), 273 deletions(-)
+ create mode 100644 include/ModemManager-enums-oma.h
+
+diff --git a/cli/Makefile.am b/cli/Makefile.am
+index 4bae814..280f7f2 100644
+--- a/cli/Makefile.am
++++ b/cli/Makefile.am
+@@ -21,7 +21,6 @@ mmcli_SOURCES = \
+ 	mmcli-modem-cdma.c \
+ 	mmcli-modem-simple.c \
+ 	mmcli-modem-firmware.c \
+-	mmcli-modem-oma.c \
+ 	mmcli-bearer.c \
+ 	mmcli-sim.c \
+ 	$(NULL)
+@@ -52,6 +51,10 @@ if WITH_INTERFACE_SIGNAL
+ mmcli_SOURCES += mmcli-modem-signal.c
+ endif
+ 
++if WITH_INTERFACE_OMA
++mmcli_SOURCES += mmcli-modem-oma.c
++endif
++
+ mmcli_LDADD = \
+ 	$(MMCLI_LIBS) \
+ 	$(top_builddir)/libmm-glib/libmm-glib.la \
+diff --git a/cli/mmcli.c b/cli/mmcli.c
+index b0bf269..75997e4 100644
+--- a/cli/mmcli.c
++++ b/cli/mmcli.c
+@@ -222,8 +222,10 @@ main (gint argc, gchar **argv)
+     g_option_context_add_group (context,
+                                 mmcli_modem_signal_get_option_group ());
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     g_option_context_add_group (context,
+                                 mmcli_modem_oma_get_option_group ());
++#endif
+     g_option_context_add_group (context,
+                                 mmcli_sim_get_option_group ());
+     g_option_context_add_group (context,
+@@ -382,6 +384,7 @@ main (gint argc, gchar **argv)
+             mmcli_modem_signal_run_synchronous (connection);
+     }
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     /* Modem Oma options? */
+     else if (mmcli_modem_oma_options_enabled ()) {
+         if (async_flag)
+@@ -389,6 +392,7 @@ main (gint argc, gchar **argv)
+         else
+             mmcli_modem_oma_run_synchronous (connection);
+     }
++#endif
+     /* Modem options?
+      * NOTE: let this check be always the last one, as other groups also need
+      * having a modem specified, and therefore if -m is set, modem options
+@@ -439,8 +443,10 @@ main (gint argc, gchar **argv)
+     } else if (mmcli_modem_signal_options_enabled ()) {
+         mmcli_modem_signal_shutdown ();
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     } else if (mmcli_modem_oma_options_enabled ()) {
+         mmcli_modem_oma_shutdown ();
++#endif
+     }  else if (mmcli_sim_options_enabled ()) {
+         mmcli_sim_shutdown ();
+     } else if (mmcli_bearer_options_enabled ()) {
+diff --git a/cli/mmcli.h b/cli/mmcli.h
+index 517a9ab..63f3af2 100644
+--- a/cli/mmcli.h
++++ b/cli/mmcli.h
+@@ -127,6 +127,7 @@ void          mmcli_modem_signal_run_synchronous    (GDBusConnection *connection
+ void          mmcli_modem_signal_shutdown           (void);
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
+ /* Oma group */
+ GOptionGroup *mmcli_modem_oma_get_option_group   (void);
+ gboolean      mmcli_modem_oma_options_enabled    (void);
+@@ -134,6 +135,7 @@ void          mmcli_modem_oma_run_asynchronous   (GDBusConnection *connection,
+                                                   GCancellable    *cancellable);
+ void          mmcli_modem_oma_run_synchronous    (GDBusConnection *connection);
+ void          mmcli_modem_oma_shutdown           (void);
++#endif
+ 
+ /* Bearer group */
+ GOptionGroup *mmcli_bearer_get_option_group   (void);
+diff --git a/configure.ac b/configure.ac
+index c814d20..4cb46f9 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -407,6 +407,20 @@ fi
+ AC_SUBST(MM_INTERFACE_SIGNAL_SUPPORTED)
+ 
+ dnl-----------------------------------------------------------------------------
++dnl OMA interface
++dnl
++
++AC_ARG_WITH(interface-oma, AS_HELP_STRING([--without-interface-oma], [Build without OMA interface support]), [], [with_interface_oma=yes])
++AM_CONDITIONAL(WITH_INTERFACE_OMA, test "x$with_interface_oma" = "xyes")
++if test "x$with_interface_oma" = "xyes"; then
++    MM_INTERFACE_OMA_SUPPORTED=1
++else
++    with_interface_oma=no
++    MM_INTERFACE_OMA_SUPPORTED=0
++fi
++AC_SUBST(MM_INTERFACE_OMA_SUPPORTED)
++
++dnl-----------------------------------------------------------------------------
+ dnl Compiler warnings
+ dnl
+ 
+@@ -505,6 +519,7 @@ echo "
+       time:                    ${with_interface_time}
+       voice:                   ${with_interface_voice}
+       signal:                  ${with_interface_signal}
++      oma:                     ${with_interface_oma}
+ 
+     Miscellaneous:
+       gobject introspection:   ${found_introspection}
+diff --git a/include/Makefile.am b/include/Makefile.am
+index da293f0..970fe00 100644
+--- a/include/Makefile.am
++++ b/include/Makefile.am
+@@ -23,6 +23,10 @@ if WITH_INTERFACE_VOICE
+ include_HEADERS += ModemManager-enums-voice.h
+ endif
+ 
++if WITH_INTERFACE_OMA
++include_HEADERS += ModemManager-enums-oma.h
++endif
++
+ ModemManager-names.h: $(XMLS) $(top_srcdir)/build-aux/header-generator.xsl
+ 	$(AM_V_GEN) $(XSLTPROC) $(top_srcdir)/build-aux/header-generator.xsl $(top_builddir)/introspection/all.xml > $@
+ 
+diff --git a/include/ModemManager-enums-oma.h b/include/ModemManager-enums-oma.h
+new file mode 100644
+index 0000000..852058a
+--- /dev/null
++++ b/include/ModemManager-enums-oma.h
+@@ -0,0 +1,125 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2011 Red Hat, Inc.
++ * Copyright (C) 2011 Google, Inc.
++ * Copyright (C) 2016 Aleksander Morgado <aleksander@aleksander.es>
++ */
++
++#ifndef _MODEMMANAGER_ENUMS_OMA_H_
++#define _MODEMMANAGER_ENUMS_OMA_H_
++
++#if !defined (__MODEM_MANAGER_H_INSIDE__)
++#error "Only <ModemManager.h> can be included directly."
++#endif
++
++/**
++ * SECTION:mm-enums-oma
++ * @short_description: Common enumerations and types in the API.
++ *
++ * This section defines enumerations and types that are used in the
++ * OMA ModemManager interface.
++ **/
++
++/**
++ * MMOmaFeature:
++ * @MM_OMA_FEATURE_NONE: None.
++ * @MM_OMA_FEATURE_DEVICE_PROVISIONING: Device provisioning service.
++ * @MM_OMA_FEATURE_PRL_UPDATE: PRL update service.
++ * @MM_OMA_FEATURE_HANDS_FREE_ACTIVATION: Hands free activation service.
++ *
++ * Features that can be enabled or disabled in the OMA device management support.
++ */
++typedef enum { /*< underscore_name=mm_oma_feature >*/
++    MM_OMA_FEATURE_NONE                  = 0,
++    MM_OMA_FEATURE_DEVICE_PROVISIONING   = 1 << 0,
++    MM_OMA_FEATURE_PRL_UPDATE            = 1 << 1,
++    MM_OMA_FEATURE_HANDS_FREE_ACTIVATION = 1 << 2,
++} MMOmaFeature;
++
++/**
++ * MMOmaSessionType:
++ * @MM_OMA_SESSION_TYPE_UNKNOWN: Unknown session type.
++ * @MM_OMA_SESSION_TYPE_CLIENT_INITIATED_DEVICE_CONFIGURE: Client-initiated device configure.
++ * @MM_OMA_SESSION_TYPE_CLIENT_INITIATED_PRL_UPDATE: Client-initiated PRL update.
++ * @MM_OMA_SESSION_TYPE_CLIENT_INITIATED_HANDS_FREE_ACTIVATION: Client-initiated hands free activation.
++ * @MM_OMA_SESSION_TYPE_NETWORK_INITIATED_DEVICE_CONFIGURE: Network-initiated device configure.
++ * @MM_OMA_SESSION_TYPE_NETWORK_INITIATED_PRL_UPDATE: Network-initiated PRL update.
++ * @MM_OMA_SESSION_TYPE_DEVICE_INITIATED_PRL_UPDATE: Device-initiated PRL update.
++ * @MM_OMA_SESSION_TYPE_DEVICE_INITIATED_HANDS_FREE_ACTIVATION: Device-initiated hands free activation.
++ *
++ * Type of OMA device management session.
++ */
++typedef enum { /*< underscore_name=mm_oma_session_type >*/
++    MM_OMA_SESSION_TYPE_UNKNOWN                                = 0,
++    MM_OMA_SESSION_TYPE_CLIENT_INITIATED_DEVICE_CONFIGURE      = 10,
++    MM_OMA_SESSION_TYPE_CLIENT_INITIATED_PRL_UPDATE            = 11,
++    MM_OMA_SESSION_TYPE_CLIENT_INITIATED_HANDS_FREE_ACTIVATION = 12,
++    MM_OMA_SESSION_TYPE_NETWORK_INITIATED_DEVICE_CONFIGURE     = 20,
++    MM_OMA_SESSION_TYPE_NETWORK_INITIATED_PRL_UPDATE           = 21,
++    MM_OMA_SESSION_TYPE_DEVICE_INITIATED_PRL_UPDATE            = 30,
++    MM_OMA_SESSION_TYPE_DEVICE_INITIATED_HANDS_FREE_ACTIVATION = 31,
++} MMOmaSessionType;
++
++/**
++ * MMOmaSessionState:
++ * @MM_OMA_SESSION_STATE_FAILED: Failed.
++ * @MM_OMA_SESSION_STATE_UNKNOWN: Unknown.
++ * @MM_OMA_SESSION_STATE_STARTED: Started.
++ * @MM_OMA_SESSION_STATE_RETRYING: Retrying.
++ * @MM_OMA_SESSION_STATE_CONNECTING: Connecting.
++ * @MM_OMA_SESSION_STATE_CONNECTED: Connected.
++ * @MM_OMA_SESSION_STATE_AUTHENTICATED: Authenticated.
++ * @MM_OMA_SESSION_STATE_MDN_DOWNLOADED: MDN downloaded.
++ * @MM_OMA_SESSION_STATE_MSID_DOWNLOADED: MSID downloaded.
++ * @MM_OMA_SESSION_STATE_PRL_DOWNLOADED: PRL downloaded.
++ * @MM_OMA_SESSION_STATE_MIP_PROFILE_DOWNLOADED: MIP profile downloaded.
++ * @MM_OMA_SESSION_STATE_COMPLETED: Session completed.
++ *
++ * State of the OMA device management session.
++ */
++typedef enum { /*< underscore_name=mm_oma_session_state >*/
++    MM_OMA_SESSION_STATE_FAILED                 = -1,
++    MM_OMA_SESSION_STATE_UNKNOWN                = 0,
++    MM_OMA_SESSION_STATE_STARTED                = 1,
++    MM_OMA_SESSION_STATE_RETRYING               = 2,
++    MM_OMA_SESSION_STATE_CONNECTING             = 3,
++    MM_OMA_SESSION_STATE_CONNECTED              = 4,
++    MM_OMA_SESSION_STATE_AUTHENTICATED          = 5,
++    MM_OMA_SESSION_STATE_MDN_DOWNLOADED         = 10,
++    MM_OMA_SESSION_STATE_MSID_DOWNLOADED        = 11,
++    MM_OMA_SESSION_STATE_PRL_DOWNLOADED         = 12,
++    MM_OMA_SESSION_STATE_MIP_PROFILE_DOWNLOADED = 13,
++    MM_OMA_SESSION_STATE_COMPLETED              = 20,
++} MMOmaSessionState;
++
++/**
++ * MMOmaSessionStateFailedReason:
++ * @MM_OMA_SESSION_STATE_FAILED_REASON_UNKNOWN: No reason or unknown.
++ * @MM_OMA_SESSION_STATE_FAILED_REASON_NETWORK_UNAVAILABLE: Network unavailable.
++ * @MM_OMA_SESSION_STATE_FAILED_REASON_SERVER_UNAVAILABLE: Server unavailable.
++ * @MM_OMA_SESSION_STATE_FAILED_REASON_AUTHENTICATION_FAILED: Authentication failed.
++ * @MM_OMA_SESSION_STATE_FAILED_REASON_MAX_RETRY_EXCEEDED: Maximum retries exceeded.
++ * @MM_OMA_SESSION_STATE_FAILED_REASON_SESSION_CANCELLED: Session cancelled.
++ *
++ * Reason of failure in the OMA device management session.
++ */
++typedef enum { /*< underscore_name=mm_oma_session_state_failed_reason >*/
++    MM_OMA_SESSION_STATE_FAILED_REASON_UNKNOWN               = 0,
++    MM_OMA_SESSION_STATE_FAILED_REASON_NETWORK_UNAVAILABLE   = 1,
++    MM_OMA_SESSION_STATE_FAILED_REASON_SERVER_UNAVAILABLE    = 2,
++    MM_OMA_SESSION_STATE_FAILED_REASON_AUTHENTICATION_FAILED = 3,
++    MM_OMA_SESSION_STATE_FAILED_REASON_MAX_RETRY_EXCEEDED    = 4,
++    MM_OMA_SESSION_STATE_FAILED_REASON_SESSION_CANCELLED     = 5
++} MMOmaSessionStateFailedReason;
++
++#endif /*  _MODEMMANAGER_ENUMS_OMA_H_ */
+diff --git a/include/ModemManager-enums.h b/include/ModemManager-enums.h
+index 6ca5c6b..87ef4f7 100644
+--- a/include/ModemManager-enums.h
++++ b/include/ModemManager-enums.h
+@@ -677,96 +677,4 @@ typedef enum { /*< underscore_name=mm_firmware_image_type >*/
+     MM_FIRMWARE_IMAGE_TYPE_GOBI    = 2,
+ } MMFirmwareImageType;
+ 
+-/**
+- * MMOmaFeature:
+- * @MM_OMA_FEATURE_NONE: None.
+- * @MM_OMA_FEATURE_DEVICE_PROVISIONING: Device provisioning service.
+- * @MM_OMA_FEATURE_PRL_UPDATE: PRL update service.
+- * @MM_OMA_FEATURE_HANDS_FREE_ACTIVATION: Hands free activation service.
+- *
+- * Features that can be enabled or disabled in the OMA device management support.
+- */
+-typedef enum { /*< underscore_name=mm_oma_feature >*/
+-    MM_OMA_FEATURE_NONE                  = 0,
+-    MM_OMA_FEATURE_DEVICE_PROVISIONING   = 1 << 0,
+-    MM_OMA_FEATURE_PRL_UPDATE            = 1 << 1,
+-    MM_OMA_FEATURE_HANDS_FREE_ACTIVATION = 1 << 2,
+-} MMOmaFeature;
+-
+-/**
+- * MMOmaSessionType:
+- * @MM_OMA_SESSION_TYPE_UNKNOWN: Unknown session type.
+- * @MM_OMA_SESSION_TYPE_CLIENT_INITIATED_DEVICE_CONFIGURE: Client-initiated device configure.
+- * @MM_OMA_SESSION_TYPE_CLIENT_INITIATED_PRL_UPDATE: Client-initiated PRL update.
+- * @MM_OMA_SESSION_TYPE_CLIENT_INITIATED_HANDS_FREE_ACTIVATION: Client-initiated hands free activation.
+- * @MM_OMA_SESSION_TYPE_NETWORK_INITIATED_DEVICE_CONFIGURE: Network-initiated device configure.
+- * @MM_OMA_SESSION_TYPE_NETWORK_INITIATED_PRL_UPDATE: Network-initiated PRL update.
+- * @MM_OMA_SESSION_TYPE_DEVICE_INITIATED_PRL_UPDATE: Device-initiated PRL update.
+- * @MM_OMA_SESSION_TYPE_DEVICE_INITIATED_HANDS_FREE_ACTIVATION: Device-initiated hands free activation.
+- *
+- * Type of OMA device management session.
+- */
+-typedef enum { /*< underscore_name=mm_oma_session_type >*/
+-    MM_OMA_SESSION_TYPE_UNKNOWN                                = 0,
+-    MM_OMA_SESSION_TYPE_CLIENT_INITIATED_DEVICE_CONFIGURE      = 10,
+-    MM_OMA_SESSION_TYPE_CLIENT_INITIATED_PRL_UPDATE            = 11,
+-    MM_OMA_SESSION_TYPE_CLIENT_INITIATED_HANDS_FREE_ACTIVATION = 12,
+-    MM_OMA_SESSION_TYPE_NETWORK_INITIATED_DEVICE_CONFIGURE     = 20,
+-    MM_OMA_SESSION_TYPE_NETWORK_INITIATED_PRL_UPDATE           = 21,
+-    MM_OMA_SESSION_TYPE_DEVICE_INITIATED_PRL_UPDATE            = 30,
+-    MM_OMA_SESSION_TYPE_DEVICE_INITIATED_HANDS_FREE_ACTIVATION = 31,
+-} MMOmaSessionType;
+-
+-/**
+- * MMOmaSessionState:
+- * @MM_OMA_SESSION_STATE_FAILED: Failed.
+- * @MM_OMA_SESSION_STATE_UNKNOWN: Unknown.
+- * @MM_OMA_SESSION_STATE_STARTED: Started.
+- * @MM_OMA_SESSION_STATE_RETRYING: Retrying.
+- * @MM_OMA_SESSION_STATE_CONNECTING: Connecting.
+- * @MM_OMA_SESSION_STATE_CONNECTED: Connected.
+- * @MM_OMA_SESSION_STATE_AUTHENTICATED: Authenticated.
+- * @MM_OMA_SESSION_STATE_MDN_DOWNLOADED: MDN downloaded.
+- * @MM_OMA_SESSION_STATE_MSID_DOWNLOADED: MSID downloaded.
+- * @MM_OMA_SESSION_STATE_PRL_DOWNLOADED: PRL downloaded.
+- * @MM_OMA_SESSION_STATE_MIP_PROFILE_DOWNLOADED: MIP profile downloaded.
+- * @MM_OMA_SESSION_STATE_COMPLETED: Session completed.
+- *
+- * State of the OMA device management session.
+- */
+-typedef enum { /*< underscore_name=mm_oma_session_state >*/
+-    MM_OMA_SESSION_STATE_FAILED                 = -1,
+-    MM_OMA_SESSION_STATE_UNKNOWN                = 0,
+-    MM_OMA_SESSION_STATE_STARTED                = 1,
+-    MM_OMA_SESSION_STATE_RETRYING               = 2,
+-    MM_OMA_SESSION_STATE_CONNECTING             = 3,
+-    MM_OMA_SESSION_STATE_CONNECTED              = 4,
+-    MM_OMA_SESSION_STATE_AUTHENTICATED          = 5,
+-    MM_OMA_SESSION_STATE_MDN_DOWNLOADED         = 10,
+-    MM_OMA_SESSION_STATE_MSID_DOWNLOADED        = 11,
+-    MM_OMA_SESSION_STATE_PRL_DOWNLOADED         = 12,
+-    MM_OMA_SESSION_STATE_MIP_PROFILE_DOWNLOADED = 13,
+-    MM_OMA_SESSION_STATE_COMPLETED              = 20,
+-} MMOmaSessionState;
+-
+-/**
+- * MMOmaSessionStateFailedReason:
+- * @MM_OMA_SESSION_STATE_FAILED_REASON_UNKNOWN: No reason or unknown.
+- * @MM_OMA_SESSION_STATE_FAILED_REASON_NETWORK_UNAVAILABLE: Network unavailable.
+- * @MM_OMA_SESSION_STATE_FAILED_REASON_SERVER_UNAVAILABLE: Server unavailable.
+- * @MM_OMA_SESSION_STATE_FAILED_REASON_AUTHENTICATION_FAILED: Authentication failed.
+- * @MM_OMA_SESSION_STATE_FAILED_REASON_MAX_RETRY_EXCEEDED: Maximum retries exceeded.
+- * @MM_OMA_SESSION_STATE_FAILED_REASON_SESSION_CANCELLED: Session cancelled.
+- *
+- * Reason of failure in the OMA device management session.
+- */
+-typedef enum { /*< underscore_name=mm_oma_session_state_failed_reason >*/
+-    MM_OMA_SESSION_STATE_FAILED_REASON_UNKNOWN               = 0,
+-    MM_OMA_SESSION_STATE_FAILED_REASON_NETWORK_UNAVAILABLE   = 1,
+-    MM_OMA_SESSION_STATE_FAILED_REASON_SERVER_UNAVAILABLE    = 2,
+-    MM_OMA_SESSION_STATE_FAILED_REASON_AUTHENTICATION_FAILED = 3,
+-    MM_OMA_SESSION_STATE_FAILED_REASON_MAX_RETRY_EXCEEDED    = 4,
+-    MM_OMA_SESSION_STATE_FAILED_REASON_SESSION_CANCELLED     = 5
+-} MMOmaSessionStateFailedReason;
+-
+ #endif /*  _MODEMMANAGER_ENUMS_H_ */
+diff --git a/include/ModemManager-version.h.in b/include/ModemManager-version.h.in
+index 11d0fc1..fc6b38e 100644
+--- a/include/ModemManager-version.h.in
++++ b/include/ModemManager-version.h.in
+@@ -141,4 +141,19 @@
+  */
+ #define MM_INTERFACE_SIGNAL_SUPPORTED @MM_INTERFACE_SIGNAL_SUPPORTED@
+ 
++/**
++ * MM_INTERFACE_OMA_SUPPORTED:
++ *
++ * Symbol to expose whether OMA interface is supported. The symbol is always
++ * defined and set to either or 1 or 0.
++ *
++ * E.g.:
++ * |[
++ *  #if MM_INTERFACE_OMA_SUPPORTED
++ *      // do something
++ *  #endif
++ * ]|
++ */
++#define MM_INTERFACE_OMA_SUPPORTED @MM_INTERFACE_OMA_SUPPORTED@
++
+ #endif /* _MM_VERSION_H_ */
+diff --git a/include/ModemManager.h b/include/ModemManager.h
+index a86413a..40689f3 100644
+--- a/include/ModemManager.h
++++ b/include/ModemManager.h
+@@ -46,6 +46,9 @@
+ #if MM_INTERFACE_VOICE_SUPPORTED
+ # include <ModemManager-enums-voice.h>
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
++# include <ModemManager-enums-oma.h>
++#endif
+ 
+ /* Public header with errors */
+ #include <ModemManager-errors.h>
+diff --git a/introspection/Makefile.am b/introspection/Makefile.am
+index d6b60ae..9218743 100644
+--- a/introspection/Makefile.am
++++ b/introspection/Makefile.am
+@@ -11,6 +11,7 @@ XMLS_FILTERED_OUT = \
+ 	org.freedesktop.ModemManager1.Modem.Time.xml \
+ 	org.freedesktop.ModemManager1.Modem.Voice.xml \
+ 	org.freedesktop.ModemManager1.Modem.Signal.xml \
++	org.freedesktop.ModemManager1.Modem.Oma.xml \
+ 	$(NULL)
+ xmldir = $(datadir)/dbus-1/interfaces
+ xml_DATA = $(filter-out $(XMLS_FILTERED_OUT), $(XMLS))
+@@ -35,6 +36,10 @@ if WITH_INTERFACE_SIGNAL
+ xml_DATA += org.freedesktop.ModemManager1.Modem.Signal.xml
+ endif
+ 
++if WITH_INTERFACE_OMA
++xml_DATA += org.freedesktop.ModemManager1.Modem.Oma.xml
++endif
++
+ all.xml: $(xml_DATA) Makefile
+ 	$(AM_V_GEN)	\
+ 		rm -f $@; \
+diff --git a/libmm-glib/Makefile.am b/libmm-glib/Makefile.am
+index e0296de..bc9691f 100644
+--- a/libmm-glib/Makefile.am
++++ b/libmm-glib/Makefile.am
+@@ -26,8 +26,6 @@ libmm_glib_la_SOURCES = \
+ 	mm-modem-simple.c \
+ 	mm-modem-firmware.h \
+ 	mm-modem-firmware.c \
+-	mm-modem-oma.h \
+-	mm-modem-oma.c \
+ 	mm-sim.h \
+ 	mm-sim.c \
+ 	mm-bearer.h \
+@@ -110,6 +108,13 @@ libmm_glib_la_SOURCES += \
+ 	$(NULL)
+ endif
+ 
++if WITH_INTERFACE_OMA
++libmm_glib_la_SOURCES += \
++	mm-modem-oma.h \
++	mm-modem-oma.c \
++	$(NULL)
++endif
++
+ libmm_glib_la_CPPFLAGS = \
+ 	-I$(srcdir) \
+ 	-I$(top_srcdir) \
+@@ -148,7 +153,6 @@ include_HEADERS = \
+ 	mm-modem-3gpp-ussd.h \
+ 	mm-modem-cdma.h \
+ 	mm-modem-firmware.h \
+-	mm-modem-oma.h \
+ 	mm-modem-simple.h \
+ 	mm-sim.h \
+ 	mm-bearer.h \
+@@ -204,6 +208,12 @@ include_HEADERS += \
+ 	$(NULL)
+ endif
+ 
++if WITH_INTERFACE_OMA
++include_HEADERS += \
++	mm-modem-oma.h \
++	$(NULL)
++endif
++
+ CLEANFILES =
+ 
+ # Introspection
+@@ -253,6 +263,10 @@ GENERATED_C += mm-gdbus-call.c
+ PUBLIC_H    += ModemManager-enums-voice.h
+ endif
+ 
++if WITH_INTERFACE_OMA
++PUBLIC_H += ModemManager-enums-oma.h
++endif
++
+ INTROSPECTION_GIRS = ModemManager-1.0.gir
+ INTROSPECTION_SCANNER_ARGS = --warn-all
+ INTROSPECTION_COMPILER_ARGS =
+diff --git a/libmm-glib/generated/Makefile.am b/libmm-glib/generated/Makefile.am
+index 2d2208a..a1f715e 100644
+--- a/libmm-glib/generated/Makefile.am
++++ b/libmm-glib/generated/Makefile.am
+@@ -31,7 +31,6 @@ GENERATED_DOC = \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Bearer.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Firmware.xml \
+-	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Oma.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml \
+@@ -68,6 +67,10 @@ if WITH_INTERFACE_SIGNAL
+ GENERATED_DOC += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Signal.xml
+ endif
+ 
++if WITH_INTERFACE_OMA
++GENERATED_DOC += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Oma.xml
++endif
++
+ BUILT_SOURCES = $(GENERATED_H) $(GENERATED_C) $(GENERATED_DOC)
+ 
+ # Enum types
+@@ -87,6 +90,10 @@ if WITH_INTERFACE_VOICE
+ ENUM_FILES += $(top_srcdir)/include/ModemManager-enums-voice.h
+ endif
+ 
++if WITH_INTERFACE_OMA
++ENUM_FILES += $(top_srcdir)/include/ModemManager-enums-oma.h
++endif
++
+ mm-enums-types.h: Makefile.am $(ENUM_FILES) $(top_srcdir)/build-aux/mm-enums-template.h
+ 	$(AM_V_GEN) $(GLIB_MKENUMS) \
+ 		--fhead "#include <ModemManager.h>\n#ifndef __MM_ENUMS_TYPES_H__\n#define __MM_ENUMS_TYPES_H__\n" \
+@@ -146,7 +153,6 @@ mm_gdbus_modem_generated = \
+ 	mm-gdbus-modem.c \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Firmware.xml \
+-	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Oma.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml \
+@@ -173,10 +179,13 @@ if WITH_INTERFACE_SIGNAL
+ mm_gdbus_modem_generated += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Signal.xml
+ endif
+ 
++if WITH_INTERFACE_OMA
++mm_gdbus_modem_generated += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Oma.xml
++endif
++
+ mm_gdbus_modem_deps = \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Firmware.xml \
+-	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Oma.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Modem3gpp.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml \
+@@ -203,6 +212,10 @@ if WITH_INTERFACE_SIGNAL
+ mm_gdbus_modem_deps += $(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Signal.xml
+ endif
+ 
++if WITH_INTERFACE_OMA
++mm_gdbus_modem_deps += $(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Oma.xml
++endif
++
+ mm-gdbus-modem.c: $(mm_gdbus_modem_deps)
+ 	$(AM_V_GEN) $(GDBUS_CODEGEN) \
+ 		--interface-prefix org.freedesktop.ModemManager1. \
+diff --git a/libmm-glib/libmm-glib.h b/libmm-glib/libmm-glib.h
+index 693d51e..96bbbdd 100644
+--- a/libmm-glib/libmm-glib.h
++++ b/libmm-glib/libmm-glib.h
+@@ -55,7 +55,9 @@
+ # if MM_INTERFACE_SIGNAL_SUPPORTED
+ #  include <mm-modem-signal.h>
+ # endif
+-# include <mm-modem-oma.h>
++# if MM_INTERFACE_OMA_SUPPORTED
++#  include <mm-modem-oma.h>
++# endif
+ #endif
+ 
+ #if defined (_LIBMM_INSIDE_MM) ||    \
+diff --git a/libmm-glib/mm-common-helpers.c b/libmm-glib/mm-common-helpers.c
+index c6df61e..80cb9bf 100644
+--- a/libmm-glib/mm-common-helpers.c
++++ b/libmm-glib/mm-common-helpers.c
+@@ -666,86 +666,6 @@ mm_common_build_mode_combinations_default (void)
+     return g_variant_builder_end (&builder);
+ }
+ 
+-GArray *
+-mm_common_oma_pending_network_initiated_sessions_variant_to_garray (GVariant *variant)
+-{
+-    GArray *array = NULL;
+-
+-    if (variant) {
+-        GVariantIter iter;
+-        guint n;
+-
+-        g_variant_iter_init (&iter, variant);
+-        n = g_variant_iter_n_children (&iter);
+-
+-        if (n > 0) {
+-            MMOmaPendingNetworkInitiatedSession session;
+-
+-            array = g_array_sized_new (FALSE, FALSE, sizeof (MMOmaPendingNetworkInitiatedSession), n);
+-            while (g_variant_iter_loop (&iter, "(uu)", &session.session_type, &session.session_id))
+-                g_array_append_val (array, session);
+-        }
+-    }
+-
+-    /* If nothing set, fallback to empty */
+-    if (!array)
+-        array = g_array_new (FALSE, FALSE, sizeof (MMOmaPendingNetworkInitiatedSession));
+-
+-    return array;
+-}
+-
+-MMOmaPendingNetworkInitiatedSession *
+-mm_common_oma_pending_network_initiated_sessions_variant_to_array (GVariant *variant,
+-                                                                   guint *n_sessions)
+-{
+-    GArray *array;
+-
+-    array = mm_common_oma_pending_network_initiated_sessions_variant_to_garray (variant);
+-    if (n_sessions)
+-        *n_sessions = array->len;
+-    return (MMOmaPendingNetworkInitiatedSession *) g_array_free (array, FALSE);
+-}
+-
+-GVariant *
+-mm_common_oma_pending_network_initiated_sessions_array_to_variant (const MMOmaPendingNetworkInitiatedSession *sessions,
+-                                                                   guint n_sessions)
+-{
+-    if (n_sessions > 0) {
+-        GVariantBuilder builder;
+-        guint i;
+-
+-        g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(uu)"));
+-
+-        for (i = 0; i < n_sessions; i++)
+-            g_variant_builder_add_value (&builder,
+-                                         g_variant_new ("(uu)",
+-                                                        ((guint32)sessions[i].session_type),
+-                                                        ((guint32)sessions[i].session_id)));
+-        return g_variant_builder_end (&builder);
+-    }
+-
+-    return mm_common_build_oma_pending_network_initiated_sessions_default ();
+-}
+-
+-GVariant *
+-mm_common_oma_pending_network_initiated_sessions_garray_to_variant (GArray *array)
+-{
+-    if (array)
+-        return mm_common_oma_pending_network_initiated_sessions_array_to_variant ((const MMOmaPendingNetworkInitiatedSession *)array->data,
+-                                                                                  array->len);
+-
+-    return mm_common_oma_pending_network_initiated_sessions_array_to_variant (NULL, 0);
+-}
+-
+-GVariant *
+-mm_common_build_oma_pending_network_initiated_sessions_default (void)
+-{
+-    GVariantBuilder builder;
+-
+-    g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(uu)"));
+-    return g_variant_builder_end (&builder);
+-}
+-
+ gboolean
+ mm_common_get_boolean_from_string (const gchar *value,
+                                    GError **error)
+@@ -857,78 +777,6 @@ mm_common_get_allowed_auth_from_string (const gchar *str,
+     return allowed_auth;
+ }
+ 
+-MMOmaFeature
+-mm_common_get_oma_features_from_string (const gchar *str,
+-                                        GError **error)
+-{
+-    GError *inner_error = NULL;
+-    MMOmaFeature features;
+-    gchar **feature_strings;
+-    GFlagsClass *flags_class;
+-
+-    features = MM_OMA_FEATURE_NONE;
+-
+-    flags_class = G_FLAGS_CLASS (g_type_class_ref (MM_TYPE_OMA_FEATURE));
+-    feature_strings = g_strsplit (str, "|", -1);
+-
+-    if (feature_strings) {
+-        guint i;
+-
+-        for (i = 0; feature_strings[i]; i++) {
+-            guint j;
+-            gboolean found = FALSE;
+-
+-            for (j = 0; flags_class->values[j].value_nick; j++) {
+-                if (!g_ascii_strcasecmp (feature_strings[i], flags_class->values[j].value_nick)) {
+-                    features |= flags_class->values[j].value;
+-                    found = TRUE;
+-                    break;
+-                }
+-            }
+-
+-            if (!found) {
+-                inner_error = g_error_new (
+-                    MM_CORE_ERROR,
+-                    MM_CORE_ERROR_INVALID_ARGS,
+-                    "Couldn't match '%s' with a valid MMOmaFeature value",
+-                    feature_strings[i]);
+-                break;
+-            }
+-        }
+-    }
+-
+-    if (inner_error) {
+-        g_propagate_error (error, inner_error);
+-        features = MM_OMA_FEATURE_NONE;
+-    }
+-
+-    g_type_class_unref (flags_class);
+-    g_strfreev (feature_strings);
+-    return features;
+-}
+-
+-MMOmaSessionType
+-mm_common_get_oma_session_type_from_string (const gchar *str,
+-                                            GError **error)
+-{
+-    GEnumClass *enum_class;
+-    guint i;
+-
+-    enum_class = G_ENUM_CLASS (g_type_class_ref (MM_TYPE_OMA_SESSION_TYPE));
+-
+-    for (i = 0; enum_class->values[i].value_nick; i++) {
+-        if (!g_ascii_strcasecmp (str, enum_class->values[i].value_nick))
+-            return enum_class->values[i].value;
+-    }
+-
+-    g_set_error (error,
+-                 MM_CORE_ERROR,
+-                 MM_CORE_ERROR_INVALID_ARGS,
+-                 "Couldn't match '%s' with a valid MMOmaSessionType value",
+-                 str);
+-    return MM_OMA_SESSION_TYPE_UNKNOWN;
+-}
+-
+ GVariant *
+ mm_common_build_bands_unknown (void)
+ {
+@@ -1695,3 +1543,159 @@ mm_common_get_call_state_reason_from_string (const gchar *str,
+ }
+ 
+ #endif /* MM_INTERFACE_VOICE_SUPPORTED */
++
++#if MM_INTERFACE_OMA_SUPPORTED
++
++MMOmaFeature
++mm_common_get_oma_features_from_string (const gchar *str,
++                                        GError **error)
++{
++    GError *inner_error = NULL;
++    MMOmaFeature features;
++    gchar **feature_strings;
++    GFlagsClass *flags_class;
++
++    features = MM_OMA_FEATURE_NONE;
++
++    flags_class = G_FLAGS_CLASS (g_type_class_ref (MM_TYPE_OMA_FEATURE));
++    feature_strings = g_strsplit (str, "|", -1);
++
++    if (feature_strings) {
++        guint i;
++
++        for (i = 0; feature_strings[i]; i++) {
++            guint j;
++            gboolean found = FALSE;
++
++            for (j = 0; flags_class->values[j].value_nick; j++) {
++                if (!g_ascii_strcasecmp (feature_strings[i], flags_class->values[j].value_nick)) {
++                    features |= flags_class->values[j].value;
++                    found = TRUE;
++                    break;
++                }
++            }
++
++            if (!found) {
++                inner_error = g_error_new (
++                    MM_CORE_ERROR,
++                    MM_CORE_ERROR_INVALID_ARGS,
++                    "Couldn't match '%s' with a valid MMOmaFeature value",
++                    feature_strings[i]);
++                break;
++            }
++        }
++    }
++
++    if (inner_error) {
++        g_propagate_error (error, inner_error);
++        features = MM_OMA_FEATURE_NONE;
++    }
++
++    g_type_class_unref (flags_class);
++    g_strfreev (feature_strings);
++    return features;
++}
++
++MMOmaSessionType
++mm_common_get_oma_session_type_from_string (const gchar *str,
++                                            GError **error)
++{
++    GEnumClass *enum_class;
++    guint i;
++
++    enum_class = G_ENUM_CLASS (g_type_class_ref (MM_TYPE_OMA_SESSION_TYPE));
++
++    for (i = 0; enum_class->values[i].value_nick; i++) {
++        if (!g_ascii_strcasecmp (str, enum_class->values[i].value_nick))
++            return enum_class->values[i].value;
++    }
++
++    g_set_error (error,
++                 MM_CORE_ERROR,
++                 MM_CORE_ERROR_INVALID_ARGS,
++                 "Couldn't match '%s' with a valid MMOmaSessionType value",
++                 str);
++    return MM_OMA_SESSION_TYPE_UNKNOWN;
++}
++
++GArray *
++mm_common_oma_pending_network_initiated_sessions_variant_to_garray (GVariant *variant)
++{
++    GArray *array = NULL;
++
++    if (variant) {
++        GVariantIter iter;
++        guint n;
++
++        g_variant_iter_init (&iter, variant);
++        n = g_variant_iter_n_children (&iter);
++
++        if (n > 0) {
++            MMOmaPendingNetworkInitiatedSession session;
++
++            array = g_array_sized_new (FALSE, FALSE, sizeof (MMOmaPendingNetworkInitiatedSession), n);
++            while (g_variant_iter_loop (&iter, "(uu)", &session.session_type, &session.session_id))
++                g_array_append_val (array, session);
++        }
++    }
++
++    /* If nothing set, fallback to empty */
++    if (!array)
++        array = g_array_new (FALSE, FALSE, sizeof (MMOmaPendingNetworkInitiatedSession));
++
++    return array;
++}
++
++MMOmaPendingNetworkInitiatedSession *
++mm_common_oma_pending_network_initiated_sessions_variant_to_array (GVariant *variant,
++                                                                   guint *n_sessions)
++{
++    GArray *array;
++
++    array = mm_common_oma_pending_network_initiated_sessions_variant_to_garray (variant);
++    if (n_sessions)
++        *n_sessions = array->len;
++    return (MMOmaPendingNetworkInitiatedSession *) g_array_free (array, FALSE);
++}
++
++GVariant *
++mm_common_oma_pending_network_initiated_sessions_array_to_variant (const MMOmaPendingNetworkInitiatedSession *sessions,
++                                                                   guint n_sessions)
++{
++    if (n_sessions > 0) {
++        GVariantBuilder builder;
++        guint i;
++
++        g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(uu)"));
++
++        for (i = 0; i < n_sessions; i++)
++            g_variant_builder_add_value (&builder,
++                                         g_variant_new ("(uu)",
++                                                        ((guint32)sessions[i].session_type),
++                                                        ((guint32)sessions[i].session_id)));
++        return g_variant_builder_end (&builder);
++    }
++
++    return mm_common_build_oma_pending_network_initiated_sessions_default ();
++}
++
++GVariant *
++mm_common_oma_pending_network_initiated_sessions_garray_to_variant (GArray *array)
++{
++    if (array)
++        return mm_common_oma_pending_network_initiated_sessions_array_to_variant ((const MMOmaPendingNetworkInitiatedSession *)array->data,
++                                                                                  array->len);
++
++    return mm_common_oma_pending_network_initiated_sessions_array_to_variant (NULL, 0);
++}
++
++GVariant *
++mm_common_build_oma_pending_network_initiated_sessions_default (void)
++{
++    GVariantBuilder builder;
++
++    g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(uu)"));
++    return g_variant_builder_end (&builder);
++}
++
++#endif /* MM_INTERFACE_OMA_SUPPORTED */
+diff --git a/libmm-glib/mm-common-helpers.h b/libmm-glib/mm-common-helpers.h
+index e9d49ef..55bc9f0 100644
+--- a/libmm-glib/mm-common-helpers.h
++++ b/libmm-glib/mm-common-helpers.h
+@@ -55,11 +55,6 @@ MMBearerIpFamily      mm_common_get_ip_type_from_string      (const gchar *str,
+ MMBearerAllowedAuth   mm_common_get_allowed_auth_from_string (const gchar *str,
+                                                               GError **error);
+ 
+-MMOmaFeature          mm_common_get_oma_features_from_string (const gchar *str,
+-                                                              GError **error);
+-MMOmaSessionType      mm_common_get_oma_session_type_from_string (const gchar *str,
+-                                                                  GError **error);
+-
+ GArray          *mm_common_ports_variant_to_garray (GVariant *variant);
+ MMModemPortInfo *mm_common_ports_variant_to_array  (GVariant *variant,
+                                                  guint *n_ports);
+@@ -97,14 +92,6 @@ GVariant          *mm_common_capability_combinations_garray_to_variant (GArray *
+ GVariant          *mm_common_build_capability_combinations_any         (void);
+ GVariant          *mm_common_build_capability_combinations_none        (void);
+ 
+-GArray                              *mm_common_oma_pending_network_initiated_sessions_variant_to_garray (GVariant *variant);
+-MMOmaPendingNetworkInitiatedSession *mm_common_oma_pending_network_initiated_sessions_variant_to_array  (GVariant *variant,
+-                                                                                                         guint *n_modes);
+-GVariant                            *mm_common_oma_pending_network_initiated_sessions_array_to_variant  (const MMOmaPendingNetworkInitiatedSession *modes,
+-                                                                                                         guint n_modes);
+-GVariant                            *mm_common_oma_pending_network_initiated_sessions_garray_to_variant (GArray *array);
+-GVariant                            *mm_common_build_oma_pending_network_initiated_sessions_default     (void);
+-
+ typedef gboolean (*MMParseKeyValueForeachFn) (const gchar *key,
+                                               const gchar *value,
+                                               gpointer user_data);
+@@ -169,4 +156,18 @@ MMCallStateReason   mm_common_get_call_state_reason_from_string (const gchar *st
+                                                                  GError **error);
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++MMOmaFeature                         mm_common_get_oma_features_from_string                             (const gchar *str,
++                                                                                                         GError **error);
++MMOmaSessionType                     mm_common_get_oma_session_type_from_string                         (const gchar *str,
++                                                                                                         GError **error);
++GArray                              *mm_common_oma_pending_network_initiated_sessions_variant_to_garray (GVariant *variant);
++MMOmaPendingNetworkInitiatedSession *mm_common_oma_pending_network_initiated_sessions_variant_to_array  (GVariant *variant,
++                                                                                                         guint *n_modes);
++GVariant                            *mm_common_oma_pending_network_initiated_sessions_array_to_variant  (const MMOmaPendingNetworkInitiatedSession *modes,
++                                                                                                         guint n_modes);
++GVariant                            *mm_common_oma_pending_network_initiated_sessions_garray_to_variant (GArray *array);
++GVariant                            *mm_common_build_oma_pending_network_initiated_sessions_default     (void);
++#endif
++
+ #endif /* MM_COMMON_HELPERS_H */
+diff --git a/libmm-glib/mm-helper-types.h b/libmm-glib/mm-helper-types.h
+index d4e7fa9..8e2347d 100644
+--- a/libmm-glib/mm-helper-types.h
++++ b/libmm-glib/mm-helper-types.h
+@@ -59,6 +59,8 @@ struct _MMModemPortInfo {
+ void mm_modem_port_info_array_free (MMModemPortInfo *array,
+                                     guint array_size);
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++
+ /**
+  * MMOmaPendingNetworkInitiatedSession:
+  * @session_type: A #MMOmaSessionType.
+@@ -73,4 +75,6 @@ struct _MMOmaPendingNetworkInitiatedSession {
+     guint session_id;
+ };
+ 
++#endif /* MM_INTERFACE_OMA_SUPPORTED */
++
+ #endif /* _MM_HELPER_TYPES_H_ */
+diff --git a/libmm-glib/mm-manager.c b/libmm-glib/mm-manager.c
+index 535ea28..4ea8d66 100644
+--- a/libmm-glib/mm-manager.c
++++ b/libmm-glib/mm-manager.c
+@@ -83,7 +83,9 @@ get_proxy_type (GDBusObjectManagerClient *manager,
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Signal",         GSIZE_TO_POINTER (MM_TYPE_MODEM_SIGNAL));
+ #endif
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Firmware",       GSIZE_TO_POINTER (MM_TYPE_MODEM_FIRMWARE));
++#if MM_INTERFACE_OMA_SUPPORTED
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Oma",            GSIZE_TO_POINTER (MM_TYPE_MODEM_OMA));
++#endif
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.ModemCdma",      GSIZE_TO_POINTER (MM_TYPE_MODEM_CDMA));
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Modem3gpp",      GSIZE_TO_POINTER (MM_TYPE_MODEM_3GPP));
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd", GSIZE_TO_POINTER (MM_TYPE_MODEM_3GPP_USSD));
+diff --git a/libmm-glib/mm-object.c b/libmm-glib/mm-object.c
+index c6a424f..82a9d6c 100644
+--- a/libmm-glib/mm-object.c
++++ b/libmm-glib/mm-object.c
+@@ -501,6 +501,8 @@ mm_object_peek_modem_signal (MMObject *self)
+ 
+ #endif /* MM_INTERFACE_SIGNAL_SUPPORTED */
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++
+ /*****************************************************************************/
+ 
+ /**
+@@ -537,6 +539,8 @@ mm_object_peek_modem_oma (MMObject *self)
+     return (MMModemOma *)mm_gdbus_object_peek_modem_oma (MM_GDBUS_OBJECT (self));
+ }
+ 
++#endif /* MM_INTERFACE_OMA_SUPPORTED */
++
+ /*****************************************************************************/
+ 
+ static void
+diff --git a/libmm-glib/mm-object.h b/libmm-glib/mm-object.h
+index 57060ee..2b15c88 100644
+--- a/libmm-glib/mm-object.h
++++ b/libmm-glib/mm-object.h
+@@ -52,7 +52,9 @@
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+ # include "mm-modem-signal.h"
+ #endif
+-#include "mm-modem-oma.h"
++#if MM_INTERFACE_OMA_SUPPORTED
++# include "mm-modem-oma.h"
++#endif
+ 
+ G_BEGIN_DECLS
+ 
+@@ -94,7 +96,6 @@ MMModem3gppUssd  *mm_object_get_modem_3gpp_ussd  (MMObject *self);
+ MMModemCdma      *mm_object_get_modem_cdma       (MMObject *self);
+ MMModemSimple    *mm_object_get_modem_simple     (MMObject *self);
+ MMModemFirmware  *mm_object_get_modem_firmware   (MMObject *self);
+-MMModemOma       *mm_object_get_modem_oma        (MMObject *self);
+ 
+ MMModem          *mm_object_peek_modem           (MMObject *self);
+ MMModem3gpp      *mm_object_peek_modem_3gpp      (MMObject *self);
+@@ -102,7 +103,6 @@ MMModem3gppUssd  *mm_object_peek_modem_3gpp_ussd (MMObject *self);
+ MMModemCdma      *mm_object_peek_modem_cdma      (MMObject *self);
+ MMModemSimple    *mm_object_peek_modem_simple    (MMObject *self);
+ MMModemFirmware  *mm_object_peek_modem_firmware  (MMObject *self);
+-MMModemOma       *mm_object_peek_modem_oma       (MMObject *self);
+ 
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ MMModemLocation  *mm_object_get_modem_location   (MMObject *self);
+@@ -129,6 +129,11 @@ MMModemSignal    *mm_object_get_modem_signal     (MMObject *self);
+ MMModemSignal    *mm_object_peek_modem_signal    (MMObject *self);
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++MMModemOma       *mm_object_get_modem_oma        (MMObject *self);
++MMModemOma       *mm_object_peek_modem_oma       (MMObject *self);
++#endif
++
+ G_END_DECLS
+ 
+ #endif /* _MM_OBJECT_H_ */
+diff --git a/src/Makefile.am b/src/Makefile.am
+index e568e82..df314f8 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -289,8 +289,6 @@ ModemManager_SOURCES = \
+ 	mm-iface-modem-simple.c \
+ 	mm-iface-modem-firmware.h \
+ 	mm-iface-modem-firmware.c \
+-	mm-iface-modem-oma.h \
+-	mm-iface-modem-oma.c \
+ 	mm-broadband-modem.h \
+ 	mm-broadband-modem.c \
+ 	mm-port-probe.h \
+@@ -344,6 +342,13 @@ ModemManager_SOURCES += \
+ 	$(NULL)
+ endif
+ 
++if WITH_INTERFACE_OMA
++ModemManager_SOURCES += \
++	mm-iface-modem-oma.h \
++	mm-iface-modem-oma.c \
++	$(NULL)
++endif
++
+ nodist_ModemManager_SOURCES = $(DAEMON_ENUMS_GENERATED)
+ 
+ # Additional Polkit support
+diff --git a/src/mm-broadband-modem-qmi.c b/src/mm-broadband-modem-qmi.c
+index d690afd..ba5cea0 100644
+--- a/src/mm-broadband-modem-qmi.c
++++ b/src/mm-broadband-modem-qmi.c
+@@ -47,7 +47,9 @@
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+ # include "mm-iface-modem-signal.h"
+ #endif
+-#include "mm-iface-modem-oma.h"
++#if MM_INTERFACE_OMA_SUPPORTED
++# include "mm-iface-modem-oma.h"
++#endif
+ #include "mm-sim-qmi.h"
+ #include "mm-bearer-qmi.h"
+ 
+@@ -55,7 +57,6 @@ static void iface_modem_init (MMIfaceModem *iface);
+ static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
+ static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
+ static void iface_modem_cdma_init (MMIfaceModemCdma *iface);
+-static void iface_modem_oma_init (MMIfaceModemOma *iface);
+ static void iface_modem_firmware_init (MMIfaceModemFirmware *iface);
+ 
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+@@ -72,6 +73,10 @@ static MMIfaceModemLocation *iface_modem_location_parent;
+ static void iface_modem_signal_init (MMIfaceModemSignal *iface);
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++static void iface_modem_oma_init (MMIfaceModemOma *iface);
++#endif
++
+ G_DEFINE_TYPE_EXTENDED (MMBroadbandModemQmi, mm_broadband_modem_qmi, MM_TYPE_BROADBAND_MODEM, 0,
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
+@@ -86,7 +91,9 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModemQmi, mm_broadband_modem_qmi, MM_TYPE_BRO
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIGNAL, iface_modem_signal_init)
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_OMA, iface_modem_oma_init)
++#endif
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_FIRMWARE, iface_modem_firmware_init))
+ 
+ struct _MMBroadbandModemQmiPrivate {
+@@ -142,10 +149,12 @@ struct _MMBroadbandModemQmiPrivate {
+     guint location_event_report_indication_id;
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
+     /* Oma helpers */
+     gboolean oma_unsolicited_events_enabled;
+     gboolean oma_unsolicited_events_setup;
+     guint oma_event_report_indication_id;
++#endif
+ 
+     /* Firmware helpers */
+     GList *firmware_list;
+@@ -9350,6 +9359,8 @@ enable_location_gathering (MMIfaceModemLocation *self,
+ 
+ #endif /* MM_INTERFACE_LOCATION_SUPPORTED */
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++
+ /*****************************************************************************/
+ /* Check support (OMA interface) */
+ 
+@@ -10003,6 +10014,8 @@ oma_enable_unsolicited_events (MMIfaceModemOma *self,
+                                                   user_data);
+ }
+ 
++#endif /* MM_INTERFACE_OMA_SUPPORTED */
++
+ /*****************************************************************************/
+ /* Check firmware support (Firmware interface) */
+ 
+@@ -11653,6 +11666,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
+ 
+ #endif /* MM_INTERFACE_SIGNAL_SUPPORTED */
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++
+ static void
+ iface_modem_oma_init (MMIfaceModemOma *iface)
+ {
+@@ -11678,6 +11693,8 @@ iface_modem_oma_init (MMIfaceModemOma *iface)
+     iface->disable_unsolicited_events_finish = common_oma_enable_disable_unsolicited_events_finish;
+ }
+ 
++#endif /* MM_INTERFACE_OMA_SUPPORTED */
++
+ static void
+ iface_modem_firmware_init (MMIfaceModemFirmware *iface)
+ {
+diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
+index 89a32f1..dfd44e9 100644
+--- a/src/mm-broadband-modem.c
++++ b/src/mm-broadband-modem.c
+@@ -53,7 +53,9 @@
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+ # include "mm-iface-modem-signal.h"
+ #endif
+-#include "mm-iface-modem-oma.h"
++#if MM_INTERFACE_OMA_SUPPORTED
++# include "mm-iface-modem-oma.h"
++#endif
+ #include "mm-broadband-bearer.h"
+ #include "mm-bearer-list.h"
+ #include "mm-base-sim.h"
+@@ -86,7 +88,9 @@ static void iface_modem_time_init (MMIfaceModemTime *iface);
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+ static void iface_modem_signal_init (MMIfaceModemSignal *iface);
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+ static void iface_modem_oma_init (MMIfaceModemOma *iface);
++#endif
+ static void iface_modem_firmware_init (MMIfaceModemFirmware *iface);
+ 
+ G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM, 0,
+@@ -110,7 +114,9 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIGNAL, iface_modem_signal_init)
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_OMA, iface_modem_oma_init)
++#endif
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_FIRMWARE, iface_modem_firmware_init))
+ 
+ enum {
+@@ -135,7 +141,9 @@ enum {
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+     PROP_MODEM_SIGNAL_DBUS_SKELETON,
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     PROP_MODEM_OMA_DBUS_SKELETON,
++#endif
+     PROP_MODEM_FIRMWARE_DBUS_SKELETON,
+     PROP_MODEM_SIM,
+     PROP_MODEM_BEARER_LIST,
+@@ -268,9 +276,11 @@ struct _MMBroadbandModemPrivate {
+     GObject *modem_signal_dbus_skeleton;
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
+     /*<--- Modem OMA interface --->*/
+     /* Properties */
+     GObject *modem_oma_dbus_skeleton;
++#endif
+ 
+     /*<--- Modem Firmware interface --->*/
+     /* Properties */
+@@ -8984,7 +8994,9 @@ typedef enum {
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+     DISABLING_STEP_IFACE_SIGNAL,
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     DISABLING_STEP_IFACE_OMA,
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     DISABLING_STEP_IFACE_TIME,
+ #endif
+@@ -9117,7 +9129,9 @@ INTERFACE_DISABLE_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FAL
+ #if MM_INTERFACE_TIME_SUPPORTED
+ INTERFACE_DISABLE_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+ INTERFACE_DISABLE_READY_FN (iface_modem_oma,       MM_IFACE_MODEM_OMA,       FALSE)
++#endif
+ 
+ static void
+ bearer_list_disconnect_all_bearers_ready (MMBearerList *list,
+@@ -9229,6 +9243,7 @@ disabling_step (DisablingContext *ctx)
+         ctx->step++;
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
+     case DISABLING_STEP_IFACE_OMA:
+         if (ctx->self->priv->modem_oma_dbus_skeleton) {
+             mm_dbg ("Modem has OMA capabilities, disabling the OMA interface...");
+@@ -9240,6 +9255,7 @@ disabling_step (DisablingContext *ctx)
+         }
+         /* Fall down to next step */
+         ctx->step++;
++#endif
+ 
+ #if MM_INTERFACE_TIME_SUPPORTED
+     case DISABLING_STEP_IFACE_TIME:
+@@ -9404,7 +9420,9 @@ typedef enum {
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+     ENABLING_STEP_IFACE_SIGNAL,
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     ENABLING_STEP_IFACE_OMA,
++#endif
+     ENABLING_STEP_IFACE_FIRMWARE,
+     ENABLING_STEP_IFACE_SIMPLE,
+     ENABLING_STEP_LAST,
+@@ -9515,7 +9533,9 @@ INTERFACE_ENABLE_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALS
+ #if MM_INTERFACE_TIME_SUPPORTED
+ INTERFACE_ENABLE_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+ INTERFACE_ENABLE_READY_FN (iface_modem_oma,       MM_IFACE_MODEM_OMA,       FALSE)
++#endif
+ 
+ static void
+ enabling_started_ready (MMBroadbandModem *self,
+@@ -9721,6 +9741,7 @@ enabling_step (EnablingContext *ctx)
+         ctx->step++;
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
+     case ENABLING_STEP_IFACE_OMA:
+         if (ctx->self->priv->modem_oma_dbus_skeleton) {
+             mm_dbg ("Modem has OMA capabilities, enabling the OMA interface...");
+@@ -9733,6 +9754,7 @@ enabling_step (EnablingContext *ctx)
+         }
+         /* Fall down to next step */
+         ctx->step++;
++#endif
+ 
+     case ENABLING_STEP_IFACE_FIRMWARE:
+         /* Fall down to next step */
+@@ -9866,7 +9888,9 @@ typedef enum {
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+     INITIALIZE_STEP_IFACE_SIGNAL,
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     INITIALIZE_STEP_IFACE_OMA,
++#endif
+     INITIALIZE_STEP_IFACE_FIRMWARE,
+     INITIALIZE_STEP_SIM_HOT_SWAP,
+     INITIALIZE_STEP_IFACE_SIMPLE,
+@@ -10075,7 +10099,9 @@ INTERFACE_INIT_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
+ #if MM_INTERFACE_SIGNAL_SUPPORTED
+ INTERFACE_INIT_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+ INTERFACE_INIT_READY_FN (iface_modem_oma,       MM_IFACE_MODEM_OMA,       FALSE)
++#endif
+ INTERFACE_INIT_READY_FN (iface_modem_firmware,  MM_IFACE_MODEM_FIRMWARE,  FALSE)
+ 
+ static void
+@@ -10214,6 +10240,7 @@ initialize_step (InitializeContext *ctx)
+         return;
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
+     case INITIALIZE_STEP_IFACE_OMA:
+         /* Initialize the Oma interface */
+         mm_iface_modem_oma_initialize (MM_IFACE_MODEM_OMA (ctx->self),
+@@ -10221,6 +10248,7 @@ initialize_step (InitializeContext *ctx)
+                                        (GAsyncReadyCallback)iface_modem_oma_initialize_ready,
+                                        ctx);
+         return;
++#endif
+ 
+     case INITIALIZE_STEP_IFACE_FIRMWARE:
+         /* Initialize the Firmware interface */
+@@ -10587,10 +10615,12 @@ set_property (GObject *object,
+         self->priv->modem_signal_dbus_skeleton = g_value_dup_object (value);
+         break;
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     case PROP_MODEM_OMA_DBUS_SKELETON:
+         g_clear_object (&self->priv->modem_oma_dbus_skeleton);
+         self->priv->modem_oma_dbus_skeleton = g_value_dup_object (value);
+         break;
++#endif
+     case PROP_MODEM_FIRMWARE_DBUS_SKELETON:
+         g_clear_object (&self->priv->modem_firmware_dbus_skeleton);
+         self->priv->modem_firmware_dbus_skeleton = g_value_dup_object (value);
+@@ -10713,9 +10743,11 @@ get_property (GObject *object,
+         g_value_set_object (value, self->priv->modem_signal_dbus_skeleton);
+         break;
+ #endif
++#if MM_INTERFACE_OMA_SUPPORTED
+     case PROP_MODEM_OMA_DBUS_SKELETON:
+         g_value_set_object (value, self->priv->modem_oma_dbus_skeleton);
+         break;
++#endif
+     case PROP_MODEM_FIRMWARE_DBUS_SKELETON:
+         g_value_set_object (value, self->priv->modem_firmware_dbus_skeleton);
+         break;
+@@ -11140,11 +11172,15 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
+ 
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++
+ static void
+ iface_modem_oma_init (MMIfaceModemOma *iface)
+ {
+ }
+ 
++#endif
++
+ static void
+ iface_modem_firmware_init (MMIfaceModemFirmware *iface)
+ {
+@@ -11231,9 +11267,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+                                       MM_IFACE_MODEM_SIGNAL_DBUS_SKELETON);
+ #endif
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
+     g_object_class_override_property (object_class,
+                                       PROP_MODEM_OMA_DBUS_SKELETON,
+                                       MM_IFACE_MODEM_OMA_DBUS_SKELETON);
++#endif
+ 
+     g_object_class_override_property (object_class,
+                                       PROP_MODEM_FIRMWARE_DBUS_SKELETON,
+diff --git a/src/mm-modem-helpers-qmi.c b/src/mm-modem-helpers-qmi.c
+index 2d1b981..e991845 100644
+--- a/src/mm-modem-helpers-qmi.c
++++ b/src/mm-modem-helpers-qmi.c
+@@ -1299,6 +1299,8 @@ mm_modem_capability_from_qmi_capabilities_context (MMQmiCapabilitiesContext *ctx
+     return tmp;
+ }
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++
+ /*****************************************************************************/
+ 
+ MMOmaSessionType
+@@ -1401,3 +1403,5 @@ mm_oma_session_state_failed_reason_from_qmi_oma_session_failed_reason (QmiOmaSes
+         return MM_OMA_SESSION_STATE_FAILED_REASON_UNKNOWN;
+     }
+ }
++
++#endif /* MM_INTERFACE_OMA_SUPPORTED */
+diff --git a/src/mm-modem-helpers-qmi.h b/src/mm-modem-helpers-qmi.h
+index 1b11d16..d740295 100644
+--- a/src/mm-modem-helpers-qmi.h
++++ b/src/mm-modem-helpers-qmi.h
+@@ -99,6 +99,8 @@ MMSmsState mm_sms_state_from_qmi_message_tag (QmiWmsMessageTagType tag);
+ 
+ QmiWdsAuthentication mm_bearer_allowed_auth_to_qmi_authentication (MMBearerAllowedAuth auth);
+ 
++#if MM_INTERFACE_OMA_SUPPORTED
++
+ /*****************************************************************************/
+ /* QMI/OMA to MM translations */
+ 
+@@ -109,6 +111,8 @@ MMOmaSessionState mm_oma_session_state_from_qmi_oma_session_state (QmiOmaSession
+ 
+ MMOmaSessionStateFailedReason mm_oma_session_state_failed_reason_from_qmi_oma_session_failed_reason (QmiOmaSessionFailedReason qmi_session_failed_reason);
+ 
++#endif
++
+ /*****************************************************************************/
+ /* Utility to gather current capabilities from various sources */
+ 
+-- 
+2.10.2
+

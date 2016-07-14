@@ -1,0 +1,23 @@
+#!/bin/sh
+# Copyright (C) 2016 Velocloud Inc
+
+# Load hotplug common utilities
+. /etc/modemmanager/25-modemmanager-common
+
+# We require a device name
+if [ -z "$DEVNAME" ]; then
+	return
+fi
+
+# If blacklisted by VID:PID, ignore 'add' event
+if [ "${ACTION}" == "add" ]; then
+	local BLACKLIST_REASON=$(check_modemmanager_blacklist /sys${DEVPATH})
+	if [ -n "${BLACKLIST_REASON}" ]; then
+		mm_log "${ACTION} serial interface ${DEVNAME}: event ignored: ${BLACKLIST_REASON}"
+		return
+	fi
+fi
+
+# Report TTY
+mm_log "${ACTION} serial interface ${DEVNAME}: event processed"
+report_event "${ACTION}" "${DEVNAME}" "tty"

@@ -1,6 +1,6 @@
 diff -Naur a/lib/librte_eal/common/include/vc_ioctl.h b/lib/librte_eal/common/include/vc_ioctl.h
 --- a/lib/librte_eal/common/include/vc_ioctl.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/lib/librte_eal/common/include/vc_ioctl.h	2016-04-13 16:29:50.584595092 -0700
++++ b/lib/librte_eal/common/include/vc_ioctl.h	2016-07-13 15:25:42.936365784 -0700
 @@ -0,0 +1,20 @@
 +#ifndef VC_IGB_UIO_IOCTL_H
 +#define VC_IGB_UIO_IOCTL_H
@@ -24,7 +24,7 @@ diff -Naur a/lib/librte_eal/common/include/vc_ioctl.h b/lib/librte_eal/common/in
 +#endif
 diff -Naur a/lib/librte_eal/common/Makefile b/lib/librte_eal/common/Makefile
 --- a/lib/librte_eal/common/Makefile	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_eal/common/Makefile	2016-04-13 16:29:50.584595092 -0700
++++ b/lib/librte_eal/common/Makefile	2016-07-13 15:25:42.936365784 -0700
 @@ -40,6 +40,7 @@
  INC += rte_eal_memconfig.h rte_malloc_heap.h
  INC += rte_hexdump.h rte_devargs.h rte_dev.h
@@ -35,7 +35,7 @@ diff -Naur a/lib/librte_eal/common/Makefile b/lib/librte_eal/common/Makefile
  INC += rte_warnings.h
 diff -Naur a/lib/librte_eal/linuxapp/igb_uio/igb_uio.c b/lib/librte_eal/linuxapp/igb_uio/igb_uio.c
 --- a/lib/librte_eal/linuxapp/igb_uio/igb_uio.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_eal/linuxapp/igb_uio/igb_uio.c	2016-04-13 16:29:50.592595486 -0700
++++ b/lib/librte_eal/linuxapp/igb_uio/igb_uio.c	2016-07-13 15:25:42.940365604 -0700
 @@ -31,14 +31,23 @@
  #include <linux/io.h>
  #include <linux/msi.h>
@@ -441,7 +441,7 @@ diff -Naur a/lib/librte_eal/linuxapp/igb_uio/igb_uio.c b/lib/librte_eal/linuxapp
  static int
 diff -Naur a/lib/librte_eal/linuxapp/kni/ethtool/igb/e1000_82575.c b/lib/librte_eal/linuxapp/kni/ethtool/igb/e1000_82575.c
 --- a/lib/librte_eal/linuxapp/kni/ethtool/igb/e1000_82575.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_eal/linuxapp/kni/ethtool/igb/e1000_82575.c	2016-04-13 16:29:50.588595299 -0700
++++ b/lib/librte_eal/linuxapp/kni/ethtool/igb/e1000_82575.c	2016-07-13 15:25:42.948365238 -0700
 @@ -1726,6 +1726,10 @@
  
  	E1000_WRITE_REG(hw, E1000_PCS_LCTL, reg);
@@ -455,7 +455,7 @@ diff -Naur a/lib/librte_eal/linuxapp/kni/ethtool/igb/e1000_82575.c b/lib/librte_
  
 diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_82575.c b/lib/librte_pmd_e1000/e1000/e1000_82575.c
 --- a/lib/librte_pmd_e1000/e1000/e1000_82575.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_e1000/e1000/e1000_82575.c	2016-04-13 16:29:50.568594248 -0700
++++ b/lib/librte_pmd_e1000/e1000/e1000_82575.c	2016-07-13 15:25:42.956364872 -0700
 @@ -50,19 +50,19 @@
  STATIC void e1000_release_phy_82575(struct e1000_hw *hw);
  STATIC s32  e1000_acquire_nvm_82575(struct e1000_hw *hw);
@@ -638,7 +638,7 @@ diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_82575.c b/lib/librte_pmd_e1000/e10
  
 diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_api.c b/lib/librte_pmd_e1000/e1000/e1000_api.c
 --- a/lib/librte_pmd_e1000/e1000/e1000_api.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_e1000/e1000/e1000_api.c	2016-04-13 16:29:50.568594248 -0700
++++ b/lib/librte_pmd_e1000/e1000/e1000_api.c	2016-07-13 15:25:42.960364694 -0700
 @@ -33,6 +33,8 @@
  
  #include "e1000_api.h"
@@ -693,7 +693,7 @@ diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_api.c b/lib/librte_pmd_e1000/e1000
 -
 diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_defines.h b/lib/librte_pmd_e1000/e1000/e1000_defines.h
 --- a/lib/librte_pmd_e1000/e1000/e1000_defines.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_e1000/e1000/e1000_defines.h	2016-04-13 16:29:50.568594248 -0700
++++ b/lib/librte_pmd_e1000/e1000/e1000_defines.h	2016-07-13 15:25:42.972364156 -0700
 @@ -1177,9 +1177,12 @@
  #define NVM_A8_OPCODE_SPI	0x08 /* opcode bit-3 = address bit-8 */
  #define NVM_WREN_OPCODE_SPI	0x06 /* NVM set Write Enable latch */
@@ -717,7 +717,7 @@ diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_defines.h b/lib/librte_pmd_e1000/e
  #define M88E1000_PHY_VCO_REG_BIT8	0x100 /* Bits 8 & 11 are adjusted for */
 diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_hw.h b/lib/librte_pmd_e1000/e1000/e1000_hw.h
 --- a/lib/librte_pmd_e1000/e1000/e1000_hw.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_e1000/e1000/e1000_hw.h	2016-04-13 16:29:50.568594248 -0700
++++ b/lib/librte_pmd_e1000/e1000/e1000_hw.h	2016-07-13 15:25:42.980363791 -0700
 @@ -147,6 +147,7 @@
  #define E1000_DEV_ID_82575EB_COPPER		0x10A7
  #define E1000_DEV_ID_82575EB_FIBER_SERDES	0x10A9
@@ -821,7 +821,7 @@ diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_hw.h b/lib/librte_pmd_e1000/e1000/
  #include "e1000_82541.h"
 diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_phy.c b/lib/librte_pmd_e1000/e1000/e1000_phy.c
 --- a/lib/librte_pmd_e1000/e1000/e1000_phy.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_e1000/e1000/e1000_phy.c	2016-04-13 16:29:50.568594248 -0700
++++ b/lib/librte_pmd_e1000/e1000/e1000_phy.c	2016-07-13 15:25:42.984363607 -0700
 @@ -1320,7 +1320,9 @@
  		phy_data |= M88E1000_PSCR_POLARITY_REVERSAL;
  
@@ -853,7 +853,7 @@ diff -Naur a/lib/librte_pmd_e1000/e1000/e1000_phy.c b/lib/librte_pmd_e1000/e1000
  	hw->phy.ops.read_reg(hw, PHY_CONTROL, &mii_reg);
 diff -Naur a/lib/librte_pmd_e1000/igb_ethdev.c b/lib/librte_pmd_e1000/igb_ethdev.c
 --- a/lib/librte_pmd_e1000/igb_ethdev.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_e1000/igb_ethdev.c	2016-04-13 16:29:50.568594248 -0700
++++ b/lib/librte_pmd_e1000/igb_ethdev.c	2016-07-13 15:25:42.996363070 -0700
 @@ -213,6 +213,7 @@
  
  static enum e1000_fc_mode igb_fc_setting = e1000_fc_full;
@@ -909,8 +909,8 @@ diff -Naur a/lib/librte_pmd_e1000/igb_ethdev.c b/lib/librte_pmd_e1000/igb_ethdev
  			link_check = hw->mac.serdes_has_link;
 diff -Naur a/lib/librte_pmd_e1000/igb_vc.c b/lib/librte_pmd_e1000/igb_vc.c
 --- a/lib/librte_pmd_e1000/igb_vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/lib/librte_pmd_e1000/igb_vc.c	2016-04-13 16:29:50.568594248 -0700
-@@ -0,0 +1,2105 @@
++++ b/lib/librte_pmd_e1000/igb_vc.c	2016-07-13 16:07:09.323799122 -0700
+@@ -0,0 +1,2104 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -1840,7 +1840,7 @@ diff -Naur a/lib/librte_pmd_e1000/igb_vc.c b/lib/librte_pmd_e1000/igb_vc.c
 +};
 +
 +// edge5x0: reset switches and PHYs;
-+
++#if 0
 +static s32
 +igb_vc5x0_reset(struct e1000_hw *hw)
 +{
@@ -1861,7 +1861,7 @@ diff -Naur a/lib/librte_pmd_e1000/igb_vc.c b/lib/librte_pmd_e1000/igb_vc.c
 +
 +        return (ret);
 +}
-+
++#endif
 +// reset cpu port serdes phy;
 +
 +static s32
@@ -2871,7 +2871,6 @@ diff -Naur a/lib/librte_pmd_e1000/igb_vc.c b/lib/librte_pmd_e1000/igb_vc.c
 +	case VC_ID_EDGE5X0:
 +		hw->vc_id = e1000_vc5x0;
 +		info = igb_vc5x0_info;
-+		igb_vc5x0_reset(hw);
 +		break;
 +	default:
 +		goto out;
@@ -3018,7 +3017,7 @@ diff -Naur a/lib/librte_pmd_e1000/igb_vc.c b/lib/librte_pmd_e1000/igb_vc.c
 +}
 diff -Naur a/lib/librte_pmd_e1000/Makefile b/lib/librte_pmd_e1000/Makefile
 --- a/lib/librte_pmd_e1000/Makefile	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_e1000/Makefile	2016-04-13 16:29:50.568594248 -0700
++++ b/lib/librte_pmd_e1000/Makefile	2016-07-13 15:25:42.996363070 -0700
 @@ -85,6 +85,7 @@
  SRCS-$(CONFIG_RTE_LIBRTE_E1000_PMD) += e1000_osdep.c
  SRCS-$(CONFIG_RTE_LIBRTE_E1000_PMD) += e1000_phy.c

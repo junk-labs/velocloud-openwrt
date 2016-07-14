@@ -1,11 +1,34 @@
+diff -Naur a/lib/librte_eal/linuxapp/kni/ethtool/ixgbe/ixgbe_phy.c b/lib/librte_eal/linuxapp/kni/ethtool/ixgbe/ixgbe_phy.c
+--- a/lib/librte_eal/linuxapp/kni/ethtool/ixgbe/ixgbe_phy.c	2015-04-03 07:13:45.000000000 -0700
++++ b/lib/librte_eal/linuxapp/kni/ethtool/ixgbe/ixgbe_phy.c	2016-07-13 12:00:36.782375575 -0700
+@@ -924,6 +924,9 @@
+ 		goto out;
+ 	}
+ 
++	/* LAN ID is needed for I2C access */	
++	hw->mac.ops.set_lan_id(hw);
++
+ 	status = hw->phy.ops.read_i2c_eeprom(hw,
+ 					     IXGBE_SFF_IDENTIFIER,
+ 					     &identifier);
+@@ -933,9 +936,6 @@
+ 	    status == IXGBE_ERR_SFP_NOT_PRESENT)
+ 		goto err_read_i2c_eeprom;
+ 
+-	/* LAN ID is needed for sfp_type determination */
+-	hw->mac.ops.set_lan_id(hw);
+-
+ 	if (identifier != IXGBE_SFF_IDENTIFIER_SFP) {
+ 		hw->phy.type = ixgbe_phy_sfp_unsupported;
+ 		status = IXGBE_ERR_SFP_NOT_SUPPORTED;
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c	2016-07-01 14:38:59.326201861 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c	2016-07-13 12:02:09.942159429 -0700
 @@ -1202,6 +1202,9 @@
  		goto out;
  	}
  
-+	 /* LAN ID is needed for I2C access */	
++	/* LAN ID is needed for I2C access */	
 +	hw->mac.ops.set_lan_id(hw);
 +
  	status = hw->phy.ops.read_i2c_eeprom(hw,

@@ -273,6 +273,7 @@ setup_network_interface_dhcp()
     uci -c /etc/config set network.${USB}.ifname=''"${IFACE}"'' >/dev/null 2>&1
     uci -c /etc/config set network.${USB}.proto='dhcp' >/dev/null 2>&1
     uci -c /etc/config set network.${USB}.hostname=''"vc-${USB}"'' >/dev/null 2>&1
+    uci -c /etc/config set network.${USB}.reqopts=''"mtu"'' >/dev/null 2>&1
     uci -c /etc/config commit network >/dev/null 2>&1
 }
 

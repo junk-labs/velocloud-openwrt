@@ -163,6 +163,7 @@ setup_wwan_modem()
 	uci -c /etc/config set network.$usbifname.ifname=''"$etherdevice"''
 	uci -c /etc/config set network.$usbifname.proto='dhcp'
 	uci -c /etc/config set network.$usbifname.hostname=''"vc-$usbifname"''
+	uci -c /etc/config set network.$usbifname.reqopts=''"mtu"''
 	uci -c /etc/config commit network
 	log "Updated network config"
 

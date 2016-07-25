@@ -1,6 +1,6 @@
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82598.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82598.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82598.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82598.c	2016-07-21 14:18:47.565557708 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82598.c	2016-07-25 10:49:15.110458281 -0700
 @@ -260,6 +260,8 @@
  	DEBUGFUNC("ixgbe_start_hw_82598");
  
@@ -22,7 +22,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82598.c b/lib/librte_pmd_ixgbe/ixg
  }
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.c	2016-07-21 14:18:47.561557894 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.c	2016-07-25 10:49:15.110458281 -0700
 @@ -85,6 +85,9 @@
  	if (hw->phy.multispeed_fiber) {
  		/* Set up dual speed SFP+ support */
@@ -229,7 +229,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.c b/lib/librte_pmd_ixgbe/ixg
   *  @hw: pointer to hardware structure
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.h b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.h
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.h	2016-07-21 14:18:47.561557894 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.h	2016-07-25 10:49:15.110458281 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -260,7 +260,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_82599.h b/lib/librte_pmd_ixgbe/ixg
  				    bool autoneg_wait_to_complete);
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.c	2016-07-21 14:18:47.565557708 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.c	2016-07-25 10:49:15.110458281 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -609,7 +609,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.c b/lib/librte_pmd_ixgbe/ixgbe
 +}
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.h b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.h
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.h	2016-07-21 14:18:47.557558087 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.h	2016-07-25 10:49:15.106458488 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -687,7 +687,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_api.h b/lib/librte_pmd_ixgbe/ixgbe
  
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.c	2016-07-21 14:18:47.561557894 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.c	2016-07-25 10:49:15.110458281 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -1192,7 +1192,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.c b/lib/librte_pmd_ixgbe/ix
 +}
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.h b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.h
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.h	2016-07-21 14:18:47.565557708 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.h	2016-07-25 10:49:15.110458281 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -1244,7 +1244,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_common.h b/lib/librte_pmd_ixgbe/ix
  #endif /* IXGBE_COMMON */
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_dcb_82599.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_dcb_82599.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_dcb_82599.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_dcb_82599.c	2016-07-21 14:18:47.561557894 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_dcb_82599.c	2016-07-25 10:49:15.106458488 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -1272,7 +1272,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_dcb_82599.c b/lib/librte_pmd_ixgbe
  	if (pfc_en)
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_osdep.h b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_osdep.h
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_osdep.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_osdep.h	2016-07-21 14:18:47.557558087 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_osdep.h	2016-07-25 10:49:15.106458488 -0700
 @@ -1,6 +1,6 @@
  /******************************************************************************
  
@@ -1301,7 +1301,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_osdep.h b/lib/librte_pmd_ixgbe/ixg
  #define IXGBE_PCI_REG(reg) (*((volatile uint32_t *)(reg)))
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c	2016-07-21 14:18:47.565557708 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c	2016-07-25 10:49:15.110458281 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -2106,7 +2106,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.c b/lib/librte_pmd_ixgbe/ixgbe
 +}
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.h b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.h
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.h	2016-07-21 14:18:47.565557708 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.h	2016-07-25 10:49:15.110458281 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -2198,7 +2198,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_phy.h b/lib/librte_pmd_ixgbe/ixgbe
  s32 ixgbe_write_i2c_eeprom_generic(struct ixgbe_hw *hw, u8 byte_offset,
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_type.h b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_type.h
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_type.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_type.h	2016-07-21 14:18:47.561557894 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_type.h	2016-07-25 10:49:15.106458488 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -2984,7 +2984,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_type.h b/lib/librte_pmd_ixgbe/ixgb
  #endif /* _IXGBE_TYPE_H_ */
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x540.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x540.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x540.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x540.c	2016-07-21 14:18:47.557558087 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x540.c	2016-07-25 10:49:15.106458488 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -3186,7 +3186,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x540.c b/lib/librte_pmd_ixgbe/ixgb
 -
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.c b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.c
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.c	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.c	2016-07-21 14:18:47.557558087 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.c	2016-07-25 10:49:15.094458623 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -5602,7 +5602,7 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.c b/lib/librte_pmd_ixgbe/ixgb
 +}
 diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.h b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.h
 --- a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.h	2015-04-03 07:13:45.000000000 -0700
-+++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.h	2016-07-21 14:18:47.561557894 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.h	2016-07-25 10:49:15.110458281 -0700
 @@ -1,6 +1,6 @@
  /*******************************************************************************
  
@@ -5657,3 +5657,30 @@ diff -Naur a/lib/librte_pmd_ixgbe/ixgbe/ixgbe_x550.h b/lib/librte_pmd_ixgbe/ixgb
 +s32 ixgbe_led_off_t_X550em(struct ixgbe_hw *hw, u32 led_idx);
  #endif /* _IXGBE_X550_H_ */
 -
+diff -Naur a/lib/librte_pmd_ixgbe/ixgbe_ethdev.c b/lib/librte_pmd_ixgbe/ixgbe_ethdev.c
+--- a/lib/librte_pmd_ixgbe/ixgbe_ethdev.c	2015-04-03 07:13:45.000000000 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe_ethdev.c	2016-07-25 10:49:15.110458281 -0700
+@@ -834,8 +834,13 @@
+ 		PMD_INIT_LOG(ERR, "If you are experiencing problems "
+ 		    "please contact your Intel or hardware representative "
+ 		    "who provided you with this hardware.");
+-	} else if (diag == IXGBE_ERR_SFP_NOT_SUPPORTED)
++	} else if (diag == IXGBE_ERR_SFP_NOT_SUPPORTED) {
+ 		PMD_INIT_LOG(ERR, "Unsupported SFP+ Module");
++	} else if (diag == IXGBE_ERR_SFP_NOT_PRESENT) {
++		PMD_INIT_LOG(ERR, "No SFP+ Module Present");
++		diag = 0;
++	}
++	
+ 	if (diag) {
+ 		PMD_INIT_LOG(ERR, "Hardware Initialization Failure: %d", diag);
+ 		return -EIO;
+@@ -1482,7 +1487,7 @@
+ 	/* reinitialize adapter
+ 	 * this calls reset and start */
+ 	status = ixgbe_pf_reset_hw(hw);
+-	if (status != 0)
++	if (status != 0 && status != IXGBE_ERR_SFP_NOT_PRESENT)
+ 		return -1;
+ 	hw->mac.ops.start_hw(hw);
+ 	hw->mac.get_link_status = true;

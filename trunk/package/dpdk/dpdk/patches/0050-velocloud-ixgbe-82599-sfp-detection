@@ -1,0 +1,143 @@
+diff -Naur a/.dep_files b/.dep_files
+--- a/.dep_files	1969-12-31 16:00:00.000000000 -0800
++++ b/.dep_files	2016-07-28 16:34:34.205384402 -0700
+@@ -0,0 +1 @@
++b11aa6f0abbe0f2036282ef232601a2f
+diff -Naur a/lib/librte_ether/rte_ethdev.c b/lib/librte_ether/rte_ethdev.c
+--- a/lib/librte_ether/rte_ethdev.c	2015-04-03 07:13:45.000000000 -0700
++++ b/lib/librte_ether/rte_ethdev.c	2016-07-28 16:34:32.993439541 -0700
+@@ -1430,6 +1430,26 @@
+ 	(*dev->dev_ops->dev_close)(dev);
+ }
+ 
++void
++rte_eth_dev_detect(uint8_t port_id)
++{
++	struct rte_eth_dev *dev;
++
++	/* This function is only safe when called from the primary process
++	 * in a multi-process setup*/
++	PROC_PRIMARY_OR_RET();
++
++	if (!rte_eth_dev_is_valid_port(port_id)) {
++		PMD_DEBUG_TRACE("Invalid port_id=%d\n", port_id);
++		return;
++	}
++
++	dev = &rte_eth_devices[port_id];
++
++	FUNC_PTR_OR_RET(*dev->dev_ops->dev_detect);
++	(*dev->dev_ops->dev_detect)(dev);
++}
++
+ int
+ rte_eth_rx_queue_setup(uint8_t port_id, uint16_t rx_queue_id,
+ 		       uint16_t nb_rx_desc, unsigned int socket_id,
+diff -Naur a/lib/librte_ether/rte_ethdev.h b/lib/librte_ether/rte_ethdev.h
+--- a/lib/librte_ether/rte_ethdev.h	2015-04-03 07:13:45.000000000 -0700
++++ b/lib/librte_ether/rte_ethdev.h	2016-07-28 16:34:32.993439541 -0700
+@@ -967,6 +967,9 @@
+ typedef void (*eth_dev_close_t)(struct rte_eth_dev *dev);
+ /**< @internal Function used to close a configured Ethernet device. */
+ 
++typedef void (*eth_dev_detect_t)(struct rte_eth_dev *dev);
++/**< @internal Function used to detect a SFP module during runtime. */
++
+ typedef void (*eth_promiscuous_enable_t)(struct rte_eth_dev *dev);
+ /**< @internal Function used to enable the RX promiscuous mode of an Ethernet device. */
+ 
+@@ -1294,6 +1297,7 @@
+ 	eth_dev_set_link_up_t      dev_set_link_up;   /**< Device link up. */
+ 	eth_dev_set_link_down_t    dev_set_link_down; /**< Device link down. */
+ 	eth_dev_close_t            dev_close;     /**< Close device. */
++	eth_dev_detect_t	   dev_detect;    /**<SFP detection. */
+ 	eth_promiscuous_enable_t   promiscuous_enable; /**< Promiscuous ON. */
+ 	eth_promiscuous_disable_t  promiscuous_disable;/**< Promiscuous OFF. */
+ 	eth_allmulticast_enable_t  allmulticast_enable;/**< RX multicast ON. */
+@@ -1976,6 +1980,14 @@
+ extern void rte_eth_dev_close(uint8_t port_id);
+ 
+ /**
++ * Detect the presence of a SFP module. 
++ *
++ * @param port_id
++ *   The port identifier of the Ethernet device.
++ */
++extern void rte_eth_dev_detect(uint8_t port_id);
++
++/**
+  * Enable receipt in promiscuous mode for an Ethernet device.
+  *
+  * @param port_id
+diff -Naur a/lib/librte_pmd_ixgbe/ixgbe_ethdev.c b/lib/librte_pmd_ixgbe/ixgbe_ethdev.c
+--- a/lib/librte_pmd_ixgbe/ixgbe_ethdev.c	2016-07-28 16:33:03.537509663 -0700
++++ b/lib/librte_pmd_ixgbe/ixgbe_ethdev.c	2016-07-28 16:34:32.965440814 -0700
+@@ -123,6 +123,7 @@
+ static int  ixgbe_dev_set_link_up(struct rte_eth_dev *dev);
+ static int  ixgbe_dev_set_link_down(struct rte_eth_dev *dev);
+ static void ixgbe_dev_close(struct rte_eth_dev *dev);
++static void ixgbe_dev_detect_sfp(struct rte_eth_dev *dev);
+ static void ixgbe_dev_promiscuous_enable(struct rte_eth_dev *dev);
+ static void ixgbe_dev_promiscuous_disable(struct rte_eth_dev *dev);
+ static void ixgbe_dev_allmulticast_enable(struct rte_eth_dev *dev);
+@@ -324,6 +325,7 @@
+ 	.dev_set_link_up    = ixgbe_dev_set_link_up,
+ 	.dev_set_link_down  = ixgbe_dev_set_link_down,
+ 	.dev_close            = ixgbe_dev_close,
++	.dev_detect           = ixgbe_dev_detect_sfp,
+ 	.promiscuous_enable   = ixgbe_dev_promiscuous_enable,
+ 	.promiscuous_disable  = ixgbe_dev_promiscuous_disable,
+ 	.allmulticast_enable  = ixgbe_dev_allmulticast_enable,
+@@ -1745,6 +1747,52 @@
+ }
+ 
+ /*
++ * Detect presence of SFP module.
++ */
++static void
++ixgbe_dev_detect_sfp(struct rte_eth_dev *dev)
++{
++	int rv;
++	uint32_t speed;
++	bool link_up;
++	bool autoneg = false;
++	struct ixgbe_hw *hw =
++		IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
++	
++	PMD_INIT_FUNC_TRACE();
++
++	hw->mac.ops.check_link(hw, &speed, &link_up, false);	
++
++	if (link_up)
++		return;
++
++	if (hw->phy.ops.identify_sfp(hw))
++		return;
++
++	rv = hw->mac.ops.setup_sfp(hw);
++	if (rv)
++		return;
++
++	speed = hw->phy.autoneg_advertised;
++        if ((!speed) && (hw->mac.ops.get_link_capabilities)) {
++                hw->mac.ops.get_link_capabilities(hw, &speed, &autoneg);
++
++                /* setup the highest link when no autoneg */
++                if (!autoneg) {
++                        if (speed & IXGBE_LINK_SPEED_10GB_FULL)
++                                speed = IXGBE_LINK_SPEED_10GB_FULL;
++                }
++        }
++
++        if (hw->mac.ops.setup_link)
++                hw->mac.ops.setup_link(hw, speed, true);
++
++        if (hw->mac.ops.check_link) {
++                hw->mac.ops.check_link(hw, &speed, &link_up, false);
++	}
++}
++
++/*
+  * This function is based on ixgbe_update_stats_counters() in ixgbe/ixgbe.c
+  */
+ static void

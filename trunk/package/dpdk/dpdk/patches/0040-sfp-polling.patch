@@ -1,0 +1,164 @@
+diff --git a/drivers/net/ixgbe/ixgbe_ethdev.c b/drivers/net/ixgbe/ixgbe_ethdev.c
+index d478a15..70fd77f 100644
+--- a/drivers/net/ixgbe/ixgbe_ethdev.c
++++ b/drivers/net/ixgbe/ixgbe_ethdev.c
+@@ -169,6 +169,7 @@ static void ixgbe_dev_stop(struct rte_eth_dev *dev);
+ static int  ixgbe_dev_set_link_up(struct rte_eth_dev *dev);
+ static int  ixgbe_dev_set_link_down(struct rte_eth_dev *dev);
+ static void ixgbe_dev_close(struct rte_eth_dev *dev);
++static void ixgbe_dev_detect_sfp(struct rte_eth_dev *dev);
+ static void ixgbe_dev_promiscuous_enable(struct rte_eth_dev *dev);
+ static void ixgbe_dev_promiscuous_disable(struct rte_eth_dev *dev);
+ static void ixgbe_dev_allmulticast_enable(struct rte_eth_dev *dev);
+@@ -467,6 +468,7 @@ static const struct eth_dev_ops ixgbe_eth_dev_ops = {
+ 	.dev_set_link_up    = ixgbe_dev_set_link_up,
+ 	.dev_set_link_down  = ixgbe_dev_set_link_down,
+ 	.dev_close            = ixgbe_dev_close,
++    .dev_detect           = ixgbe_dev_detect_sfp,
+ 	.promiscuous_enable   = ixgbe_dev_promiscuous_enable,
+ 	.promiscuous_disable  = ixgbe_dev_promiscuous_disable,
+ 	.allmulticast_enable  = ixgbe_dev_allmulticast_enable,
+@@ -1144,8 +1146,12 @@ eth_ixgbe_dev_init(struct rte_eth_dev *eth_dev)
+ 		PMD_INIT_LOG(ERR, "If you are experiencing problems "
+ 			     "please contact your Intel or hardware representative "
+ 			     "who provided you with this hardware.");
+-	} else if (diag == IXGBE_ERR_SFP_NOT_SUPPORTED)
++	} else if (diag == IXGBE_ERR_SFP_NOT_SUPPORTED) {
+ 		PMD_INIT_LOG(ERR, "Unsupported SFP+ Module");
++    } else if (diag == IXGBE_ERR_SFP_NOT_PRESENT) {
++        PMD_INIT_LOG(ERR, "No SFP+ Module Present");
++        diag = 0;
++    }
+ 	if (diag) {
+ 		PMD_INIT_LOG(ERR, "Hardware Initialization Failure: %d", diag);
+ 		return -EIO;
+@@ -2186,7 +2192,7 @@ ixgbe_dev_start(struct rte_eth_dev *dev)
+ 	 * this calls reset and start
+ 	 */
+ 	status = ixgbe_pf_reset_hw(hw);
+-	if (status != 0)
++    if (status != 0 && status != IXGBE_ERR_SFP_NOT_PRESENT)
+ 		return -1;
+ 	hw->mac.ops.start_hw(hw);
+ 	hw->mac.get_link_status = true;
+@@ -2692,6 +2698,52 @@ ixgbe_read_stats_registers(struct ixgbe_hw *hw,
+ }
+ 
+ /*
++ * Detect presence of SFP module.
++ */
++static void
++ixgbe_dev_detect_sfp(struct rte_eth_dev *dev)
++{
++   int rv;
++   uint32_t speed;
++   bool link_up;
++   bool autoneg = false;
++   struct ixgbe_hw *hw =
++       IXGBE_DEV_PRIVATE_TO_HW(dev->data->dev_private);
++   
++   PMD_INIT_FUNC_TRACE();
++
++   hw->mac.ops.check_link(hw, &speed, &link_up, false);    
++
++   if (link_up)
++       return;
++
++   if (hw->phy.ops.identify_sfp(hw))
++       return;
++
++   rv = hw->mac.ops.setup_sfp(hw);
++   if (rv)
++       return;
++
++   speed = hw->phy.autoneg_advertised;
++        if ((!speed) && (hw->mac.ops.get_link_capabilities)) {
++                hw->mac.ops.get_link_capabilities(hw, &speed, &autoneg);
++
++                /* setup the highest link when no autoneg */
++                if (!autoneg) {
++                        if (speed & IXGBE_LINK_SPEED_10GB_FULL)
++                                speed = IXGBE_LINK_SPEED_10GB_FULL;
++                }
++        }
++
++        if (hw->mac.ops.setup_link)
++                hw->mac.ops.setup_link(hw, speed, true);
++
++        if (hw->mac.ops.check_link) {
++                hw->mac.ops.check_link(hw, &speed, &link_up, false);
++   }
++}
++
++/*
+  * This function is based on ixgbe_update_stats_counters() in ixgbe/ixgbe.c
+  */
+ static void
+diff --git a/lib/librte_ether/rte_ethdev.c b/lib/librte_ether/rte_ethdev.c
+index f62a9ec..a05c3f3 100644
+--- a/lib/librte_ether/rte_ethdev.c
++++ b/lib/librte_ether/rte_ethdev.c
+@@ -1180,6 +1180,26 @@ rte_eth_dev_close(uint8_t port_id)
+ 	dev->data->tx_queues = NULL;
+ }
+ 
++void
++rte_eth_dev_detect(uint8_t port_id)
++{
++   struct rte_eth_dev *dev;
++
++   /* This function is only safe when called from the primary process
++    * in a multi-process setup*/
++   RTE_PROC_PRIMARY_OR_RET();
++
++   if (!rte_eth_dev_is_valid_port(port_id)) {
++       RTE_PMD_DEBUG_TRACE("Invalid port_id=%d\n", port_id);
++       return;
++   }
++
++   dev = &rte_eth_devices[port_id];
++
++   RTE_FUNC_PTR_OR_RET(*dev->dev_ops->dev_detect);
++   (*dev->dev_ops->dev_detect)(dev);
++}
++
+ int
+ rte_eth_rx_queue_setup(uint8_t port_id, uint16_t rx_queue_id,
+ 		       uint16_t nb_rx_desc, unsigned int socket_id,
+diff --git a/lib/librte_ether/rte_ethdev.h b/lib/librte_ether/rte_ethdev.h
+index b0fe033..8186c2a 100644
+--- a/lib/librte_ether/rte_ethdev.h
++++ b/lib/librte_ether/rte_ethdev.h
+@@ -1052,6 +1052,9 @@ typedef int  (*eth_dev_set_link_down_t)(struct rte_eth_dev *dev);
+ typedef void (*eth_dev_close_t)(struct rte_eth_dev *dev);
+ /**< @internal Function used to close a configured Ethernet device. */
+ 
++typedef void (*eth_dev_detect_t)(struct rte_eth_dev *dev);
++/**< @internal Function used to detect a SFP module during runtime. */
++
+ typedef void (*eth_promiscuous_enable_t)(struct rte_eth_dev *dev);
+ /**< @internal Function used to enable the RX promiscuous mode of an Ethernet device. */
+ 
+@@ -1421,6 +1424,7 @@ struct eth_dev_ops {
+ 	eth_dev_set_link_up_t      dev_set_link_up;   /**< Device link up. */
+ 	eth_dev_set_link_down_t    dev_set_link_down; /**< Device link down. */
+ 	eth_dev_close_t            dev_close;     /**< Close device. */
++    eth_dev_detect_t       dev_detect;    /**<SFP detection. */
+ 	eth_promiscuous_enable_t   promiscuous_enable; /**< Promiscuous ON. */
+ 	eth_promiscuous_disable_t  promiscuous_disable;/**< Promiscuous OFF. */
+ 	eth_allmulticast_enable_t  allmulticast_enable;/**< RX multicast ON. */
+@@ -2172,6 +2176,14 @@ int rte_eth_dev_set_link_down(uint8_t port_id);
+ void rte_eth_dev_close(uint8_t port_id);
+ 
+ /**
++ * Detect the presence of a SFP module. 
++ *
++ * @param port_id
++ *   The port identifier of the Ethernet device.
++ */
++extern void rte_eth_dev_detect(uint8_t port_id);
++
++/**
+  * Enable receipt in promiscuous mode for an Ethernet device.
+  *
+  * @param port_id

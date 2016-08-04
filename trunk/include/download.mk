@@ -75,7 +75,9 @@ define DownloadMethod/svn
 		[ \! -d $(SUBDIR) ] && \
 		( svn help export | grep -q trust-server-cert && \
 		svn export --non-interactive --trust-server-cert -r$(VERSION) $(URL) $(SUBDIR) || \
-		svn export --non-interactive -r$(VERSION) $(URL) $(SUBDIR) ) && \
+		svn export --non-interactive -r$(VERSION) $(URL) $(SUBDIR) || \
+		svn export --non-interactive --trust-server-cert $(URL)@$(VERSION)  $(SUBDIR) || \
+		svn export --non-interactive $(URL)@$(VERSION) $(SUBDIR) ) && \
 		echo "Packing checkout..." && \
 		$(call dl_pack,$(TMP_DIR)/dl/$(FILE),$(SUBDIR)) && \
 		mv $(TMP_DIR)/dl/$(FILE) $(DL_DIR)/ && \

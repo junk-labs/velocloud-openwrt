@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2007-2013 OpenWrt.org
+# Copyright (C) 2007-2015 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,17 +8,21 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=i2c-tools
-PKG_VERSION:=2013-12-15
+PKG_VERSION:=3.1.2
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=svn
-PKG_SOURCE_URL:=http://lm-sensors.org/svn/i2c-tools/trunk
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=r6204
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_SOURCE_URL:=http://dl.lm-sensors.org/i2c-tools/releases/ \
+                http://fossies.org/linux/misc/
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_MD5SUM:=7104a1043d11a5e2c7b131614eb1b962
 
 PKG_BUILD_PARALLEL:=1
 PKG_BUILD_DEPENDS:=PACKAGE_python-smbus:python
+
+PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
+PKG_LICENSE:=GPLv2
+PKG_LICENSE_FILES:=COPYING
 
 include $(INCLUDE_DIR)/package.mk
 $(call include_mk, python-package.mk)
@@ -28,19 +32,11 @@ define Package/i2c/Default
   TITLE:=I2C
 endef
 
-define Package/libi2c
-  $(call Package/i2c/Default)
-  SECTION:=libs
-  CATEGORY:=Libraries
-  TITLE+=library
-endef
-
 define Package/i2c-tools
   $(call Package/i2c/Default)
   SECTION:=utils
   CATEGORY:=Utilities
   TITLE+=tools for Linux
-  DEPENDS:=+libi2c
 endef
 
 define Package/python-smbus
@@ -49,7 +45,7 @@ define Package/python-smbus
   SECTION:=lang
   CATEGORY:=Languages
   TITLE:=Python bindings for the SMBUS
-  DEPENDS:=+PACKAGE_python-smbus:python-mini +i2c-tools
+  DEPENDS:=+python-light
 endef
 
 define Package/i2c-tools/description
@@ -79,22 +75,7 @@ define Build/Compile
 		STAGING_DIR="$(STAGING_DIR)" \
 		LDFLAGS="$(TARGET_LDFLAGS)" \
 		CFLAGS="$(TARGET_CFLAGS)"
-	$(MAKE) -C $(PKG_BUILD_DIR)/eepromer \
-		CC="$(TARGET_CC)" \
-		LDFLAGS="$(TARGET_LDFLAGS) ../lib/smbus.o" \
-		CFLAGS="$(TARGET_CFLAGS) -I../include" \
-		eeprog
 	$(Build/Compile/python-smbus)
-endef
-
-define Build/InstallDev
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/lib/libi2c.so* $(1)/usr/lib/
-endef
-
-define Package/libi2c/install
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/lib/libi2c.so* $(1)/usr/lib/
 endef
 
 define Package/i2c-tools/install
@@ -103,14 +84,12 @@ define Package/i2c-tools/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tools/i2cdump $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tools/i2cset $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tools/i2cget $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/eepromer/eeprog $(1)/usr/sbin/
 endef
 
 define PyPackage/python-smbus/filespec
 +|$(PYTHON_PKG_DIR)/smbus.so
 endef
 
-$(eval $(call BuildPackage,libi2c))
 $(eval $(call BuildPackage,i2c-tools))
 $(eval $(call PyPackage,python-smbus))
 $(eval $(call BuildPackage,python-smbus))

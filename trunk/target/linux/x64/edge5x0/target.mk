@@ -17,7 +17,6 @@ DEFAULT_PACKAGES += \
 	kmod-hwmon-core \
 	kmod-hwmon-coretemp \
 	kmod-hwmon-w83627ehf \
-	kmod-vc-nmi \
 	igb-eeprom \
 	trousers \
 	tpm-tools \

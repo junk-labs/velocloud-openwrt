@@ -780,7 +780,7 @@ ospf_redistribute_check (struct ospf *ospf,
         }
 
   save_values = ei->route_map_set;
-  ospf_reset_route_map_set_values (&ei->route_map_set);
+  // ospf_reset_route_map_set_values (&ei->route_map_set);
 
   /* apply route-map if needed */
   if (ROUTEMAP_NAME (ospf, type))
@@ -855,6 +855,7 @@ ospf_zebra_read_ipv4 (int command, struct zclient *zclient,
   strncpy (api.iname, iname_tmp, namelen);
   api.iname[namelen] = '\0';
 
+  api.metric = -1;
   /* Type, flags, message. */
   api.type = stream_getc (s);
   api.flags = stream_getc (s);
@@ -918,6 +919,8 @@ ospf_zebra_read_ipv4 (int command, struct zclient *zclient,
               else
                 {
                   struct ospf_lsa *current;
+
+                  ei->route_map_set.metric = api.metric;
 
                   current = ospf_external_info_find_lsa (ospf, &ei->p);
                   if (!current)

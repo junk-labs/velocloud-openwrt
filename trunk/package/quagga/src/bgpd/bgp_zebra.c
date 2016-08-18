@@ -790,11 +790,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 	  int i;
 	  char buf[2][INET_ADDRSTRLEN];
 	  zlog_debug("Zebra send: IPv4 route add %s/%d nexthop %s metric %u"
-		     " count %d",
+		     " count %d iname: %s",
 		     inet_ntop(AF_INET, &p->u.prefix4, buf[0], sizeof(buf[0])),
 		     p->prefixlen,
 		     inet_ntop(AF_INET, api.nexthop[0], buf[1], sizeof(buf[1])),
-		     api.metric, api.nexthop_num);
+		     api.metric, api.nexthop_num, api.iname);
 	  for (i = 1; i < api.nexthop_num; i++)
 	    zlog_debug("Zebra send: IPv4 route add [nexthop %d] %s",
 		       i, inet_ntop(AF_INET, api.nexthop[i], buf[1],
@@ -944,11 +944,11 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       if (BGP_DEBUG(zebra, ZEBRA))
 	{
 	  char buf[2][INET_ADDRSTRLEN];
-	  zlog_debug("Zebra send: IPv4 route delete %s/%d nexthop %s metric %u",
+	  zlog_debug("Zebra send: IPv4 route delete %s/%d nexthop %s metric %u iname %s",
 		     inet_ntop(AF_INET, &p->u.prefix4, buf[0], sizeof(buf[0])),
 		     p->prefixlen,
 		     inet_ntop(AF_INET, nexthop, buf[1], sizeof(buf[1])),
-		     api.metric);
+		     api.metric, api.iname);
 	}
 
       zapi_ipv4_route (ZEBRA_IPV4_ROUTE_DELETE, zclient, 

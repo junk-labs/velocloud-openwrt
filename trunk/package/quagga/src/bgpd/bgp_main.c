@@ -18,6 +18,8 @@ along with GNU Zebra; see the file COPYING.  If not, write to the Free
 Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <zebra.h>
 
 #include "vector.h"
@@ -311,6 +313,20 @@ bgp_exit (int status)
   exit (status);
 }
 
+static void
+enable_core_dumps (void)
+{
+    struct rlimit core_limit;
+
+    //enable core dumps
+    core_limit.rlim_cur = RLIM_INFINITY;
+    core_limit.rlim_max = RLIM_INFINITY;
+    if (setrlimit(RLIMIT_CORE, &core_limit) < 0) {
+        fprintf(stderr, "Warning: core dumps may be truncated or non-existent (%s)\n", strerror(errno));
+    }
+}
+
+
 /* Main routine of bgpd. Treatment of argument and start bgp finite
    state machine is handled at here. */
 int
@@ -326,6 +342,8 @@ main (int argc, char **argv)
 
   /* Set umask before anything for security */
   umask (0027);
+
+  enable_core_dumps();
 
   /* Preserve name of myself. */
   progname = ((p = strrchr (argv[0], '/')) ? ++p : argv[0]);

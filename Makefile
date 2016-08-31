@@ -35,6 +35,8 @@ DEFAULT_OPENWRT_TSYS = \
 	edge5x0 \
 	edge500 \
 
+LAST_TSYS=$(lastword $(or $(MAKECMDGOALS) $(DEFAULT_OPENWRT_TSYS)))
+
 # name can be changed to pull a specific branch;
 OPENWRT_NAME ?= trunk
 OPENWRT_SVN = svn://svn.openwrt.org/openwrt/$(OPENWRT_NAME)
@@ -129,7 +131,6 @@ define CopyFiles
 endef
 
 define OpenwrtConfig
-	@echo "Making subtarget:" $(call target_conf,$(1))
 	@sed \
 		-e '/CONFIG_VERSION_NICK=/d' \
 		-e '/CONFIG_VERSION_NUMBER=/d' \
@@ -169,6 +170,9 @@ define OpenwrtConfig
 		-e '$$ aCONFIG_VERSION_NICK="VeloCloud $(1)"' \
 		-e '$$ aCONFIG_VERSION_NUMBER="$(OPENWRT_VC_VERSION)"' \
 	$(OPENWRT_CONFIG) > $(OPENWRT_ROOT)/.config
+	@if [ "$(call target_conf,$(1))" != "$(LAST_TSYS)" ]; then \
+		sed -i -e '/^CONFIG_SDK=y/d' $(OPENWRT_ROOT)/.config ; \
+	fi
 	make -C $(OPENWRT_ROOT) defconfig
 	make -C $(OPENWRT_ROOT) prereq
 endef
@@ -179,12 +183,14 @@ endef
 
 .PHONY: $(OPENWRT_TSYS)
 $(OPENWRT_TSYS): $(OPENWRT_CONFIG)
+	@echo "`date -Iseconds`: Making subtarget: $@"
 	$(call DownloadDir)
 	$(call OpenwrtConfig,$@)
 	$(call CopyFiles,$@)
 	@rm -rf trunk/bin/$(OPENWRT_ARCH)-eglibc/root-$(OPENWRT_ARCH) trunk/bin/$(OPENWRT_ARCH)-eglibc/packages
 	make -C $(OPENWRT_ROOT) -j $(NCPU)
 	@rm -rf $(OPENWRT_ROOT)/files
+	@echo "`date -Iseconds`: Finished subtarget: $@"
 
 # clean the build;
 # cleans

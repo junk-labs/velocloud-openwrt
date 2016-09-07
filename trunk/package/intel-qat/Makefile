@@ -9,9 +9,9 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=intel-qat
-PKG_REV:=2.3.0-34
+PKG_REV:=2.6.0-60
 PKG_QAT:=1.5
-PKG_QAT_REV:=1.8.0-34
+PKG_QAT_REV:=1.11.0-36
 PKG_VERSION:=$(PKG_REV)
 PKG_RELEASE:=$(PKG_REV)
 
@@ -100,6 +100,7 @@ MAKE_OPTS:= \
 	KERNEL_SOURCE_ROOT="$(LINUX_DIR)" \
 	LIB_EXTRA_PATH="$(TARGET_LDFLAGS)" \
 	ICP_ROOT="$(PKG_BUILD_DIR)" \
+	ICP_ENV_DIR="$(PKG_BUILD_DIR)/quickassist/build_system/build_files/env_files" \
 	ICP_ARCH_USER="$(LINUX_KARCH)" \
 	ICP_BUILDSYSTEM_PATH="$(PKG_BUILD_DIR)/quickassist/build_system" \
 	ICP_BUILD_OUTPUT="$(PKG_BUILD_DIR)" \

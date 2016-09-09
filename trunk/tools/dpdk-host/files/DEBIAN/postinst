@@ -5,6 +5,7 @@
 NAME=dpdk
 VERSION=__BASE_VERSION__
 MAXPAGES=0
+ARCH=`dpkg --print-architecture`
 
 # Do not update this API directly, this is a mirror of the API
 # with the same name in gateway/install/opt/vc/bin/vc_dpdk.sh
@@ -26,6 +27,17 @@ adjust_memory_parameters()
     fi
 }
 
+dkms_configure () {
+    POSTINST=/usr/lib/dkms/common.postinst
+    if [ -f "$POSTINST" ]; then
+        "$POSTINST" "$NAME" "$VERSION" "/dev/null/nonexistent" "$ARCH" "$2"
+        return $?
+    fi
+    echo "WARNING: $POSTINST does not exist." >&2
+    echo "ERROR: DKMS version is too old" >&2
+    return 1
+}
+
 case "$1" in
         configure)
 		set -o errexit
@@ -33,11 +45,7 @@ case "$1" in
                 adjust_memory_parameters
 
                 echo "Adding module to DKMS"
-                dkms add -m "$NAME" -v "$VERSION"
-                echo "Doing initial module build"
-                dkms build -m "$NAME" -v "$VERSION"
-                echo "Installing initial module"
-                dkms install -m "$NAME" -v "$VERSION" --force
+                dkms_configure
                 
                 echo "Adding hugepages to grub kernel config"
                 sed -i "s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"default_hugepagesz=2M hugepagesz=2M hugepages=$MAXPAGES\"/" /etc/default/grub

@@ -1,0 +1,53 @@
+#!/bin/sh
+
+#DEBHELPER#
+
+NAME=dpdk
+VERSION=__BASE_VERSION__
+MAXPAGES=0
+
+# Do not update this API directly, this is a mirror of the API
+# with the same name in gateway/install/opt/vc/bin/vc_dpdk.sh
+# So changes there should reflect here
+adjust_memory_parameters()
+{
+    freemem=`free | awk 'FNR == 2 {print $2}'`
+    if [ $freemem -lt 3800000 ];
+    then
+        # < 4Gig mem, dpdk is 1 Gig
+        MAXPAGES=512
+    elif [ $freemem -lt 32000000 ];
+    then
+        # >4Gig < 32Gig mem, dpdk is 2Gig
+        MAXPAGES=1024
+    else
+        # >= 32Gig mem, dpdk is 4Gig
+        MAXPAGES=2048
+    fi
+}
+
+case "$1" in
+        configure)
+		set -o errexit
+                # calculate max hugepages for current memory size
+                adjust_memory_parameters
+
+                echo "Adding module to DKMS"
+                dkms add -m "$NAME" -v "$VERSION"
+                echo "Doing initial module build"
+                dkms build -m "$NAME" -v "$VERSION"
+                echo "Installing initial module"
+                dkms install -m "$NAME" -v "$VERSION" --force
+                
+                echo "Adding hugepages to grub kernel config"
+                sed -i "s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"default_hugepagesz=1M hugepagesz=1M hugepages=$MAXPAGES\"/" /etc/default/grub
+                update-grub
+
+                echo "Adding DPDK modules to startup config"
+                egrep -q '^uio$' /etc/modules || echo 'uio' >> /etc/modules
+                egrep -q '^igb_uio$' /etc/modules || echo 'igb_uio' >> /etc/modules
+                egrep -q '^rte_kni$' /etc/modules || echo 'rte_kni' >> /etc/modules
+                
+                echo "Done."
+        ;;
+esac

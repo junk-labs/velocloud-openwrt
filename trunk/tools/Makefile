@@ -41,7 +41,7 @@ tools-y += lzma squashfs4
 tools-$(BUILD_B43_TOOLS) += b43-tools
 tools-$(BUILD_PPL_CLOOG) += ppl cloog
 tools-$(CONFIG_USE_SPARSE) += sparse
-tools-y += vmware-vdiskmanager
+tools-y += vmware-vdiskmanager quagga-host dpdk-host
 
 # builddir dependencies
 $(curdir)/bison/compile := $(curdir)/flex/install

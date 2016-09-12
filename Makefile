@@ -35,7 +35,7 @@ DEFAULT_OPENWRT_TSYS = \
 	edge5x0 \
 	edge500 \
 
-LAST_TSYS=$(lastword $(or $(MAKECMDGOALS) $(DEFAULT_OPENWRT_TSYS)))
+LAST_TSYS=$(lastword $(or $(MAKECMDGOALS),$(DEFAULT_OPENWRT_TSYS)))
 
 # name can be changed to pull a specific branch;
 OPENWRT_NAME ?= trunk

@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=valgrind
-PKG_VERSION:=3.8.1
+PKG_VERSION:=3.11.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=http://valgrind.org/downloads/
-PKG_MD5SUM:=288758010b271119a0ffc0183f1d6e38
+PKG_MD5SUM:=4ea62074da73ae82e0162d6550d3f129
 
 PKG_MAINTAINER:=Felix Fietkau <nbd@openwrt.org>
 
@@ -97,6 +97,7 @@ CONFIGURE_ARGS += \
 	--disable-valgrindmi \
 	--disable-tui \
 	--disable-valgrindtk \
+	--with-pagesize=4 \
 	--without-included-gettext
 
 define Build/Install

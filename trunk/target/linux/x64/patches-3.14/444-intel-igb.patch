@@ -1,13 +1,6 @@
---- a/drivers/net/ethernet/intel/igb/Makefile
-+++ b/drivers/net/ethernet/intel/igb/Makefile
-@@ -34,4 +34,4 @@
- 
- igb-objs := igb_main.o igb_ethtool.o e1000_82575.o \
- 	    e1000_mac.o e1000_nvm.o e1000_phy.o e1000_mbx.o \
--	    e1000_i210.o igb_ptp.o igb_hwmon.o
-+	    e1000_i210.o igb_ptp.o igb_hwmon.o igb_vc.o
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+diff -Naur a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.c	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.c	2016-09-13 11:08:14.688988854 -0700
 @@ -44,28 +44,28 @@
  static void igb_release_phy_82575(struct e1000_hw *);
  static s32  igb_acquire_nvm_82575(struct e1000_hw *);
@@ -188,8 +181,9 @@
  {
  	s32 ret_val;
  
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+diff -Naur a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h	2016-09-13 11:08:14.708987917 -0700
 @@ -760,9 +760,12 @@
  #define NVM_A8_OPCODE_SPI          0x08 /* opcode bit-3 = address bit-8 */
  #define NVM_WREN_OPCODE_SPI        0x06 /* NVM set Write Enable latch */
@@ -219,8 +213,9 @@
  #define M88E1000_PHY_PAGE_SELECT   0x1D  /* Reg 29 for page number setting */
  #define M88E1000_PHY_GEN_CONTROL   0x1E  /* Its meaning depends on reg 29 */
  
---- a/drivers/net/ethernet/intel/igb/e1000_hw.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
+diff -Naur a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
+--- a/drivers/net/ethernet/intel/igb/e1000_hw.h	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/net/ethernet/intel/igb/e1000_hw.h	2016-09-13 11:08:14.732986825 -0700
 @@ -49,6 +49,7 @@
  #define E1000_DEV_ID_82575EB_COPPER		0x10A7
  #define E1000_DEV_ID_82575EB_FIBER_SERDES	0x10A9
@@ -327,8 +322,9 @@
  };
  
  struct net_device *igb_get_hw_dev(struct e1000_hw *hw);
---- a/drivers/net/ethernet/intel/igb/e1000_phy.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+diff -Naur a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+--- a/drivers/net/ethernet/intel/igb/e1000_phy.c	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.c	2016-09-13 11:08:14.772984991 -0700
 @@ -773,7 +773,9 @@
  		phy_data |= M88E1000_PSCR_POLARITY_REVERSAL;
  
@@ -364,8 +360,88 @@
  		/* Remember the original page select and set it to 5 */
  		ret_val = phy->ops.read_reg(hw, I347AT4_PAGE_SELECT,
  					    &default_page);
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
+diff -Naur a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c	2016-09-13 11:08:15.044972545 -0700
+@@ -42,6 +42,9 @@
+ 
+ #include "igb.h"
+ 
++extern int igb_m88sw_get_settings(struct igb_adapter *adapter, struct ethtool_cmd *ecmd);
++extern int igb_m88sw_set_settings(struct igb_adapter *adapter, struct ethtool_cmd *ecmd);
++
+ struct igb_stats {
+ 	char stat_string[ETH_GSTRING_LEN];
+ 	int sizeof_stat;
+@@ -146,6 +149,9 @@
+ 	struct e1000_sfp_flags *eth_flags = &dev_spec->eth_flags;
+ 	u32 status;
+ 
++	if(hw->phy.media_type == e1000_media_type_switch)
++		return(igb_m88sw_get_settings(adapter, ecmd));
++
+ 	status = rd32(E1000_STATUS);
+ 	if (hw->phy.media_type == e1000_media_type_copper) {
+ 
+@@ -168,6 +174,7 @@
+ 		ecmd->port = PORT_TP;
+ 		ecmd->phy_address = hw->phy.addr;
+ 		ecmd->transceiver = XCVR_INTERNAL;
++
+ 	} else {
+ 		ecmd->supported = (SUPPORTED_FIBRE |
+ 				   SUPPORTED_1000baseKX_Full |
+@@ -262,6 +269,9 @@
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 
++	if(hw->phy.media_type == e1000_media_type_switch)
++		return(igb_m88sw_set_settings(adapter, ecmd));
++
+ 	/* When SoL/IDER sessions are active, autoneg/speed/duplex
+ 	 * cannot be changed
+ 	 */
+@@ -275,7 +285,8 @@
+ 	 * some hardware doesn't allow MDI setting when speed or
+ 	 * duplex is forced.
+ 	 */
+-	if (ecmd->eth_tp_mdix_ctrl) {
++	if(hw->phy.media_type != e1000_media_type_sfp) {
++	    if (ecmd->eth_tp_mdix_ctrl) {
+ 		if (hw->phy.media_type != e1000_media_type_copper)
+ 			return -EOPNOTSUPP;
+ 
+@@ -284,6 +295,7 @@
+ 			dev_err(&adapter->pdev->dev, "forcing MDI/MDI-X state is not supported when link speed and/or duplex are forced\n");
+ 			return -EINVAL;
+ 		}
++	    }
+ 	}
+ 
+ 	while (test_and_set_bit(__IGB_RESETTING, &adapter->state))
+@@ -291,6 +303,7 @@
+ 
+ 	if (ecmd->autoneg == AUTONEG_ENABLE) {
+ 		hw->mac.autoneg = 1;
++		hw->mac.forced_speed_duplex = 0;
+ 		if (hw->phy.media_type == e1000_media_type_fiber) {
+ 			hw->phy.autoneg_advertised = ecmd->advertising |
+ 						     ADVERTISED_FIBRE |
+diff -Naur a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+--- a/drivers/net/ethernet/intel/igb/igb.h	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/net/ethernet/intel/igb/igb.h	2016-09-13 11:08:14.864980782 -0700
+@@ -456,6 +456,8 @@
+ 	unsigned long link_check_timeout;
+ 	int copper_tries;
+ 	struct e1000_info ei;
++
++	struct mii_bus *mii_dsa;
+ };
+ 
+ #define IGB_FLAG_HAS_MSI		(1 << 0)
+diff -Naur a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+--- a/drivers/net/ethernet/intel/igb/igb_main.c	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/net/ethernet/intel/igb/igb_main.c	2016-09-13 11:08:14.816982981 -0700
 @@ -87,10 +87,12 @@
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SGMII), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_COPPER_FLASHLESS), board_82575 },
@@ -621,9 +697,10 @@
  		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
  		break;
  	case SPEED_1000 + DUPLEX_HALF: /* not supported */
---- /dev/null
-+++ b/drivers/net/ethernet/intel/igb/igb_vc.c
-@@ -0,0 +1,3549 @@
+diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/intel/igb/igb_vc.c
+--- a/drivers/net/ethernet/intel/igb/igb_vc.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2016-09-13 11:10:51.813796906 -0700
+@@ -0,0 +1,3554 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -952,6 +1029,8 @@
 +
 +static struct dsa_platform_data *vc_dsa_500[IGB_VC_N_BUS_FUNC] = { NULL, &vc_switch_data, NULL, NULL };
 +static struct dsa_platform_data *vc_dsa_5x0[IGB_VC_N_BUS_FUNC] = { &vc_sw0_data, &vc_sw1_data, NULL, NULL };
++
++static u8 vc_5x0_igb_inmem_reset[IGB_VC_N_BUS_FUNC] = { 0 };
 +
 +// dsa private;
 +
@@ -2782,7 +2861,10 @@
 +	case VC_ID_EDGE5X0:
 +		hw->vc_id = e1000_vc5x0;
 +		info = igb_vc5x0_info;
-+		igb_vc5x0_reset(hw);
++		if (! vc_5x0_igb_inmem_reset[hw->bus.func]) {
++			igb_vc5x0_reset(hw);
++			vc_5x0_igb_inmem_reset[hw->bus.func] = 1;
++		}
 +		break;
 +	default:
 +		goto out;
@@ -4173,19 +4255,18 @@
 +		unregister_switch_driver(&m88e6176_switch_driver);
 +}
 +
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -456,6 +456,8 @@
- 	unsigned long link_check_timeout;
- 	int copper_tries;
- 	struct e1000_info ei;
-+
-+	struct mii_bus *mii_dsa;
- };
+diff -Naur a/drivers/net/ethernet/intel/igb/Makefile b/drivers/net/ethernet/intel/igb/Makefile
+--- a/drivers/net/ethernet/intel/igb/Makefile	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/net/ethernet/intel/igb/Makefile	2016-09-13 11:08:14.476998540 -0700
+@@ -34,4 +34,4 @@
  
- #define IGB_FLAG_HAS_MSI		(1 << 0)
---- a/include/uapi/linux/if_ether.h
-+++ b/include/uapi/linux/if_ether.h
+ igb-objs := igb_main.o igb_ethtool.o e1000_82575.o \
+ 	    e1000_mac.o e1000_nvm.o e1000_phy.o e1000_mbx.o \
+-	    e1000_i210.o igb_ptp.o igb_hwmon.o
++	    e1000_i210.o igb_ptp.o igb_hwmon.o igb_vc.o
+diff -Naur a/include/uapi/linux/if_ether.h b/include/uapi/linux/if_ether.h
+--- a/include/uapi/linux/if_ether.h	2016-04-19 23:41:04.000000000 -0700
++++ b/include/uapi/linux/if_ether.h	2016-09-13 11:08:14.888979687 -0700
 @@ -34,6 +34,7 @@
  #define ETH_DATA_LEN	1500		/* Max. octets in payload	 */
  #define ETH_FRAME_LEN	1514		/* Max. octets in frame sans FCS */
@@ -4194,69 +4275,3 @@
  
  /*
   *	These are the defined Ethernet Protocol ID's.
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -42,6 +42,9 @@
- 
- #include "igb.h"
- 
-+extern int igb_m88sw_get_settings(struct igb_adapter *adapter, struct ethtool_cmd *ecmd);
-+extern int igb_m88sw_set_settings(struct igb_adapter *adapter, struct ethtool_cmd *ecmd);
-+
- struct igb_stats {
- 	char stat_string[ETH_GSTRING_LEN];
- 	int sizeof_stat;
-@@ -146,6 +149,9 @@
- 	struct e1000_sfp_flags *eth_flags = &dev_spec->eth_flags;
- 	u32 status;
- 
-+	if(hw->phy.media_type == e1000_media_type_switch)
-+		return(igb_m88sw_get_settings(adapter, ecmd));
-+
- 	status = rd32(E1000_STATUS);
- 	if (hw->phy.media_type == e1000_media_type_copper) {
- 
-@@ -168,6 +174,7 @@
- 		ecmd->port = PORT_TP;
- 		ecmd->phy_address = hw->phy.addr;
- 		ecmd->transceiver = XCVR_INTERNAL;
-+
- 	} else {
- 		ecmd->supported = (SUPPORTED_FIBRE |
- 				   SUPPORTED_1000baseKX_Full |
-@@ -262,6 +269,9 @@
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
- 
-+	if(hw->phy.media_type == e1000_media_type_switch)
-+		return(igb_m88sw_set_settings(adapter, ecmd));
-+
- 	/* When SoL/IDER sessions are active, autoneg/speed/duplex
- 	 * cannot be changed
- 	 */
-@@ -275,7 +285,8 @@
- 	 * some hardware doesn't allow MDI setting when speed or
- 	 * duplex is forced.
- 	 */
--	if (ecmd->eth_tp_mdix_ctrl) {
-+	if(hw->phy.media_type != e1000_media_type_sfp) {
-+	    if (ecmd->eth_tp_mdix_ctrl) {
- 		if (hw->phy.media_type != e1000_media_type_copper)
- 			return -EOPNOTSUPP;
- 
-@@ -284,6 +295,7 @@
- 			dev_err(&adapter->pdev->dev, "forcing MDI/MDI-X state is not supported when link speed and/or duplex are forced\n");
- 			return -EINVAL;
- 		}
-+	    }
- 	}
- 
- 	while (test_and_set_bit(__IGB_RESETTING, &adapter->state))
-@@ -291,6 +303,7 @@
- 
- 	if (ecmd->autoneg == AUTONEG_ENABLE) {
- 		hw->mac.autoneg = 1;
-+		hw->mac.forced_speed_duplex = 0;
- 		if (hw->phy.media_type == e1000_media_type_fiber) {
- 			hw->phy.autoneg_advertised = ecmd->advertising |
- 						     ADVERTISED_FIBRE |

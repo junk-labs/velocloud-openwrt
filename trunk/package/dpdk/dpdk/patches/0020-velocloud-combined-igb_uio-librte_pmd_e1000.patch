@@ -426,7 +426,7 @@ new file mode 100644
 index 0000000..d3ba992
 --- /dev/null
 +++ b/drivers/net/e1000/igb_vc.c
-@@ -0,0 +1,2103 @@
+@@ -0,0 +1,2104 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -2385,7 +2385,6 @@ index 0000000..d3ba992
 +	case VC_ID_EDGE5X0:
 +		hw->vc_id = e1000_vc5x0;
 +		info = igb_vc5x0_info;
-+		(void)igb_vc5x0_reset(hw);
 +		break;
 +	default:
 +		goto out;
@@ -2515,6 +2514,8 @@ index 0000000..d3ba992
 +		phy->autoneg_mask = AUTONEG_ADVERTISE_SPEED_DEFAULT;
 +		phy->type = e1000_phy_m88;
 +
++               phy->ops.power_up = e1000_power_up_phy_copper;
++               phy->ops.power_down = e1000_power_up_phy_copper;
 +		phy->ops.read_reg = igb_vc_mdiobb_read;
 +		phy->ops.write_reg = igb_vc_mdiobb_write;
 +		phy->ops.reset = e1000_phy_hw_reset_sgmii_82575;

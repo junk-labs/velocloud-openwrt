@@ -1,0 +1,65 @@
+diff -Naur a/drivers/net/bonding/rte_eth_bond_pmd.c b/drivers/net/bonding/rte_eth_bond_pmd.c
+--- a/drivers/net/bonding/rte_eth_bond_pmd.c	2016-08-02 20:33:00.000000000 -0700
++++ b/drivers/net/bonding/rte_eth_bond_pmd.c	2016-09-21 13:32:05.061421586 -0700
+@@ -1739,7 +1739,7 @@
+ 
+ 	/* Default value for polling slave found is true as we don't want to
+ 	 * disable the polling thread if we cannot get the lock */
+-	int i, polling_slave_found = 1;
++	int i, rv, polling_slave_found = 1;
+ 
+ 	if (cb_arg == NULL)
+ 		return;
+@@ -1765,9 +1765,14 @@
+ 			polling_slave_found = 1;
+ 
+ 			/* Update slave link status */
+-			(*slave_ethdev->dev_ops->link_update)(slave_ethdev,
++			rv = (*slave_ethdev->dev_ops->link_update)(slave_ethdev,
+ 					internals->slaves[i].link_status_wait_to_complete);
+ 
++			if (rv) {
++				(*slave_ethdev->dev_ops->dev_stop)(slave_ethdev);
++				(*slave_ethdev->dev_ops->dev_start)(slave_ethdev);
++			}
++
+ 			/* if link status has changed since last checked then call lsc
+ 			 * event callback */
+ 			if (slave_ethdev->data->dev_link.link_status !=
+diff -Naur a/drivers/net/ixgbe/ixgbe_ethdev.c b/drivers/net/ixgbe/ixgbe_ethdev.c
+--- a/drivers/net/ixgbe/ixgbe_ethdev.c	2016-09-21 14:53:30.845417183 -0700
++++ b/drivers/net/ixgbe/ixgbe_ethdev.c	2016-09-21 14:55:15.136702153 -0700
+@@ -3256,15 +3256,20 @@
+ 		link.link_speed = ETH_SPEED_NUM_100M;
+ 		link.link_duplex = ETH_LINK_FULL_DUPLEX;
+ 		rte_ixgbe_dev_atomic_write_link_status(dev, &link);
++		return -1;
++#if 0
+ 		if (link.link_status == old.link_status)
+ 			return -1;
+ 		return 0;
++#endif
+ 	}
+ 
+ 	if (link_up == 0) {
+ 		rte_ixgbe_dev_atomic_write_link_status(dev, &link);
++#if 0
+ 		if (link.link_status == old.link_status)
+ 			return -1;
++#endif
+ 		return 0;
+ 	}
+ 	link.link_status = ETH_LINK_UP;
+@@ -3290,10 +3295,10 @@
+ 		break;
+ 	}
+ 	rte_ixgbe_dev_atomic_write_link_status(dev, &link);
+-
++#if 0
+ 	if (link.link_status == old.link_status)
+ 		return -1;
+-
++#endif
+ 	return 0;
+ }
+ 

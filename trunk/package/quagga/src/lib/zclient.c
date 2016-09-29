@@ -621,9 +621,20 @@ zebra_redistribute_send (int command, struct zclient *zclient, int type)
 
 /* Router-id update from zebra daemon. */
 void
-zebra_router_id_update_read (struct stream *s, struct prefix *rid)
+zebra_router_id_update_read (struct stream *s, char *iname, struct prefix *rid)
 {
   int plen;
+  char iname_tmp[INSTANCE_NAMSIZ + 1];
+  size_t namelen;
+
+  /* Read instance name. */
+  stream_get (iname_tmp, s, INSTANCE_NAMSIZ);
+  namelen = strnlen(iname_tmp, INSTANCE_NAMSIZ);
+
+  if (iname) {
+    strncpy (iname, iname_tmp, namelen);
+    iname[namelen] = '\0';
+  }
 
   /* Fetch interface address. */
   rid->family = stream_getc (s);

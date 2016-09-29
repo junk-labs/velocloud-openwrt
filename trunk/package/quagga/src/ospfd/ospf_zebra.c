@@ -63,7 +63,8 @@ ospf_router_id_update_zebra (int command, struct zclient *zclient,
 {
   struct ospf *ospf;
   struct prefix router_id;
-  zebra_router_id_update_read(zclient->ibuf,&router_id);
+
+  zebra_router_id_update_read(zclient->ibuf, NULL, &router_id);
 
   if (IS_DEBUG_OSPF (zebra, ZEBRA_INTERFACE))
     {

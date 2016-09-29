@@ -55,23 +55,28 @@ bgp_router_id_update (int command, struct zclient *zclient, zebra_size_t length)
   struct prefix router_id;
   struct listnode *node, *nnode;
   struct bgp *bgp;
+  char iname[INSTANCE_NAMSIZ + 1];
 
-  zebra_router_id_update_read(zclient->ibuf,&router_id);
+  zebra_router_id_update_read(zclient->ibuf, iname, &router_id);
+
+  bgp = bgp_lookup_by_name (iname);
+  if (!bgp)
+    {
+      zlog_debug("Zebra rcvd: Instance not found: %s", iname);
+      return 0;
+    }
 
   if (BGP_DEBUG(zebra, ZEBRA))
     {
       char buf[128];
       prefix2str(&router_id, buf, sizeof(buf));
-      zlog_debug("Zebra rcvd: router id update %s", buf);
+      zlog_debug("Zebra rcvd: router id update %s for %s", buf, iname);
     }
 
   router_id_zebra = router_id.u.prefix4;
 
-  for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp))
-    {
-      if (!bgp->router_id_static.s_addr)
-        bgp_router_id_set (bgp, &router_id.u.prefix4);
-    }
+  if (!bgp->router_id_static.s_addr)
+      bgp_router_id_set (bgp, &router_id.u.prefix4);
 
   return 0;
 }
@@ -106,7 +111,7 @@ bgp_interface_delete (int command, struct zclient *zclient,
   ifp->ifindex = IFINDEX_INTERNAL;
 
   if (BGP_DEBUG(zebra, ZEBRA))
-    zlog_debug("Zebra rcvd: interface delete %s", ifp->name);
+    zlog_debug("Zebra rcvd: interface delete %s instance %s", ifp->name, ifp->iname);
 
   return 0;
 }
@@ -193,8 +198,8 @@ bgp_interface_address_add (int command, struct zclient *zclient,
     {
       char buf[128];
       prefix2str(ifc->address, buf, sizeof(buf));
-      zlog_debug("Zebra rcvd: interface %s instance %s address add %s",
-		 ifc->ifp->name, ifc->ifp->iname, buf);
+      zlog_debug("Zebra rcvd: interface %s address add %s instance %s",
+		 ifc->ifp->name, buf, ifc->ifp->iname);
     }
 
   if (if_is_operative (ifc->ifp))
@@ -220,8 +225,8 @@ bgp_interface_address_delete (int command, struct zclient *zclient,
     {
       char buf[128];
       prefix2str(ifc->address, buf, sizeof(buf));
-      zlog_debug("Zebra rcvd: interface %s address delete %s",
-		 ifc->ifp->name, buf);
+      zlog_debug("Zebra rcvd: interface %s address delete %s instance %s",
+		 ifc->ifp->name, buf, ifc->ifp->iname);
     }
 
   if (if_is_operative (ifc->ifp))
@@ -282,13 +287,10 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
   else
     api.metric = 0;
 
-  zlog_debug("Zebra rcvd: Instance %s", api.iname);
-
   bgp = bgp_lookup_by_name (api.iname);
-  
   if (!bgp)
     {
-      zlog_debug("Zebra rcvd: Instance not found");
+      zlog_debug("Zebra rcvd: Instance %s not found", api.iname);
       return 0;
     }
 
@@ -297,12 +299,12 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
       if (BGP_DEBUG(zebra, ZEBRA))
 	{
 	  char buf[2][INET_ADDRSTRLEN];
-	  zlog_debug("Zebra rcvd: IPv4 route add %s %s/%d nexthop %s metric %u",
+	  zlog_debug("Zebra rcvd: IPv4 route add %s %s/%d nexthop %s metric %u, instance %s",
 		     zebra_route_string(api.type),
 		     inet_ntop(AF_INET, &p.prefix, buf[0], sizeof(buf[0])),
 		     p.prefixlen,
 		     inet_ntop(AF_INET, &nexthop, buf[1], sizeof(buf[1])),
-		     api.metric);
+		     api.metric, api.iname);
 	}
       bgp_redistribute_add(bgp, (struct prefix *)&p, &nexthop, NULL,
 			   api.metric, api.type);
@@ -313,12 +315,12 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
 	{
 	  char buf[2][INET_ADDRSTRLEN];
 	  zlog_debug("Zebra rcvd: IPv4 route delete %s %s/%d "
-		     "nexthop %s metric %u",
+		     "nexthop %s metric %u instance %s",
 		     zebra_route_string(api.type),
 		     inet_ntop(AF_INET, &p.prefix, buf[0], sizeof(buf[0])),
 		     p.prefixlen,
 		     inet_ntop(AF_INET, &nexthop, buf[1], sizeof(buf[1])),
-		     api.metric);
+		     api.metric, api.iname);
 	}
       bgp_redistribute_delete(bgp, (struct prefix *)&p, api.type);
     }

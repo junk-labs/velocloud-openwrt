@@ -1,10 +1,11 @@
 /var/log/quagga/*.log {
-        daily
+        size 10M
         sharedscripts
-        missingok
         compress
-        rotate 14
-        create 640 quagga quaggavty
+        missingok
+        rotate 10
+        notifempty
+        create 644 root root
 
         postrotate
 		for i in zebra bgpd ripd ospfd ripngd ospf6d isisd babeld; do

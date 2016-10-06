@@ -48,7 +48,16 @@ case "$1" in
                 dkms_configure
                 
                 echo "Adding hugepages to grub kernel config"
-                sed -i "s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"default_hugepagesz=2M hugepagesz=2M hugepages=$MAXPAGES\"/" /etc/default/grub
+                grub=`cat /etc/default/grub | sed -rn 's/^[\s]*GRUB_CMDLINE_LINUX[\s]*=[\s]*\"(.*)\"/\1/p'`
+                if [ "$grub" == "" ];
+                then
+                    sed -i "s/^[\s]*GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"default_hugepagesz=2M hugepagesz=2M hugepages=$MAXPAGES\"/" /etc/default/grub
+                else
+                    grub=`echo $grub | sed -re "s/default_hugepagesz[\s]*=[\s]*[0-9]+[A-Z]//g"`
+                    grub=`echo $grub | sed -re "s/hugepagesz[\s]*=[\s]*[0-9]+[A-Z]//g"`
+                    grub=`echo $grub | sed -re "s/hugepages[\s]*=[\s]*[0-9]+//g"`
+                    sed -i "s/^[\s]*GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"$grub default_hugepagesz=2M hugepagesz=2M hugepages=$MAXPAGES\"/" /etc/default/grub
+                fi
                 update-grub
 
                 echo "Adding DPDK modules to startup config"

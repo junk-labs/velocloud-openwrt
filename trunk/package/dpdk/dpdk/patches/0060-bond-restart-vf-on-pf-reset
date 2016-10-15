@@ -1,6 +1,6 @@
 diff -Naur a/drivers/net/bonding/rte_eth_bond_pmd.c b/drivers/net/bonding/rte_eth_bond_pmd.c
---- a/drivers/net/bonding/rte_eth_bond_pmd.c	2016-08-02 20:33:00.000000000 -0700
-+++ b/drivers/net/bonding/rte_eth_bond_pmd.c	2016-09-22 10:40:54.632123786 -0700
+--- a/drivers/net/bonding/rte_eth_bond_pmd.c	2016-07-28 11:48:41.000000000 -0700
++++ b/drivers/net/bonding/rte_eth_bond_pmd.c	2016-10-14 17:21:09.775693901 -0700
 @@ -45,6 +45,7 @@
  #include <rte_dev.h>
  #include <rte_alarm.h>
@@ -18,7 +18,7 @@ diff -Naur a/drivers/net/bonding/rte_eth_bond_pmd.c b/drivers/net/bonding/rte_et
  
  	if (cb_arg == NULL)
  		return;
-@@ -1765,9 +1766,27 @@
+@@ -1765,9 +1766,21 @@
  			polling_slave_found = 1;
  
  			/* Update slave link status */
@@ -26,30 +26,24 @@ diff -Naur a/drivers/net/bonding/rte_eth_bond_pmd.c b/drivers/net/bonding/rte_et
 +			rv = (*slave_ethdev->dev_ops->link_update)(slave_ethdev,
  					internals->slaves[i].link_status_wait_to_complete);
  
-+			/* XXX Needed for this particular device.  May need to expand to
-+			 * others devices depending on testing other platforms. In theory
-+			 * the bond driver should not care about the underlying device, however,
-+			 * practically it has too if the underlying driver does not have a timer
-+			 * to check the link status, and the bond driver does. It makes sense
-+			 * to place the VF reset on PF flap here.  Long term this should move to
-+			 * to the VF driver in something equal to the Linux ixgbe workqueue task
-+			 * that periodically checks link status.
++			/* XXX VeloCloud interrupt -- needed to check if the VF mailbox is no
++			 * longer communicating correctly with the host PF.  If it communication
++			 * is compromised, send an interrupt indicating the type for action,
++			 * for what should be a dev_stop()/dev_start() action by the host process.
 +			 */
 +			if (rv && ((slave_ethdev->pci_dev->id.vendor_id == 
 +				PCI_VENDOR_ID_INTEL) &&
 +				(slave_ethdev->pci_dev->id.device_id == IXGBE_DEV_ID_82599_VF))) {
 +
-+				(*slave_ethdev->dev_ops->dev_stop)(slave_ethdev);
-+				(*slave_ethdev->dev_ops->dev_start)(slave_ethdev);
-+
++				_rte_eth_dev_callback_process(slave_ethdev, RTE_ETH_EVENT_VF_MBX_SYNC);
 +			}
 +
  			/* if link status has changed since last checked then call lsc
  			 * event callback */
  			if (slave_ethdev->data->dev_link.link_status !=
 diff -Naur a/drivers/net/ixgbe/ixgbe_ethdev.c b/drivers/net/ixgbe/ixgbe_ethdev.c
---- a/drivers/net/ixgbe/ixgbe_ethdev.c	2016-09-21 14:53:30.845417183 -0700
-+++ b/drivers/net/ixgbe/ixgbe_ethdev.c	2016-09-21 14:55:15.136702153 -0700
+--- a/drivers/net/ixgbe/ixgbe_ethdev.c	2016-10-14 12:21:09.071852797 -0700
++++ b/drivers/net/ixgbe/ixgbe_ethdev.c	2016-10-14 12:24:16.231151450 -0700
 @@ -3256,15 +3256,20 @@
  		link.link_speed = ETH_SPEED_NUM_100M;
  		link.link_duplex = ETH_LINK_FULL_DUPLEX;
@@ -83,4 +77,15 @@ diff -Naur a/drivers/net/ixgbe/ixgbe_ethdev.c b/drivers/net/ixgbe/ixgbe_ethdev.c
 +#endif
  	return 0;
  }
+ 
+diff -Naur a/lib/librte_ether/rte_ethdev.h b/lib/librte_ether/rte_ethdev.h
+--- a/lib/librte_ether/rte_ethdev.h	2016-10-14 12:21:09.099851494 -0700
++++ b/lib/librte_ether/rte_ethdev.h	2016-10-14 12:23:50.732336963 -0700
+@@ -3059,6 +3059,7 @@
+ 				/**< queue state event (enabled/disabled) */
+ 	RTE_ETH_EVENT_INTR_RESET,
+ 			/**< reset interrupt event, sent to VF on PF reset */
++	RTE_ETH_EVENT_VF_MBX_SYNC, /**< VF mailbox out-of-sync with PF. */
+ 	RTE_ETH_EVENT_MAX       /**< max value of this enum */
+ };
  

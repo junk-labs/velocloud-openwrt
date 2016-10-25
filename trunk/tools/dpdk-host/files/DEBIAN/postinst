@@ -49,7 +49,7 @@ case "$1" in
                 
                 echo "Adding hugepages to grub kernel config"
                 grub=`cat /etc/default/grub | sed -rn 's/^[\s]*GRUB_CMDLINE_LINUX[\s]*=[\s]*\"(.*)\"/\1/p'`
-                if [ "$grub" == "" ];
+                if [ "$grub" = "" ];
                 then
                     sed -i "s/^[\s]*GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"default_hugepagesz=2M hugepagesz=2M hugepages=$MAXPAGES\"/" /etc/default/grub
                 else

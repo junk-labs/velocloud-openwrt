@@ -1,6 +1,6 @@
 diff -Naur a/drivers/net/bonding/rte_eth_bond_pmd.c b/drivers/net/bonding/rte_eth_bond_pmd.c
 --- a/drivers/net/bonding/rte_eth_bond_pmd.c	2016-07-28 11:48:41.000000000 -0700
-+++ b/drivers/net/bonding/rte_eth_bond_pmd.c	2016-10-14 17:21:09.775693901 -0700
++++ b/drivers/net/bonding/rte_eth_bond_pmd.c	2016-10-26 14:11:37.773782167 -0700
 @@ -45,6 +45,7 @@
  #include <rte_dev.h>
  #include <rte_alarm.h>
@@ -41,9 +41,64 @@ diff -Naur a/drivers/net/bonding/rte_eth_bond_pmd.c b/drivers/net/bonding/rte_et
  			/* if link status has changed since last checked then call lsc
  			 * event callback */
  			if (slave_ethdev->data->dev_link.link_status !=
+diff -Naur a/drivers/net/ixgbe/base/ixgbe_vf.c b/drivers/net/ixgbe/base/ixgbe_vf.c
+--- a/drivers/net/ixgbe/base/ixgbe_vf.c	2016-07-28 11:48:41.000000000 -0700
++++ b/drivers/net/ixgbe/base/ixgbe_vf.c	2016-10-26 14:16:55.395256473 -0700
+@@ -552,6 +552,7 @@
+ 	s32 ret_val = IXGBE_SUCCESS;
+ 	u32 links_reg;
+ 	u32 in_msg = 0;
++	u32 preserve_link_status = 0;
+ 	UNREFERENCED_1PARAMETER(autoneg_wait_to_complete);
+ 
+ 	/* If we were hit with a reset drop the link */
+@@ -563,8 +564,10 @@
+ 
+ 	/* if link status is down no point in checking to see if pf is up */
+ 	links_reg = IXGBE_READ_REG(hw, IXGBE_VFLINKS);
+-	if (!(links_reg & IXGBE_LINKS_UP))
+-		goto out;
++	if (!(links_reg & IXGBE_LINKS_UP)) {
++		preserve_link_status = 1;
++		goto check_mbx;
++	}
+ 
+ 	/* for SFP+ modules and DA cables on 82599 it can take up to 500usecs
+ 	 * before the link status is correct
+@@ -576,8 +579,10 @@
+ 			usec_delay(100);
+ 			links_reg = IXGBE_READ_REG(hw, IXGBE_VFLINKS);
+ 
+-			if (!(links_reg & IXGBE_LINKS_UP))
+-				goto out;
++			if (!(links_reg & IXGBE_LINKS_UP)) {
++				preserve_link_status = 1;
++				goto check_mbx;
++			}
+ 		}
+ 	}
+ 
+@@ -596,6 +601,7 @@
+ 	/* if the read failed it could just be a mailbox collision, best wait
+ 	 * until we are called again and don't report an error
+ 	 */
++check_mbx:
+ 	if (mbx->ops.read(hw, &in_msg, 1, 0))
+ 		goto out;
+ 
+@@ -615,7 +621,8 @@
+ 	/* if we passed all the tests above then the link is up and we no
+ 	 * longer need to check for link
+ 	 */
+-	mac->get_link_status = false;
++	if (!preserve_link_status)
++		mac->get_link_status = false;
+ 
+ out:
+ 	*link_up = !mac->get_link_status;
 diff -Naur a/drivers/net/ixgbe/ixgbe_ethdev.c b/drivers/net/ixgbe/ixgbe_ethdev.c
---- a/drivers/net/ixgbe/ixgbe_ethdev.c	2016-10-14 12:21:09.071852797 -0700
-+++ b/drivers/net/ixgbe/ixgbe_ethdev.c	2016-10-14 12:24:16.231151450 -0700
+--- a/drivers/net/ixgbe/ixgbe_ethdev.c	2016-10-26 14:12:22.743724542 -0700
++++ b/drivers/net/ixgbe/ixgbe_ethdev.c	2016-10-26 14:11:37.777781985 -0700
 @@ -3256,15 +3256,20 @@
  		link.link_speed = ETH_SPEED_NUM_100M;
  		link.link_duplex = ETH_LINK_FULL_DUPLEX;
@@ -79,8 +134,8 @@ diff -Naur a/drivers/net/ixgbe/ixgbe_ethdev.c b/drivers/net/ixgbe/ixgbe_ethdev.c
  }
  
 diff -Naur a/lib/librte_ether/rte_ethdev.h b/lib/librte_ether/rte_ethdev.h
---- a/lib/librte_ether/rte_ethdev.h	2016-10-14 12:21:09.099851494 -0700
-+++ b/lib/librte_ether/rte_ethdev.h	2016-10-14 12:23:50.732336963 -0700
+--- a/lib/librte_ether/rte_ethdev.h	2016-10-26 14:12:22.775723078 -0700
++++ b/lib/librte_ether/rte_ethdev.h	2016-10-26 14:11:37.793781252 -0700
 @@ -3059,6 +3059,7 @@
  				/**< queue state event (enabled/disabled) */
  	RTE_ETH_EVENT_INTR_RESET,

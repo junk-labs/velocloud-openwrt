@@ -1,0 +1,31 @@
+From 47cf75e5a9e7baf6d78ff9d9fb33ff528d30b426 Mon Sep 17 00:00:00 2001
+From: Aleksander Morgado <aleksander@aleksander.es>
+Date: Thu, 27 Oct 2016 18:53:35 +0200
+Subject: [PATCH 3/7] libqmi-glib,proxy: print error message on response
+ forwarding error, and plug memleak
+
+(cherry picked from commit 5284d3e2473d1b3e5f3584b37ae0bba3498ade4e)
+---
+ src/libqmi-glib/qmi-proxy.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/libqmi-glib/qmi-proxy.c b/src/libqmi-glib/qmi-proxy.c
+index 36c85b5..857780b 100644
+--- a/src/libqmi-glib/qmi-proxy.c
++++ b/src/libqmi-glib/qmi-proxy.c
+@@ -494,8 +494,11 @@ device_command_ready (QmiDevice *device,
+             track_cid (request->client, FALSE, response);
+     }
+ 
+-    if (!send_message (request->client, response, &error))
++    if (!send_message (request->client, response, &error)) {
++        g_warning ("sending request to device failed: %s", error->message);
++        g_error_free (error);
+         connection_close (request->client);
++    }
+ 
+     qmi_message_unref (response);
+     g_slice_free (Request, request);
+-- 
+2.10.1
+

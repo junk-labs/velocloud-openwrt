@@ -72,7 +72,7 @@ static int pim_router_id_update_zebra(int command, struct zclient *zclient,
 {
   struct prefix router_id;
 
-  zebra_router_id_update_read(zclient->ibuf, &router_id);
+  zebra_router_id_update_read(zclient->ibuf, NULL, &router_id);
 
   return 0;
 }

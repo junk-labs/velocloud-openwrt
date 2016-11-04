@@ -42,18 +42,19 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 --- a/drivers/platform/x86/Makefile	2015-05-17 09:54:01.000000000 -0700
 +++ b/drivers/platform/x86/Makefile	2015-10-29 10:36:31.703579817 -0700
-@@ -55,4 +55,7 @@
+@@ -55,4 +55,8 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
  obj-$(CONFIG_PVPANIC)           += pvpanic.o
++#NOTE: The order of the 3 modules below is crucial for now.
 +obj-$(CONFIG_VELOCLOUD)         += velocloud.o
-+obj-$(CONFIG_VELOCLOUD_NMI)	+= velocloud-nmi.o
 +obj-$(CONFIG_VELOCLOUD_VC)      += velocloud-vc.o
++obj-$(CONFIG_VELOCLOUD_NMI)	+= velocloud-nmi.o
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
 diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 --- a/drivers/platform/x86/velocloud.c	1969-12-31 16:00:00.000000000 -0800
 +++ b/drivers/platform/x86/velocloud.c	2015-10-29 10:36:31.707579633 -0700
-@@ -0,0 +1,184 @@
+@@ -0,0 +1,189 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -111,6 +112,11 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	},
 +	{ .ident = "edge840sm",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-F"), // Supermicro 800
++	  },
++	  VC_EDGE_ID(VC_EDGE800SM),
++	},
++	{ .ident = "edge840sm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-TP8F"), // Supermicro 800
 +	  },
 +	  VC_EDGE_ID(VC_EDGE800SM),
 +	},

@@ -110,9 +110,17 @@ struct zserv_header
   uint16_t command;
 };
 
+struct zapi_bgp_attr
+{
+  u_int32_t local_pref;
+  u_char    aspath_len;
+};
+
 /* Zebra IPv4 route message API. */
 struct zapi_ipv4
 {
+  char iname[INSTANCE_NAMSIZ];
+
   u_char type;
 
   u_char flags;
@@ -130,6 +138,8 @@ struct zapi_ipv4
   u_char distance;
 
   u_int32_t metric;
+
+  void *proto_data;
 };
 
 /* Prototypes of zebra client service functions. */
@@ -139,6 +149,7 @@ extern int zclient_start (struct zclient *);
 extern void zclient_stop (struct zclient *);
 extern void zclient_reset (struct zclient *);
 extern void zclient_free (struct zclient *);
+extern void zclient_interface_request (struct zclient *);
 
 extern int  zclient_socket_connect (struct zclient *);
 extern void zclient_serv_path_set  (char *path);
@@ -164,7 +175,7 @@ extern struct interface *zebra_interface_add_read (struct stream *);
 extern struct interface *zebra_interface_state_read (struct stream *s);
 extern struct connected *zebra_interface_address_read (int, struct stream *);
 extern void zebra_interface_if_set_value (struct stream *, struct interface *);
-extern void zebra_router_id_update_read (struct stream *s, struct prefix *rid);
+extern void zebra_router_id_update_read (struct stream *s, char *iname, struct prefix *rid);
 extern int zapi_ipv4_route (u_char, struct zclient *, struct prefix_ipv4 *, 
                             struct zapi_ipv4 *);
 
@@ -173,6 +184,8 @@ extern int zapi_ipv4_route (u_char, struct zclient *, struct prefix_ipv4 *,
 
 struct zapi_ipv6
 {
+  char iname[INSTANCE_NAMSIZ];
+
   u_char type;
 
   u_char flags;
@@ -190,6 +203,8 @@ struct zapi_ipv6
   u_char distance;
 
   u_int32_t metric;
+
+  void *proto_data;
 };
 
 extern int zapi_ipv6_route (u_char cmd, struct zclient *zclient, 

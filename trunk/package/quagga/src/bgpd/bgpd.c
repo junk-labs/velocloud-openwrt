@@ -62,6 +62,8 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "bgpd/bgp_snmp.h"
 #endif /* HAVE_SNMP */
 
+extern struct zclient *zclient;
+
 /* BGP process wide configuration.  */
 static struct bgp_master bgp_master;
 
@@ -1988,6 +1990,9 @@ bgp_create (as_t *as, const char *name)
   THREAD_TIMER_ON (master, bgp->t_startup, bgp_startup_timer_expire,
                    bgp, bgp->restart_time);
 
+  bgp->bgp_connected_table[AFI_IP] = bgp_table_init (AFI_IP, SAFI_UNICAST);
+  bgp->bgp_connected_table[AFI_IP6] = bgp_table_init (AFI_IP6, SAFI_UNICAST);
+
   if (bgp->name)
     {
       strcpy(namespace, "/run/netns/");
@@ -1999,10 +2004,12 @@ bgp_create (as_t *as, const char *name)
       bgp->fd = open (namespace, O_RDONLY);
 
       if (bgp->fd < 0) {
-        zlog_err ("BGP name fd error %s", safe_strerror (errno));
+        zlog_err ("BGP name %s, fd error %s", namespace, safe_strerror (errno));
       } else {
-        zlog_err ("BGP name %s, fd %d\n", namespace, bgp->fd, safe_strerror (errno));
+        zlog_err ("BGP name %s, fd %d\n", namespace, bgp->fd);
       }
+
+      //zclient_interface_request (zclient);
     }
 
   return bgp;
@@ -2012,7 +2019,7 @@ bgp_create (as_t *as, const char *name)
 struct bgp *
 bgp_get_default (void)
 {
-  if (bm->bgp->head)
+  if (bm->bgp && bm->bgp->head)
     return (listgetdata (listhead (bm->bgp)));
   return NULL;
 }
@@ -2041,7 +2048,7 @@ bgp_lookup_by_name (const char *name)
 
   for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp))
     if ((bgp->name == NULL && name == NULL)
-	|| (bgp->name && name && strcmp (bgp->name, name) == 0))
+	|| (bgp->name && name && strncmp (bgp->name, name, strlen (bgp->name)) == 0))
       return bgp;
   return NULL;
 }
@@ -2167,13 +2174,31 @@ bgp_delete (struct bgp *bgp)
     peer_delete(bgp->peer_self);
     bgp->peer_self = NULL;
   }
-  
+ 
+  for (afi = AFI_IP ; afi < AFI_MAX ; afi++)
+    if (bgp->listener[afi])
+      {
+        if (BGP_DEBUG (events, EVENTS))
+          zlog_debug ("Cleaning up %s, afi %d fd (%d)",
+                      bgp->name, afi, bgp->listener[afi]->fd);
+        thread_cancel (bgp->listener[afi]->thread);
+        if (close (bgp->listener[afi]->fd) == -1)
+          zlog_err ("close (%d): %s", bgp->listener[afi]->fd, safe_strerror (errno));
+        XFREE (MTYPE_BGP_LISTENER, bgp->listener[afi]);
+        bgp->listener[afi] = NULL;
+      }
+
   /* Remove visibility via the master list - there may however still be
    * routes to be processed still referencing the struct bgp.
    */
   listnode_delete (bm->bgp, bgp);
   if (list_isempty(bm->bgp))
     bgp_close ();
+
+  bgp_table_unlock (bgp->bgp_connected_table[AFI_IP]);
+  bgp->bgp_connected_table[AFI_IP] = NULL;
+  bgp_table_unlock (bgp->bgp_connected_table[AFI_IP6]);
+  bgp->bgp_connected_table[AFI_IP6] = NULL;
 
   bgp_unlock(bgp);  /* initial reference */
   
@@ -5431,7 +5456,6 @@ bgp_master_init (void)
 
   bm = &bgp_master;
   bm->bgp = list_new ();
-  bm->listen_sockets = list_new ();
   bm->port = BGP_PORT_DEFAULT;
   bm->master = thread_master_create ();
   bm->start_time = bgp_clock ();

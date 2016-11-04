@@ -1,0 +1,9 @@
+Package: gatewayd-dpdk
+Version: __FULL_VERSION__
+Section: misc
+Depends: dkms (>= 1.95)
+Priority: optional
+Architecture: all
+Description: Velocloud Gateway DKMS modules
+Maintainer: build@velocloud.net
+

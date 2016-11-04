@@ -42,9 +42,6 @@ struct bgp_master
   struct work_queue *process_main_queue;
   struct work_queue *process_rsclient_queue;
   
-  /* Listening sockets */
-  struct list *listen_sockets;
-  
   /* BGP port number.  */
   u_int16_t port;
 
@@ -62,6 +59,14 @@ struct bgp_master
 #define BGP_OPT_NO_LISTEN                (1 << 3)
 };
 
+/* BGP listening socket. */
+struct bgp_listener
+{
+  int fd;
+  union sockunion su;
+  struct thread *thread;
+};
+
 /* BGP instance structure.  */
 struct bgp 
 {
@@ -72,6 +77,8 @@ struct bgp
   char *name;
   
   int fd;
+
+  struct bgp_listener *listener[AFI_MAX];
 
   u_int32_t tid;
 
@@ -140,6 +147,9 @@ struct bgp
 
   /* BGP routing information base.  */
   struct bgp_table *rib[AFI_MAX][SAFI_MAX];
+
+  /* Route table for connected route. */
+  struct bgp_table *bgp_connected_table[AFI_MAX];
 
   /* BGP redistribute configuration. */
   u_char redist[AFI_MAX][ZEBRA_ROUTE_MAX];

@@ -9,8 +9,6 @@ SERVICE_PID_FILE=/var/run/ipmievd.pid0
 SERVICE_USE_PID=1
 
 start() {
-        ulimit -c "unlimited"
-
 	service_start $PROG open
 }
 

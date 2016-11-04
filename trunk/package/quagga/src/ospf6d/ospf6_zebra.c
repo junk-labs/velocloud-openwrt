@@ -54,7 +54,7 @@ ospf6_router_id_update_zebra (int command, struct zclient *zclient,
   struct prefix router_id;
   struct ospf6 *o = ospf6;
 
-  zebra_router_id_update_read(zclient->ibuf,&router_id);
+  zebra_router_id_update_read(zclient->ibuf, NULL, &router_id);
   router_id_zebra = router_id.u.prefix4;
 
   if (o == NULL)

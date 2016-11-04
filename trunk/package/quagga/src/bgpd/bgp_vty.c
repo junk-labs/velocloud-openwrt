@@ -6948,6 +6948,10 @@ bgp_show_summary (struct vty *vty, struct bgp *bgp, int afi, int safi)
               unsigned long ents;
               char memstrbuf[MTYPE_MEMSTR_LEN];
               
+              if (bgp->name)
+                vty_out (vty, "%sBGP view name %s%s", VTY_NEWLINE, bgp->name,
+                         VTY_NEWLINE);
+
               /* Usage summary and header */
               vty_out (vty,
                        "BGP router identifier %s, local AS number %u%s",
@@ -7073,7 +7077,14 @@ DEFUN (show_ip_bgp_summary,
        BGP_STR
        "Summary of BGP neighbor status\n")
 {
-  return bgp_show_summary_vty (vty, NULL, AFI_IP, SAFI_UNICAST);
+  struct list *inst = bm->bgp;
+  struct listnode *node;
+  struct bgp *bgp;
+
+  for (ALL_LIST_ELEMENTS_RO(inst, node, bgp))
+      bgp_show_summary (vty, bgp, AFI_IP, SAFI_UNICAST);
+
+  return CMD_SUCCESS;
 }
 
 DEFUN (show_ip_bgp_instance_summary,

@@ -6,12 +6,12 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=dpdk
-PKG_VERSION:=2.0.0
-PKG_RELEASE:=1
+PKG_VERSION:=16.07
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://dpdk.org/browse/dpdk/snapshot/
-PKG_MD5SUM:=e9e7935c9eec920841ad373949514934
+PKG_MD5SUM:=4afdc7951e21ff878a85ecade7f6f488
 
 PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
@@ -56,21 +56,24 @@ define Build/InstallDev
 		$(1)/usr/dpdk/include \
 		$(1)/usr/dpdk/lib
 	$(CP) \
-		$(PKG_INSTALL_DIR)/$(T)/include/* \
+		$(PKG_INSTALL_DIR)/include/dpdk/* \
 		$(1)/usr/dpdk/include
 	$(CP) \
-		$(PKG_INSTALL_DIR)/$(T)/lib/libintel_dpdk.a \
+		$(PKG_INSTALL_DIR)/lib/*.a \
 		$(1)/usr/dpdk/lib
+	$(LN) \
+		libdpdk.a \
+		$(1)/usr/dpdk/lib/libintel_dpdk.a
 endef
 define Package/dpdk/install
 	$(INSTALL_DIR) \
-		$(1)/usr/share/dpdk/app \
+		$(1)/usr/share/dpdk/bin \
 		$(1)/usr/share/dpdk/kmod
 	$(INSTALL_BIN) -s \
-		$(PKG_INSTALL_DIR)/$(T)/app/* \
-		$(1)/usr/share/dpdk/app
+		$(PKG_INSTALL_DIR)/bin/* \
+		$(1)/usr/share/dpdk/bin
 	$(CP) \
-		$(PKG_INSTALL_DIR)/$(T)/kmod/* \
+		$(PKG_INSTALL_DIR)/lib/modules/*/extra/dpdk/*.ko \
 		$(1)/usr/share/dpdk/kmod
 endef
 

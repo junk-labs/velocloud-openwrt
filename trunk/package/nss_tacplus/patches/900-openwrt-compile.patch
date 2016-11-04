@@ -12,7 +12,16 @@ cleanly.  Also added an "install" target.
  
  OBJECTS=$(patsubst %.c, %.o, $(wildcard src/*.c))
  HEADERS=$(wildcard src/*.h)
-@@ -27,12 +25,18 @@
+@@ -15,7 +13,7 @@
+ TEST_OBJECTS=	$(patsubst %.c, %.o, $(wildcard test/*.c))
+ TEST_HEADERS=	$(wildcard test/*.h)
+ 
+-default: $(TARGET)
++default: $(TARGET) $(TEST_TARGET)
+ all: default
+ test: $(TEST_TARGET)
+ 
+@@ -27,12 +25,20 @@
  .PRECIOUS: $(TARGET) $(TEST_TARGET) (OBJECTS)
  
  $(TARGET): $(OBJECTS)
@@ -27,7 +36,9 @@ cleanly.  Also added an "install" target.
 +
 +install:
 +	install -D -m 0755 -d $(DESTDIR)/lib
-+	install -D -m 0644 $(TARGET) $(DESTDIR)/lib
++	install -D -m 0755 $(TARGET) $(DESTDIR)/lib
++	install -D -m 0755 -d $(DESTDIR)/bin
++	install -D -m 0755 $(TEST_TARGET) $(DESTDIR)/bin
 +
  clean:
  	-rm -f src/*.o test/*.o

@@ -337,6 +337,13 @@ zebra_hello_send (struct zclient *zclient)
   return 0;
 }
 
+void
+zclient_interface_request (struct zclient *zclient)
+{
+  /* We need interface information. */
+  zebra_message_send (zclient, ZEBRA_INTERFACE_ADD);
+}
+
 /* Make connection to zebra daemon. */
 int
 zclient_start (struct zclient *zclient)
@@ -472,6 +479,8 @@ zapi_ipv4_route (u_char cmd, struct zclient *zclient, struct prefix_ipv4 *p,
   
   zclient_create_header (s, cmd);
   
+  stream_put (s, api->iname, INSTANCE_NAMSIZ);
+
   /* Put type and nexthop. */
   stream_putc (s, api->type);
   stream_putc (s, api->flags);
@@ -513,6 +522,12 @@ zapi_ipv4_route (u_char cmd, struct zclient *zclient, struct prefix_ipv4 *p,
   if (CHECK_FLAG (api->message, ZAPI_MESSAGE_METRIC))
     stream_putl (s, api->metric);
 
+  if (api->type == ZEBRA_ROUTE_BGP)
+    {
+      stream_putl (s, ((struct zapi_bgp_attr *) api->proto_data)->local_pref);  
+      stream_putc (s, ((struct zapi_bgp_attr *) api->proto_data)->aspath_len);  
+    }
+
   /* Put length at the first point of the stream. */
   stream_putw_at (s, 0, stream_get_endp (s));
 
@@ -533,6 +548,8 @@ zapi_ipv6_route (u_char cmd, struct zclient *zclient, struct prefix_ipv6 *p,
   stream_reset (s);
 
   zclient_create_header (s, cmd);
+
+  stream_put (s, api->iname, INSTANCE_NAMSIZ);
 
   /* Put type and nexthop. */
   stream_putc (s, api->type);
@@ -567,6 +584,12 @@ zapi_ipv6_route (u_char cmd, struct zclient *zclient, struct prefix_ipv6 *p,
   if (CHECK_FLAG (api->message, ZAPI_MESSAGE_METRIC))
     stream_putl (s, api->metric);
 
+  if (api->type == ZEBRA_ROUTE_BGP)
+    {
+      stream_putl (s, ((struct zapi_bgp_attr *) api->proto_data)->local_pref);  
+      stream_putc (s, ((struct zapi_bgp_attr *) api->proto_data)->aspath_len);  
+    }
+
   /* Put length at the first point of the stream. */
   stream_putw_at (s, 0, stream_get_endp (s));
 
@@ -598,9 +621,20 @@ zebra_redistribute_send (int command, struct zclient *zclient, int type)
 
 /* Router-id update from zebra daemon. */
 void
-zebra_router_id_update_read (struct stream *s, struct prefix *rid)
+zebra_router_id_update_read (struct stream *s, char *iname, struct prefix *rid)
 {
   int plen;
+  char iname_tmp[INSTANCE_NAMSIZ + 1];
+  size_t namelen;
+
+  /* Read instance name. */
+  stream_get (iname_tmp, s, INSTANCE_NAMSIZ);
+  namelen = strnlen(iname_tmp, INSTANCE_NAMSIZ);
+
+  if (iname) {
+    strncpy (iname, iname_tmp, namelen);
+    iname[namelen] = '\0';
+  }
 
   /* Fetch interface address. */
   rid->family = stream_getc (s);
@@ -723,6 +757,15 @@ zebra_interface_state_read (struct stream *s)
 void
 zebra_interface_if_set_value (struct stream *s, struct interface *ifp)
 {
+  char iname_tmp[INSTANCE_NAMSIZ + 1];
+  size_t namelen;
+
+  /* Read instance name. */
+  stream_get (iname_tmp, s, INSTANCE_NAMSIZ);
+  namelen = strnlen(iname_tmp, INSTANCE_NAMSIZ);
+  strncpy (ifp->iname, iname_tmp, namelen);
+  ifp->iname[namelen] = '\0';
+
   /* Read interface's index. */
   ifp->ifindex = stream_getl (s);
   ifp->status = stream_getc (s);

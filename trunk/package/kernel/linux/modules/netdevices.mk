@@ -517,6 +517,23 @@ endef
 
 $(eval $(call KernelPackage,igb))
 
+define KernelPackage/igbvf
+  SUBMENU:=$(NETWORK_DEVICES_MENU)
+  TITLE:=Intel(R) 82575/82576 PCI-Express Virtual Function support
+  DEPENDS:=@PCIE_SUPPORT +kmod-i2c-algo-bit +kmod-ptp
+  KCONFIG:=CONFIG_IGBVF \
+    CONFIG_IGB_HWMON=n \
+    CONFIG_IGB_DCA=n
+  FILES:=$(LINUX_DIR)/drivers/net/ethernet/intel/igbvf/igbvf.ko
+  AUTOLOAD:=$(call AutoLoad,35,igbvf)
+endef
+
+define KernelPackage/igbvf/description
+ Kernel modules for Intel(R) 82575/82576 PCI-Express Virtual Function adapters.
+endef
+
+$(eval $(call KernelPackage,igbvf))
+
 define KernelPackage/mdio
   SUBMENU:=$(NETWORK_DEVICES_MENU)
   TITLE:=Generic MDIO Transceiver support

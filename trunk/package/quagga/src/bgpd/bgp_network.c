@@ -46,15 +46,6 @@ int bgp_default_fd = -1;
 
 extern struct zebra_privs_t bgpd_privs;
 
-/* BGP listening socket. */
-struct bgp_listener
-{
-  int fd;
-  union sockunion su;
-  struct thread *thread;
-  struct bgp *bgp;
-};
-
 static inline int setns_raise(int fd, int nstype)
 {
   if ( bgpd_privs.change (ZPRIVS_RAISE) ) {
@@ -112,9 +103,7 @@ bgp_md5_set_connect (int socket, union sockunion *su, const char *password)
 int
 bgp_md5_set (struct peer *peer)
 {
-  struct listnode *node;
   int ret = 0;
-  struct bgp_listener *listener;
 
   if ( bgpd_privs.change (ZPRIVS_RAISE) )
     {
@@ -125,12 +114,10 @@ bgp_md5_set (struct peer *peer)
   /* Just set the password on the listen socket(s). Outbound connections
    * are taken care of in bgp_connect() below.
    */
-  for (ALL_LIST_ELEMENTS_RO(bm->listen_sockets, node, listener))
-    if (listener->su.sa.sa_family == peer->su.sa.sa_family)
-      {
-	ret = bgp_md5_set_socket (listener->fd, &peer->su, peer->password);
-	break;
-      }
+  if (peer->bgp->listener[family2afi(peer->su.sa.sa_family)])
+    {
+      ret = bgp_md5_set_socket (peer->bgp->listener[family2afi(peer->su.sa.sa_family)]->fd, &peer->su, peer->password);
+    }
 
   if (bgpd_privs.change (ZPRIVS_LOWER) )
     zlog_err ("%s: could not lower privs", __func__);
@@ -210,10 +197,16 @@ bgp_accept (struct thread *thread)
   int bgp_sock;
   int accept_sock;
   union sockunion su;
-  struct bgp_listener *listener = THREAD_ARG(thread);
+  struct bgp *bgp = THREAD_ARG(thread);
   struct peer *peer;
   struct peer *peer1;
   char buf[SU_ADDRSTRLEN];
+
+  if (!bgp)
+    {
+      zlog_err ("bgp_accept: bgp not initialized!");
+      return -1;
+    }
 
   /* Register accept thread. */
   accept_sock = THREAD_FD (thread);
@@ -222,7 +215,6 @@ bgp_accept (struct thread *thread)
       zlog_err ("accept_sock is nevative value %d", accept_sock);
       return -1;
     }
-  listener->thread = thread_add_read (master, bgp_accept, listener, accept_sock);
 
   /* Accept client connection. */
   bgp_sock = sockunion_accept (accept_sock, &su);
@@ -231,6 +223,19 @@ bgp_accept (struct thread *thread)
       zlog_err ("[Error] BGP socket accept failed (%s)", safe_strerror (errno));
       return -1;
     }
+
+  if (!bgp->listener[family2afi(su.sa.sa_family)])
+    {
+      zlog_err ("[Error] bgp_listener not initialized, bgp name %s family %d",
+                bgp->name, su.sa.sa_family);
+      return -1;
+    }
+
+  bgp->listener[family2afi(su.sa.sa_family)]->thread = thread_add_read (master, bgp_accept, bgp, accept_sock);
+
+  if (BGP_DEBUG (events, EVENTS))
+    zlog_debug ("bgp_accept: name %s family %d, sock %d, peersock %d", bgp->name, su.sa.sa_family, accept_sock, bgp_sock);
+
   set_nonblocking (bgp_sock);
 
   /* Set socket send buffer size */
@@ -240,7 +245,7 @@ bgp_accept (struct thread *thread)
     zlog_debug ("[Event] BGP connection from host %s", inet_sutop (&su, buf));
   
   /* Check remote IP address */
-  peer1 = peer_lookup (listener->bgp, &su);
+  peer1 = peer_lookup (bgp, &su);
   if (! peer1 || peer1->status == Idle)
     {
       if (BGP_DEBUG (events, EVENTS))
@@ -510,11 +515,13 @@ bgp_listener (struct bgp *bgp, int sock, struct sockaddr *sa, socklen_t salen)
 
   listener = XMALLOC (MTYPE_BGP_LISTENER, sizeof(*listener));
   listener->fd = sock;
-  listener->bgp = bgp;
   memcpy(&listener->su, sa, salen);
-  listener->thread = thread_add_read (master, bgp_accept, listener, sock);
-  listnode_add (bm->listen_sockets, listener);
+  listener->thread = thread_add_read (master, bgp_accept, bgp, sock);
+  bgp->listener[family2afi(sa->sa_family)] = listener;
 
+  if (BGP_DEBUG (events, EVENTS))
+    zlog_debug ("BGP listener set for %s, fd %d, afi %d",
+                bgp->name, sock, family2afi(sa->sa_family));
   return 0;
 }
 
@@ -653,13 +660,16 @@ void
 bgp_close (void)
 {
   struct listnode *node, *next;
-  struct bgp_listener *listener;
+  struct bgp *bgp;
+  afi_t afi;
 
-  for (ALL_LIST_ELEMENTS (bm->listen_sockets, node, next, listener))
-    {
-      thread_cancel (listener->thread);
-      close (listener->fd);
-      listnode_delete (bm->listen_sockets, listener);
-      XFREE (MTYPE_BGP_LISTENER, listener);
-    }
+  for (ALL_LIST_ELEMENTS (bm->bgp, node, next, bgp))
+    for (afi = AFI_IP ; afi < AFI_MAX ; afi++) 
+      {
+        if (BGP_DEBUG (events, EVENTS))
+          zlog_err ("Cleaning up in bgp_close %s, fd (%d)", bgp->name, bgp->listener[afi]->fd);
+        thread_cancel (bgp->listener[afi]->thread);
+        close (bgp->listener[afi]->fd);
+        XFREE (MTYPE_BGP_LISTENER, bgp->listener[afi]);
+      }
 }

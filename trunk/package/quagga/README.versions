@@ -1,0 +1,29 @@
+IMPORTANT NOTE ABOUT VERSIONING AND GATEWAY BUILD
+=================================================
+
+We now have a separate, formal, gateway build of quagga, in the
+directory trunk/tools/quagga-host. There is a Makefile there, too,
+that pretends to be an OpenWrt "host build", but in reality, builds
+some Debian packages of quagga using the equivalent of SetupBuild.
+
+These debian packages end up in $SDK/staging_dir/host/hostpkg/. Our
+regular velocloud.src build will copy the required .deb's from there
+to build/x86_64/package/gateway/deb, alongside the gateway .deb.
+
+REQUIREMENTS:
+============
+
+1. Whenever you make any substantial change (any functionality, or
+key bug fix that you want to track whether it has been installed on
+the gateway or not), you must:
+
+   * Update the **PKG_RELEASE** in the Makefile here
+   * Update the **PKG_RELEASE** in trunk/tools/quagga-host/Makefile
+
+You don't have to do this for EVERY checkin - just for any set of
+changes that you want to track as group, as to whether it is installed
+on the gateway or not.
+
+E.g. if your new feature required several small checkins while you
+played around with functionality, that's fine, as long as you bump
+up the PKG_RELEASE at the end when you're ready to "publish".

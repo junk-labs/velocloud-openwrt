@@ -63,7 +63,8 @@ ospf_router_id_update_zebra (int command, struct zclient *zclient,
 {
   struct ospf *ospf;
   struct prefix router_id;
-  zebra_router_id_update_read(zclient->ibuf,&router_id);
+
+  zebra_router_id_update_read(zclient->ibuf, NULL, &router_id);
 
   if (IS_DEBUG_OSPF (zebra, ZEBRA_INTERFACE))
     {
@@ -334,6 +335,7 @@ ospf_zebra_add (struct prefix_ipv4 *p, struct ospf_route *or)
   struct stream *s;
   struct ospf_path *path;
   struct listnode *node;
+  char iname[INSTANCE_NAMSIZ];
 
   if (zclient->redist[ZEBRA_ROUTE_OSPF])
     {
@@ -360,6 +362,8 @@ ospf_zebra_add (struct prefix_ipv4 *p, struct ospf_route *or)
 
       /* Put command, type, flags, message. */
       zclient_create_header (s, ZEBRA_IPV4_ROUTE_ADD);
+      iname[0] = '\0';
+      stream_put (s, iname, INSTANCE_NAMSIZ);
       stream_putc (s, ZEBRA_ROUTE_OSPF);
       stream_putc (s, flags);
       stream_putc (s, message);
@@ -443,6 +447,7 @@ ospf_zebra_delete (struct prefix_ipv4 *p, struct ospf_route *or)
   struct stream *s;
   struct ospf_path *path;
   struct listnode *node;
+  char iname[INSTANCE_NAMSIZ];
 
   if (zclient->redist[ZEBRA_ROUTE_OSPF])
     {
@@ -456,6 +461,8 @@ ospf_zebra_delete (struct prefix_ipv4 *p, struct ospf_route *or)
 
       /* Put command, type, flags, message. */
       zclient_create_header (s, ZEBRA_IPV4_ROUTE_DELETE);
+      iname[0] = '\0';
+      stream_put (s, iname, INSTANCE_NAMSIZ);
       stream_putc (s, ZEBRA_ROUTE_OSPF);
       stream_putc (s, flags);
       stream_putc (s, message);
@@ -774,7 +781,7 @@ ospf_redistribute_check (struct ospf *ospf,
         }
 
   save_values = ei->route_map_set;
-  ospf_reset_route_map_set_values (&ei->route_map_set);
+  // ospf_reset_route_map_set_values (&ei->route_map_set);
 
   /* apply route-map if needed */
   if (ROUTEMAP_NAME (ospf, type))
@@ -835,12 +842,21 @@ ospf_zebra_read_ipv4 (int command, struct zclient *zclient,
   struct in_addr nexthop;
   struct prefix_ipv4 p;
   struct external_info *ei;
+  char iname_tmp[INSTANCE_NAMSIZ + 1];
+  size_t namelen;
   struct ospf *ospf;
 
   s = zclient->ibuf;
   ifindex = 0;
   nexthop.s_addr = 0;
 
+  /* Read instance name. */
+  stream_get (iname_tmp, s, INSTANCE_NAMSIZ);
+  namelen = strnlen(iname_tmp, INSTANCE_NAMSIZ);
+  strncpy (api.iname, iname_tmp, namelen);
+  api.iname[namelen] = '\0';
+
+  api.metric = -1;
   /* Type, flags, message. */
   api.type = stream_getc (s);
   api.flags = stream_getc (s);
@@ -904,6 +920,8 @@ ospf_zebra_read_ipv4 (int command, struct zclient *zclient,
               else
                 {
                   struct ospf_lsa *current;
+
+                  ei->route_map_set.metric = api.metric;
 
                   current = ospf_external_info_find_lsa (ospf, &ei->p);
                   if (!current)

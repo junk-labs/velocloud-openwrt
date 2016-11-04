@@ -1,0 +1,29 @@
+GATEWAY DEB BUILD FOR QUAGGA
+============================
+
+This build picks up the sources from tools/package/quagga, and runs the
+equivalent of the "SetupBuild" steps there to create .deb files.
+
+IMPORTANT:
+---------
+
+    * Make changes in the trunk/package/quagga directory.
+    * When publishing a feature that warrants a release bump, increment
+      PKG_RELEASE there and here.
+
+See the README.versions file in tools/package/quagga.
+
+NOTE ABOUT PACKAGE RELEASE IN DEB VERSION
+-----------------------------------------
+
+Normally, debuild will pick up the "full version" from the debian/changelog
+file - it picks up the first version string it finds there as the "full
+version", so it will always say "0.99.24.1-2", which is really incorrect.
+
+But this is what you will get if you run "SetupBuild" followed by debuild,
+by default.
+
+Instead, the Openwrt Makefile here does a sneaky thing: it injects a dummy
+changelog entry with the desired version-release string as the top lines
+of the copied debian/changelog file under build/**, so that debuild creates
+a package with the right version-release string in it.

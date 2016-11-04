@@ -15,3 +15,12 @@ db_stop
 
 #DEBHELPER#
 
+# Velocloud gateways run only bgp by default
+touch /etc/quagga/bgpd.conf
+touch /etc/quagga/zebra.conf
+touch /var/log/quagga/bgpd.log
+sed  -i.bak "s/bgpd=no/bgpd=yes/g" /etc/quagga/daemons
+sed -i.bak "s/watchquagga_options=(--daemon)/watchquagga_options=(\"-dz\" \"-T 5\" \"-R\" \"\/opt\/vc\/bin\/gwd_watchquagga_script.sh\")/g" /etc/quagga/debian.conf
+chown root.root /var/run/quagga/
+chmod o+w /etc/quagga/
+

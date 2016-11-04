@@ -365,6 +365,16 @@ define Package/swap-utils/description
  contains: mkswap, swaplabel
 endef
 
+define Package/taskset
+$(call Package/util-linux/Default)
+  TITLE:=retrieve or set process CPU affinity
+endef
+
+define Package/taskset/description
+  set or retrieve the CPU affinity of a running process given its PID
+  or to launch a new command with a given CPU affinity
+endef
+
 define Package/uuidd
 $(call Package/util-linux/Default)
   TITLE:=UUID generation daemon
@@ -565,6 +575,11 @@ define Package/swap-utils/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/.libs/swaplabel $(1)/usr/sbin/
 endef
 
+define Package/taskset/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/taskset $(1)/usr/bin/
+endef
+
 define Package/uuidd/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/.libs/uuidd $(1)/usr/sbin/
@@ -618,6 +633,7 @@ $(eval $(call BuildPackage,script-utils))
 $(eval $(call BuildPackage,setterm))
 $(eval $(call BuildPackage,sfdisk))
 $(eval $(call BuildPackage,swap-utils))
+$(eval $(call BuildPackage,taskset))
 $(eval $(call BuildPackage,uuidd))
 $(eval $(call BuildPackage,uuidgen))
 $(eval $(call BuildPackage,wall))

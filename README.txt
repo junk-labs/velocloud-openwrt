@@ -19,6 +19,7 @@ I. Setting up Build System
 * libncurses5-dev libncurses5
 * zlib1g-dev zlib1g
 * libapr1 libaprutil1
+* devscripts
 
 3. To install subversion, you need to get a special set of packages for
 subversion 1.6 from /eng/openwrt/svn-1.6 (there are three packages there).

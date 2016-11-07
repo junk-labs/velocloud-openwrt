@@ -23,6 +23,7 @@ I. Setting up Build System
 * dh-make
 * dh-autoreconf
 * libreadline-gplv2-dev
+* texi2html
 
 3. To install subversion, you need to get a special set of packages for
 subversion 1.6 from /eng/openwrt/svn-1.6 (there are three packages there).

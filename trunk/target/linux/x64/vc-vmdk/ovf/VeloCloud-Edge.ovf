@@ -25,6 +25,9 @@
     <Network ovf:name="GE5">
       <Description>GE5 - routed by default</Description>
     </Network>
+    <Network ovf:name="GE6">
+      <Description>GE6 - routed by default</Description>
+    </Network>
   </NetworkSection>
   <VirtualSystem ovf:id="VeloCloud-Edge">
     <Info>A virtual machine</Info>
@@ -139,8 +142,19 @@
         <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
         <rasd:Connection>GE5</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter GE5</rasd:Description>
-        <rasd:ElementName>Network adapter 4</rasd:ElementName>
+        <rasd:ElementName>Network adapter 5</rasd:ElementName>
         <rasd:InstanceID>11</rasd:InstanceID>
+        <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
+        <rasd:ResourceType>10</rasd:ResourceType>
+        <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
+      </Item>
+      <Item>
+        <rasd:AddressOnParent>12</rasd:AddressOnParent>
+        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
+        <rasd:Connection>GE6</rasd:Connection>
+        <rasd:Description>VmxNet3 ethernet adapter GE6</rasd:Description>
+        <rasd:ElementName>Network adapter 6</rasd:ElementName>
+        <rasd:InstanceID>12</rasd:InstanceID>
         <rasd:ResourceSubType>VmxNet3</rasd:ResourceSubType>
         <rasd:ResourceType>10</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="wakeOnLanEnabled" vmw:value="true"/>
@@ -149,7 +163,7 @@
         <rasd:AddressOnParent>0</rasd:AddressOnParent>
         <rasd:ElementName>Hard disk 1</rasd:ElementName>
         <rasd:HostResource>ovf:/disk/vmdisk1</rasd:HostResource>
-        <rasd:InstanceID>12</rasd:InstanceID>
+        <rasd:InstanceID>13</rasd:InstanceID>
         <rasd:Parent>3</rasd:Parent>
         <rasd:ResourceType>17</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="backing.writeThrough" vmw:value="false"/>

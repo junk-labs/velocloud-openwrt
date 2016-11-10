@@ -159,7 +159,7 @@ extern struct attr *bgp_attr_default_intern (u_char);
 extern struct attr *bgp_attr_aggregate_intern (struct bgp *, u_char,
                                         struct aspath *, 
                                         struct community *, int as_set);
-extern bgp_size_t bgp_packet_attribute (struct bgp *bgp, struct peer *,
+extern bgp_size_t bgp_packet_attribute (struct peer *,
 					struct stream *, struct attr *,
 					struct prefix *, afi_t, safi_t,
 					struct peer *, struct prefix_rd *,

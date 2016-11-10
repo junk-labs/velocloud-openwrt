@@ -642,13 +642,17 @@ bgp_connected_add (struct connected *ifc)
   if (! ifp)
     return;
 
-  //Pending: create proper check for the default instance
-  if (ifp->iname[0] != '\0')
+  if (ifp->iname[0] != '\0') {
     bgp = bgp_lookup_by_name (ifp->iname);
-  //else
-  //  bgp = bgp_get_default();
-  if (!bgp)
+  } else {
+    bgp = bgp_get_default();
+  }
+
+  if (!bgp) {
+    zlog_debug("Zebra rcvd: interface %s address add, instance %s not found!",
+		 ifc->ifp->name, ifc->ifp->iname);
     return;
+  }
 
   if (if_is_loopback (ifp))
     return;
@@ -730,11 +734,10 @@ bgp_connected_delete (struct connected *ifc)
 
   ifp = ifc->ifp;
 
-  //Pending: create proper check for the default instance
   if (ifp->iname[0] != '\0')
     bgp = bgp_lookup_by_name (ifp->iname);
-  //else
-  //  bgp = bgp_get_default();
+  else
+    bgp = bgp_get_default();
   if (!bgp)
     return;
 

@@ -200,7 +200,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 	  mpattr_pos = stream_get_endp(s);
 
 	  /* 5: Encode all the attributes, except MP_REACH_NLRI attr. */
-	  total_attr_len = bgp_packet_attribute (NULL, peer, s,
+	  total_attr_len = bgp_packet_attribute (peer, s,
 	                                         adv->baa->attr,
 	                                         NULL, afi, safi,
 	                                         from, NULL, NULL);
@@ -469,7 +469,7 @@ bgp_default_update_send (struct peer *peer, struct attr *attr,
   /* Make place for total attribute length.  */
   pos = stream_get_endp (s);
   stream_putw (s, 0);
-  total_attr_len = bgp_packet_attribute (NULL, peer, s, attr, &p, afi, safi, from, NULL, NULL);
+  total_attr_len = bgp_packet_attribute (peer, s, attr, &p, afi, safi, from, NULL, NULL);
 
   /* Set Total Path Attribute Length. */
   stream_putw_at (s, pos, total_attr_len);
@@ -1178,7 +1178,7 @@ bgp_collision_detect (struct peer *new, struct in_addr remote_id)
   struct listnode *node, *nnode;
   struct bgp *bgp;
 
-  bgp = bgp_get_default ();
+  bgp = new->bgp;
   if (! bgp)
     return 0;
   

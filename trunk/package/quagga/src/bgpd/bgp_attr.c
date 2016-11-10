@@ -2206,7 +2206,7 @@ bgp_packet_mpattr_end (struct stream *s, size_t sizep)
 
 /* Make attribute packet. */
 bgp_size_t
-bgp_packet_attribute (struct bgp *bgp, struct peer *peer,
+bgp_packet_attribute (struct peer *peer,
 		      struct stream *s, struct attr *attr,
 		      struct prefix *p, afi_t afi, safi_t safi,
 		      struct peer *from, struct prefix_rd *prd, u_char *tag)
@@ -2218,9 +2218,9 @@ bgp_packet_attribute (struct bgp *bgp, struct peer *peer,
   int send_as4_aggregator = 0;
   int use32bit = (CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV)) ? 1 : 0;
   size_t mpattrlen_pos = 0;
+  struct bgp *bgp;
 
-  if (! bgp)
-    bgp = bgp_get_default ();
+  bgp = peer->bgp;
 
   /* Remember current pointer. */
   cp = stream_get_endp (s);

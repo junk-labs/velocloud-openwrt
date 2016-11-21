@@ -74,12 +74,12 @@ bgp_node_safi (struct vty *vty)
 }
 
 static int
-peer_address_self_check (union sockunion *su)
+peer_address_self_check (struct bgp *bgp, union sockunion *su)
 {
   struct interface *ifp = NULL;
 
   if (su->sa.sa_family == AF_INET)
-    ifp = if_lookup_by_ipv4_exact (&su->sin.sin_addr);
+    ifp = if_lookup_by_ipv4_exact (bgp, &su->sin.sin_addr);
 #ifdef HAVE_IPV6
   else if (su->sa.sa_family == AF_INET6)
     ifp = if_lookup_by_ipv6_exact (&su->sin6.sin6_addr);
@@ -1449,7 +1449,7 @@ peer_remote_as_vty (struct vty *vty, const char *peer_str,
       return CMD_SUCCESS;
     }
 
-  if (peer_address_self_check (&su))
+  if (peer_address_self_check (bgp, &su))
     {
       vty_out (vty, "%% Can not configure the local system as neighbor%s",
 	       VTY_NEWLINE);
@@ -1804,7 +1804,7 @@ DEFUN (neighbor_set_peer_group,
       return CMD_WARNING;
     }
 
-  if (peer_address_self_check (&su))
+  if (peer_address_self_check (bgp, &su))
     {
       vty_out (vty, "%% Can not configure the local system as neighbor%s",
 	       VTY_NEWLINE);

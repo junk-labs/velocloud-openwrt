@@ -460,7 +460,7 @@ if_lookup_by_ipv4 (struct in_addr *addr)
 }
 
 struct interface *
-if_lookup_by_ipv4_exact (struct in_addr *addr)
+if_lookup_by_ipv4_exact (struct bgp *bgp, struct in_addr *addr)
 {
   struct listnode *ifnode;
   struct listnode *cnode;
@@ -470,14 +470,16 @@ if_lookup_by_ipv4_exact (struct in_addr *addr)
   
   for (ALL_LIST_ELEMENTS_RO (iflist, ifnode, ifp))
     {
-      for (ALL_LIST_ELEMENTS_RO (ifp->connected, cnode, connected))
-	{
-	  cp = connected->address;
-	    
-	  if (cp->family == AF_INET)
-	    if (IPV4_ADDR_SAME (&cp->u.prefix4, addr))
-	      return ifp;
-	}
+      if ((bgp->name && !strncmp(bgp->name, ifp->iname, strlen(bgp->name))) ||
+          (!bgp->name && ifp->iname[0] == '\0'))
+          for (ALL_LIST_ELEMENTS_RO (ifp->connected, cnode, connected))
+          {
+              cp = connected->address;
+
+              if (cp->family == AF_INET)
+                  if (IPV4_ADDR_SAME (&cp->u.prefix4, addr))
+                      return ifp;
+          }
     }
   return NULL;
 }

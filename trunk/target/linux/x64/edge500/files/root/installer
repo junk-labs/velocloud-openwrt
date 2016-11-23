@@ -219,7 +219,7 @@ GRUB2_MODULES="$GRUB2_MODULES test echo loadenv"
 
 mkdir -m 700 -p $MNT_ROOT
 
-KernelCmdlinForceModel()
+KernelCmdlineForceModel()
 {
 	set -- `cat /proc/cmdline`
 	for T in "$@"; do
@@ -238,12 +238,6 @@ ForceModel()
 if [ "$inst_grub" == "1" ]; then
 	VC_DRIVER_MODEL=`cat /sys/devices/platform/vc/board`
 	FORCE_MODEL=`KernelCmdlineForceModel`
-	if [ -z "$FORCE_MODEL" ]; then
-		if [ "$VC_DRIVER_MODEL" = "edge-nexcom" ]; then
-			FORCE_MODEL=`ForceModel edge300`
-		fi
-	fi
-	
 	# configure device map;
 
 	echo "installing grub to $DEVICE ..."

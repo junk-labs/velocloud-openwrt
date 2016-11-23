@@ -47,6 +47,15 @@ diff -Naur a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet
  {
  	u32 reg = 0;
  	bool ext_mdio = false;
+@@ -169,7 +169,7 @@
+  *  igb_init_phy_params_82575 - Init PHY func ptrs.
+  *  @hw: pointer to the HW structure
+  **/
+-static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
++s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+ {
+ 	struct e1000_phy_info *phy = &hw->phy;
+ 	s32 ret_val = 0;
 @@ -331,6 +331,11 @@
  	nvm->delay_usec = 1;
  
@@ -699,8 +708,8 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/in
  	case SPEED_1000 + DUPLEX_HALF: /* not supported */
 diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/intel/igb/igb_vc.c
 --- a/drivers/net/ethernet/intel/igb/igb_vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2016-09-13 11:10:51.813796906 -0700
-@@ -0,0 +1,3554 @@
++++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2016-11-22 16:10:00.000000000 -0700
+@@ -0,0 +1,3559 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -778,6 +787,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +extern bool igb_sgmii_uses_mdio_82575(struct e1000_hw *hw);
 +extern s32  igb_read_phy_reg_82580(struct e1000_hw *, u32, u16 *);
 +extern s32  igb_write_phy_reg_82580(struct e1000_hw *, u32, u16);
++extern s32 igb_init_phy_params_82575(struct e1000_hw *hw);
 +extern s32 igb_setup_copper_link_82575(struct e1000_hw *hw);
 +extern s32 igb_setup_serdes_link_82575(struct e1000_hw *hw);
 +extern s32 igb_get_pcs_speed_and_duplex_82575(struct e1000_hw *, u16 *, u16 *);
@@ -2820,6 +2830,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +#define VC_ID 0x5663	// "Vc"
 +#define VC_ID_EDGE500 0x6535 // "e5" - edge500;
 +#define VC_ID_EDGE5X0 0x3558 // "5X" - edge520/edge540;
++#define VC_ID_EDGE510 0x3531 // "51" - edge510;
 +
 +s32
 +igb_vc_probe(struct e1000_hw *hw)
@@ -2866,6 +2877,9 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +			vc_5x0_igb_inmem_reset[hw->bus.func] = 1;
 +		}
 +		break;
++	case VC_ID_EDGE510:
++		ret = igb_init_phy_params_82575(hw);
++		goto out;
 +	default:
 +		goto out;
 +	}

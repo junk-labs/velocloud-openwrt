@@ -13,12 +13,9 @@ fi
 EDGETYPE=`/etc/edgetype`
 
 case "$EDGETYPE" in
-    edge300)
-        cp /etc/config-defaults/edge300/network /etc/config/network
-        ;;
-    edge800p1)
-        cp /etc/config-defaults/edge800p1/network /etc/config/network
-        ;;
+    #edge300)
+    #    cp /etc/config-defaults/edge300/network /etc/config/network
+    #    ;;
     *)  # edge500 or anything else
         cp /etc/config-defaults/edge500/network /etc/config/network
         cp /etc/config-defaults/edge500/wireless /etc/config/wireless

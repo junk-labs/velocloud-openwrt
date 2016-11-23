@@ -28,8 +28,8 @@ diff -Naur a/drivers/gpio/Makefile b/drivers/gpio/Makefile
  obj-$(CONFIG_GPIO_RC5T583)	+= gpio-rc5t583.o
 diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 --- /dev/null
-+++ b/drivers/gpio/gpio-pcu.c	2015-08-24 08:53:39.566763805 -0700
-@@ -0,0 +1,799 @@
++++ b/drivers/gpio/gpio-pcu.c	2016-11-23 10:29:30.000000000 -0800
+@@ -0,0 +1,842 @@
 +/*
 + * Copyright (C) 2014 Velocloud Inc.
 + *
@@ -156,6 +156,37 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +#define EDGE5X0B_PCU_GPIO_CLEAR_SUS EDGE5X0_PCU_GPIO_CLEAR_SUS
 +#define EDGE5X0B_PCU_GPIO_IOSEL_SUS EDGE5X0_PCU_GPIO_IOSEL_SUS
 +#define EDGE5X0B_PCU_GPIO_OUT_SUS EDGE5X0_PCU_GPIO_OUT_SUS
++
++// edge510;
++
++#define EDGE510_CONSOLE ((1<<6) | (1<<7))
++#define EDGE510_SMB0 ((1<<8) | (1<<9))
++#define EDGE510_SMB1 ((1<<11) | (1<<12))
++#define EDGE510_BLE_UART ((1<<13) | (1<<14))
++#define EDGE510_PIC_MCLR (1<<15)
++#define EDGE510_PIC_ICSPCLK (1<<16)
++#define EDGE510_PIC_ICSPDAT (1<<17)
++#define EDGE510_PIC (EDGE510_PIC_MCLR | EDGE510_PIC_ICSPCLK | EDGE510_PIC_ICSPDAT)
++#define EDGE510_SC_LPC (1<<21) | (1<<22) | (1<<23) | (1<<24) | (1<<25) | (1<<27) | (1<<28) | (1<<29)
++#define EDGE510_RESET_BTN (1<<30)
++
++#define EDGE510_SUS_TPM (1<<1)
++#define EDGE510_SUS_PIC (1<<2)
++#define EDGE510_SUS_SIMSEL (1<<6)
++#define EDGE510_SUS_BLE_SPI (1<<12)
++#define EDGE510_SUS_IGB (1<<13) | (1<<14) | (1<<15) | (1<<16) | (1<<24) | (1<<25)
++#define EDGE510_SUS_INT1543 (1<<17)
++
++#define EDGE510_PCU_GPIO_MASK_SC (EDGE510_PIC)
++#define EDGE510_PCU_GPIO_CLEAR_SC (EDGE510_CONSOLE | EDGE510_SMB0 | EDGE510_SMB1 | EDGE510_BLE_UART | EDGE510_SC_LPC | EDGE510_RESET_BTN)
++#define EDGE510_PCU_GPIO_IOSEL_SC (EDGE510_PIC)
++#define EDGE510_PCU_GPIO_OUT_SC 0 
++
++#define EDGE510_PCU_GPIO_MASK_SUS (EDGE510_SUS_TPM | EDGE510_SUS_PIC | EDGE510_SUS_SIMSEL | EDGE510_SUS_INT1543)
++#define EDGE510_PCU_GPIO_CLEAR_SUS (EDGE510_SUS_BLE_SPI | EDGE510_SUS_IGB)
++#define EDGE510_PCU_GPIO_IOSEL_SUS (EDGE510_SUS_TPM | EDGE510_SUS_PIC | EDGE510_SUS_INT1543)
++#define EDGE510_PCU_GPIO_OUT_SUS 0
++
 +
 +// symbols provided by velocloud module;
 +
@@ -576,6 +607,17 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +	.out[PCU_GPIO_SUS] = EDGE5X0B_PCU_GPIO_OUT_SUS,
 +};
 +
++static pcu_hwcfg_t pcu_hw_edge510 = {
++	.mask[PCU_GPIO_SC] = EDGE510_PCU_GPIO_MASK_SC,
++	.mask[PCU_GPIO_SUS] = EDGE510_PCU_GPIO_MASK_SUS,
++	.clear[PCU_GPIO_SC] = EDGE510_PCU_GPIO_CLEAR_SC,
++	.clear[PCU_GPIO_SUS] = EDGE510_PCU_GPIO_CLEAR_SUS,
++	.iosel[PCU_GPIO_SC] = EDGE510_PCU_GPIO_IOSEL_SC,
++	.iosel[PCU_GPIO_SUS] = EDGE510_PCU_GPIO_IOSEL_SUS,
++	.out[PCU_GPIO_SC] = EDGE510_PCU_GPIO_OUT_SC,
++	.out[PCU_GPIO_SUS] = EDGE510_PCU_GPIO_OUT_SUS,
++};
++
 +// map velocloud board id to hw data;
 +
 +static pcu_hwcfg_t *vc_board_hw[VC_N_BOARDS] = {
@@ -584,6 +626,7 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +	[VC_EDGE540] = &pcu_hw_edge5x0,
 +	[VC_EDGE520B] = &pcu_hw_edge5x0b,
 +	[VC_EDGE540B] = &pcu_hw_edge5x0b,
++	[VC_EDGE510] = &pcu_hw_edge510,
 +};
 +
 +// probe pcu gpio;

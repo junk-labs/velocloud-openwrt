@@ -53,8 +53,8 @@ diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
 diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 --- a/drivers/platform/x86/velocloud.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud.c	2015-10-29 10:36:31.707579633 -0700
-@@ -0,0 +1,189 @@
++++ b/drivers/platform/x86/velocloud.c	2016-11-23 10:36:30.000000000 -0800
+@@ -0,0 +1,201 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -142,6 +142,17 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	  },
 +	  VC_EDGE_ID(VC_EDGE540),
 +	},
++	{ .ident = "edge510",
++	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE510"),
++	  },
++	  VC_EDGE_ID(VC_EDGE510),
++	},
++	// XXX temporary, until we get real DMI entries into Dolphin:
++	{ .ident = "edge510",
++	  { DMI_MATCH(DMI_BOARD_NAME, "RCC-VE"),
++	  },
++	  VC_EDGE_ID(VC_EDGE510),
++	},
 +	{ 0 },
 +};
 +
@@ -191,6 +202,7 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	}
 +	switch (id) {
 +		case VC_EDGE500:
++		// case VC_EDGE510: // XXX Not until we have the real PIC
 +		case VC_EDGE520:
 +		case VC_EDGE540:
 +		case VC_EDGE520B:
@@ -4188,8 +4200,8 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +module_exit(vc_exit);
 diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
 --- a/include/misc/velocloud.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/include/misc/velocloud.h	2015-10-29 10:36:31.711579447 -0700
-@@ -0,0 +1,41 @@
++++ b/include/misc/velocloud.h	2016-11-23 10:32:30.000000000 -0800
+@@ -0,0 +1,42 @@
 +/*
 + * velocloud.h
 + * Copyright (C) 2015 VeloCloud Inc
@@ -4226,6 +4238,7 @@ diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
 +	VC_EDGE540,
 +	VC_EDGE520B,
 +	VC_EDGE540B,
++	VC_EDGE510,
 +	// add new before here,
 +	VC_N_BOARDS,
 +};

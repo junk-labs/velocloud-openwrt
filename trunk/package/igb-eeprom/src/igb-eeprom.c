@@ -64,6 +64,20 @@ mfg_t Mfg[] = {
 	  { 0xF0,0x8E,0xDB,0x01,0x01,0x90 }, { 0xF0,0x8E,0xDB,0x01,0x09,0x5f }, },
 #endif // IGB_EEPROM_BUGGY_MACS
 
+	// Range for miscellaneous new pilot projects: 00:01:00 to 00:ff:ff
+	// Starting with Dolphin pilot
+
+	// Dolphin pilot 1
+	{ "510-pilot",
+	  "edge510",
+	  { "eth0", },
+	  { "atom-c2000-igb-sgmii.bin", },
+	  { 0x8086, },
+	  { 0x1f41, },
+	  { 1, 20, 0 }, 4,
+	  { 0xF0,0x8E,0xDB,0x00,0x01,0x00 }, { 0xF0,0x8E,0xDB,0x00,0x01,0x4f }, },
+
+
 	// all above squeezed into 01:0x:xx 4k block;
 	// start a new 4k block 01:1x:xx for pw-mp for units 200..2047;
 	{ "pw-mp",
@@ -242,6 +256,14 @@ Msg(char *fmt, ...)
 #define E5X0_PHY2_ADDR_1514 0	// mdio bitbang, not assigned here;
 #define E5X0_PHY3_ADDR_1514 0	// mdio bitbang, not assigned here;
 
+// edge510 board specifics;
+// MDIO[0] eth0 to 88e1543 quad-phy
+
+#define E510_PHY0_ADDR_1543 0	// full bus decode, MDIO[0];
+#define E510_PHY1_ADDR_1543 1	// full bus decode, MDIO[1];
+#define E510_PHY2_ADDR_1543 2	// full bus decode, MDIO[2];
+#define E510_PHY3_ADDR_1543 3	// full bus decode, MDIO[3];
+
 // initialization control 4;
 // set phy address;
 
@@ -357,6 +379,31 @@ edge500_extra(g_t *g, unsigned char *eeprom, int size)
 
 	igb_ic3(eeprom + 0x000, 1);
 	igb_ic3(eeprom + 0x100, 0);
+	igb_ic3(eeprom + 0x180, 1);
+	igb_ic3(eeprom + 0x200, 1);
+}
+
+// edge510 igb board specifics;
+
+void
+edge510_extra(g_t *g, unsigned char *eeprom, int size)
+{
+	// program OEM specific words;
+
+	igb_word(eeprom, 0x06, 0x5663);	// "Vc";
+	igb_word(eeprom, 0x07, 0x3531);	// "51";
+
+	// set phy mdio addresses;
+
+	igb_ic4(eeprom + 0x000, E510_PHY0_ADDR_1543);
+	igb_ic4(eeprom + 0x100, E510_PHY1_ADDR_1543);
+	igb_ic4(eeprom + 0x180, E510_PHY2_ADDR_1543);
+	igb_ic4(eeprom + 0x200, E510_PHY3_ADDR_1543);
+
+	// set MDICNFG.COM_MDIO based on ports;
+
+	igb_ic3(eeprom + 0x000, 1);
+	igb_ic3(eeprom + 0x100, 1);
 	igb_ic3(eeprom + 0x180, 1);
 	igb_ic3(eeprom + 0x200, 1);
 }
@@ -754,6 +801,12 @@ main(int argc, char **argv)
 		g->nmacs = 6;
 		g->map = edge5x0_map;
 		g->extra = edge5x0_extra;
+	} else if( !strncmp(g->board, "edge510", 7)) {
+		g->pciid[0] = 0x8086;
+		g->pciid[1] = 0x1f41;
+		g->nmacs = 4;
+		g->map = igb_c2000_map;
+		g->extra = edge510_extra;
 	} else
 		Msg("@board '%s' not supported\n", g->board);
 

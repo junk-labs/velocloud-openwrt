@@ -538,8 +538,8 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
 --- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2015-10-29 10:36:31.711579447 -0700
-@@ -0,0 +1,3658 @@
++++ b/drivers/platform/x86/velocloud-vc.c	2016-11-28 10:40:48.109957751 -0800
+@@ -0,0 +1,4630 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -585,8 +585,8 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +#define VC_PWM "pwm"
 +#define VC_I2C "vc-i2c"
 +
-+//#define VC_DEBUG_GPIO
-+//#define VC_DEBUG_I2C
++#undef VC_DEBUG_GPIO
++#undef VC_DEBUG_I2C
 +
 +// edge500 gpio;
 +// max7314 wiring, 3 chips;
@@ -777,10 +777,73 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +#define EDGE5X0_MFG_EEPROM (0xa9>>1)
 +
++// edge510;
++
++// rangeley sc domain;
++
++#define EDGE510_GPIO_SMB0_CLK (EDGE500_GPIO_ATOM_SC + 8)
++#define EDGE510_GPIO_SMB0_DATA (EDGE500_GPIO_ATOM_SC + 9)
++#define EDGE510_GPIO_SMB1_CLK (EDGE500_GPIO_ATOM_SC + 12)
++#define EDGE510_GPIO_SMB1_DATA (EDGE500_GPIO_ATOM_SC + 11)
++#define EDGE510_GPIO_PIC_MCLR (EDGE500_GPIO_ATOM_SC + 15)
++#define EDGE510_GPIO_PIC_ICSPCLK (EDGE500_GPIO_ATOM_SC + 16)
++#define EDGE510_GPIO_PIC_ICSPDAT (EDGE500_GPIO_ATOM_SC + 17)
++
++// rangeley sus domain;
++
++#define EDGE510_GPIO_TMP_PRESENT (EDGE500_GPIO_ATOM_SUS + 1)
++#define EDGE510_GPIO_PIC_TBD2 (EDGE500_GPIO_ATOM_SUS + 2)
++#define EDGE510_GPIO_SIM_SELECT (EDGE500_GPIO_ATOM_SUS + 6)
++#define EDGE510_GPIO_INT_MV1543 (EDGE500_GPIO_ATOM_SUS + 17)
++
++// on pca9539;
++
++#define EDGE510_PIC_ADDR (0x66>>1) //XXX
++#define EDGE510_PCA9539_ADDR (0xe8>>1)
++#define EDGE510_GPIO_PCA9539 130
++
++#define EDGE510_GPIO_USB1_OC (EDGE510_GPIO_PCA9539 + 0)
++#define EDGE510_GPIO_USB2_OC (EDGE510_GPIO_PCA9539 + 1)
++#define EDGE510_GPIO_USB1_POWER (EDGE510_GPIO_PCA9539 + 2)
++#define EDGE510_GPIO_USB2_POWER (EDGE510_GPIO_PCA9539 + 3)
++#define EDGE510_GPIO_SLOTA_RESET (EDGE510_GPIO_PCA9539 + 4)
++#define EDGE510_GPIO_SLOTB_RESET (EDGE510_GPIO_PCA9539 + 5)
++#define EDGE510_GPIO_SLOTB_PRESENT (EDGE510_GPIO_PCA9539 + 6)
++#define EDGE510_GPIO_1543_RESET (EDGE510_GPIO_PCA9539 + 7)
++
++#define EDGE510_GPIO_SLOTA_RFKILLA (EDGE510_GPIO_PCA9539 + 8)
++#define EDGE510_GPIO_SLOTA_RFKILLB (EDGE510_GPIO_PCA9539 + 9)
++#define EDGE510_GPIO_SLOTB_POWER (EDGE510_GPIO_PCA9539 + 10)
++#define EDGE510_GPIO_SLOTB_RFKILL (EDGE510_GPIO_PCA9539 + 11)
++#define EDGE510_GPIO_SLOTB_GNSS (EDGE510_GPIO_PCA9539 + 12)
++#define EDGE510_GPIO_SIM1_DET (EDGE510_GPIO_PCA9539 + 13)
++#define EDGE510_GPIO_SIM2_DET (EDGE510_GPIO_PCA9539 + 14)
++#define EDGE510_GPIO_SLOTB_SIM (EDGE510_GPIO_PCA9539 + 15)
++
++// pca9539 i2c expander;
++// all registers except OUTCFG are 16 bits;
++// cmd register is address pointer;
++
++#define PCA9539_REG_INPUT	0x00
++#define PCA9539_REG_OUTPUT	0x02
++#define PCA9539_REG_POL		0x04
++#define PCA9539_REG_CONFIG	0x06
++#define PCA9539_REG_DRIVE0	0x40
++#define PCA9539_REG_DRIVE1	0x42
++#define PCA9539_REG_INLR	0x44
++#define PCA9539_REG_PULLEN	0x46
++#define PCA9539_REG_PULLSEL	0x48
++#define PCA9539_REG_IMASK	0x4a
++#define PCA9539_REG_ISTATUS	0x4c
++#define PCA9539_REG_OUTCFG	0x4f
++
 +// types;
 +
 +typedef struct vc_leds vc_leds_t;
 +typedef struct vc_data vc_data_t;
++
++#define VC_DATTR(var,name,mode,show,store) \
++	struct device_attribute dev_attr_##var =  __ATTR(name, mode, show, store)
 +
 +// generic gpio descriptor;
 +
@@ -837,9 +900,10 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	N_VC_I2C_DEVS,
 +};
 +
-+// rgb value for all off;
++// rgb value for all off/default;
 +
 +static unsigned char vc_rgb_off[3] = { 0, 0, 0 };
++static unsigned char vc_rgb_on[3] = { 0xff, 0xff, 0xff };
 +static unsigned int vc_rgb_notifier = 0x0000ff;
 +
 +// edge500 led mapping;
@@ -1048,6 +1112,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	VC_CAP_I2C_FAN_PWM = (1 << 5),
 +	VC_CAP_I2C_BB = (1 << 6),		// use bitbang i2c driver;
 +	VC_CAP_MDIO_BB = (1 << 7),		// MDIO bitbang to m88e1514;
++	VC_CAP_I2C_PIC = (1 << 8),		// have i2c to PIC;
 +};
 +
 +typedef struct vc_hw vc_hw_t;
@@ -1071,12 +1136,15 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		unsigned pcie_reset_b;
 +		unsigned usb2_power_enable;
 +		unsigned pwr_cycle;
++		unsigned sims[2];
 +		unsigned sim_select;
++		unsigned sim_enable;
 +		unsigned dying_gasp;
 +		unsigned pwm_power;
 +		unsigned pwm_pin;
 +		unsigned rfkill_a;
 +		unsigned rfkill_b;
++		unsigned rfkill;
 +		vc_gpio_t **direct;
 +	} gpio;
 +	struct {
@@ -1284,6 +1352,57 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		.sysfs_group = &vc_5x0_fan_group,
 +	},
 +	.mdio = &vc_5x0b_mdio,
++};
++
++// edge510;
++
++static int edge510_init(vc_hw_t *hw, struct device *dev);
++static int vc_510_probe_pic(vc_hw_t *hw, struct i2c_client *client, int index);
++static void vc_510_remove_pic(vc_hw_t *hw, struct i2c_client *client, int index);
++static int vc_510_probe_pca9539(vc_hw_t *hw, struct i2c_client *client, int index);
++static void vc_510_remove_pca9539(vc_hw_t *hw, struct i2c_client *client, int index);
++static struct attribute_group vc_510_led_group;
++static int vc_510_led_set(vc_data_t *vcd, unsigned index, u32 value);
++static int vc_510_led_off(vc_data_t *vcd);
++static vc_gpio_t *vc_510_gpio_direct[];
++
++static vc_hw_t vc_hw_edge510 = {
++	.init = edge510_init,
++	.caps = VC_CAP_RESET_BUTTON
++		| VC_CAP_I2C | VC_CAP_I2C_PIC
++		,
++	.gpio = {
++		//XXX .pwr_cycle = EDGE5X0_GPIO_PWR_CYCLE,
++		.sims = { EDGE510_GPIO_SIM1_DET, EDGE510_GPIO_SIM2_DET },
++		.sim_select = EDGE510_GPIO_SIM_SELECT,
++		.sim_enable = EDGE510_GPIO_SLOTB_SIM,
++		.rfkill_a = EDGE510_GPIO_SLOTA_RFKILLA,
++		.rfkill_b = EDGE510_GPIO_SLOTA_RFKILLB,
++		.rfkill = EDGE510_GPIO_SLOTB_RFKILL,
++		.direct = vc_510_gpio_direct,
++	},
++	.i2c = {
++		.bb = &edge5x0b_i2c_device,
++		.exp = 0,
++		.mode = { 0 },
++		.addrs[VC_I2C_0] = EDGE510_PIC_ADDR,
++		.addrs[VC_I2C_1] = EDGE510_PCA9539_ADDR,
++		.addrs[VC_I2C_2] = EDGE5X0_MFG_EEPROM,
++		.addrs[VC_I2C_3] = I2C_CLIENT_END,
++		.probe[VC_I2C_0] = vc_510_probe_pic,
++		.probe[VC_I2C_1] = vc_510_probe_pca9539,
++		.probe[VC_I2C_2] = NULL, //XXX mfg eeprom
++		.remove[VC_I2C_0] = vc_510_remove_pic,
++		.remove[VC_I2C_1] = vc_510_remove_pca9539,
++		.remove[VC_I2C_2] = NULL, //XXX mfg eeprom
++	},
++	.led = {
++		.cfg = NULL,
++		.sysfs_group = &vc_510_led_group,
++		.set = vc_510_led_set,
++		.off = vc_510_led_off,
++		.reboot_notifier = &vc_led_notifier_reboot,
++	},
 +};
 +
 +// driver state;
@@ -1722,6 +1841,25 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	return(0);
 +}
 +
++// edge510 specific;
++
++typedef struct pca9539_chip pca9539_chip_t;
++struct pca9539_chip {
++	unsigned out;
++	unsigned dir;
++	vc_gpio_t **list;
++	struct attribute_group **sysfs_group;
++	struct gpio_chip gpio;
++};
++
++// edge510 init;
++
++static int
++edge510_init(vc_hw_t *hw, struct device *dev)
++{
++	return(0);
++}
++
 +// write a byte to i2c chip;
 +
 +static inline int
@@ -1753,6 +1891,18 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	int ret;
 +
 +	ret = i2c_smbus_read_byte_data(client, reg);
++	return(ret);
++}
++
++// read a word from i2c chip;
++// returns word value, or errno;
++
++static inline int
++vc_read_word(struct i2c_client *client, u8 reg)
++{
++	int ret;
++
++	ret = i2c_smbus_read_word_data(client, reg);
 +	return(ret);
 +}
 +
@@ -2036,6 +2186,11 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +};
 +
 +static struct attribute_group vc_5x0_led_group = {
++	.name = VC_LEDS,
++	.attrs = vc_5x0_leds_attrs,
++};
++
++static struct attribute_group vc_510_led_group = {
 +	.name = VC_LEDS,
 +	.attrs = vc_5x0_leds_attrs,
 +};
@@ -2650,15 +2805,6 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	.priority = INT_MAX,
 +};
 +
-+// edge5x0: set direction to output;
-+// do not allow any direction changes;
-+
-+static int
-+vc_5x0_gpio_direction_output(struct gpio_chip *gpio, unsigned nr, int val)
-+{
-+	return(0);
-+}
-+
 +// edge5x0: set direction to input;
 +// do not allow any direction changes;
 +
@@ -2744,6 +2890,16 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +#endif // VC_DEBUG_GPIO
 +}
 +
++// edge5x0: set direction to output;
++// do not allow any direction changes;
++
++static int
++vc_5x0_gpio_direction_output(struct gpio_chip *gpio, unsigned nr, int val)
++{
++	vc_5x0_gpio_set(gpio, nr, val);
++	return(0);
++}
++
 +// edge5x0 pcie slot resets;
 +
 +static ssize_t
@@ -2777,12 +2933,42 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +}
 +
 +static ssize_t
++show_sim1(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int gpio;
++
++	gpio = gpio_get_value(hw->gpio.sims[0]);
++	return(vc_show_int(buf, gpio? 0 : 1));
++}
++
++static ssize_t
++show_sim2(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int gpio;
++
++	gpio = gpio_get_value(hw->gpio.sims[1]);
++	return(vc_show_int(buf, gpio? 0 : 1));
++}
++
++static ssize_t
 +show_sim_select(struct device *dev, struct device_attribute *attr, char *buf)
 +{
 +	vc_hw_t *hw = vc_data.hw;
 +	int gpio;
 +
 +	gpio = gpio_get_value(hw->gpio.sim_select);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
++show_sim_enable(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int gpio;
++
++	gpio = gpio_get_value(hw->gpio.sim_enable);
 +	return(vc_show_int(buf, gpio? 1 : 0));
 +}
 +
@@ -2866,6 +3052,20 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +}
 +
 +static ssize_t
++store_sim_enable(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	vc_hw_t *hw = vc_data.hw;
++
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(hw->gpio.sim_enable, ret);
++	return(len);
++}
++
++static ssize_t
 +store_pwr_cycle(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
 +{
 +        vc_hw_t *hw = vc_data.hw;
@@ -2936,7 +3136,10 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +ATTR_PCIE_RESET(pcie_reset_b);
 +
 +static DEVICE_ATTR(usb2_power_enable, S_IRUGO | S_IWUSR, show_usb2_power_enable, store_usb2_power_enable);
++static DEVICE_ATTR(sim1, S_IRUGO | S_IWUSR, show_sim1, NULL);
++static DEVICE_ATTR(sim2, S_IRUGO | S_IWUSR, show_sim2, NULL);
 +static DEVICE_ATTR(sim_select, S_IRUGO | S_IWUSR, show_sim_select, store_sim_select);
++static DEVICE_ATTR(sim_enable, S_IRUGO | S_IWUSR, show_sim_enable, store_sim_enable);
 +static DEVICE_ATTR(pwr_cycle, S_IRUGO | S_IWUSR, show_pwr_cycle, store_pwr_cycle);
 +static DEVICE_ATTR(dying_gasp, S_IRUGO, show_dying_gasp, NULL);
 +
@@ -3124,6 +3327,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +static struct device_attribute dev_attr_rfkill_a;
 +static struct device_attribute dev_attr_rfkill_b;
++static struct device_attribute dev_attr_rfkill;
 +
 +static struct attribute *vc_5x0_30_attrs[] = {
 +	&dev_attr_pcie_reset_a.attr,
@@ -3319,9 +3523,9 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +	// register sysfs entries;
 +
++	msg = "failed to register sysfs";
 +	for(sfglist = pca->sysfs_group; (sfg = *sfglist); sfglist++) {
 +		err = sysfs_create_group(&vc_pdev->dev.kobj, sfg);
-+		msg = "failed to register sysfs";
 +		if(err < 0)
 +			goto fail;
 +	}
@@ -3409,7 +3613,6 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +{
 +	int ret;
 +	static u8 ledout[2] = { 0xaa, 0x00 };
-+	static u8 rgb[3] = { 0xff, 0xff, 0xff };
 +	struct notifier_block *rbn;
 +
 +	// request LED_OE gpio;
@@ -3438,10 +3641,10 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +	mutex_init(&vc_data.i2c.lock);
 +
-+	// set LED all white;
++	// set LED to default;
 +
 +	vc_data.i2c.led_cur[VC_LED_LOGO] = 0x00ffffff;
-+	ret = vc_5x0_led_rgb(client, rgb);
++	ret = vc_5x0_led_rgb(client, vc_rgb_on);
 +	if(ret < 0)
 +		goto fail;
 +
@@ -3574,6 +3777,746 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	unregister_reboot_notifier(&fan_reboot);
 +}
 +
++// edge510: set LED color;
++// PIC handles LED, send i2c msg to PIC;
++
++static inline int
++vc_510_led_rgb(struct i2c_client *client, u8 rgb[3])
++{
++	int err;
++
++//XXX PIC LED command;
++#ifdef XXX
++	err = i2c_smbus_write_i2c_block_data(client,
++		PCA9634_AINC_PWM | PCA9634_REG_LED0,
++		sizeof(rgb), rgb);
++#else
++err = 0;
++#endif
++	return(err);
++}
++
++// edge510: LED off;
++// just turn off LEDs, leave sysfs value undisturbed;
++
++static int
++vc_510_led_off(vc_data_t *vcd)
++{
++	struct i2c_client *client;
++	int ret;
++
++	client = vcd->i2c.client[VC_I2C_0];
++	ret = vc_510_led_rgb(client, vc_rgb_off);
++	return(ret);
++}
++
++// edge510: set LED;
++
++static int
++vc_510_led_set(vc_data_t *vcd, unsigned index, u32 value)
++{
++	struct i2c_client *client;
++	int ret;
++	u8 rgb[3];
++
++	// lock per RGB change;
++
++	if(mutex_lock_interruptible(&vcd->i2c.lock) < 0)
++		return(-EAGAIN);
++
++	vcd->i2c.led_cur[index] = value;
++	client = vcd->i2c.client[VC_I2C_0];
++	rgb[0] = value & 0xff;
++	rgb[1] = value >> 8;
++	rgb[2] = value >> 16;
++	ret = vc_510_led_rgb(client, rgb);
++
++	mutex_unlock(&vcd->i2c.lock);
++	return(ret);
++}
++
++// edge510: probe i2c to PIC;
++
++static int
++vc_510_probe_pic(vc_hw_t *hw, struct i2c_client *client, int index)
++{
++	int ret;
++	struct notifier_block *rbn;
++
++#ifdef VC_DEBUG_GPIO
++	pr_info("vc: probe %d\n", index);
++#endif // VC_DEBUG_GPIO
++
++	mutex_init(&vc_data.i2c.lock);
++
++	// set LED to default;
++
++	vc_data.i2c.led_cur[VC_LED_LOGO] = 0x00ffffff;
++	ret = vc_510_led_rgb(client, vc_rgb_on);
++	if(ret < 0)
++		goto fail;
++
++	// register sysfs entries;
++
++	ret = vc_sysfs_led_init(hw);
++	if(ret < 0)
++		goto fail;
++
++	rbn = hw->led.reboot_notifier;
++	if(rbn)
++		register_reboot_notifier(rbn);
++
++fail:
++	return(ret);
++}
++
++// edge510: remove i2c pic driver;
++
++static void
++vc_510_remove_pic(vc_hw_t *hw, struct i2c_client *client, int index)
++{
++	struct notifier_block *rbn;
++
++	rbn = hw->led.reboot_notifier;
++	if(rbn)
++		unregister_reboot_notifier(rbn);
++
++	if(hw->led.off)
++		hw->led.off(&vc_data);
++
++	vc_sysfs_led_exit(hw);
++}
++
++// edge510: set direction to input;
++// do not allow any direction changes;
++
++static int
++vc_510_gpio_direction_input(struct gpio_chip *gpio, unsigned nr)
++{
++	return(0);
++}
++
++// edge510: get current value;
++
++static int
++vc_510_gpio_get(struct gpio_chip *gpio, unsigned nr)
++{
++	unsigned mask, in;
++	vc_data_t *vcd = &vc_data;
++	struct i2c_client *client;
++	pca9539_chip_t *pca;
++	int err;
++
++	client = vcd->i2c.client[VC_I2C_1];
++	mask = 1 << nr;
++	pca = container_of(gpio, struct pca9539_chip, gpio);
++
++	// only do i2c xfer for input bits;
++	// read cached output value for output bits;
++
++	in = pca->out;
++	if(pca->dir & mask) {
++		err = vc_read_word(client, PCA9539_REG_INPUT);
++		if(err < 0)
++			return(err);
++		in = err & 0xffff;
++	}
++#ifdef VC_DEBUG_GPIO
++	pr_info("vc: get gpio%d=%d [0x%x] %s\n",
++		gpio->base + nr, (in >> nr) & 1, in,
++		(pca->dir & mask)? "i2c" : "cached");
++#endif // VC_DEBUG_GPIO
++
++	return((in >> nr) & 1);
++}
++
++// set gpio output;
++
++static void
++vc_510_gpio_set(struct gpio_chip *gpio, unsigned nr, int val)
++{
++	unsigned mask;
++	vc_data_t *vcd = &vc_data;
++	struct i2c_client *client;
++	pca9539_chip_t *pca;
++
++	client = vcd->i2c.client[VC_I2C_1];
++	mask = 1 << nr;
++	pca = container_of(gpio, struct pca9539_chip, gpio);
++
++	// cache output bits;
++	// only do i2c xfer for output bits;
++
++	pca->out = (pca->out & ~mask) | ((val << nr) & mask);
++	if( !(pca->dir & mask))
++		vc_write_word(client, PCA9539_REG_OUTPUT, pca->out);
++
++#ifdef VC_DEBUG_GPIO
++	pr_info("vc: set gpio%d=%d [0x%x] %s\n",
++		gpio->base + nr, val, pca->out,
++		(pca->dir & mask)? "cached" : "i2c");
++#endif // VC_DEBUG_GPIO
++}
++
++// edge510: set direction to output;
++// do not allow any direction changes, but update state;
++
++static int
++vc_510_gpio_direction_output(struct gpio_chip *gpio, unsigned nr, int val)
++{
++	vc_510_gpio_set(gpio, nr, val);
++	return(0);
++}
++
++// edge510 direct gpio;
++
++static vc_gpio_t vc_510_sim_select = {
++	.gpio = EDGE510_GPIO_SIM_SELECT,
++	.name = "sim-select",
++	.flags = GPIOF_OUT_INIT_LOW,
++	.relval = 0,
++};
++
++static vc_gpio_t *vc_510_gpio_direct[] = {
++	//XXX more pic/tpm ??
++	&vc_510_sim_select,
++	NULL,
++};
++
++// edge510 GPIOs on gpio expander;
++
++static vc_gpio_t vc_510_usb1_oc = {
++	.gpio = EDGE510_GPIO_USB1_OC,
++	.name = "usb1-oc",
++	.flags = GPIOF_IN,
++};
++
++static vc_gpio_t vc_510_usb2_oc = {
++	.gpio = EDGE510_GPIO_USB2_OC,
++	.name = "usb2-oc",
++	.flags = GPIOF_IN,
++};
++
++static vc_gpio_t vc_510_usb1_power = {
++	.gpio = EDGE510_GPIO_USB1_POWER,
++	.name = "usb1-power",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_usb2_power = {
++	.gpio = EDGE510_GPIO_USB2_POWER,
++	.name = "usb2-power",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_slota_reset = {
++	.gpio = EDGE510_GPIO_SLOTA_RESET,
++	.name = "slota-reset",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_slotb_reset = {
++	.gpio = EDGE510_GPIO_SLOTB_RESET,
++	.name = "slotb-reset",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_slotb_present = {
++	.gpio = EDGE510_GPIO_SLOTB_PRESENT,
++	.name = "slotb-present",
++	.flags = GPIOF_IN,
++};
++
++static vc_gpio_t vc_510_phy_reset = {
++	.gpio = EDGE510_GPIO_1543_RESET,
++	.name = "phy-reset",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_slota_rfkill_a = {
++	.gpio = EDGE510_GPIO_SLOTA_RFKILLA,
++	.name = "slota-rfkill_a",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_slota_rfkill_b = {
++	.gpio = EDGE510_GPIO_SLOTA_RFKILLB,
++	.name = "slota-rfkill_b",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_slotb_power = {
++	.gpio = EDGE510_GPIO_SLOTB_POWER,
++	.name = "slotb-power",
++	.flags = GPIOF_OUT_INIT_LOW,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_slotb_rfkill = {
++	.gpio = EDGE510_GPIO_SLOTB_RFKILL,
++	.name = "slotb-rfkill",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_slotb_gnss = {
++	.gpio = EDGE510_GPIO_SLOTB_GNSS,
++	.name = "slotb-gnss",
++	.flags = GPIOF_OUT_INIT_HIGH,
++	.relval = 1,
++};
++
++static vc_gpio_t vc_510_sim1 = {
++	.gpio = EDGE510_GPIO_SIM1_DET,
++	.name = "sim1",
++	.flags = GPIOF_IN,
++};
++
++static vc_gpio_t vc_510_sim2 = {
++	.gpio = EDGE510_GPIO_SIM2_DET,
++	.name = "sim2",
++	.flags = GPIOF_IN,
++};
++
++static vc_gpio_t vc_510_slotb_sim = {
++	.gpio = EDGE510_GPIO_SLOTB_SIM,
++	.name = "slotb-sim",
++	.flags = GPIOF_OUT_INIT_LOW,
++	.relval = 1,
++};
++
++static vc_gpio_t *vc_510_list[] = {
++	&vc_510_usb1_oc,
++	&vc_510_usb2_oc,
++	&vc_510_usb1_power,
++	&vc_510_usb2_power,
++	&vc_510_slota_reset,
++	&vc_510_slotb_reset,
++	&vc_510_slotb_present,
++	&vc_510_phy_reset,
++	&vc_510_slota_rfkill_a,
++	&vc_510_slota_rfkill_b,
++	&vc_510_slotb_power,
++	&vc_510_slotb_rfkill,
++	&vc_510_slotb_gnss,
++	&vc_510_sim1,
++	&vc_510_sim2,
++	&vc_510_slotb_sim,
++	NULL,
++};
++
++// attribute handlers;
++
++static ssize_t
++show_usb1_oc(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_USB1_OC);
++	return(vc_show_int(buf, gpio? 0 : 1));
++}
++
++static ssize_t
++show_usb1_power(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_USB1_POWER);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
++store_usb1_power(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(EDGE510_GPIO_USB1_POWER, ret);
++	return(len);
++}
++
++static ssize_t
++show_usb2_oc(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_USB2_OC);
++	return(vc_show_int(buf, gpio? 0 : 1));
++}
++
++static ssize_t
++show_usb2_power(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_USB2_POWER);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
++store_usb2_power(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(EDGE510_GPIO_USB2_POWER, ret);
++	return(len);
++}
++
++static ssize_t
++show_slota_reset(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_SLOTA_RESET);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
++store_slota_reset(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(EDGE510_GPIO_SLOTA_RESET, ret);
++	return(len);
++}
++
++static ssize_t
++show_slotb_reset(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_SLOTB_RESET);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
++store_slotb_reset(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(EDGE510_GPIO_SLOTB_RESET, ret);
++	return(len);
++}
++
++static ssize_t
++show_slotb_present(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_SLOTB_PRESENT);
++	return(vc_show_int(buf, gpio? 0 : 1));
++}
++
++static ssize_t
++show_slotb_power(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_SLOTB_POWER);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
++store_slotb_power(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(EDGE510_GPIO_SLOTB_POWER, ret);
++	return(len);
++}
++
++static ssize_t
++show_slotb_gnss(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_SLOTB_GNSS);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
++store_slotb_gnss(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(EDGE510_GPIO_SLOTB_GNSS, ret);
++	return(len);
++}
++
++static ssize_t
++show_phy_reset(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int gpio;
++
++	gpio = gpio_get_value(EDGE510_GPIO_1543_RESET);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
++static ssize_t
++store_phy_reset(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(EDGE510_GPIO_1543_RESET, ret);
++	return(len);
++}
++
++// all additional edge5x0 attributes;
++
++static VC_DATTR(usb1_oc,oc,S_IRUGO,show_usb1_oc,NULL);
++static VC_DATTR(usb1_power,power,S_IRUGO | S_IWUSR,show_usb1_power,store_usb1_power);
++
++static VC_DATTR(usb2_oc,oc,S_IRUGO | S_IWUSR,show_usb2_oc,NULL);
++static VC_DATTR(usb2_power,power,S_IRUGO | S_IWUSR,show_usb2_power,store_usb2_power);
++
++static VC_DATTR(slota_reset,reset,S_IRUGO | S_IWUSR,show_slota_reset,store_slota_reset);
++
++static VC_DATTR(slotb_reset,reset,S_IRUGO | S_IWUSR,show_slotb_reset,store_slotb_reset);
++static VC_DATTR(slotb_present,present,S_IRUGO,show_slotb_present,NULL);
++static VC_DATTR(slotb_power,power,S_IRUGO | S_IWUSR,show_slotb_power,store_slotb_power);
++static VC_DATTR(slotb_gnss,gnss,S_IRUGO | S_IWUSR,show_slotb_gnss,store_slotb_gnss);
++
++static VC_DATTR(phy_reset,phy_reset,S_IRUGO | S_IWUSR,show_phy_reset,store_phy_reset);
++
++static struct attribute *vc_510_usb1_attrs[] = {
++	&dev_attr_usb1_oc.attr,
++	&dev_attr_usb1_power.attr,
++	NULL,
++};
++static struct attribute *vc_510_usb2_attrs[] = {
++	&dev_attr_usb2_oc.attr,
++	&dev_attr_usb2_power.attr,
++	NULL,
++};
++static struct attribute *vc_510_slota_attrs[] = {
++	&dev_attr_slota_reset.attr,
++	&dev_attr_rfkill_a.attr,
++	&dev_attr_rfkill_b.attr,
++	NULL,
++};
++static struct attribute *vc_510_slotb_attrs[] = {
++	&dev_attr_slotb_reset.attr,
++	&dev_attr_slotb_present.attr,
++	&dev_attr_rfkill.attr,
++	&dev_attr_slotb_power.attr,
++	&dev_attr_slotb_gnss.attr,
++	&dev_attr_sim1.attr,
++	&dev_attr_sim2.attr,
++	&dev_attr_sim_enable.attr,
++	&dev_attr_sim_select.attr,
++	NULL,
++};
++static struct attribute *vc_510_attrs[] = {
++	&dev_attr_phy_reset.attr,
++	NULL,
++};
++
++static struct attribute_group vc_510_usb1 = {
++	.name = "usb1",
++	.attrs = vc_510_usb1_attrs,
++};
++static struct attribute_group vc_510_usb2 = {
++	.name = "usb2",
++	.attrs = vc_510_usb2_attrs,
++};
++static struct attribute_group vc_510_slota = {
++	.name = "slota",
++	.attrs = vc_510_slota_attrs,
++};
++static struct attribute_group vc_510_slotb = {
++	.name = "slotb",
++	.attrs = vc_510_slotb_attrs,
++};
++static struct attribute_group vc_510_top = {
++	.name = NULL,
++	.attrs = vc_510_attrs,
++};
++
++static struct attribute_group *vc_510_group[] = {
++	&vc_510_usb1,
++	&vc_510_usb2,
++	&vc_510_slota,
++	&vc_510_slotb,
++	&vc_510_top,
++	NULL,
++};
++
++// all the gpio expanders;
++// 0: input, 0 = usb1 overcurrent;
++// 1: input, 0 = usb2 overcurrent;
++// 2: output, 1 = enable usb1 power;
++// 3: output, 1 = enable usb2 power;
++// 4: output, 0 = reset slot A;
++// 5: output, 0 = reset slot B;
++// 6: input, 0 = card in slot B;
++// 7: output, 0 = reset 88e1543 quad phy;
++// 8: output, 0 = slot A rfkill A;
++// 9: output, 0 = slot A rfkill B;
++// 10: output, 1 = slot B power on;
++// 11: output, 0 = slot B rfkill;
++// 12: output, 1 = gnss enable;
++// 13: input, 0 = sim1 installed;
++// 14: input, 0 = sim2 installed;
++// 15: output, sim detect to slot B;
++
++static pca9539_chip_t pca9539[1] = {
++	{ .out = 0x000c, .dir = 0x6043,
++	  .gpio = {
++		.owner = THIS_MODULE,
++		.base = EDGE510_GPIO_PCA9539,
++		.ngpio = 16,
++		.direction_input = vc_510_gpio_direction_input,
++		.get = vc_510_gpio_get,
++		.direction_output = vc_510_gpio_direction_output,
++		.set = vc_510_gpio_set,
++	  },
++	  .list = vc_510_list,
++	  .sysfs_group = vc_510_group,
++	},
++};
++
++// edge510;
++// i2c gpio expander;
++// completely reset by the system reset;
++// after power-on/reset, all pins are inputs;
++
++static int
++vc_510_probe_pca9539(vc_hw_t *hw, struct i2c_client *client, int index)
++{
++	int err;
++	u16 in;
++	pca9539_chip_t *pca;
++	struct gpio_chip *gpio;
++	char *msg;
++	struct attribute_group **sfglist, *sfg;
++
++#ifdef VC_DEBUG_GPIO
++	pr_info("vc: probe %d\n", index);
++#endif // VC_DEBUG_GPIO
++
++	// set output config to push/pull drivers;
++
++	err = vc_write_byte(client, PCA9539_REG_OUTCFG, 0x00);
++	if(err < 0)
++		return(err);
++
++	// do not use any input inversion;
++
++	err = vc_write_word(client, PCA9539_REG_POL, 0x0000);
++	if(err < 0)
++		return(err);
++
++	// read all input bits;
++
++	err = vc_read_word(client, PCA9539_REG_INPUT);
++	if(err < 0)
++		return(err);
++	in = err;
++	pca = pca9539;
++
++#ifdef VC_DEBUG_GPIO
++	pr_info("vc: %d dir 0x%x\n", index,
++		vc_read_word(client, PCA9539_REG_CONFIG));
++	pr_info("vc: %d drive 0x%x/0x%x\n", index,
++		vc_read_word(client, PCA9539_REG_DRIVE0),
++		vc_read_word(client, PCA9539_REG_DRIVE1));
++	pr_info("vc: %d pull 0x%x/0x%x\n", index,
++		vc_read_word(client, PCA9539_REG_PULLEN),
++		vc_read_word(client, PCA9539_REG_PULLSEL));
++	pr_info("vc: %d in 0x%x dir 0x%x out 0x%x\n", index, in, pca->dir, pca->out);
++#endif // VC_DEBUG_GPIO
++
++	// set output flops before enabling outputs;
++
++	err = vc_write_word(client, PCA9539_REG_OUTPUT, pca->out);
++	if(err < 0)
++		return(err);
++
++	// then enable outputs by setting direction control;
++
++	err = vc_write_word(client, PCA9539_REG_CONFIG, pca->dir);
++	if(err < 0)
++		return(err);
++
++	// register GPIOs so other drivers can use them;
++
++	gpio = &pca->gpio;
++	gpio->label = dev_name(&client->dev);
++	gpio->dev = &client->dev;
++
++	err = gpiochip_add(gpio);
++	msg = "failed to add gpio";
++	if(err)
++		goto fail;
++
++	// register gpios;
++	// create sysfs group separately;
++
++	err = vc_gpio_create_list(pca->list);
++	msg = "failed to register gpio";
++	if(err < 0)
++		goto fail;
++
++	// register sysfs entries;
++
++	msg = "failed to register sysfs";
++	for(sfglist = pca->sysfs_group; (sfg = *sfglist); sfglist++) {
++		err = sysfs_create_group(&vc_pdev->dev.kobj, sfg);
++		if(err < 0)
++			goto fail;
++	}
++
++	return(0);
++
++fail:
++	dev_err(&client->dev, "index %d: %s: %d\n", index, msg, err);
++	return(err);
++}
++
++// edge510;
++// remove PCA chip handling;
++
++static void
++vc_510_remove_pca9539(vc_hw_t *hw, struct i2c_client *client, int index)
++{
++	pca9539_chip_t *pca;
++	struct attribute_group **sfglist, *sfg;
++
++	pca = pca9539 + index;
++	for(sfglist = pca->sysfs_group; (sfg = *sfglist); sfglist++) {
++		sysfs_remove_group(&vc_pdev->dev.kobj, sfg);
++	}
++
++	vc_gpio_release_list(pca->list);
++}
++
 +// detect i2c gpio expanders;
 +// called for each i2c device before probing, by the i2c core;
 +// device addresses are in struct i2c_driver.address_list;
@@ -3597,7 +4540,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	return(0);
 +}
 +
-+// probe edge5x0 i2c;
++// probe i2c;
 +// called for each i2c device after detecting, by the i2c core;
 +
 +static int
@@ -3773,6 +4716,16 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	return(vc_show_int(buf, gpio? 1 : 0));
 +}
 +
++static ssize_t
++show_rfkill(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int gpio;
++
++	gpio = gpio_get_value(hw->gpio.rfkill);
++	return(vc_show_int(buf, gpio? 1 : 0));
++}
++
 +// set rfkill signals;
 +
 +static ssize_t
@@ -3801,8 +4754,22 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	return(len);
 +}
 +
++static ssize_t
++store_rfkill(struct device *dev, struct device_attribute *attr, const char *buf, size_t len)
++{
++	vc_hw_t *hw = vc_data.hw;
++	int ret;
++
++	ret = vc_store_un(buf, 1);
++	if(ret < 0)
++		return(ret);
++	gpio_set_value(hw->gpio.rfkill, ret);
++	return(len);
++}
++
 +static DEVICE_ATTR(rfkill_a, S_IRUGO | S_IWUSR, show_rfkill_a, store_rfkill_a);
 +static DEVICE_ATTR(rfkill_b, S_IRUGO | S_IWUSR, show_rfkill_b, store_rfkill_b);
++static DEVICE_ATTR(rfkill, S_IRUGO | S_IWUSR, show_rfkill, store_rfkill);
 +
 +// edge500 GPIOs;
 +
@@ -3976,6 +4943,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	[VC_EDGE540] = &vc_hw_edge5x0_reva,
 +	[VC_EDGE520B] = &vc_hw_edge5x0_revb,
 +	[VC_EDGE540B] = &vc_hw_edge5x0_revb,
++	[VC_EDGE510] = &vc_hw_edge510,
 +};
 +
 +// symbols provided by velocloud module;
@@ -4034,6 +5002,9 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +		err = vc_request_gpio_reset_button(hw->gpio.reset_btn);
 +		if(err < 0)
 +			pr_err("vc: couldn't request reset gpio\n");
++	} else if(hw->caps & VC_CAP_I2C_PIC) {
++		pr_info("vc: PIC via i2c\n");
++		err = 0;
 +	} else {
 +		pr_warn("vc: no reset button\n");
 +		err = -ENODEV;
@@ -4126,6 +5097,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	// create reset button file only when it was pushed long;
 +
 +	if(reset) {
++//XXX 510 PIC;
 +		err = sysfs_create_file(&vc_pdev->dev.kobj, &dev_attr_reset.attr);
 +		if(err < 0)
 +			pr_err("vc: couldn't register sysfs reset\n");

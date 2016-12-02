@@ -183,6 +183,19 @@ update_modem_status()
     return 0
 }
 
+remove_bearers()
+{
+    local BEARERS=$(${MMCLI} -m ${DBUSPATH} --list-bearers | grep "/org/freedesktop/ModemManager1/Bearer/")
+    local N_BEARERS=$(echo "${BEARERS}" | wc -l)
+    if [ ${N_BEARERS} -eq 0 ]; then
+        return
+    fi
+
+    for BEARER_DBUSPATH in ${BEARERS}; do
+        ${MMCLI} -m ${DBUSPATH} --delete-bearer=${BEARER_DBUSPATH} >/dev/null 2>&1
+    done
+}
+
 update_bearer_status()
 {
     local BEARERS=$(${MMCLI} -m ${DBUSPATH} --list-bearers | grep "/org/freedesktop/ModemManager1/Bearer/")
@@ -427,6 +440,8 @@ process_initial_state()
             modem_disable
             ;;
     esac
+
+    remove_bearers
 
     # Set static configurations on initial state loading
 

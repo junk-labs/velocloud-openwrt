@@ -122,7 +122,7 @@ fi
 # Don't go on if type is empty (i.e. no config for USB#)
 TYPE=$(echo $(uci -c $modem_config_path get modems.$USB.type 2>/dev/null))
 if [ -z "$TYPE" ]; then
-	logerr "$USB: Unknown modem type, cannot run modem apn operation"
+	echo "error: $USB: Unknown modem type, cannot run modem apn operation"
 	exit 1
 fi
 

@@ -538,8 +538,8 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
 --- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2016-11-28 10:40:48.109957751 -0800
-@@ -0,0 +1,4630 @@
++++ b/drivers/platform/x86/velocloud-vc.c	2016-12-02 15:07:08.083110483 -0800
+@@ -0,0 +1,4623 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -798,7 +798,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +// on pca9539;
 +
-+#define EDGE510_PIC_ADDR (0x66>>1) //XXX
++#define EDGE510_PIC_ADDR (0x40>>1)	// pic at 0x40..0x5f;
 +#define EDGE510_PCA9539_ADDR (0xe8>>1)
 +#define EDGE510_GPIO_PCA9539 130
 +
@@ -3785,14 +3785,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +{
 +	int err;
 +
-+//XXX PIC LED command;
-+#ifdef XXX
-+	err = i2c_smbus_write_i2c_block_data(client,
-+		PCA9634_AINC_PWM | PCA9634_REG_LED0,
-+		sizeof(rgb), rgb);
-+#else
-+err = 0;
-+#endif
++	err = i2c_smbus_write_i2c_block_data(client, rgb[0], 2, rgb + 1);
 +	return(err);
 +}
 +

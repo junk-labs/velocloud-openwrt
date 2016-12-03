@@ -1336,7 +1336,7 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
     {
       int as = 0;
 
-      realpeer = peer_lookup_with_open (&peer->su, remote_as, &remote_id, &as);
+      realpeer = peer_lookup_with_open (peer->bgp, &peer->su, remote_as, &remote_id, &as);
 
       if (! realpeer)
 	{
@@ -2516,8 +2516,9 @@ bgp_read (struct thread *thread)
       type = stream_getc (peer->ibuf);
 
       if (BGP_DEBUG (normal, NORMAL) && type != 2 && type != 0)
-	zlog_debug ("%s rcv message type %d, length (excl. header) %d",
-		   peer->host, type, size - BGP_HEADER_SIZE);
+	zlog_debug ("%s rcv message type %d, length (excl. header) %d, bgp-ns %s, peer-fd %d",
+		   peer->host, type, size - BGP_HEADER_SIZE,
+           peer->bgp->name ? peer->bgp->name : "default", peer->fd);
 
       /* Marker check */
       if (((type == BGP_MSG_OPEN) || (type == BGP_MSG_KEEPALIVE))

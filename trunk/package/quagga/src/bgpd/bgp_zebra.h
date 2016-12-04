@@ -42,7 +42,7 @@ extern int bgp_redistribute_routemap_unset (struct bgp *, afi_t, int);
 extern int bgp_redistribute_metric_unset (struct bgp *, afi_t, int);
 
 extern struct interface *if_lookup_by_ipv4 (struct in_addr *);
-extern struct interface *if_lookup_by_ipv4_exact (struct in_addr *);
+extern struct interface *if_lookup_by_ipv4_exact (struct bgp *, struct in_addr *);
 #ifdef HAVE_IPV6
 extern struct interface *if_lookup_by_ipv6 (struct in6_addr *);
 extern struct interface *if_lookup_by_ipv6_exact (struct in6_addr *);

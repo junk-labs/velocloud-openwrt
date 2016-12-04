@@ -59,7 +59,10 @@ bgp_router_id_update (int command, struct zclient *zclient, zebra_size_t length)
 
   zebra_router_id_update_read(zclient->ibuf, iname, &router_id);
 
-  bgp = bgp_lookup_by_name (iname);
+  if (iname[0] != '\0')
+    bgp = bgp_lookup_by_name (iname);
+  else
+    bgp = bgp_get_default();
   if (!bgp)
     {
       zlog_debug("Zebra rcvd: Instance not found: %s", iname);
@@ -287,7 +290,10 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
   else
     api.metric = 0;
 
-  bgp = bgp_lookup_by_name (api.iname);
+  if (api.iname[0] != '\0')
+    bgp = bgp_lookup_by_name (api.iname);
+  else
+    bgp = bgp_get_default();
   if (!bgp)
     {
       zlog_debug("Zebra rcvd: Instance %s not found", api.iname);
@@ -385,7 +391,10 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
   if (IN6_IS_ADDR_LINKLOCAL (&p.prefix))
     return 0;
 
-  bgp = bgp_lookup_by_name (api.iname);
+  if (api.iname[0] != '\0')
+    bgp = bgp_lookup_by_name (api.iname);
+  else
+    bgp = bgp_get_default();
 
   if (command == ZEBRA_IPV6_ROUTE_ADD)
     {
@@ -451,7 +460,7 @@ if_lookup_by_ipv4 (struct in_addr *addr)
 }
 
 struct interface *
-if_lookup_by_ipv4_exact (struct in_addr *addr)
+if_lookup_by_ipv4_exact (struct bgp *bgp, struct in_addr *addr)
 {
   struct listnode *ifnode;
   struct listnode *cnode;
@@ -461,14 +470,16 @@ if_lookup_by_ipv4_exact (struct in_addr *addr)
   
   for (ALL_LIST_ELEMENTS_RO (iflist, ifnode, ifp))
     {
-      for (ALL_LIST_ELEMENTS_RO (ifp->connected, cnode, connected))
-	{
-	  cp = connected->address;
-	    
-	  if (cp->family == AF_INET)
-	    if (IPV4_ADDR_SAME (&cp->u.prefix4, addr))
-	      return ifp;
-	}
+      if ((bgp->name && !strncmp(bgp->name, ifp->iname, strlen(bgp->name))) ||
+          (!bgp->name && ifp->iname[0] == '\0'))
+          for (ALL_LIST_ELEMENTS_RO (ifp->connected, cnode, connected))
+          {
+              cp = connected->address;
+
+              if (cp->family == AF_INET)
+                  if (IPV4_ADDR_SAME (&cp->u.prefix4, addr))
+                      return ifp;
+          }
     }
   return NULL;
 }

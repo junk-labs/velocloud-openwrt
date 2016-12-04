@@ -8,12 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=htpdate
-PKG_VERSION:=1.0.4
+PKG_VERSION:=1.1.1
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=http://www.clevervest.com/htp/archive/c/
-PKG_MD5SUM:=a13ec89839c33965794ebf53c4e690db
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=http://www.vervest.org/htp/archive/c/
+PKG_MD5SUM:=c612f63282e3f23b709f37a5c81d4739
+
+PKG_LICENSE:=GPL-2.0+
+PKG_LICENSE_FILES:=
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -22,7 +25,8 @@ define Package/htpdate
   SECTION:=net
   CATEGORY:=Network
   TITLE:=an HTP (Hypertext Time Protocol) implementation
-  URL:=http://www.clevervest.com/htp/
+  URL:=http://www.vervest.com/htp/
+  MAINTAINER:=Tijs Van Buggenhout <tvbuggen@netzerk.be>
 endef
 
 define Package/htpdate/description

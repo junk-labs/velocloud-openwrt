@@ -520,8 +520,9 @@ bgp_listener (struct bgp *bgp, int sock, struct sockaddr *sa, socklen_t salen)
   bgp->listener[family2afi(sa->sa_family)] = listener;
 
   if (BGP_DEBUG (events, EVENTS))
-    zlog_debug ("BGP listener set for %s, fd %d, afi %d",
-                bgp->name, sock, family2afi(sa->sa_family));
+    zlog_debug ("BGP listener set for %s instance, fd %d, afi %d",
+                (bgp->name ? bgp->name : "default"), sock,
+                family2afi(sa->sa_family));
   return 0;
 }
 

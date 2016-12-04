@@ -13,7 +13,7 @@ ve1000)
 edge500)
   order=$order_edge500
   ;;
-edge520|edge540)
+edge520|edge540|edge510)
   order=$order_edge5x0
   ;;
 edge-portwell|edge-nexcom)

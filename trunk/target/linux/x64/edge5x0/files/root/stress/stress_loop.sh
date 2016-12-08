@@ -1,6 +1,8 @@
 #!/bin/ash
 # local loopback stress;
 
+BOARD=`cat /sys/devices/platform/vc/board`
+
 iperf_int="-i 10"
 dur=360000
 #dur=60
@@ -19,28 +21,40 @@ openssls=""
 
 # config:
 #
-IPADDR_LAN1=10.0.0.11   ; PORT_LAN1=5011
-IPADDR_LAN2=10.0.0.12	; PORT_LAN2=5012
-IPADDR_LAN3=10.0.0.13	; PORT_LAN3=5013
-IPADDR_LAN4=10.0.0.14   ; PORT_LAN4=5014
-IPADDR_LAN5=10.0.0.15   ; PORT_LAN5=5015
-IPADDR_LAN6=10.0.0.16   ; PORT_LAN6=5016
-IPADDR_LAN7=10.0.0.17   ; PORT_LAN7=5017
-IPADDR_LAN8=10.0.0.18   ; PORT_LAN8=5018
-#
-IPADDR_GE1=10.0.0.21	; PORT_GE1=5021
-IPADDR_GE2=10.0.0.22	; PORT_GE2=5022
-#
-IPADDR_SFP1=10.0.0.31	; PORT_SFP1=5031
-IPADDR_SFP2=10.0.0.32	; PORT_SFP2=5032
-#
-# Wiring:
-#   SFP1 to SFP2
-#   GE1 to GE2
-#   LAN1 to LAN5
-#   LAN2 to LAN6
-#   LAN3 to LAN7
-#   LAN4 to LAN8
+if [ "$BOARD" = "edge510" ]; then
+	IPADDR_GE1=10.0.0.11	; PORT_GE1=5011
+	IPADDR_GE2=10.0.0.12	; PORT_GE2=5012
+	IPADDR_GE3=10.0.0.13	; PORT_GE3=5013
+	IPADDR_GE4=10.0.0.14	; PORT_GE4=5014
+	#
+	# Wiring:
+	#   GE1 to GE4
+	#   GE2 to GE3
+else
+	IPADDR_LAN1=10.0.0.11   ; PORT_LAN1=5011
+	IPADDR_LAN2=10.0.0.12	; PORT_LAN2=5012
+	IPADDR_LAN3=10.0.0.13	; PORT_LAN3=5013
+	IPADDR_LAN4=10.0.0.14   ; PORT_LAN4=5014
+	IPADDR_LAN5=10.0.0.15   ; PORT_LAN5=5015
+	IPADDR_LAN6=10.0.0.16   ; PORT_LAN6=5016
+	IPADDR_LAN7=10.0.0.17   ; PORT_LAN7=5017
+	IPADDR_LAN8=10.0.0.18   ; PORT_LAN8=5018
+	#
+	IPADDR_GE1=10.0.0.21	; PORT_GE1=5021
+	IPADDR_GE2=10.0.0.22	; PORT_GE2=5022
+	#
+	IPADDR_SFP1=10.0.0.31	; PORT_SFP1=5031
+	IPADDR_SFP2=10.0.0.32	; PORT_SFP2=5032
+	#
+	# Wiring:
+	#   SFP1 to SFP2
+	#   GE1 to GE2
+	#   LAN1 to LAN5
+	#   LAN2 to LAN6
+	#   LAN3 to LAN7
+	#   LAN4 to LAN8
+fi
+
 
 export SENTINEL=/tmp/stress.$$
 
@@ -111,12 +125,17 @@ echo "Setting up loopback"
 
 # From the Wiring above
 
-setup_loop SFP1 SFP2
-setup_loop GE1  GE2
-setup_loop LAN1 LAN5
-setup_loop LAN2 LAN6
-setup_loop LAN3 LAN7
-setup_loop LAN4 LAN8
+if [ "$BOARD" = "edge510" ]; then
+	setup_loop GE1  GE4
+	setup_loop GE2  GE3
+else
+	setup_loop SFP1 SFP2
+	setup_loop GE1  GE2
+	setup_loop LAN1 LAN5
+	setup_loop LAN2 LAN6
+	setup_loop LAN3 LAN7
+	setup_loop LAN4 LAN8
+fi
 
 # exit 0
 
@@ -140,24 +159,48 @@ fi
 rm -f /tmp/iperf.*.out
 
 echo "Starting iperf on loopbacks"
-iperf -s -p $PORT_LAN1 >/dev/null &
-iperf -s -p $PORT_LAN2 >/dev/null &
-iperf -s -p $PORT_LAN7 >/dev/null &
-iperf -s -p $PORT_LAN8 >/dev/null &
-iperf -s -p $PORT_GE1 >/dev/null &
-iperf -s -p $PORT_SFP1 >/dev/null &
-sleep 2
-(
-iperf -p $PORT_LAN1 -c $IPADDR_LAN1 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN1.out 2>&1 &
-iperf -p $PORT_LAN2 -c $IPADDR_LAN2 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN2.out 2>&1 &
-iperf -p $PORT_LAN7 -c $IPADDR_LAN7 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN7.out 2>&1 &
-iperf -p $PORT_LAN8 -c $IPADDR_LAN8 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN8.out 2>&1 &
-iperf -p $PORT_GE1 -c $IPADDR_GE1 $iperf_int -t $dur > /tmp/iperf.$PORT_GE1.out 2>&1 &
-iperf -p $PORT_SFP1 -c $IPADDR_SFP1 $iperf_int -t $dur > /tmp/iperf.$PORT_SFP1.out 2>&1 &
+	
+# Bidirectional traffic for Edge510.
 
-wait
-rm -f $SENTINEL
-) &
+# On the other hand, the 520 (especially) and 540 do not have enough
+# horsepower to run 12 iperf servers and 12 clients in parallel and still
+# pump a useful amount of traffic, so we only set up unidirectional traffic.
+
+if [ "$BOARD" = "edge510" ]; then
+	iperf -s -p $PORT_GE1 >/dev/null &
+	iperf -s -p $PORT_GE2 >/dev/null &
+	iperf -s -p $PORT_GE3 >/dev/null &
+	iperf -s -p $PORT_GE4 >/dev/null &
+	sleep 2
+	(
+	iperf -p $PORT_GE1 -c $IPADDR_GE1 $iperf_int -t $dur > /tmp/iperf.$PORT_GE1.out 2>&1 &
+	iperf -p $PORT_GE2 -c $IPADDR_GE2 $iperf_int -t $dur > /tmp/iperf.$PORT_GE2.out 2>&1 &
+	iperf -p $PORT_GE3 -c $IPADDR_GE3 $iperf_int -t $dur > /tmp/iperf.$PORT_GE3.out 2>&1 &
+	iperf -p $PORT_GE4 -c $IPADDR_GE4 $iperf_int -t $dur > /tmp/iperf.$PORT_GE4.out 2>&1 &
+
+	wait
+	rm -f $SENTINEL
+	) &
+else
+	iperf -s -p $PORT_LAN1 >/dev/null &
+	iperf -s -p $PORT_LAN2 >/dev/null &
+	iperf -s -p $PORT_LAN7 >/dev/null &
+	iperf -s -p $PORT_LAN8 >/dev/null &
+	iperf -s -p $PORT_GE1 >/dev/null &
+	iperf -s -p $PORT_SFP1 >/dev/null &
+	sleep 2
+	(
+	iperf -p $PORT_LAN1 -c $IPADDR_LAN1 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN1.out 2>&1 &
+	iperf -p $PORT_LAN2 -c $IPADDR_LAN2 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN2.out 2>&1 &
+	iperf -p $PORT_LAN7 -c $IPADDR_LAN7 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN7.out 2>&1 &
+	iperf -p $PORT_LAN8 -c $IPADDR_LAN8 $iperf_int -t $dur > /tmp/iperf.$PORT_LAN8.out 2>&1 &
+	iperf -p $PORT_GE1 -c $IPADDR_GE1 $iperf_int -t $dur > /tmp/iperf.$PORT_GE1.out 2>&1 &
+	iperf -p $PORT_SFP1 -c $IPADDR_SFP1 $iperf_int -t $dur > /tmp/iperf.$PORT_SFP1.out 2>&1 &
+
+	wait
+	rm -f $SENTINEL
+	) &
+fi
 
 LINES=24
 if stty -g -F /proc/self/fd/0 > /dev/null 2>&1; then

@@ -1,0 +1,83 @@
+#!/bin/sh
+# Copyright (C) 2016 Velocloud Inc
+
+MODEMMANAGER_BLACKLIST=/etc/modemmanager/modemmanager.blacklist
+
+mm_log() {
+	logger -t "ModemManager" "hotplug: $@"
+}
+
+# Receives as input argument the full sysfs path of the device
+# Returns the physical device sysfs path
+find_physdev_sysfs_path() {
+	local tmp_path="$1"
+
+	while [ 1 ]; do
+		tmp_path=$(dirname ${tmp_path})
+
+		# avoid infinite loops iterating
+		if [ -z "${tmp_path}" ] || [ "${tmp_path}" == "/" ]; then
+			return
+		fi
+
+		# the physical device will be that with a idVendor and idProduct pair of files
+		if [ -f ${tmp_path}/idVendor ] && [ -f ${tmp_path}/idProduct ]; then
+			tmp_path=$(realpath $tmp_path)
+			echo ${tmp_path}
+			return
+		fi
+	done
+}
+
+# Receives as input argument the full sysfs path of the device
+# Returns the reason for being blacklisted
+check_modemmanager_blacklist() {
+	local sysfs_path="$1"
+
+	local vid
+	local pid
+	local reason
+	local physdev_sysfs_path
+
+	physdev_sysfs_path=$(find_physdev_sysfs_path ${sysfs_path})
+	if [ -z "${physdev_sysfs_path}" ]; then
+		echo "couldn't get physical device sysfs path"
+		return
+	fi
+
+	vid=$(cat ${physdev_sysfs_path}/idVendor)
+	pid=$(cat ${physdev_sysfs_path}/idProduct)
+
+	if [ -z "${vid}" ] || [ -z "${pid}" ]; then
+		echo "couldn't get physical device vid:pid"
+		return
+	fi
+
+	# First, check whether it's in the list
+	reason=$(awk -v prod="$vid:$pid" '!/^#/ && $0 ~ prod { print "1" }' $MODEMMANAGER_BLACKLIST)
+	if [ -z "$reason" ]; then
+		# Not blacklisted
+		return
+	fi
+
+	# If it is, get the reason for the blacklisting
+	reason=$(awk -v prod="$vid:$pid" '!/^#/ && $0 ~ prod { $1=""; print $0 }' $MODEMMANAGER_BLACKLIST)
+	if [ -n "$reason" ]; then
+		echo "$reason"
+		return
+	fi
+
+	echo "unknown reason"
+}
+
+# Receives as input the action, the device name and the subsystem
+report_event() {
+	local action=$1
+	local name=$2
+	local subsystem=$3
+
+	local event="action=${action},name=${name},subsystem=${subsystem}"
+
+	echo ${event} >> /tmp/ModemManager.events
+	/usr/bin/mmcli --report-kernel-event="${event}" 1>/dev/null 2>&1 &
+}

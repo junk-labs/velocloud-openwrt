@@ -20,6 +20,40 @@ init_modem_support()
 	mkdir -p $tmpdir
 }
 
+mm_add_to_config()
+{
+	# Common initialization
+	init_modem_support
+
+	# This is the common profile path
+	profile=${modem_config_path}/${usbifname}.profile
+
+	log "Hotplug add event: MM device in $usbifname: $usbpath"
+	ret=$(check_device_config $usbifname)
+	if [ "$ret" == "True" ]; then
+		log "MM device at $usbifname already detected"
+		return
+	fi
+
+	# Set the 'device' property so that from now on it's only processed
+	# once. We want to launch the MM management script for this device
+	# only once!
+	local physdev_sysfs_path=$(find_physdev_sysfs_path $usbpath)
+
+	touch $modem_config_path/modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"MM"''
+	uci -c $modem_config_path set modems.$usbifname.type=''"modemmanager"''
+	uci -c $modem_config_path set modems.$usbifname.sysfs=''"$physdev_sysfs_path"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	uci -c $modem_config_path commit modems
+
+	log "initialized configuration for ${usbifname}"
+
+	$modem_script_path/modem_service.sh $usbifname start 2>&1 >/dev/null &
+}
+
 usb_wan_naming()
 {
 	local usbpath="$1"

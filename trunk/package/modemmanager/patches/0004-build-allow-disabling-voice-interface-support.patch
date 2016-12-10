@@ -1,0 +1,1628 @@
+From 9077cf6ede5382aba04b58815eecba583585e94c Mon Sep 17 00:00:00 2001
+From: Aleksander Morgado <aleksander@aleksander.es>
+Date: Fri, 22 Jul 2016 09:27:07 +0200
+Subject: [PATCH 04/12] build: allow disabling voice interface support
+
+---
+ cli/Makefile.am                            |   9 +-
+ cli/mmcli-common.c                         |  10 +++
+ cli/mmcli-common.h                         |   5 ++
+ cli/mmcli.c                                |  12 +++
+ cli/mmcli.h                                |   2 +
+ configure.ac                               |  15 ++++
+ include/Makefile.am                        |   4 +
+ include/ModemManager-enums-voice.h         |  89 +++++++++++++++++++
+ include/ModemManager-enums.h               |  56 ------------
+ include/ModemManager-version.h.in          |  15 ++++
+ include/ModemManager.h                     |   3 +
+ introspection/Makefile.am                  |   5 ++
+ libmm-glib/Makefile.am                     |  34 ++++++--
+ libmm-glib/generated/Makefile.am           |  31 +++++--
+ libmm-glib/libmm-glib.h                    |  12 ++-
+ libmm-glib/mm-common-helpers.c             | 136 +++++++++++++++--------------
+ libmm-glib/mm-common-helpers.h             |  16 ++--
+ libmm-glib/mm-manager.c                    |   2 +
+ libmm-glib/mm-object.c                     |   4 +
+ libmm-glib/mm-object.h                     |  11 ++-
+ plugins/Makefile.am                        |  10 ++-
+ plugins/huawei/mm-broadband-modem-huawei.c |  76 ++++++++++------
+ src/Makefile.am                            |  17 ++--
+ src/mm-broadband-modem.c                   |  60 ++++++++++++-
+ 24 files changed, 443 insertions(+), 191 deletions(-)
+ create mode 100644 include/ModemManager-enums-voice.h
+
+diff --git a/cli/Makefile.am b/cli/Makefile.am
+index b34f99b..60f3d29 100644
+--- a/cli/Makefile.am
++++ b/cli/Makefile.am
+@@ -20,13 +20,11 @@ mmcli_SOURCES = \
+ 	mmcli-modem-3gpp.c \
+ 	mmcli-modem-cdma.c \
+ 	mmcli-modem-simple.c \
+-	mmcli-modem-voice.c \
+ 	mmcli-modem-firmware.c \
+ 	mmcli-modem-signal.c \
+ 	mmcli-modem-oma.c \
+ 	mmcli-bearer.c \
+ 	mmcli-sim.c \
+-	mmcli-call.c \
+ 	$(NULL)
+ 
+ if WITH_INTERFACE_LOCATION
+@@ -44,6 +42,13 @@ if WITH_INTERFACE_TIME
+ mmcli_SOURCES += mmcli-modem-time.c
+ endif
+ 
++if WITH_INTERFACE_VOICE
++mmcli_SOURCES += \
++	mmcli-modem-voice.c \
++	mmcli-call.c \
++	$(NULL)
++endif
++
+ mmcli_LDADD = \
+ 	$(MMCLI_LIBS) \
+ 	$(top_builddir)/libmm-glib/libmm-glib.la \
+diff --git a/cli/mmcli-common.c b/cli/mmcli-common.c
+index 4c03bfd..eb39ad0 100644
+--- a/cli/mmcli-common.c
++++ b/cli/mmcli-common.c
+@@ -1117,6 +1117,8 @@ mmcli_get_state_reason_string (MMModemStateChangeReason reason)
+     return NULL;
+ }
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++
+ typedef struct {
+     GSimpleAsyncResult *result;
+     GCancellable *cancellable;
+@@ -1388,6 +1390,8 @@ mmcli_get_call_sync (GDBusConnection *connection,
+     return found;
+ }
+ 
++#endif /* MM_INTERFACE_VOICE_SUPPORTED */
++
+ /* Common options */
+ static gchar *modem_str;
+ static gchar *bearer_str;
+@@ -1395,7 +1399,9 @@ static gchar *sim_str;
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ static gchar *sms_str;
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+ static gchar *call_str;
++#endif
+ 
+ static GOptionEntry entries[] = {
+     { "modem", 'm', 0, G_OPTION_ARG_STRING, &modem_str,
+@@ -1416,10 +1422,12 @@ static GOptionEntry entries[] = {
+       "[PATH|INDEX]"
+     },
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     { "call", 'o', 0, G_OPTION_ARG_STRING, &call_str,
+       "Specify Call by path or index. Shows Call information if no action specified.",
+       "[PATH|INDEX]"
+     },
++#endif
+     { NULL }
+ };
+ 
+@@ -1465,11 +1473,13 @@ mmcli_get_common_sms_string (void)
+ }
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+ const gchar *
+ mmcli_get_common_call_string (void)
+ {
+     return call_str;
+ }
++#endif
+ 
+ gchar *
+ mmcli_prefix_newlines (const gchar *prefix,
+diff --git a/cli/mmcli-common.h b/cli/mmcli-common.h
+index 376f6cd..0d98117 100644
+--- a/cli/mmcli-common.h
++++ b/cli/mmcli-common.h
+@@ -88,6 +88,8 @@ MMSms *mmcli_get_sms_sync   (GDBusConnection *connection,
+ 
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++
+ void    mmcli_get_call        (GDBusConnection *connection,
+                                const gchar *path_or_index,
+                                GCancellable *cancellable,
+@@ -101,6 +103,7 @@ MMCall *mmcli_get_call_sync   (GDBusConnection *connection,
+                                MMManager **manager,
+                                MMObject **object);
+ 
++#endif
+ 
+ const gchar *mmcli_get_state_reason_string (MMModemStateChangeReason reason);
+ 
+@@ -111,7 +114,9 @@ const gchar  *mmcli_get_common_sim_string (void);
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ const gchar  *mmcli_get_common_sms_string (void);
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+ const gchar  *mmcli_get_common_call_string (void);
++#endif
+ 
+ gchar *mmcli_prefix_newlines (const gchar *prefix,
+                               const gchar *str);
+diff --git a/cli/mmcli.c b/cli/mmcli.c
+index 43b231a..1d44d09 100644
+--- a/cli/mmcli.c
++++ b/cli/mmcli.c
+@@ -208,8 +208,10 @@ main (gint argc, gchar **argv)
+     g_option_context_add_group (context,
+                                 mmcli_modem_messaging_get_option_group ());
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     g_option_context_add_group (context,
+                                 mmcli_modem_voice_get_option_group ());
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     g_option_context_add_group (context,
+                                 mmcli_modem_time_get_option_group ());
+@@ -228,8 +230,10 @@ main (gint argc, gchar **argv)
+     g_option_context_add_group (context,
+                                 mmcli_sms_get_option_group ());
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     g_option_context_add_group (context,
+                                 mmcli_call_get_option_group ());
++#endif
+     g_option_context_add_main_entries (context, main_entries, NULL);
+     g_option_context_parse (context, &argc, &argv, NULL);
+     g_option_context_free (context);
+@@ -294,6 +298,7 @@ main (gint argc, gchar **argv)
+             mmcli_sms_run_synchronous (connection);
+     }
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     /* Call options? */
+     else if (mmcli_call_options_enabled ()) {
+         if (async_flag)
+@@ -301,6 +306,7 @@ main (gint argc, gchar **argv)
+         else
+             mmcli_call_run_synchronous (connection);
+     }
++#endif
+     /* Modem 3GPP options? */
+     else if (mmcli_modem_3gpp_options_enabled ()) {
+         if (async_flag)
+@@ -340,6 +346,7 @@ main (gint argc, gchar **argv)
+             mmcli_modem_messaging_run_synchronous (connection);
+     }
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     /* Voice options? */
+     else if (mmcli_modem_voice_options_enabled ()) {
+         if (async_flag)
+@@ -347,6 +354,7 @@ main (gint argc, gchar **argv)
+         else
+             mmcli_modem_voice_run_synchronous (connection);
+     }
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     /* Modem Time options? */
+     else if (mmcli_modem_time_options_enabled ()) {
+@@ -413,8 +421,10 @@ main (gint argc, gchar **argv)
+     } else if (mmcli_modem_messaging_options_enabled ()) {
+         mmcli_modem_messaging_shutdown ();
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     } else if (mmcli_modem_voice_options_enabled ()) {
+            mmcli_modem_voice_shutdown ();
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     } else if (mmcli_modem_time_options_enabled ()) {
+         mmcli_modem_time_shutdown ();
+@@ -433,8 +443,10 @@ main (gint argc, gchar **argv)
+     }  else if (mmcli_sms_options_enabled ()) {
+         mmcli_sms_shutdown ();
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     }  else if (mmcli_call_options_enabled ()) {
+         mmcli_call_shutdown ();
++#endif
+     } else if (mmcli_modem_options_enabled ()) {
+         mmcli_modem_shutdown ();
+     }
+diff --git a/cli/mmcli.h b/cli/mmcli.h
+index eb5435d..b13dd2d 100644
+--- a/cli/mmcli.h
++++ b/cli/mmcli.h
+@@ -89,6 +89,7 @@ void          mmcli_modem_messaging_run_synchronous    (GDBusConnection *connect
+ void          mmcli_modem_messaging_shutdown           (void);
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+ /* Voice group */
+ GOptionGroup *mmcli_modem_voice_get_option_group   (void);
+ gboolean      mmcli_modem_voice_options_enabled    (void);
+@@ -96,6 +97,7 @@ void          mmcli_modem_voice_run_asynchronous   (GDBusConnection *connection,
+                                                         GCancellable    *cancellable);
+ void          mmcli_modem_voice_run_synchronous    (GDBusConnection *connection);
+ void          mmcli_modem_voice_shutdown           (void);
++#endif
+ 
+ #if MM_INTERFACE_TIME_SUPPORTED
+ /* Time group */
+diff --git a/configure.ac b/configure.ac
+index eb4393f..45823c3 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -379,6 +379,20 @@ fi
+ AC_SUBST(MM_INTERFACE_TIME_SUPPORTED)
+ 
+ dnl-----------------------------------------------------------------------------
++dnl Voice interface
++dnl
++
++AC_ARG_WITH(interface-voice, AS_HELP_STRING([--without-interface-voice], [Build without voice interface support]), [], [with_interface_voice=yes])
++AM_CONDITIONAL(WITH_INTERFACE_VOICE, test "x$with_interface_voice" = "xyes")
++if test "x$with_interface_voice" = "xyes"; then
++    MM_INTERFACE_VOICE_SUPPORTED=1
++else
++    with_interface_voice=no
++    MM_INTERFACE_VOICE_SUPPORTED=0
++fi
++AC_SUBST(MM_INTERFACE_VOICE_SUPPORTED)
++
++dnl-----------------------------------------------------------------------------
+ dnl Compiler warnings
+ dnl
+ 
+@@ -475,6 +489,7 @@ echo "
+       location:                ${with_interface_location}
+       messaging:               ${with_interface_messaging}
+       time:                    ${with_interface_time}
++      voice:                   ${with_interface_voice}
+ 
+     Miscellaneous:
+       gobject introspection:   ${found_introspection}
+diff --git a/include/Makefile.am b/include/Makefile.am
+index 2dbbb0a..da293f0 100644
+--- a/include/Makefile.am
++++ b/include/Makefile.am
+@@ -19,6 +19,10 @@ if WITH_INTERFACE_MESSAGING
+ include_HEADERS += ModemManager-enums-messaging.h
+ endif
+ 
++if WITH_INTERFACE_VOICE
++include_HEADERS += ModemManager-enums-voice.h
++endif
++
+ ModemManager-names.h: $(XMLS) $(top_srcdir)/build-aux/header-generator.xsl
+ 	$(AM_V_GEN) $(XSLTPROC) $(top_srcdir)/build-aux/header-generator.xsl $(top_builddir)/introspection/all.xml > $@
+ 
+diff --git a/include/ModemManager-enums-voice.h b/include/ModemManager-enums-voice.h
+new file mode 100644
+index 0000000..98bfdb6
+--- /dev/null
++++ b/include/ModemManager-enums-voice.h
+@@ -0,0 +1,89 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2011 Red Hat, Inc.
++ * Copyright (C) 2011 Google, Inc.
++ * Copyright (C) 2016 Aleksander Morgado <aleksander@aleksander.es>
++ */
++
++#ifndef _MODEMMANAGER_ENUMS_VOICE_H_
++#define _MODEMMANAGER_ENUMS_VOICE_H_
++
++#if !defined (__MODEM_MANAGER_H_INSIDE__)
++#error "Only <ModemManager.h> can be included directly."
++#endif
++
++/**
++ * SECTION:mm-enums-voice
++ * @short_description: Common enumerations and types in the API.
++ *
++ * This section defines enumerations and types that are used in the
++ * ModemManager Voice interface.
++ **/
++
++/**
++ * MMCallState:
++ * @MM_CALL_STATE_UNKNOWN: default state for a new outgoing call.
++ * @MM_CALL_STATE_DIALING: outgoing call started. Wait for free channel.
++ * @MM_CALL_STATE_RINGING_IN: outgoing call attached to GSM network, waiting for an answer.
++ * @MM_CALL_STATE_RINGING_OUT: incoming call is waiting for an answer.
++ * @MM_CALL_STATE_ACTIVE: call is active between two peers.
++ * @MM_CALL_STATE_HELD: held call (by +CHLD AT command).
++ * @MM_CALL_STATE_WAITING: waiting call (by +CCWA AT command).
++ * @MM_CALL_STATE_TERMINATED: call is terminated.
++ *
++ * State of Call
++ */
++typedef enum { /*< underscore_name=mm_call_state >*/
++    MM_CALL_STATE_UNKNOWN       = 0,
++    MM_CALL_STATE_DIALING       = 1,
++    MM_CALL_STATE_RINGING_OUT   = 2,
++    MM_CALL_STATE_RINGING_IN    = 3,
++    MM_CALL_STATE_ACTIVE        = 4,
++    MM_CALL_STATE_HELD          = 5,
++    MM_CALL_STATE_WAITING       = 6,
++    MM_CALL_STATE_TERMINATED    = 7
++} MMCallState;
++
++/**
++ * MMCallStateReason:
++ * @MM_CALL_STATE_REASON_UNKNOWN: Default value for a new outgoing call.
++ * @MM_CALL_STATE_REASON_OUTGOING_STARTED: Outgoing call is started.
++ * @MM_CALL_STATE_REASON_INCOMING_NEW: Received a new incoming call.
++ * @MM_CALL_STATE_REASON_ACCEPTED: Dialing or Ringing call is accepted.
++ * @MM_CALL_STATE_REASON_TERMINATED: Call is correctly terminated.
++ * @MM_CALL_STATE_REASON_REFUSED_OR_BUSY: Remote peer is busy or refused call
++ * @MM_CALL_STATE_REASON_ERROR: Wrong number or generic network error.
++ */
++typedef enum { /*< underscore_name=mm_call_state_reason >*/
++    MM_CALL_STATE_REASON_UNKNOWN            = 0,
++    MM_CALL_STATE_REASON_OUTGOING_STARTED   = 1,
++    MM_CALL_STATE_REASON_INCOMING_NEW       = 2,
++    MM_CALL_STATE_REASON_ACCEPTED           = 3,
++    MM_CALL_STATE_REASON_TERMINATED         = 4,
++    MM_CALL_STATE_REASON_REFUSED_OR_BUSY    = 5,
++    MM_CALL_STATE_REASON_ERROR              = 6
++} MMCallStateReason;
++
++/**
++ * MMCallDirection:
++ * @MM_CALL_DIRECTION_UNKNOWN: unknown.
++ * @MM_CALL_DIRECTION_INCOMING: call from network.
++ * @MM_CALL_DIRECTION_OUTGOING: call to network.
++ */
++typedef enum { /*< underscore_name=mm_call_direction >*/
++    MM_CALL_DIRECTION_UNKNOWN   = 0,
++    MM_CALL_DIRECTION_INCOMING  = 1,
++    MM_CALL_DIRECTION_OUTGOING  = 2
++} MMCallDirection;
++
++#endif /*  _MODEMMANAGER_ENUMS_VOICE_H_ */
+diff --git a/include/ModemManager-enums.h b/include/ModemManager-enums.h
+index d0eabe9..6ca5c6b 100644
+--- a/include/ModemManager-enums.h
++++ b/include/ModemManager-enums.h
+@@ -769,60 +769,4 @@ typedef enum { /*< underscore_name=mm_oma_session_state_failed_reason >*/
+     MM_OMA_SESSION_STATE_FAILED_REASON_SESSION_CANCELLED     = 5
+ } MMOmaSessionStateFailedReason;
+ 
+-/**
+- * MMCallState:
+- * @MM_CALL_STATE_UNKNOWN: default state for a new outgoing call.
+- * @MM_CALL_STATE_DIALING: outgoing call started. Wait for free channel.
+- * @MM_CALL_STATE_RINGING_IN: outgoing call attached to GSM network, waiting for an answer.
+- * @MM_CALL_STATE_RINGING_OUT: incoming call is waiting for an answer.
+- * @MM_CALL_STATE_ACTIVE: call is active between two peers.
+- * @MM_CALL_STATE_HELD: held call (by +CHLD AT command).
+- * @MM_CALL_STATE_WAITING: waiting call (by +CCWA AT command).
+- * @MM_CALL_STATE_TERMINATED: call is terminated.
+- *
+- * State of Call
+- */
+-typedef enum { /*< underscore_name=mm_call_state >*/
+-    MM_CALL_STATE_UNKNOWN       = 0,
+-    MM_CALL_STATE_DIALING       = 1,
+-    MM_CALL_STATE_RINGING_OUT   = 2,
+-    MM_CALL_STATE_RINGING_IN    = 3,
+-    MM_CALL_STATE_ACTIVE        = 4,
+-    MM_CALL_STATE_HELD          = 5,
+-    MM_CALL_STATE_WAITING       = 6,
+-    MM_CALL_STATE_TERMINATED    = 7
+-} MMCallState;
+-
+-/**
+- * MMCallStateReason:
+- * @MM_CALL_STATE_REASON_UNKNOWN: Default value for a new outgoing call.
+- * @MM_CALL_STATE_REASON_OUTGOING_STARTED: Outgoing call is started.
+- * @MM_CALL_STATE_REASON_INCOMING_NEW: Received a new incoming call.
+- * @MM_CALL_STATE_REASON_ACCEPTED: Dialing or Ringing call is accepted.
+- * @MM_CALL_STATE_REASON_TERMINATED: Call is correctly terminated.
+- * @MM_CALL_STATE_REASON_REFUSED_OR_BUSY: Remote peer is busy or refused call
+- * @MM_CALL_STATE_REASON_ERROR: Wrong number or generic network error.
+- */
+-typedef enum { /*< underscore_name=mm_call_state_reason >*/
+-    MM_CALL_STATE_REASON_UNKNOWN            = 0,
+-    MM_CALL_STATE_REASON_OUTGOING_STARTED   = 1,
+-    MM_CALL_STATE_REASON_INCOMING_NEW       = 2,
+-    MM_CALL_STATE_REASON_ACCEPTED           = 3,
+-    MM_CALL_STATE_REASON_TERMINATED         = 4,
+-    MM_CALL_STATE_REASON_REFUSED_OR_BUSY    = 5,
+-    MM_CALL_STATE_REASON_ERROR              = 6
+-} MMCallStateReason;
+-
+-/**
+- * MMCallDirection:
+- * @MM_CALL_DIRECTION_UNKNOWN: unknown.
+- * @MM_CALL_DIRECTION_INCOMING: call from network.
+- * @MM_CALL_DIRECTION_OUTGOING: call to network.
+- */
+-typedef enum { /*< underscore_name=mm_call_direction >*/
+-    MM_CALL_DIRECTION_UNKNOWN   = 0,
+-    MM_CALL_DIRECTION_INCOMING  = 1,
+-    MM_CALL_DIRECTION_OUTGOING  = 2
+-} MMCallDirection;
+-
+ #endif /*  _MODEMMANAGER_ENUMS_H_ */
+diff --git a/include/ModemManager-version.h.in b/include/ModemManager-version.h.in
+index 866a3a3..a099825 100644
+--- a/include/ModemManager-version.h.in
++++ b/include/ModemManager-version.h.in
+@@ -111,4 +111,19 @@
+  */
+ #define MM_INTERFACE_TIME_SUPPORTED @MM_INTERFACE_TIME_SUPPORTED@
+ 
++/**
++ * MM_INTERFACE_VOICE_SUPPORTED:
++ *
++ * Symbol to expose whether Voice interface is supported. The symbol is always
++ * defined and set to either or 1 or 0.
++ *
++ * E.g.:
++ * |[
++ *  #if MM_INTERFACE_VOICE_SUPPORTED
++ *      // do something
++ *  #endif
++ * ]|
++ */
++#define MM_INTERFACE_VOICE_SUPPORTED @MM_INTERFACE_VOICE_SUPPORTED@
++
+ #endif /* _MM_VERSION_H_ */
+diff --git a/include/ModemManager.h b/include/ModemManager.h
+index 8482093..a86413a 100644
+--- a/include/ModemManager.h
++++ b/include/ModemManager.h
+@@ -43,6 +43,9 @@
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ # include <ModemManager-enums-messaging.h>
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
++# include <ModemManager-enums-voice.h>
++#endif
+ 
+ /* Public header with errors */
+ #include <ModemManager-errors.h>
+diff --git a/introspection/Makefile.am b/introspection/Makefile.am
+index 2634894..1a27e3d 100644
+--- a/introspection/Makefile.am
++++ b/introspection/Makefile.am
+@@ -9,6 +9,7 @@ XMLS_FILTERED_OUT = \
+ 	org.freedesktop.ModemManager1.Modem.Location.xml \
+ 	org.freedesktop.ModemManager1.Modem.Messaging.xml \
+ 	org.freedesktop.ModemManager1.Modem.Time.xml \
++	org.freedesktop.ModemManager1.Modem.Voice.xml \
+ 	$(NULL)
+ xmldir = $(datadir)/dbus-1/interfaces
+ xml_DATA = $(filter-out $(XMLS_FILTERED_OUT), $(XMLS))
+@@ -25,6 +26,10 @@ if WITH_INTERFACE_TIME
+ xml_DATA += org.freedesktop.ModemManager1.Modem.Time.xml
+ endif
+ 
++if WITH_INTERFACE_VOICE
++xml_DATA += org.freedesktop.ModemManager1.Modem.Voice.xml
++endif
++
+ all.xml: $(xml_DATA) Makefile
+ 	$(AM_V_GEN)	\
+ 		rm -f $@; \
+diff --git a/libmm-glib/Makefile.am b/libmm-glib/Makefile.am
+index 6f61809..d4c4254 100644
+--- a/libmm-glib/Makefile.am
++++ b/libmm-glib/Makefile.am
+@@ -32,10 +32,6 @@ libmm_glib_la_SOURCES = \
+ 	mm-modem-oma.c \
+ 	mm-sim.h \
+ 	mm-sim.c \
+-	mm-modem-voice.h \
+-	mm-modem-voice.c \
+-	mm-call.h \
+-	mm-call.c \
+ 	mm-bearer.h \
+ 	mm-bearer.c \
+ 	mm-common-helpers.h \
+@@ -46,8 +42,6 @@ libmm_glib_la_SOURCES = \
+ 	mm-simple-connect-properties.c \
+ 	mm-bearer-properties.h \
+ 	mm-bearer-properties.c \
+-	mm-call-properties.h \
+-	mm-call-properties.c \
+ 	mm-bearer-ip-config.h \
+ 	mm-bearer-ip-config.c \
+ 	mm-bearer-stats.h \
+@@ -100,6 +94,17 @@ libmm_glib_la_SOURCES += \
+ 	$(NULL)
+ endif
+ 
++if WITH_INTERFACE_VOICE
++libmm_glib_la_SOURCES += \
++	mm-call.h \
++	mm-call.c \
++	mm-modem-voice.h \
++	mm-modem-voice.c \
++	mm-call-properties.h \
++	mm-call-properties.c \
++	$(NULL)
++endif
++
+ libmm_glib_la_CPPFLAGS = \
+ 	-I$(srcdir) \
+ 	-I$(top_srcdir) \
+@@ -142,13 +147,10 @@ include_HEADERS = \
+ 	mm-modem-oma.h \
+ 	mm-modem-simple.h \
+ 	mm-sim.h \
+-	mm-modem-voice.h \
+-	mm-call.h \
+ 	mm-bearer.h \
+ 	mm-simple-status.h \
+ 	mm-simple-connect-properties.h \
+ 	mm-bearer-properties.h \
+-	mm-call-properties.h \
+ 	mm-bearer-ip-config.h \
+ 	mm-bearer-stats.h \
+ 	mm-unlock-retries.h \
+@@ -184,6 +186,14 @@ include_HEADERS += \
+ 	$(NULL)
+ endif
+ 
++if WITH_INTERFACE_VOICE
++include_HEADERS += \
++	mm-modem-voice.h \
++	mm-call.h \
++	mm-call-properties.h \
++	$(NULL)
++endif
++
+ CLEANFILES =
+ 
+ # Introspection
+@@ -227,6 +237,12 @@ GENERATED_C += mm-gdbus-sms.c
+ PUBLIC_H    += ModemManager-enums-messaging.h
+ endif
+ 
++if WITH_INTERFACE_VOICE
++GENERATED_H += mm-gdbus-call.h
++GENERATED_C += mm-gdbus-call.c
++PUBLIC_H    += ModemManager-enums-voice.h
++endif
++
+ INTROSPECTION_GIRS = ModemManager-1.0.gir
+ INTROSPECTION_SCANNER_ARGS = --warn-all
+ INTROSPECTION_COMPILER_ARGS =
+diff --git a/libmm-glib/generated/Makefile.am b/libmm-glib/generated/Makefile.am
+index 44310dd..227d3c1 100644
+--- a/libmm-glib/generated/Makefile.am
++++ b/libmm-glib/generated/Makefile.am
+@@ -11,7 +11,6 @@ GENERATED_H = \
+ 	mm-errors-types.h \
+ 	mm-gdbus-manager.h \
+ 	mm-gdbus-sim.h \
+-	mm-gdbus-call.h \
+ 	mm-gdbus-bearer.h \
+ 	mm-gdbus-modem.h \
+ 	$(NULL)
+@@ -22,7 +21,6 @@ GENERATED_C = \
+ 	mm-errors-quarks.c \
+ 	mm-gdbus-manager.c \
+ 	mm-gdbus-sim.c \
+-	mm-gdbus-call.c \
+ 	mm-gdbus-bearer.c \
+ 	mm-gdbus-modem.c   \
+ 	$(NULL)
+@@ -30,10 +28,8 @@ GENERATED_C = \
+ GENERATED_DOC = \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Sim.xml \
+-	mm-gdbus-doc-org.freedesktop.ModemManager1.Call.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Bearer.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.xml \
+-	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Voice.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Firmware.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Oma.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+@@ -60,6 +56,15 @@ if WITH_INTERFACE_TIME
+ GENERATED_DOC += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Time.xml
+ endif
+ 
++if WITH_INTERFACE_VOICE
++GENERATED_H   += mm-gdbus-call.h
++GENERATED_C   += mm-gdbus-call.c
++GENERATED_DOC += \
++	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Voice.xml \
++	mm-gdbus-doc-org.freedesktop.ModemManager1.Call.xml \
++	$(NULL)
++endif
++
+ BUILT_SOURCES = $(GENERATED_H) $(GENERATED_C) $(GENERATED_DOC)
+ 
+ # Enum types
+@@ -75,6 +80,10 @@ if WITH_INTERFACE_MESSAGING
+ ENUM_FILES += $(top_srcdir)/include/ModemManager-enums-messaging.h
+ endif
+ 
++if WITH_INTERFACE_VOICE
++ENUM_FILES += $(top_srcdir)/include/ModemManager-enums-voice.h
++endif
++
+ mm-enums-types.h: Makefile.am $(ENUM_FILES) $(top_srcdir)/build-aux/mm-enums-template.h
+ 	$(AM_V_GEN) $(GLIB_MKENUMS) \
+ 		--fhead "#include <ModemManager.h>\n#ifndef __MM_ENUMS_TYPES_H__\n#define __MM_ENUMS_TYPES_H__\n" \
+@@ -133,7 +142,6 @@ mm_gdbus_modem_generated = \
+ 	mm-gdbus-modem.h \
+ 	mm-gdbus-modem.c \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.xml \
+-	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Voice.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Firmware.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Oma.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+@@ -155,9 +163,12 @@ if WITH_INTERFACE_TIME
+ mm_gdbus_modem_generated += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Time.xml
+ endif
+ 
++if WITH_INTERFACE_VOICE
++mm_gdbus_modem_generated += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Voice.xml
++endif
++
+ mm_gdbus_modem_deps = \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.xml \
+-	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Voice.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Firmware.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Oma.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+@@ -179,6 +190,10 @@ if WITH_INTERFACE_TIME
+ mm_gdbus_modem_deps += $(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Time.xml
+ endif
+ 
++if WITH_INTERFACE_VOICE
++mm_gdbus_modem_deps += $(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Voice.xml
++endif
++
+ mm-gdbus-modem.c: $(mm_gdbus_modem_deps)
+ 	$(AM_V_GEN) $(GDBUS_CODEGEN) \
+ 		--interface-prefix org.freedesktop.ModemManager1. \
+@@ -259,6 +274,8 @@ $(filter-out mm-gdbus-sms.c, $(mm_gdbus_sms_generated)): $(mm_gdbus_sms_deps) mm
+ 
+ endif
+ 
++if WITH_INTERFACE_VOICE
++
+ # Call interface
+ mm_gdbus_call_generated = \
+ 	mm-gdbus-call.h \
+@@ -279,6 +296,8 @@ mm-gdbus-call.c: $(mm_gdbus_call_deps)
+ $(filter-out mm-gdbus-call.c, $(mm_gdbus_call_generated)): $(mm_gdbus_call_deps) mm-gdbus-call.c
+ 	@: # nothing to do, generated as a side-effect of the .c
+ 
++endif
++
+ nodist_libmm_generated_la_SOURCES = $(GENERATED_H) $(GENERATED_C)
+ 
+ libmm_generated_la_CPPFLAGS = \
+diff --git a/libmm-glib/libmm-glib.h b/libmm-glib/libmm-glib.h
+index 6695d89..2330ee1 100644
+--- a/libmm-glib/libmm-glib.h
++++ b/libmm-glib/libmm-glib.h
+@@ -45,7 +45,9 @@
+ # if MM_INTERFACE_MESSAGING_SUPPORTED
+ #  include <mm-modem-messaging.h>
+ # endif
+-# include <mm-modem-voice.h>
++# if MM_INTERFACE_VOICE_SUPPORTED
++#  include <mm-modem-voice.h>
++# endif
+ # if MM_INTERFACE_TIME_SUPPORTED
+ #  include <mm-modem-time.h>
+ # endif
+@@ -67,7 +69,9 @@
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ # include <mm-sms-properties.h>
+ #endif
+-#include <mm-call-properties.h>
++#if MM_INTERFACE_VOICE_SUPPORTED
++# include <mm-call-properties.h>
++#endif
+ #include <mm-bearer-properties.h>
+ #include <mm-bearer-ip-config.h>
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+@@ -96,6 +100,8 @@
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ # include <mm-gdbus-sms.h>
+ #endif
+-#include <mm-gdbus-call.h>
++#if MM_INTERFACE_VOICE_SUPPORTED
++# include <mm-gdbus-call.h>
++#endif
+ 
+ #endif /* _LIBMM_GLIB_H_ */
+diff --git a/libmm-glib/mm-common-helpers.c b/libmm-glib/mm-common-helpers.c
+index ec07971..c6df61e 100644
+--- a/libmm-glib/mm-common-helpers.c
++++ b/libmm-glib/mm-common-helpers.c
+@@ -857,72 +857,6 @@ mm_common_get_allowed_auth_from_string (const gchar *str,
+     return allowed_auth;
+ }
+ 
+-MMCallDirection
+-mm_common_get_call_direction_from_string (const gchar *str,
+-                                          GError **error)
+-{
+-    GEnumClass *enum_class;
+-    guint i;
+-
+-    enum_class = G_ENUM_CLASS (g_type_class_ref (MM_TYPE_CALL_DIRECTION));
+-
+-    for (i = 0; enum_class->values[i].value_nick; i++) {
+-        if (!g_ascii_strcasecmp (str, enum_class->values[i].value_nick))
+-            return enum_class->values[i].value;
+-    }
+-
+-    g_set_error (error,
+-                 MM_CORE_ERROR,
+-                 MM_CORE_ERROR_INVALID_ARGS,
+-                 "Couldn't match '%s' with a valid MMCallDirection value",
+-                 str);
+-    return MM_CALL_DIRECTION_UNKNOWN;
+-}
+-
+-MMCallState
+-mm_common_get_call_state_from_string (const gchar *str,
+-                                      GError **error)
+-{
+-    GEnumClass *enum_class;
+-    guint i;
+-
+-    enum_class = G_ENUM_CLASS (g_type_class_ref (MM_TYPE_CALL_STATE));
+-
+-    for (i = 0; enum_class->values[i].value_nick; i++) {
+-        if (!g_ascii_strcasecmp (str, enum_class->values[i].value_nick))
+-            return enum_class->values[i].value;
+-    }
+-
+-    g_set_error (error,
+-                 MM_CORE_ERROR,
+-                 MM_CORE_ERROR_INVALID_ARGS,
+-                 "Couldn't match '%s' with a valid MMCallState value",
+-                 str);
+-    return MM_CALL_STATE_UNKNOWN;
+-}
+-
+-MMCallStateReason
+-mm_common_get_call_state_reason_from_string (const gchar *str,
+-                                             GError **error)
+-{
+-    GEnumClass *enum_class;
+-    guint i;
+-
+-    enum_class = G_ENUM_CLASS (g_type_class_ref (MM_TYPE_CALL_STATE_REASON));
+-
+-    for (i = 0; enum_class->values[i].value_nick; i++) {
+-        if (!g_ascii_strcasecmp (str, enum_class->values[i].value_nick))
+-            return enum_class->values[i].value;
+-    }
+-
+-    g_set_error (error,
+-                 MM_CORE_ERROR,
+-                 MM_CORE_ERROR_INVALID_ARGS,
+-                 "Couldn't match '%s' with a valid MMCallStateReason value",
+-                 str);
+-    return MM_CALL_STATE_REASON_UNKNOWN;
+-}
+-
+ MMOmaFeature
+ mm_common_get_oma_features_from_string (const gchar *str,
+                                         GError **error)
+@@ -1691,3 +1625,73 @@ mm_sms_delivery_state_get_string_extended (guint delivery_state)
+ }
+ 
+ #endif /* MM_INTERFACE_MESSAGING_SUPPORTED */
++
++#if MM_INTERFACE_VOICE_SUPPORTED
++
++MMCallDirection
++mm_common_get_call_direction_from_string (const gchar *str,
++                                          GError **error)
++{
++    GEnumClass *enum_class;
++    guint i;
++
++    enum_class = G_ENUM_CLASS (g_type_class_ref (MM_TYPE_CALL_DIRECTION));
++
++    for (i = 0; enum_class->values[i].value_nick; i++) {
++        if (!g_ascii_strcasecmp (str, enum_class->values[i].value_nick))
++            return enum_class->values[i].value;
++    }
++
++    g_set_error (error,
++                 MM_CORE_ERROR,
++                 MM_CORE_ERROR_INVALID_ARGS,
++                 "Couldn't match '%s' with a valid MMCallDirection value",
++                 str);
++    return MM_CALL_DIRECTION_UNKNOWN;
++}
++
++MMCallState
++mm_common_get_call_state_from_string (const gchar *str,
++                                      GError **error)
++{
++    GEnumClass *enum_class;
++    guint i;
++
++    enum_class = G_ENUM_CLASS (g_type_class_ref (MM_TYPE_CALL_STATE));
++
++    for (i = 0; enum_class->values[i].value_nick; i++) {
++        if (!g_ascii_strcasecmp (str, enum_class->values[i].value_nick))
++            return enum_class->values[i].value;
++    }
++
++    g_set_error (error,
++                 MM_CORE_ERROR,
++                 MM_CORE_ERROR_INVALID_ARGS,
++                 "Couldn't match '%s' with a valid MMCallState value",
++                 str);
++    return MM_CALL_STATE_UNKNOWN;
++}
++
++MMCallStateReason
++mm_common_get_call_state_reason_from_string (const gchar *str,
++                                             GError **error)
++{
++    GEnumClass *enum_class;
++    guint i;
++
++    enum_class = G_ENUM_CLASS (g_type_class_ref (MM_TYPE_CALL_STATE_REASON));
++
++    for (i = 0; enum_class->values[i].value_nick; i++) {
++        if (!g_ascii_strcasecmp (str, enum_class->values[i].value_nick))
++            return enum_class->values[i].value;
++    }
++
++    g_set_error (error,
++                 MM_CORE_ERROR,
++                 MM_CORE_ERROR_INVALID_ARGS,
++                 "Couldn't match '%s' with a valid MMCallStateReason value",
++                 str);
++    return MM_CALL_STATE_REASON_UNKNOWN;
++}
++
++#endif /* MM_INTERFACE_VOICE_SUPPORTED */
+diff --git a/libmm-glib/mm-common-helpers.h b/libmm-glib/mm-common-helpers.h
+index 33bb1cd..e9d49ef 100644
+--- a/libmm-glib/mm-common-helpers.h
++++ b/libmm-glib/mm-common-helpers.h
+@@ -55,13 +55,6 @@ MMBearerIpFamily      mm_common_get_ip_type_from_string      (const gchar *str,
+ MMBearerAllowedAuth   mm_common_get_allowed_auth_from_string (const gchar *str,
+                                                               GError **error);
+ 
+-MMCallDirection     mm_common_get_call_direction_from_string    (const gchar *str,
+-                                                                 GError **error);
+-MMCallState         mm_common_get_call_state_from_string        (const gchar *str,
+-                                                                 GError **error);
+-MMCallStateReason   mm_common_get_call_state_reason_from_string (const gchar *str,
+-                                                                 GError **error);
+-
+ MMOmaFeature          mm_common_get_oma_features_from_string (const gchar *str,
+                                                               GError **error);
+ MMOmaSessionType      mm_common_get_oma_session_type_from_string (const gchar *str,
+@@ -167,4 +160,13 @@ GVariant                 *mm_common_sms_storages_garray_to_variant            (G
+ const gchar              *mm_sms_delivery_state_get_string_extended           (guint delivery_state);
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++MMCallDirection     mm_common_get_call_direction_from_string    (const gchar *str,
++                                                                 GError **error);
++MMCallState         mm_common_get_call_state_from_string        (const gchar *str,
++                                                                 GError **error);
++MMCallStateReason   mm_common_get_call_state_reason_from_string (const gchar *str,
++                                                                 GError **error);
++#endif
++
+ #endif /* MM_COMMON_HELPERS_H */
+diff --git a/libmm-glib/mm-manager.c b/libmm-glib/mm-manager.c
+index 517f7a9..50081a7 100644
+--- a/libmm-glib/mm-manager.c
++++ b/libmm-glib/mm-manager.c
+@@ -70,7 +70,9 @@ get_proxy_type (GDBusObjectManagerClient *manager,
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Messaging",      GSIZE_TO_POINTER (MM_TYPE_MODEM_MESSAGING));
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Voice",          GSIZE_TO_POINTER (MM_TYPE_MODEM_VOICE));
++#endif
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Location",       GSIZE_TO_POINTER (MM_TYPE_MODEM_LOCATION));
+ #endif
+diff --git a/libmm-glib/mm-object.c b/libmm-glib/mm-object.c
+index 6364114..7943d1c 100644
+--- a/libmm-glib/mm-object.c
++++ b/libmm-glib/mm-object.c
+@@ -345,6 +345,8 @@ mm_object_peek_modem_messaging (MMObject *self)
+ 
+ #endif /*  MM_INTERFACE_MESSAGING_SUPPORTED */
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++
+ /*****************************************************************************/
+ 
+ /**
+@@ -381,6 +383,8 @@ mm_object_peek_modem_voice (MMObject *self)
+     return (MMModemVoice *)mm_gdbus_object_peek_modem_voice (MM_GDBUS_OBJECT (self));
+ }
+ 
++#endif /*  MM_INTERFACE_VOICE_SUPPORTED */
++
+ #if MM_INTERFACE_TIME_SUPPORTED
+ 
+ /*****************************************************************************/
+diff --git a/libmm-glib/mm-object.h b/libmm-glib/mm-object.h
+index 46e2a37..14d299e 100644
+--- a/libmm-glib/mm-object.h
++++ b/libmm-glib/mm-object.h
+@@ -45,7 +45,9 @@
+ #if MM_INTERFACE_TIME_SUPPORTED
+ # include "mm-modem-time.h"
+ #endif
+-#include "mm-modem-voice.h"
++#if MM_INTERFACE_VOICE_SUPPORTED
++# include "mm-modem-voice.h"
++#endif
+ #include "mm-modem-firmware.h"
+ #include "mm-modem-signal.h"
+ #include "mm-modem-oma.h"
+@@ -89,7 +91,6 @@ MMModem3gpp      *mm_object_get_modem_3gpp       (MMObject *self);
+ MMModem3gppUssd  *mm_object_get_modem_3gpp_ussd  (MMObject *self);
+ MMModemCdma      *mm_object_get_modem_cdma       (MMObject *self);
+ MMModemSimple    *mm_object_get_modem_simple     (MMObject *self);
+-MMModemVoice     *mm_object_get_modem_voice      (MMObject *self);
+ MMModemFirmware  *mm_object_get_modem_firmware   (MMObject *self);
+ MMModemSignal    *mm_object_get_modem_signal     (MMObject *self);
+ MMModemOma       *mm_object_get_modem_oma        (MMObject *self);
+@@ -99,7 +100,6 @@ MMModem3gpp      *mm_object_peek_modem_3gpp      (MMObject *self);
+ MMModem3gppUssd  *mm_object_peek_modem_3gpp_ussd (MMObject *self);
+ MMModemCdma      *mm_object_peek_modem_cdma      (MMObject *self);
+ MMModemSimple    *mm_object_peek_modem_simple    (MMObject *self);
+-MMModemVoice     *mm_object_peek_modem_voice     (MMObject *self);
+ MMModemFirmware  *mm_object_peek_modem_firmware  (MMObject *self);
+ MMModemSignal    *mm_object_peek_modem_signal    (MMObject *self);
+ MMModemOma       *mm_object_peek_modem_oma       (MMObject *self);
+@@ -119,6 +119,11 @@ MMModemTime      *mm_object_get_modem_time       (MMObject *self);
+ MMModemTime      *mm_object_peek_modem_time      (MMObject *self);
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++MMModemVoice     *mm_object_get_modem_voice      (MMObject *self);
++MMModemVoice     *mm_object_peek_modem_voice     (MMObject *self);
++#endif
++
+ G_END_DECLS
+ 
+ #endif /* _MM_OBJECT_H_ */
+diff --git a/plugins/Makefile.am b/plugins/Makefile.am
+index 070e379..877a4de 100644
+--- a/plugins/Makefile.am
++++ b/plugins/Makefile.am
+@@ -323,13 +323,19 @@ libmm_plugin_huawei_la_SOURCES = \
+ 	huawei/mm-plugin-huawei.h \
+ 	huawei/mm-sim-huawei.c \
+ 	huawei/mm-sim-huawei.h \
+-	huawei/mm-call-huawei.c \
+-	huawei/mm-call-huawei.h \
+ 	huawei/mm-broadband-modem-huawei.c \
+ 	huawei/mm-broadband-modem-huawei.h \
+ 	huawei/mm-broadband-bearer-huawei.c \
+ 	huawei/mm-broadband-bearer-huawei.h \
+ 	$(NULL)
++
++if WITH_INTERFACE_VOICE
++libmm_plugin_huawei_la_SOURCES += \
++	huawei/mm-call-huawei.c \
++	huawei/mm-call-huawei.h \
++	$(NULL)
++endif
++
+ libmm_plugin_huawei_la_CPPFLAGS = $(PLUGIN_COMMON_COMPILER_FLAGS)
+ libmm_plugin_huawei_la_LDFLAGS  = $(PLUGIN_COMMON_LINKER_FLAGS)
+ libmm_plugin_huawei_la_LIBADD   = $(builddir)/libhelpers-huawei.la
+diff --git a/plugins/huawei/mm-broadband-modem-huawei.c b/plugins/huawei/mm-broadband-modem-huawei.c
+index abc4207..946490e 100644
+--- a/plugins/huawei/mm-broadband-modem-huawei.c
++++ b/plugins/huawei/mm-broadband-modem-huawei.c
+@@ -39,33 +39,36 @@
+ #include "mm-iface-modem.h"
+ #include "mm-iface-modem-3gpp.h"
+ #include "mm-iface-modem-3gpp-ussd.h"
+-#if MM_INTERFACE_LOCATION_SUPPORTED
+-# include "mm-iface-modem-location.h"
+-#endif
+-#if MM_INTERFACE_TIME_SUPPORTED
+-# include "mm-iface-modem-time.h"
+-#endif
+ #include "mm-iface-modem-cdma.h"
+ #include "mm-iface-modem-signal.h"
+-#include "mm-iface-modem-voice.h"
+ #include "mm-broadband-modem-huawei.h"
+ #include "mm-broadband-bearer-huawei.h"
+ #include "mm-broadband-bearer.h"
+ #include "mm-bearer-list.h"
+ #include "mm-sim-huawei.h"
+-#include "mm-call-huawei.h"
++
++#if MM_INTERFACE_LOCATION_SUPPORTED
++# include "mm-iface-modem-location.h"
++#endif
++
++#if MM_INTERFACE_TIME_SUPPORTED
++# include "mm-iface-modem-time.h"
++#endif
++
++#if MM_INTERFACE_VOICE_SUPPORTED
++# include "mm-iface-modem-voice.h"
++# include "mm-call-huawei.h"
++#endif
+ 
+ static void iface_modem_init (MMIfaceModem *iface);
+ static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
+ static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
+ static void iface_modem_cdma_init (MMIfaceModemCdma *iface);
+-static void iface_modem_voice_init (MMIfaceModemVoice *iface);
+ static void iface_modem_signal_init (MMIfaceModemSignal *iface);
+ 
+ static MMIfaceModem *iface_modem_parent;
+ static MMIfaceModem3gpp *iface_modem_3gpp_parent;
+ static MMIfaceModemCdma *iface_modem_cdma_parent;
+-static MMIfaceModemVoice *iface_modem_voice_parent;
+ 
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ static void iface_modem_location_init (MMIfaceModemLocation *iface);
+@@ -76,6 +79,11 @@ static MMIfaceModemLocation *iface_modem_location_parent;
+ static void iface_modem_time_init (MMIfaceModemTime *iface);
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++static void iface_modem_voice_init (MMIfaceModemVoice *iface);
++static MMIfaceModemVoice *iface_modem_voice_parent;
++#endif
++
+ G_DEFINE_TYPE_EXTENDED (MMBroadbandModemHuawei, mm_broadband_modem_huawei, MM_TYPE_BROADBAND_MODEM, 0,
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
+@@ -87,8 +95,10 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModemHuawei, mm_broadband_modem_huawei, MM_TY
+ #if MM_INTERFACE_TIME_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_TIME, iface_modem_time_init)
+ #endif
+-                        G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIGNAL, iface_modem_signal_init)
++#if MM_INTERFACE_VOICE_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_VOICE, iface_modem_voice_init)
++#endif
++                        G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIGNAL, iface_modem_signal_init)
+                         )
+ 
+ typedef enum {
+@@ -118,13 +128,14 @@ struct _MMBroadbandModemHuaweiPrivate {
+     GRegex *dsflowrpt_regex;
+     GRegex *ndisstat_regex;
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     /* Regex for voice call related notifications */
+     GRegex *orig_regex;
+     GRegex *conf_regex;
+     GRegex *conn_regex;
+     GRegex *cend_regex;
+     GRegex *ddtmf_regex;
+-    GRegex *cschannelinfo_regex;
++#endif
+ 
+     /* Regex to ignore */
+     GRegex *boot_regex;
+@@ -144,6 +155,7 @@ struct _MMBroadbandModemHuaweiPrivate {
+     GRegex *posend_regex;
+     GRegex *ecclist_regex;
+     GRegex *ltersrp_regex;
++    GRegex *cschannelinfo_regex;
+ 
+     FeatureSupport ndisdup_support;
+     FeatureSupport rfswitch_support;
+@@ -3022,6 +3034,8 @@ get_detailed_registration_state (MMIfaceModemCdma *self,
+              ctx);
+ }
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++
+ /*****************************************************************************/
+ /* Setup/Cleanup unsolicited events (Voice interface) */
+ 
+@@ -3163,12 +3177,6 @@ set_voice_unsolicited_events_handlers (MMBroadbandModemHuawei *self,
+             enable ? (MMPortSerialAtUnsolicitedMsgFn)huawei_voice_received_dtmf: NULL,
+             enable ? self : NULL,
+             NULL);
+-
+-        /* Ignore this message (Huawei ME909s-120 firmware. 23.613.61.00.00) */
+-        mm_port_serial_at_add_unsolicited_msg_handler (
+-            port,
+-            self->priv->cschannelinfo_regex,
+-            NULL, NULL, NULL);
+     }
+ 
+     g_list_free_full (ports, (GDestroyNotify)g_object_unref);
+@@ -3403,6 +3411,8 @@ create_call (MMIfaceModemVoice *self)
+     return mm_call_huawei_new (MM_BASE_MODEM (self));
+ }
+ 
++#endif /* MM_INTERFACE_VOICE_SUPPORTED */
++
+ #if MM_INTERFACE_TIME_SUPPORTED
+ 
+ /*****************************************************************************/
+@@ -4355,6 +4365,10 @@ set_ignored_unsolicited_events_handlers (MMBroadbandModemHuawei *self)
+             port,
+             self->priv->ltersrp_regex,
+             NULL, NULL, NULL);
++        mm_port_serial_at_add_unsolicited_msg_handler (
++            port,
++            self->priv->cschannelinfo_regex,
++            NULL, NULL, NULL);
+     }
+ 
+     g_list_free_full (ports, (GDestroyNotify)g_object_unref);
+@@ -4382,7 +4396,10 @@ setup_ports (MMBroadbandModem *self)
+     /* Now reset the unsolicited messages we'll handle when enabled */
+     set_3gpp_unsolicited_events_handlers (MM_BROADBAND_MODEM_HUAWEI (self), FALSE);
+     set_cdma_unsolicited_events_handlers (MM_BROADBAND_MODEM_HUAWEI (self), FALSE);
+-    set_voice_unsolicited_events_handlers(MM_BROADBAND_MODEM_HUAWEI (self), FALSE);
++
++#if MM_INTERFACE_VOICE_SUPPORTED
++    set_voice_unsolicited_events_handlers (MM_BROADBAND_MODEM_HUAWEI (self), FALSE);
++#endif
+ 
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+     {
+@@ -4481,7 +4498,10 @@ mm_broadband_modem_huawei_init (MMBroadbandModemHuawei *self)
+                                              G_REGEX_RAW | G_REGEX_OPTIMIZE, 0, NULL);
+     self->priv->ltersrp_regex = g_regex_new ("\\r\\n\\^LTERSRP:.+\\r\\n",
+                                              G_REGEX_RAW | G_REGEX_OPTIMIZE, 0, NULL);
++    self->priv->cschannelinfo_regex = g_regex_new ("\\r\\n\\^CSCHANNELINFO:\\s*(\\d+),(\\d+)\\r\\n",
++                                                    G_REGEX_RAW | G_REGEX_OPTIMIZE, 0, NULL);
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     /* Voice related regex
+      * <CR><LF>^ORIG: <call_x>,<call_type><CR><LF>
+      * <CR><LF>^CONF: <call_x><CR><LF>
+@@ -4503,14 +4523,7 @@ mm_broadband_modem_huawei_init (MMBroadbandModemHuawei *self)
+      */
+     self->priv->ddtmf_regex = g_regex_new ("\\r\\n\\^DDTMF:\\s*([0-9A-D\\*\\#])\\r\\n",
+                                               G_REGEX_RAW | G_REGEX_OPTIMIZE, 0, NULL);
+-
+-    /* Voice: Unknown message that's broke ATA command
+-     * <CR><LF>^CSCHANNELINFO: <number>,<number><CR><LF>
+-     * Key should be 0-9, A-D, *, #
+-     */
+-    self->priv->cschannelinfo_regex = g_regex_new ("\\r\\n\\^CSCHANNELINFO:\\s*(\\d+),(\\d+)\\r\\n",
+-                                                    G_REGEX_RAW | G_REGEX_OPTIMIZE, 0, NULL);
+-
++#endif
+ 
+     self->priv->ndisdup_support = FEATURE_SUPPORT_UNKNOWN;
+     self->priv->rfswitch_support = FEATURE_SUPPORT_UNKNOWN;
+@@ -4563,12 +4576,15 @@ finalize (GObject *object)
+     g_regex_unref (self->priv->posend_regex);
+     g_regex_unref (self->priv->ecclist_regex);
+     g_regex_unref (self->priv->ltersrp_regex);
++    g_regex_unref (self->priv->cschannelinfo_regex);
++
++#if MM_INTERFACE_VOICE_SUPPORTED
+     g_regex_unref (self->priv->orig_regex);
+     g_regex_unref (self->priv->conf_regex);
+     g_regex_unref (self->priv->conn_regex);
+     g_regex_unref (self->priv->cend_regex);
+     g_regex_unref (self->priv->ddtmf_regex);
+-    g_regex_unref (self->priv->cschannelinfo_regex);
++#endif
+ 
+     if (self->priv->syscfg_supported_modes)
+         g_array_unref (self->priv->syscfg_supported_modes);
+@@ -4688,6 +4704,8 @@ iface_modem_time_init (MMIfaceModemTime *iface)
+ 
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++
+ static void
+ iface_modem_voice_init (MMIfaceModemVoice *iface)
+ {
+@@ -4705,6 +4723,8 @@ iface_modem_voice_init (MMIfaceModemVoice *iface)
+     iface->create_call = create_call;
+ }
+ 
++#endif
++
+ static void
+ iface_modem_signal_init (MMIfaceModemSignal *iface)
+ {
+diff --git a/src/Makefile.am b/src/Makefile.am
+index c25345a..1c31fb0 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -277,10 +277,6 @@ ModemManager_SOURCES = \
+ 	mm-base-modem-at.c \
+ 	mm-base-modem.h \
+ 	mm-base-modem.c \
+-	mm-base-call.h \
+-	mm-base-call.c \
+-	mm-call-list.h \
+-	mm-call-list.c \
+ 	mm-iface-modem.h \
+ 	mm-iface-modem.c \
+ 	mm-iface-modem-3gpp.h \
+@@ -291,8 +287,6 @@ ModemManager_SOURCES = \
+ 	mm-iface-modem-cdma.c \
+ 	mm-iface-modem-simple.h \
+ 	mm-iface-modem-simple.c \
+-	mm-iface-modem-voice.h \
+-	mm-iface-modem-voice.c \
+ 	mm-iface-modem-firmware.h \
+ 	mm-iface-modem-firmware.c \
+ 	mm-iface-modem-signal.h \
+@@ -334,6 +328,17 @@ ModemManager_SOURCES += \
+ 	$(NULL)
+ endif
+ 
++if WITH_INTERFACE_VOICE
++ModemManager_SOURCES += \
++	mm-base-call.h \
++	mm-base-call.c \
++	mm-call-list.h \
++	mm-call-list.c \
++	mm-iface-modem-voice.h \
++	mm-iface-modem-voice.c \
++	$(NULL)
++endif
++
+ nodist_ModemManager_SOURCES = $(DAEMON_ENUMS_GENERATED)
+ 
+ # Additional Polkit support
+diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
+index d41a3dc..eae301b 100644
+--- a/src/mm-broadband-modem.c
++++ b/src/mm-broadband-modem.c
+@@ -42,7 +42,10 @@
+ # include "mm-sms-list.h"
+ # include "mm-sms-part-3gpp.h"
+ #endif
+-#include "mm-iface-modem-voice.h"
++#if MM_INTERFACE_VOICE_SUPPORTED
++# include "mm-iface-modem-voice.h"
++# include "mm-call-list.h"
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+ # include "mm-iface-modem-time.h"
+ #endif
+@@ -51,7 +54,6 @@
+ #include "mm-iface-modem-oma.h"
+ #include "mm-broadband-bearer.h"
+ #include "mm-bearer-list.h"
+-#include "mm-call-list.h"
+ #include "mm-base-sim.h"
+ #include "mm-log.h"
+ #include "mm-modem-helpers.h"
+@@ -73,7 +75,9 @@ static void iface_modem_location_init (MMIfaceModemLocation *iface);
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ static void iface_modem_messaging_init (MMIfaceModemMessaging *iface);
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+ static void iface_modem_voice_init (MMIfaceModemVoice *iface);
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+ static void iface_modem_time_init (MMIfaceModemTime *iface);
+ #endif
+@@ -93,7 +97,9 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_MESSAGING, iface_modem_messaging_init)
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_VOICE, iface_modem_voice_init)
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_TIME, iface_modem_time_init)
+ #endif
+@@ -114,7 +120,9 @@ enum {
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+     PROP_MODEM_MESSAGING_DBUS_SKELETON,
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     PROP_MODEM_VOICE_DBUS_SKELETON,
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     PROP_MODEM_TIME_DBUS_SKELETON,
+ #endif
+@@ -138,7 +146,9 @@ enum {
+     PROP_MODEM_MESSAGING_SMS_PDU_MODE,
+     PROP_MODEM_MESSAGING_SMS_DEFAULT_STORAGE,
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     PROP_MODEM_VOICE_CALL_LIST,
++#endif
+     PROP_MODEM_SIMPLE_STATUS,
+     PROP_MODEM_SIM_HOT_SWAP_SUPPORTED,
+     PROP_LAST
+@@ -231,10 +241,12 @@ struct _MMBroadbandModemPrivate {
+     MMSmsStorage current_sms_mem2_storage;
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     /*<--- Modem Voice interface --->*/
+     /* Properties */
+     GObject *modem_voice_dbus_skeleton;
+     MMCallList *modem_voice_call_list;
++#endif
+ 
+ #if MM_INTERFACE_TIME_SUPPORTED
+     /*<--- Modem Time interface --->*/
+@@ -6467,6 +6479,8 @@ modem_messaging_create_sms (MMIfaceModemMessaging *self)
+ 
+ #endif /* MM_INTERFACE_MESSAGING_SUPPORTED */
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++
+ /*****************************************************************************/
+ /* Check if Voice supported (Voice interface) */
+ 
+@@ -6735,6 +6749,8 @@ modem_voice_create_call (MMIfaceModemVoice *self)
+     return mm_base_call_new (MM_BASE_MODEM (self));
+ }
+ 
++#endif /* MM_INTERFACE_VOICE_SUPPORTED */
++
+ /*****************************************************************************/
+ /* ESN loading (CDMA interface) */
+ 
+@@ -8959,7 +8975,9 @@ typedef enum {
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+     DISABLING_STEP_IFACE_MESSAGING,
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     DISABLING_STEP_IFACE_VOICE,
++#endif
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+     DISABLING_STEP_IFACE_LOCATION,
+ #endif
+@@ -9074,7 +9092,9 @@ INTERFACE_DISABLE_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FAL
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ INTERFACE_DISABLE_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FALSE)
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+ INTERFACE_DISABLE_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
++#endif
+ INTERFACE_DISABLE_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
+ #if MM_INTERFACE_TIME_SUPPORTED
+ INTERFACE_DISABLE_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
+@@ -9229,6 +9249,7 @@ disabling_step (DisablingContext *ctx)
+         ctx->step++;
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     case DISABLING_STEP_IFACE_VOICE:
+         if (ctx->self->priv->modem_voice_dbus_skeleton) {
+             mm_dbg ("Modem has voice capabilities, disabling the Voice interface...");
+@@ -9240,6 +9261,7 @@ disabling_step (DisablingContext *ctx)
+         }
+         /* Fall down to next step */
+         ctx->step++;
++#endif
+ 
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+     case DISABLING_STEP_IFACE_LOCATION:
+@@ -9353,7 +9375,9 @@ typedef enum {
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+     ENABLING_STEP_IFACE_MESSAGING,
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     ENABLING_STEP_IFACE_VOICE,
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     ENABLING_STEP_IFACE_TIME,
+ #endif
+@@ -9460,7 +9484,9 @@ INTERFACE_ENABLE_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALS
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ INTERFACE_ENABLE_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FALSE)
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+ INTERFACE_ENABLE_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
++#endif
+ INTERFACE_ENABLE_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
+ #if MM_INTERFACE_TIME_SUPPORTED
+ INTERFACE_ENABLE_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
+@@ -9626,6 +9652,7 @@ enabling_step (EnablingContext *ctx)
+         ctx->step++;
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     case ENABLING_STEP_IFACE_VOICE:
+         if (ctx->self->priv->modem_voice_dbus_skeleton) {
+             mm_dbg ("Modem has voice capabilities, enabling the Voice interface...");
+@@ -9638,6 +9665,7 @@ enabling_step (EnablingContext *ctx)
+         }
+         /* Fall down to next step */
+         ctx->step++;
++#endif
+ 
+ #if MM_INTERFACE_TIME_SUPPORTED
+     case ENABLING_STEP_IFACE_TIME:
+@@ -9803,7 +9831,9 @@ typedef enum {
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+     INITIALIZE_STEP_IFACE_MESSAGING,
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     INITIALIZE_STEP_IFACE_VOICE,
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     INITIALIZE_STEP_IFACE_TIME,
+ #endif
+@@ -10008,7 +10038,9 @@ INTERFACE_INIT_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ INTERFACE_INIT_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FALSE)
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+ INTERFACE_INIT_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+ INTERFACE_INIT_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
+ #endif
+@@ -10122,6 +10154,7 @@ initialize_step (InitializeContext *ctx)
+         return;
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     case INITIALIZE_STEP_IFACE_VOICE:
+         /* Initialize the Voice interface */
+         mm_iface_modem_voice_initialize (MM_IFACE_MODEM_VOICE (ctx->self),
+@@ -10129,6 +10162,7 @@ initialize_step (InitializeContext *ctx)
+                                          (GAsyncReadyCallback)iface_modem_voice_initialize_ready,
+                                          ctx);
+         return;
++#endif
+ 
+ #if MM_INTERFACE_TIME_SUPPORTED
+     case INITIALIZE_STEP_IFACE_TIME:
+@@ -10255,7 +10289,9 @@ initialize_step (InitializeContext *ctx)
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+                 mm_iface_modem_messaging_shutdown (MM_IFACE_MODEM_MESSAGING (ctx->self));
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+                 mm_iface_modem_voice_shutdown (MM_IFACE_MODEM_VOICE (ctx->self));
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+                 mm_iface_modem_time_shutdown (MM_IFACE_MODEM_TIME (ctx->self));
+ #endif
+@@ -10498,10 +10534,12 @@ set_property (GObject *object,
+         self->priv->modem_messaging_dbus_skeleton = g_value_dup_object (value);
+         break;
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     case PROP_MODEM_VOICE_DBUS_SKELETON:
+         g_clear_object (&self->priv->modem_voice_dbus_skeleton);
+         self->priv->modem_voice_dbus_skeleton = g_value_dup_object (value);
+         break;
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     case PROP_MODEM_TIME_DBUS_SKELETON:
+         g_clear_object (&self->priv->modem_time_dbus_skeleton);
+@@ -10570,10 +10608,12 @@ set_property (GObject *object,
+         self->priv->modem_messaging_sms_default_storage = g_value_get_enum (value);
+         break;
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     case PROP_MODEM_VOICE_CALL_LIST:
+         g_clear_object (&self->priv->modem_voice_call_list);
+         self->priv->modem_voice_call_list = g_value_dup_object (value);
+         break;
++#endif
+     case PROP_MODEM_SIMPLE_STATUS:
+         g_clear_object (&self->priv->modem_simple_status);
+         self->priv->modem_simple_status = g_value_dup_object (value);
+@@ -10621,9 +10661,11 @@ get_property (GObject *object,
+         g_value_set_object (value, self->priv->modem_messaging_dbus_skeleton);
+         break;
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     case PROP_MODEM_VOICE_DBUS_SKELETON:
+         g_value_set_object (value, self->priv->modem_voice_dbus_skeleton);
+         break;
++#endif
+ #if MM_INTERFACE_TIME_SUPPORTED
+     case PROP_MODEM_TIME_DBUS_SKELETON:
+         g_value_set_object (value, self->priv->modem_time_dbus_skeleton);
+@@ -10685,9 +10727,11 @@ get_property (GObject *object,
+         g_value_set_enum (value, self->priv->modem_messaging_sms_default_storage);
+         break;
+ #endif
++#if MM_INTERFACE_VOICE_SUPPORTED
+     case PROP_MODEM_VOICE_CALL_LIST:
+         g_value_set_object (value, self->priv->modem_voice_call_list);
+         break;
++#endif
+     case PROP_MODEM_SIMPLE_STATUS:
+         g_value_set_object (value, self->priv->modem_simple_status);
+         break;
+@@ -10783,10 +10827,13 @@ dispose (GObject *object)
+     g_clear_object (&self->priv->modem_messaging_sms_list);
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     if (self->priv->modem_voice_dbus_skeleton) {
+         mm_iface_modem_voice_shutdown (MM_IFACE_MODEM_VOICE (object));
+         g_clear_object (&self->priv->modem_voice_dbus_skeleton);
+     }
++    g_clear_object (&self->priv->modem_voice_call_list);
++#endif
+ 
+ #if MM_INTERFACE_TIME_SUPPORTED
+     if (self->priv->modem_time_dbus_skeleton) {
+@@ -10802,7 +10849,6 @@ dispose (GObject *object)
+ 
+     g_clear_object (&self->priv->modem_sim);
+     g_clear_object (&self->priv->modem_bearer_list);
+-    g_clear_object (&self->priv->modem_voice_call_list);
+     g_clear_object (&self->priv->modem_simple_status);
+ 
+     G_OBJECT_CLASS (mm_broadband_modem_parent_class)->dispose (object);
+@@ -11009,6 +11055,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+ 
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
++
+ static void
+ iface_modem_voice_init (MMIfaceModemVoice *iface)
+ {
+@@ -11023,6 +11071,8 @@ iface_modem_voice_init (MMIfaceModemVoice *iface)
+     iface->create_call = modem_voice_create_call;
+ }
+ 
++#endif
++
+ #if MM_INTERFACE_TIME_SUPPORTED
+ 
+ static void
+@@ -11120,9 +11170,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+                                       MM_IFACE_MODEM_MESSAGING_DBUS_SKELETON);
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     g_object_class_override_property (object_class,
+                                       PROP_MODEM_VOICE_DBUS_SKELETON,
+                                       MM_IFACE_MODEM_VOICE_DBUS_SKELETON);
++#endif
+ 
+ #if MM_INTERFACE_TIME_SUPPORTED
+     g_object_class_override_property (object_class,
+@@ -11204,9 +11256,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+                                       MM_IFACE_MODEM_MESSAGING_SMS_DEFAULT_STORAGE);
+ #endif
+ 
++#if MM_INTERFACE_VOICE_SUPPORTED
+     g_object_class_override_property (object_class,
+                                       PROP_MODEM_VOICE_CALL_LIST,
+                                       MM_IFACE_MODEM_VOICE_CALL_LIST);
++#endif
+ 
+     g_object_class_override_property (object_class,
+                                       PROP_MODEM_SIMPLE_STATUS,
+-- 
+2.10.2
+

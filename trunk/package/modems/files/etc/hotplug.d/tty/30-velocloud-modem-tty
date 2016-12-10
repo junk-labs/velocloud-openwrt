@@ -1,4 +1,4 @@
-#!/bin/sh
+!/bin/sh
 
 # Copyright (C) 2013-2014 Velocloud Inc
 
@@ -400,6 +400,23 @@ set_eventdir "$usbifname: usb: $DEVICENAME"
 
 debug_hotplugevents
 cleanup_etc_config_modems
+
+# If ModemManager is installed and available, check whether the modem is
+# blacklisted there, and if it isn't, we launch the ModemManager specific
+# logic.
+if [ -f /etc/modemmanager/25-modemmanager-common ]; then
+	. /etc/modemmanager/25-modemmanager-common
+	local BLACKLIST_REASON=$(check_modemmanager_blacklist $usbpath)
+	if [ -z "${BLACKLIST_REASON}" ]; then
+		# ModemManager specific logic
+		if [ "$ACTION" = add ]; then
+			mm_add_to_config
+		elif [ "$ACTION" = remove ]; then
+			remove_device_config
+		fi
+		return
+	fi
+fi
 
 case "$DEVICENAME" in
     console|ttyS[0-9]*)

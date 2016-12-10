@@ -163,6 +163,7 @@ setup_wwan_modem()
 	uci -c /etc/config set network.$usbifname.ifname=''"$etherdevice"''
 	uci -c /etc/config set network.$usbifname.proto='dhcp'
 	uci -c /etc/config set network.$usbifname.hostname=''"vc-$usbifname"''
+	uci -c /etc/config set network.$usbifname.reqopts=''"mtu"''
 	uci -c /etc/config commit network
 	log "Updated network config"
 
@@ -355,6 +356,23 @@ set_eventdir "$usbifname: net: $INTERFACE"
 
 debug_hotplugevents
 cleanup_etc_config_modems
+
+# If ModemManager is installed and available, check whether the modem is
+# blacklisted there, and if it isn't, we launch the ModemManager specific
+# logic.
+if [ -f /etc/modemmanager/25-modemmanager-common ]; then
+	. /etc/modemmanager/25-modemmanager-common
+	local BLACKLIST_REASON=$(check_modemmanager_blacklist /sys${DEVPATH})
+	if [ -z "${BLACKLIST_REASON}" ]; then
+		# ModemManager specific logic
+		if [ "$ACTION" = add ]; then
+			mm_add_to_config
+		elif [ "$ACTION" = remove ]; then
+			remove_device_config
+		fi
+		return
+	fi
+fi
 
 if [ "$ACTION" = add ]; then
 	add_to_config

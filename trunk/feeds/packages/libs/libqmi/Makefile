@@ -1,16 +1,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libqmi
-PKG_VERSION:=1.13.7
+PKG_VERSION:=1.16.2
 PKG_RELEASE:=1
 
-PKG_SOURCE:=libqmi-$(PKG_VERSION).tar.xz
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=2243caaa8637b73e98c14cf09a03988f32d7d268
 PKG_SOURCE_URL:=git://anongit.freedesktop.org/libqmi
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)
-
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_VERSION:=f114f4ebe66c538cbb28b05eb0b065fe08c6f9fa
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -21,7 +19,7 @@ include $(INCLUDE_DIR)/nls.mk
 define Package/libqmi
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=+glib2 +zlib +kmod-usb-net-qmi-wwan
+  DEPENDS:=+glib2 +zlib +kmod-usb-net-qmi-wwan +libmbim
   TITLE:=Helper library and utils to talk to QMI enabled modems
   URL:=http://www.freedesktop.org/wiki/Software/libqmi
 endef

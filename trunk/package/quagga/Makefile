@@ -206,7 +206,7 @@ CONFIGURE_ARGS+= \
 	--enable-zebra-mq \
 
 MAKE_FLAGS += \
-	CFLAGS="$(TARGET_CFLAGS) -std=gnu99"
+	CFLAGS="$(TARGET_CFLAGS) -std=gnu99 -O0 -g"
 
 define Package/quagga/install
 	$(INSTALL_DIR) $(1)/usr/sbin

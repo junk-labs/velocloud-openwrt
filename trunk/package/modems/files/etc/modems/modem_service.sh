@@ -180,10 +180,14 @@ load_modem_status()
 	#   STOPPED
 	#   UNKNOWN
 
-	$(uci -c $modem_config_path get modems.$USB.ifname >/dev/null 2>&1)
-	if [ $? != 0 ]; then
-		STATUS="UNAVAILABLE"
-		return
+	# For ModemManager managed modems, we don't check ifname, as ifname is only
+	# set once the modem has been connected.
+	if [ "$TYPE" != "modemmanager" ]; then
+		$(uci -c $modem_config_path get modems.$USB.ifname >/dev/null 2>&1)
+		if [ $? != 0 ]; then
+			STATUS="UNAVAILABLE"
+			return
+		fi
 	fi
 
 	# Check if the PID file exists
@@ -221,14 +225,10 @@ modem_start()
 		exit 1
 	fi
 
-	# Don't go on if type is empty (i.e. no config for USB#)
-	local type=$(get_usb_type $USB)
-	if [ -z "$type" ]; then
-		logerr "$USB: Unknown modem type, cannot start"
-		exit 1
-	fi
-
-	if [ "$type" == "serial" ]; then
+	if [ "$TYPE" == "modemmanager" ]; then
+		log "$USB: starting ModemManager support"
+		nohup $modem_script_path/MMModems/mm_run.sh $USB 2>&1 >/dev/null &
+	elif [ "$TYPE" == "serial" ]; then
 		log "$USB: starting PPP modem support"
 		nohup $modem_script_path/TTYModems/ppp_run.sh -ifname $USB 2>&1 >/dev/null &
 	else
@@ -237,7 +237,7 @@ modem_start()
 	fi
 
 	modems_plugin_add_rule "$USB"
-	log "$USB: started modem $type script sucessfully"
+	log "$USB: started modem $TYPE script sucessfully"
 
 	uci -c $modem_config_path set modems.$USB.started=''"1"''
 }
@@ -347,6 +347,13 @@ modem_status()
 			;;
 	esac
 }
+
+# Don't go on if type is empty (i.e. no config for USB#)
+TYPE=$(get_usb_type $USB)
+if [ -z "$TYPE" ]; then
+	logerr "$USB: Unknown modem type, cannot run modem service operation"
+	exit 1
+fi
 
 case "$trigger" in
 	'start')

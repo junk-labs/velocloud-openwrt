@@ -1,8 +1,8 @@
-commit b23238ce242b0f74d2643bc004ab95724a07f5d2
+commit af1615def139380f459a31dd9e16ce1238abd0cd
 Author: gopakumar <gopa@velocloud.net>
-Date:   Sat Jul 30 20:20:33 2016 -0700
+Date:   Sun Dec 11 09:33:09 2016 -0800
 
-    configs
+    x86 cfg
 
 diff --git a/config/common_base b/config/common_base
 index 7830535..15a0e29 100644
@@ -109,10 +109,10 @@ index 0000000..25cf817
 +CONFIG_RTE_IXGBE_INC_VECTOR=n
 diff --git a/config/defconfig_x86_64-openwrt-linuxapp-gcc b/config/defconfig_x86_64-openwrt-linuxapp-gcc
 new file mode 100644
-index 0000000..36c513f
+index 0000000..866c46f
 --- /dev/null
 +++ b/config/defconfig_x86_64-openwrt-linuxapp-gcc
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,52 @@
 +#   BSD LICENSE
 +#
 +#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
@@ -151,6 +151,7 @@ index 0000000..36c513f
 +
 +CONFIG_RTE_ARCH="x86_64"
 +CONFIG_RTE_ARCH_X86_64=y
++CONFIG_RTE_ARCH_X86=y
 +CONFIG_RTE_ARCH_64=y
 +
 +CONFIG_RTE_TOOLCHAIN="gcc"

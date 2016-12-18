@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=quagga-host
 PKG_REV:=0.99.24.1
 PKG_VERSION:=$(PKG_REV)
-PKG_RELEASE:=5
+PKG_RELEASE:=10
 
 PKG_SOURCE_PROTO:=none
 PKG_SOURCE_URL:=none

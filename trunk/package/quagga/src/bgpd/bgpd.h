@@ -867,7 +867,7 @@ extern struct bgp *bgp_lookup_by_name (const char *);
 extern struct peer *peer_lookup (struct bgp *, union sockunion *);
 extern struct peer_group *peer_group_lookup (struct bgp *, const char *);
 extern struct peer_group *peer_group_get (struct bgp *, const char *);
-extern struct peer *peer_lookup_with_open (union sockunion *, as_t, struct in_addr *,
+extern struct peer *peer_lookup_with_open (struct bgp *, union sockunion *, as_t, struct in_addr *,
 				    int *);
 extern struct peer *peer_lock (struct peer *);
 extern struct peer *peer_unlock (struct peer *);

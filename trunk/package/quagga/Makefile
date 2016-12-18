@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=quagga
 PKG_VERSION:=0.99.24.1
-PKG_RELEASE:=5
+PKG_RELEASE:=10
 PKG_MD5SUM:=b168db69435100ee04564c4fb39c7413
 
 PKG_SOURCE_PROTO:=none
@@ -206,7 +206,7 @@ CONFIGURE_ARGS+= \
 	--enable-zebra-mq \
 
 MAKE_FLAGS += \
-	CFLAGS="$(TARGET_CFLAGS) -std=gnu99"
+	CFLAGS="$(TARGET_CFLAGS) -std=gnu99 -O0 -g"
 
 define Package/quagga/install
 	$(INSTALL_DIR) $(1)/usr/sbin

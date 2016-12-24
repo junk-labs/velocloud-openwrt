@@ -19,7 +19,8 @@
 #define ZEBRA_ROUTE_HSLS                 11
 #define ZEBRA_ROUTE_OLSR                 12
 #define ZEBRA_ROUTE_BABEL                13
-#define ZEBRA_ROUTE_MAX                  14
+#define ZEBRA_ROUTE_USER                 14
+#define ZEBRA_ROUTE_MAX                  15
 
 #define SHOW_ROUTE_V4_HEADER \
   "Codes: K - kernel route, C - connected, S - static, R - RIP,%s" \
@@ -70,7 +71,7 @@
 
 /* bgpd */
 #define QUAGGA_REDIST_STR_BGPD \
-  "(kernel|connected|static|rip|ripng|ospf|ospf6|isis|pim|babel)"
+  "(kernel|connected|static|rip|ripng|ospf|ospf6|isis|pim|babel|user)"
 #define QUAGGA_REDIST_HELP_STR_BGPD \
   "Kernel routes (not installed via the zebra RIB)\n" \
   "Connected routes (directly attached subnet or host)\n" \
@@ -81,9 +82,10 @@
   "Open Shortest Path First (IPv6) (OSPFv3)\n" \
   "Intermediate System to Intermediate System (IS-IS)\n" \
   "Protocol Independent Multicast (PIM)\n" \
-  "Babel routing protocol (Babel)\n"
+  "Babel routing protocol (Babel)\n" \
+  "User application protocol\n"
 #define QUAGGA_IP_REDIST_STR_BGPD \
-  "(kernel|connected|static|rip|ospf|isis|pim|babel)"
+  "(kernel|connected|static|rip|ospf|isis|pim|babel|user)"
 #define QUAGGA_IP_REDIST_HELP_STR_BGPD \
   "Kernel routes (not installed via the zebra RIB)\n" \
   "Connected routes (directly attached subnet or host)\n" \
@@ -92,9 +94,10 @@
   "Open Shortest Path First (OSPFv2)\n" \
   "Intermediate System to Intermediate System (IS-IS)\n" \
   "Protocol Independent Multicast (PIM)\n" \
-  "Babel routing protocol (Babel)\n"
+  "Babel routing protocol (Babel)\n" \
+  "User application protocol\n"
 #define QUAGGA_IP6_REDIST_STR_BGPD \
-  "(kernel|connected|static|ripng|ospf6|isis|babel)"
+  "(kernel|connected|static|ripng|ospf6|isis|babel|user)"
 #define QUAGGA_IP6_REDIST_HELP_STR_BGPD \
   "Kernel routes (not installed via the zebra RIB)\n" \
   "Connected routes (directly attached subnet or host)\n" \
@@ -102,7 +105,8 @@
   "Routing Information Protocol next-generation (IPv6) (RIPng)\n" \
   "Open Shortest Path First (IPv6) (OSPFv3)\n" \
   "Intermediate System to Intermediate System (IS-IS)\n" \
-  "Babel routing protocol (Babel)\n"
+  "Babel routing protocol (Babel)\n" \
+  "User application protocol\n"
 
 /* isisd */
 #define QUAGGA_REDIST_STR_ISISD \
@@ -268,6 +272,7 @@ static const struct zebra_desc_table route_types[] = {
   DESC_ENTRY	(ZEBRA_ROUTE_HSLS,	 "hsls",	'H' ),
   DESC_ENTRY	(ZEBRA_ROUTE_OLSR,	 "olsr",	'o' ),
   DESC_ENTRY	(ZEBRA_ROUTE_BABEL,	 "babel",	'A' ),
+  DESC_ENTRY	(ZEBRA_ROUTE_USER,	 "user",	'U' ),
 };
 #undef DESC_ENTRY
 

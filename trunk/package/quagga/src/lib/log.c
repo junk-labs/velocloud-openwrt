@@ -979,6 +979,8 @@ proto_redistnum(int afi, const char *s)
 	return ZEBRA_ROUTE_BGP;
       else if (strncmp (s, "ba", 2) == 0)
 	return ZEBRA_ROUTE_BABEL;
+      else if (strncmp (s, "us", 2) == 0)
+	return ZEBRA_ROUTE_USER;
     }
   if (afi == AFI_IP6)
     {
@@ -998,6 +1000,8 @@ proto_redistnum(int afi, const char *s)
 	return ZEBRA_ROUTE_BGP;
       else if (strncmp (s, "ba", 2) == 0)
 	return ZEBRA_ROUTE_BABEL;
+      else if (strncmp (s, "us", 2) == 0)
+	return ZEBRA_ROUTE_USER;
     }
   return -1;
 }

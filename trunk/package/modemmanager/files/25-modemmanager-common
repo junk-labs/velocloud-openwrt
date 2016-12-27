@@ -22,7 +22,7 @@ find_physdev_sysfs_path() {
 
 		# the physical device will be that with a idVendor and idProduct pair of files
 		if [ -f ${tmp_path}/idVendor ] && [ -f ${tmp_path}/idProduct ]; then
-			tmp_path=$(realpath $tmp_path)
+			tmp_path=$(readlink -f $tmp_path)
 			echo ${tmp_path}
 			return
 		fi

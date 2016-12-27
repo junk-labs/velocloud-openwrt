@@ -1,0 +1,1693 @@
+From a63e3fe7fa5ec31b3c10af9e0fabdbb3f97ebcbb Mon Sep 17 00:00:00 2001
+From: Aleksander Morgado <aleksander@aleksander.es>
+Date: Mon, 12 Dec 2016 14:34:21 +0100
+Subject: [PATCH 2/2] velocloud: backport modem usb serial fixes from v4.9
+
+The following patches are backported, in the following order:
+
+    40d9c32 USB: serial: option: add WeTelecom 0x6802 and 0x6803 products
+    6695593e USB: serial: option: add WeTelecom WM-D200
+    01d7956 USB: serial: option: add support for Telit LE920A4
+    cf1b180 USB: serial: option: add D-Link DWM-156/A3
+    3c0415f USB: serial: option: add support for Telit LE910 PID 0x1206
+    74d2a91 USB: serial: option: add even more ZTE device ids
+    f0d0946 USB: serial: option: add more ZTE device ids
+    444f94e USB: serial: option: add support for Cinterion PH8 and AHxx
+    04fdbc8 USB: qcserial: add Sierra Wireless EM74xx device ID
+    013dd23 USB: qcserial: add Dell Wireless 5809e Gobi 4G HSPA+ (rev3)
+    59536da USB: qcserial: Fix support for HP lt4112 LTE/HSPA+ Gobi 4G Modem
+    9d5b5ed USB: qcserial: Add support for Quectel EC20 Mini PCIe module
+    f504ab1 USB: qcserial: add Sierra Wireless MC74xx/EM74xx
+    92944c4 USB: qcserial: update comment for Sierra Wireless MC7304/MC7354
+    fbbf9fd Revert "USB: qcserial/option: make AT URCs work for Sierra Wireless MC73xx"
+    3d07984 Revert "USB: qcserial/option: make AT URCs work for Sierra Wireless MC7305/MC7355"
+    efd3e91 USB: qcserial: make AT URCs work for Sierra Wireless devices
+    669e729 USB: usb_wwan/option: generalize option_send_setup for other drivers
+    d2958d1 USB: usb_wwan: silence read errors on disconnect
+    b0a9aa6 USB: usb_wwan: do not resume I/O on closing ports
+    89da4a4 USB: usb_wwan: remove bogus function prototype
+    8bb7ec6 USB: usb_wwan: report failed submissions as errors
+    7d5dddd USB: usb_wwan: remove some superfluous comments
+    9fdf706 USB: usb_wwan: remove comment from close
+    3362c91 USB: usb_wwan: clean up delayed-urb submission
+    37357ca USB: usb_wwan: use interface-data accessors
+    b0f9d00 USB: usb_wwan: make resume error messages uniform
+    ae75c94 USB: usb_wwan: kill interrupt urb explicitly at suspend
+    2b4acea USB: usb_wwan: remove redundant urb kill from port remove
+    0280354 USB: usb_wwan: remove redundant modem-control request
+    c1c0180 USB: usb_wwan: fix remote wakeup
+    7436f41 USB: usb_wwan: fix discarded writes on resume errors
+    bd8869e USB: option: revert introduction of struct option_private
+    44840de USB: qcserial: add HP lt4111 LTE/EV-DO/HSPA+ Gobi 4G Module
+    9257f1d USB: option: silence interrupt errors
+    6da3700 USB: qcserial: Add support for Dell Wireless 5809e 4G Modem
+    653cdc1 USB: qcserial/option: make AT URCs work for Sierra Wireless MC7305/MC7355
+    46dc0fc USB: option: clean up blacklist handling
+    d80c0d1 USB: qcserial/option: make AT URCs work for Sierra Wireless MC73xx
+    e7181d0 USB: qcserial: Add support for HP lt4112 LTE/HSPA+ Gobi 4G Modem
+    f8c0e05 USB: serial: remove zte_ev driver
+    a427c17 USB: usb_wwan: remove unimplemented set_termios
+    496969c USB: option: add missing usb_mark_last_busy
+    dd246f2 USB: option: fix line-control pipe direction
+    48292d8 usb: qcserial: remove interface number matching
+    8bc7a06 usb: qcserial: define and use Sierra Wireless layout
+    d712ca9 usb: qcserial: refactor device layout selection
+    ce1b066 usb: qcserial: fix multiline comment coding style
+---
+ drivers/usb/serial/Kconfig    |   8 --
+ drivers/usb/serial/Makefile   |   1 -
+ drivers/usb/serial/option.c   | 313 ++++++++++++++++++++++++++++--------------
+ drivers/usb/serial/qcserial.c | 267 ++++++++++++++++++++++++-----------
+ drivers/usb/serial/usb-wwan.h |   8 +-
+ drivers/usb/serial/usb_wwan.c | 171 +++++++++++++----------
+ drivers/usb/serial/zte_ev.c   | 305 ----------------------------------------
+ 7 files changed, 492 insertions(+), 581 deletions(-)
+ delete mode 100644 drivers/usb/serial/zte_ev.c
+
+diff --git a/drivers/usb/serial/Kconfig b/drivers/usb/serial/Kconfig
+index 6f483b8..6a010f5 100644
+--- a/drivers/usb/serial/Kconfig
++++ b/drivers/usb/serial/Kconfig
+@@ -683,14 +683,6 @@ config USB_SERIAL_WISHBONE
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called wishbone-serial.
+ 
+-config USB_SERIAL_ZTE
+-	tristate "ZTE USB serial driver"
+-	help
+-	  Say Y here if you want to use a ZTE USB to serial device.
+-
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called zte.
+-
+ config USB_SERIAL_SSU100
+ 	tristate "USB Quatech SSU-100 Single Port Serial Driver"
+ 	help
+diff --git a/drivers/usb/serial/Makefile b/drivers/usb/serial/Makefile
+index bfdafd3..349d9df 100644
+--- a/drivers/usb/serial/Makefile
++++ b/drivers/usb/serial/Makefile
+@@ -60,4 +60,3 @@ obj-$(CONFIG_USB_SERIAL_WISHBONE)		+= wishbone-serial.o
+ obj-$(CONFIG_USB_SERIAL_WHITEHEAT)		+= whiteheat.o
+ obj-$(CONFIG_USB_SERIAL_XIRCOM)			+= keyspan_pda.o
+ obj-$(CONFIG_USB_SERIAL_XSENS_MT)		+= xsens_mt.o
+-obj-$(CONFIG_USB_SERIAL_ZTE)			+= zte_ev.o
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index 99c89d7..9894e34 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -48,7 +48,6 @@ static int  option_probe(struct usb_serial *serial,
+ 			const struct usb_device_id *id);
+ static int option_attach(struct usb_serial *serial);
+ static void option_release(struct usb_serial *serial);
+-static int option_send_setup(struct usb_serial_port *port);
+ static void option_instat_callback(struct urb *urb);
+ 
+ /* Vendor and product IDs */
+@@ -274,6 +273,13 @@ static void option_instat_callback(struct urb *urb);
+ #define TELIT_PRODUCT_LE922_USBCFG5		0x1045
+ #define TELIT_PRODUCT_LE920			0x1200
+ #define TELIT_PRODUCT_LE910			0x1201
++#define TELIT_PRODUCT_LE910_USBCFG4		0x1206
++#define TELIT_PRODUCT_LE920A4_1207		0x1207
++#define TELIT_PRODUCT_LE920A4_1208		0x1208
++#define TELIT_PRODUCT_LE920A4_1211		0x1211
++#define TELIT_PRODUCT_LE920A4_1212		0x1212
++#define TELIT_PRODUCT_LE920A4_1213		0x1213
++#define TELIT_PRODUCT_LE920A4_1214		0x1214
+ 
+ /* ZTE PRODUCTS */
+ #define ZTE_VENDOR_ID				0x19d2
+@@ -285,6 +291,7 @@ static void option_instat_callback(struct urb *urb);
+ #define ZTE_PRODUCT_ME3620_X			0x1432
+ #define ZTE_PRODUCT_ME3620_L			0x1433
+ #define ZTE_PRODUCT_AC2726			0xfff1
++#define ZTE_PRODUCT_MG880			0xfffd
+ #define ZTE_PRODUCT_CDMA_TECH			0xfffe
+ #define ZTE_PRODUCT_AC8710T			0xffff
+ #define ZTE_PRODUCT_MC2718			0xffe8
+@@ -375,18 +382,22 @@ static void option_instat_callback(struct urb *urb);
+ #define HAIER_PRODUCT_CE81B			0x10f8
+ #define HAIER_PRODUCT_CE100			0x2009
+ 
+-/* Cinterion (formerly Siemens) products */
+-#define SIEMENS_VENDOR_ID				0x0681
+-#define CINTERION_VENDOR_ID				0x1e2d
++/* Gemalto's Cinterion products (formerly Siemens) */
++#define SIEMENS_VENDOR_ID			0x0681
++#define CINTERION_VENDOR_ID			0x1e2d
++#define CINTERION_PRODUCT_HC25_MDMNET		0x0040
+ #define CINTERION_PRODUCT_HC25_MDM		0x0047
+-#define CINTERION_PRODUCT_HC25_MDMNET	0x0040
++#define CINTERION_PRODUCT_HC28_MDMNET		0x004A /* same for HC28J */
+ #define CINTERION_PRODUCT_HC28_MDM		0x004C
+-#define CINTERION_PRODUCT_HC28_MDMNET	0x004A /* same for HC28J */
+ #define CINTERION_PRODUCT_EU3_E			0x0051
+ #define CINTERION_PRODUCT_EU3_P			0x0052
+ #define CINTERION_PRODUCT_PH8			0x0053
+ #define CINTERION_PRODUCT_AHXX			0x0055
+ #define CINTERION_PRODUCT_PLXX			0x0060
++#define CINTERION_PRODUCT_PH8_2RMNET		0x0082
++#define CINTERION_PRODUCT_PH8_AUDIO		0x0083
++#define CINTERION_PRODUCT_AHXX_2RMNET		0x0084
++#define CINTERION_PRODUCT_AHXX_AUDIO		0x0085
+ 
+ /* Olivetti products */
+ #define OLIVETTI_VENDOR_ID			0x0b3c
+@@ -514,18 +525,16 @@ static void option_instat_callback(struct urb *urb);
+ #define VIATELECOM_VENDOR_ID			0x15eb
+ #define VIATELECOM_PRODUCT_CDS7			0x0001
+ 
+-/* some devices interfaces need special handling due to a number of reasons */
+-enum option_blacklist_reason {
+-		OPTION_BLACKLIST_NONE = 0,
+-		OPTION_BLACKLIST_SENDSETUP = 1,
+-		OPTION_BLACKLIST_RESERVED_IF = 2
+-};
++/* WeTelecom products */
++#define WETELECOM_VENDOR_ID			0x22de
++#define WETELECOM_PRODUCT_WMD200		0x6801
++#define WETELECOM_PRODUCT_6802			0x6802
++#define WETELECOM_PRODUCT_WMD300		0x6803
+ 
+-#define MAX_BL_NUM  8
+ struct option_blacklist_info {
+-	/* bitfield of interface numbers for OPTION_BLACKLIST_SENDSETUP */
++	/* bitmask of interface numbers blacklisted for send_setup */
+ 	const unsigned long sendsetup;
+-	/* bitfield of interface numbers for OPTION_BLACKLIST_RESERVED_IF */
++	/* bitmask of interface numbers that are reserved */
+ 	const unsigned long reserved;
+ };
+ 
+@@ -631,6 +640,11 @@ static const struct option_blacklist_info telit_le920_blacklist = {
+ 	.reserved = BIT(1) | BIT(5),
+ };
+ 
++static const struct option_blacklist_info telit_le920a4_blacklist_1 = {
++	.sendsetup = BIT(0),
++	.reserved = BIT(1),
++};
++
+ static const struct option_blacklist_info telit_le922_blacklist_usbcfg0 = {
+ 	.sendsetup = BIT(2),
+ 	.reserved = BIT(0) | BIT(1) | BIT(3),
+@@ -641,6 +655,10 @@ static const struct option_blacklist_info telit_le922_blacklist_usbcfg3 = {
+ 	.reserved = BIT(1) | BIT(2) | BIT(3),
+ };
+ 
++static const struct option_blacklist_info cinterion_rmnet2_blacklist = {
++	.reserved = BIT(4) | BIT(5),
++};
++
+ static const struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
+@@ -1198,8 +1216,20 @@ static const struct usb_device_id option_ids[] = {
+ 		.driver_info = (kernel_ulong_t)&telit_le922_blacklist_usbcfg0 },
+ 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE910),
+ 		.driver_info = (kernel_ulong_t)&telit_le910_blacklist },
++	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE910_USBCFG4),
++		.driver_info = (kernel_ulong_t)&telit_le922_blacklist_usbcfg3 },
+ 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920),
+ 		.driver_info = (kernel_ulong_t)&telit_le920_blacklist },
++	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920A4_1207) },
++	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920A4_1208),
++		.driver_info = (kernel_ulong_t)&telit_le920a4_blacklist_1 },
++	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920A4_1211),
++		.driver_info = (kernel_ulong_t)&telit_le922_blacklist_usbcfg3 },
++	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920A4_1212),
++		.driver_info = (kernel_ulong_t)&telit_le920a4_blacklist_1 },
++	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920A4_1213, 0xff) },
++	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920A4_1214),
++		.driver_info = (kernel_ulong_t)&telit_le922_blacklist_usbcfg3 },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_MF622, 0xff, 0xff, 0xff) }, /* ZTE WCDMA products */
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0002, 0xff, 0xff, 0xff),
+ 		.driver_info = (kernel_ulong_t)&net_intf1_blacklist },
+@@ -1610,7 +1640,79 @@ static const struct usb_device_id option_ids[] = {
+ 		.driver_info = (kernel_ulong_t)&net_intf3_blacklist },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0178, 0xff, 0xff, 0xff),
+ 		.driver_info = (kernel_ulong_t)&net_intf3_blacklist },
+-	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffe9, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff42, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff43, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff44, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff45, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff46, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff47, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff48, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff49, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff4a, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff4b, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff4c, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff4d, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff4e, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff4f, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff50, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff51, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff52, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff53, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff54, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff55, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff56, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff57, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff58, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff59, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff5a, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff5b, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff5c, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff5d, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff5e, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff5f, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff60, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff61, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff62, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff63, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff64, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff65, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff66, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff67, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff68, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff69, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff6a, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff6b, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff6c, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff6d, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff6e, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff6f, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff70, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff71, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff72, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff73, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff74, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff75, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff76, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff77, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff78, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff79, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff7a, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff7b, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff7c, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff7d, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff7e, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff7f, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff80, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff81, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff82, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff83, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff84, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff85, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff86, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff87, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff88, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff89, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff8a, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff8b, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff8c, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff8d, 0xff, 0xff, 0xff) },
+@@ -1621,7 +1723,70 @@ static const struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff92, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff93, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff94, 0xff, 0xff, 0xff) },
+-
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xff9f, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa0, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa1, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa2, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa3, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa4, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa5, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa6, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa7, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa8, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffa9, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffaa, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffab, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffac, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffae, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffaf, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb0, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb1, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb2, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb3, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb4, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb5, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb6, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb7, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb8, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffb9, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffba, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffbb, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffbc, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffbd, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffbe, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffbf, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc0, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc1, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc2, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc3, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc4, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc5, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc6, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc7, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc8, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffc9, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffca, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffcb, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffcc, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffcd, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffce, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffcf, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffd0, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffd1, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffd2, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffd3, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffd4, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffd5, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffe9, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffec, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xffee, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xfff6, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xfff7, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xfff8, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xfff9, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xfffb, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0xfffc, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_MG880, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_AC2726, 0xff, 0xff, 0xff) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_AC8710T, 0xff, 0xff, 0xff) },
+@@ -1712,7 +1877,13 @@ static const struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_AHXX, 0xff) },
+ 	{ USB_DEVICE(CINTERION_VENDOR_ID, CINTERION_PRODUCT_PLXX),
+ 		.driver_info = (kernel_ulong_t)&net_intf4_blacklist },
+-	{ USB_DEVICE(CINTERION_VENDOR_ID, CINTERION_PRODUCT_HC28_MDM) }, 
++	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_PH8_2RMNET, 0xff),
++		.driver_info = (kernel_ulong_t)&cinterion_rmnet2_blacklist },
++	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_PH8_AUDIO, 0xff),
++		.driver_info = (kernel_ulong_t)&net_intf4_blacklist },
++	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_AHXX_2RMNET, 0xff) },
++	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_AHXX_AUDIO, 0xff) },
++	{ USB_DEVICE(CINTERION_VENDOR_ID, CINTERION_PRODUCT_HC28_MDM) },
+ 	{ USB_DEVICE(CINTERION_VENDOR_ID, CINTERION_PRODUCT_HC28_MDMNET) },
+ 	{ USB_DEVICE(SIEMENS_VENDOR_ID, CINTERION_PRODUCT_HC25_MDM) },
+ 	{ USB_DEVICE(SIEMENS_VENDOR_ID, CINTERION_PRODUCT_HC25_MDMNET) },
+@@ -1822,9 +1993,13 @@ static const struct usb_device_id option_ids[] = {
+ 	  .driver_info = (kernel_ulong_t)&net_intf4_blacklist },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(0x07d1, 0x3e01, 0xff, 0xff, 0xff) }, /* D-Link DWM-152/C1 */
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(0x07d1, 0x3e02, 0xff, 0xff, 0xff) }, /* D-Link DWM-156/C1 */
++	{ USB_DEVICE_AND_INTERFACE_INFO(0x07d1, 0x7e11, 0xff, 0xff, 0xff) }, /* D-Link DWM-156/A3 */
+ 	{ USB_DEVICE_INTERFACE_CLASS(0x2020, 0x4000, 0xff) },                /* OLICARD300 - MT6225 */
+ 	{ USB_DEVICE(INOVIA_VENDOR_ID, INOVIA_SEW858) },
+ 	{ USB_DEVICE(VIATELECOM_VENDOR_ID, VIATELECOM_PRODUCT_CDS7) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(WETELECOM_VENDOR_ID, WETELECOM_PRODUCT_WMD200, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(WETELECOM_VENDOR_ID, WETELECOM_PRODUCT_6802, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE_AND_INTERFACE_INFO(WETELECOM_VENDOR_ID, WETELECOM_PRODUCT_WMD300, 0xff, 0xff, 0xff) },
+ 	{ } /* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, option_ids);
+@@ -1848,7 +2023,6 @@ static struct usb_serial_driver option_1port_device = {
+ 	.write             = usb_wwan_write,
+ 	.write_room        = usb_wwan_write_room,
+ 	.chars_in_buffer   = usb_wwan_chars_in_buffer,
+-	.set_termios       = usb_wwan_set_termios,
+ 	.tiocmget          = usb_wwan_tiocmget,
+ 	.tiocmset          = usb_wwan_tiocmset,
+ 	.ioctl             = usb_wwan_ioctl,
+@@ -1867,42 +2041,15 @@ static struct usb_serial_driver * const serial_drivers[] = {
+ 	&option_1port_device, NULL
+ };
+ 
+-struct option_private {
+-	u8 bInterfaceNumber;
+-};
+-
+ module_usb_serial_driver(serial_drivers, option_ids);
+ 
+-static bool is_blacklisted(const u8 ifnum, enum option_blacklist_reason reason,
+-			   const struct option_blacklist_info *blacklist)
+-{
+-	unsigned long num;
+-	const unsigned long *intf_list;
+-
+-	if (blacklist) {
+-		if (reason == OPTION_BLACKLIST_SENDSETUP)
+-			intf_list = &blacklist->sendsetup;
+-		else if (reason == OPTION_BLACKLIST_RESERVED_IF)
+-			intf_list = &blacklist->reserved;
+-		else {
+-			BUG_ON(reason);
+-			return false;
+-		}
+-
+-		for_each_set_bit(num, intf_list, MAX_BL_NUM + 1) {
+-			if (num == ifnum)
+-				return true;
+-		}
+-	}
+-	return false;
+-}
+-
+ static int option_probe(struct usb_serial *serial,
+ 			const struct usb_device_id *id)
+ {
+ 	struct usb_interface_descriptor *iface_desc =
+ 				&serial->interface->cur_altsetting->desc;
+ 	struct usb_device_descriptor *dev_desc = &serial->dev->descriptor;
++	const struct option_blacklist_info *blacklist;
+ 
+ 	/* Never bind to the CD-Rom emulation interface	*/
+ 	if (iface_desc->bInterfaceClass == 0x08)
+@@ -1913,10 +2060,9 @@ static int option_probe(struct usb_serial *serial,
+ 	 * the same class/subclass/protocol as the serial interfaces.  Look at
+ 	 * the Windows driver .INF files for reserved interface numbers.
+ 	 */
+-	if (is_blacklisted(
+-		iface_desc->bInterfaceNumber,
+-		OPTION_BLACKLIST_RESERVED_IF,
+-		(const struct option_blacklist_info *) id->driver_info))
++	blacklist = (void *)id->driver_info;
++	if (blacklist && test_bit(iface_desc->bInterfaceNumber,
++						&blacklist->reserved))
+ 		return -ENODEV;
+ 	/*
+ 	 * Don't bind network interface on Samsung GT-B3730, it is handled by
+@@ -1927,8 +2073,8 @@ static int option_probe(struct usb_serial *serial,
+ 	    iface_desc->bInterfaceClass != USB_CLASS_CDC_DATA)
+ 		return -ENODEV;
+ 
+-	/* Store device id so we can use it during attach. */
+-	usb_set_serial_data(serial, (void *)id);
++	/* Store the blacklist info so we can use it during attach. */
++	usb_set_serial_data(serial, (void *)blacklist);
+ 
+ 	return 0;
+ }
+@@ -1936,31 +2082,21 @@ static int option_probe(struct usb_serial *serial,
+ static int option_attach(struct usb_serial *serial)
+ {
+ 	struct usb_interface_descriptor *iface_desc;
+-	const struct usb_device_id *id;
++	const struct option_blacklist_info *blacklist;
+ 	struct usb_wwan_intf_private *data;
+-	struct option_private *priv;
+ 
+ 	data = kzalloc(sizeof(struct usb_wwan_intf_private), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+ 
+-	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+-	if (!priv) {
+-		kfree(data);
+-		return -ENOMEM;
+-	}
++	/* Retrieve blacklist info stored at probe. */
++	blacklist = usb_get_serial_data(serial);
+ 
+-	/* Retrieve device id stored at probe. */
+-	id = usb_get_serial_data(serial);
+ 	iface_desc = &serial->interface->cur_altsetting->desc;
+ 
+-	priv->bInterfaceNumber = iface_desc->bInterfaceNumber;
+-	data->private = priv;
+-
+-	if (!is_blacklisted(iface_desc->bInterfaceNumber,
+-			OPTION_BLACKLIST_SENDSETUP,
+-			(struct option_blacklist_info *)id->driver_info)) {
+-		data->send_setup = option_send_setup;
++	if (!blacklist || !test_bit(iface_desc->bInterfaceNumber,
++						&blacklist->sendsetup)) {
++		data->use_send_setup = 1;
+ 	}
+ 	spin_lock_init(&data->susp_lock);
+ 
+@@ -1972,9 +2108,7 @@ static int option_attach(struct usb_serial *serial)
+ static void option_release(struct usb_serial *serial)
+ {
+ 	struct usb_wwan_intf_private *intfdata = usb_get_serial_data(serial);
+-	struct option_private *priv = intfdata->private;
+ 
+-	kfree(priv);
+ 	kfree(intfdata);
+ }
+ 
+@@ -2021,10 +2155,11 @@ static void option_instat_callback(struct urb *urb)
+ 	} else if (status == -ENOENT || status == -ESHUTDOWN) {
+ 		dev_dbg(dev, "%s: urb stopped: %d\n", __func__, status);
+ 	} else
+-		dev_err(dev, "%s: error %d\n", __func__, status);
++		dev_dbg(dev, "%s: error %d\n", __func__, status);
+ 
+ 	/* Resubmit urb so we continue receiving IRQ data */
+ 	if (status != -ESHUTDOWN && status != -ENOENT) {
++		usb_mark_last_busy(port->serial->dev);
+ 		err = usb_submit_urb(urb, GFP_ATOMIC);
+ 		if (err)
+ 			dev_dbg(dev, "%s: resubmit intr urb failed. (%d)\n",
+@@ -2032,40 +2167,6 @@ static void option_instat_callback(struct urb *urb)
+ 	}
+ }
+ 
+-/** send RTS/DTR state to the port.
+- *
+- * This is exactly the same as SET_CONTROL_LINE_STATE from the PSTN
+- * CDC.
+-*/
+-static int option_send_setup(struct usb_serial_port *port)
+-{
+-	struct usb_serial *serial = port->serial;
+-	struct usb_wwan_intf_private *intfdata = usb_get_serial_data(serial);
+-	struct option_private *priv = intfdata->private;
+-	struct usb_wwan_port_private *portdata;
+-	int val = 0;
+-	int res;
+-
+-	portdata = usb_get_serial_port_data(port);
+-
+-	if (portdata->dtr_state)
+-		val |= 0x01;
+-	if (portdata->rts_state)
+-		val |= 0x02;
+-
+-	res = usb_autopm_get_interface(serial->interface);
+-	if (res)
+-		return res;
+-
+-	res = usb_control_msg(serial->dev, usb_rcvctrlpipe(serial->dev, 0),
+-				0x22, 0x21, val, priv->bInterfaceNumber, NULL,
+-				0, USB_CTRL_SET_TIMEOUT);
+-
+-	usb_autopm_put_interface(serial->interface);
+-
+-	return res;
+-}
+-
+ MODULE_AUTHOR(DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/usb/serial/qcserial.c b/drivers/usb/serial/qcserial.c
+index 43d93db..1bc6089 100644
+--- a/drivers/usb/serial/qcserial.c
++++ b/drivers/usb/serial/qcserial.c
+@@ -22,8 +22,22 @@
+ #define DRIVER_AUTHOR "Qualcomm Inc"
+ #define DRIVER_DESC "Qualcomm USB Serial driver"
+ 
++#define QUECTEL_EC20_PID	0x9215
++
++/* standard device layouts supported by this driver */
++enum qcserial_layouts {
++	QCSERIAL_G2K = 0,	/* Gobi 2000 */
++	QCSERIAL_G1K = 1,	/* Gobi 1000 */
++	QCSERIAL_SWI = 2,	/* Sierra Wireless */
++	QCSERIAL_HWI = 3,	/* Huawei */
++};
++
+ #define DEVICE_G1K(v, p) \
+-	USB_DEVICE(v, p), .driver_info = 1
++	USB_DEVICE(v, p), .driver_info = QCSERIAL_G1K
++#define DEVICE_SWI(v, p) \
++	USB_DEVICE(v, p), .driver_info = QCSERIAL_SWI
++#define DEVICE_HWI(v, p) \
++	USB_DEVICE(v, p), .driver_info = QCSERIAL_HWI
+ 
+ static const struct usb_device_id id_table[] = {
+ 	/* Gobi 1000 devices */
+@@ -126,72 +140,74 @@ static const struct usb_device_id id_table[] = {
+ 	{USB_DEVICE(0x12D1, 0x14F1)},	/* Sony Gobi 3000 Composite */
+ 	{USB_DEVICE(0x0AF0, 0x8120)},	/* Option GTM681W */
+ 
+-	/* non Gobi Qualcomm serial devices */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x0f3d, 0x68a2, 0)},	/* Sierra Wireless MC7700 Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x0f3d, 0x68a2, 2)},	/* Sierra Wireless MC7700 NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x0f3d, 0x68a2, 3)},	/* Sierra Wireless MC7700 Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x114f, 0x68a2, 0)},	/* Sierra Wireless MC7750 Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x114f, 0x68a2, 2)},	/* Sierra Wireless MC7750 NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x114f, 0x68a2, 3)},	/* Sierra Wireless MC7750 Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x68a2, 0)},	/* Sierra Wireless MC7710 Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x68a2, 2)},	/* Sierra Wireless MC7710 NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x68a2, 3)},	/* Sierra Wireless MC7710 Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x68c0, 0)},	/* Sierra Wireless MC73xx Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x68c0, 2)},	/* Sierra Wireless MC73xx NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x68c0, 3)},	/* Sierra Wireless MC73xx Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901c, 0)},	/* Sierra Wireless EM7700 Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901c, 2)},	/* Sierra Wireless EM7700 NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901c, 3)},	/* Sierra Wireless EM7700 Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901f, 0)},	/* Sierra Wireless EM7355 Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901f, 2)},	/* Sierra Wireless EM7355 NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x901f, 3)},	/* Sierra Wireless EM7355 Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9040, 0)},	/* Sierra Wireless Modem Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9040, 2)},	/* Sierra Wireless Modem NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9040, 3)},	/* Sierra Wireless Modem Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9041, 0)},	/* Sierra Wireless MC7305/MC7355 Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9041, 2)},	/* Sierra Wireless MC7305/MC7355 NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9041, 3)},	/* Sierra Wireless MC7305/MC7355 Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9051, 0)},	/* Netgear AirCard 340U Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9051, 2)},	/* Netgear AirCard 340U NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9051, 3)},	/* Netgear AirCard 340U Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9053, 0)},	/* Sierra Wireless Modem Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9053, 2)},	/* Sierra Wireless Modem NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9053, 3)},	/* Sierra Wireless Modem Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9054, 0)},	/* Sierra Wireless Modem Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9054, 2)},	/* Sierra Wireless Modem NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9054, 3)},	/* Sierra Wireless Modem Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9055, 0)},	/* Netgear AirCard 341U Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9055, 2)},	/* Netgear AirCard 341U NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9055, 3)},	/* Netgear AirCard 341U Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9056, 0)},	/* Sierra Wireless Modem Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9056, 2)},	/* Sierra Wireless Modem NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9056, 3)},	/* Sierra Wireless Modem Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9060, 0)},	/* Sierra Wireless Modem Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9060, 2)},	/* Sierra Wireless Modem NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9060, 3)},	/* Sierra Wireless Modem Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9061, 0)},	/* Sierra Wireless Modem Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9061, 2)},	/* Sierra Wireless Modem NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x1199, 0x9061, 3)},	/* Sierra Wireless Modem Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a2, 0)},	/* Dell Wireless 5806 Gobi(TM) 4G LTE Mobile Broadband Card Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a2, 2)},	/* Dell Wireless 5806 Gobi(TM) 4G LTE Mobile Broadband Card NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a2, 3)},	/* Dell Wireless 5806 Gobi(TM) 4G LTE Mobile Broadband Card Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a3, 0)},	/* Dell Wireless 5570 HSPA+ (42Mbps) Mobile Broadband Card Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a3, 2)},	/* Dell Wireless 5570 HSPA+ (42Mbps) Mobile Broadband Card NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a3, 3)},	/* Dell Wireless 5570 HSPA+ (42Mbps) Mobile Broadband Card Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a4, 0)},	/* Dell Wireless 5570e HSPA+ (42Mbps) Mobile Broadband Card Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a4, 2)},	/* Dell Wireless 5570e HSPA+ (42Mbps) Mobile Broadband Card NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a4, 3)},	/* Dell Wireless 5570e HSPA+ (42Mbps) Mobile Broadband Card Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a8, 0)},	/* Dell Wireless 5808 Gobi(TM) 4G LTE Mobile Broadband Card Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a8, 2)},	/* Dell Wireless 5808 Gobi(TM) 4G LTE Mobile Broadband Card NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a8, 3)},	/* Dell Wireless 5808 Gobi(TM) 4G LTE Mobile Broadband Card Modem */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a9, 0)},	/* Dell Wireless 5808e Gobi(TM) 4G LTE Mobile Broadband Card Device Management */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a9, 2)},	/* Dell Wireless 5808e Gobi(TM) 4G LTE Mobile Broadband Card NMEA */
+-	{USB_DEVICE_INTERFACE_NUMBER(0x413c, 0x81a9, 3)},	/* Dell Wireless 5808e Gobi(TM) 4G LTE Mobile Broadband Card Modem */
++	/* non-Gobi Sierra Wireless devices */
++	{DEVICE_SWI(0x03f0, 0x4e1d)},	/* HP lt4111 LTE/EV-DO/HSPA+ Gobi 4G Module */
++	{DEVICE_SWI(0x0f3d, 0x68a2)},	/* Sierra Wireless MC7700 */
++	{DEVICE_SWI(0x114f, 0x68a2)},	/* Sierra Wireless MC7750 */
++	{DEVICE_SWI(0x1199, 0x68a2)},	/* Sierra Wireless MC7710 */
++	{DEVICE_SWI(0x1199, 0x68c0)},	/* Sierra Wireless MC7304/MC7354 */
++	{DEVICE_SWI(0x1199, 0x901c)},	/* Sierra Wireless EM7700 */
++	{DEVICE_SWI(0x1199, 0x901f)},	/* Sierra Wireless EM7355 */
++	{DEVICE_SWI(0x1199, 0x9040)},	/* Sierra Wireless Modem */
++	{DEVICE_SWI(0x1199, 0x9041)},	/* Sierra Wireless MC7305/MC7355 */
++	{DEVICE_SWI(0x1199, 0x9051)},	/* Netgear AirCard 340U */
++	{DEVICE_SWI(0x1199, 0x9053)},	/* Sierra Wireless Modem */
++	{DEVICE_SWI(0x1199, 0x9054)},	/* Sierra Wireless Modem */
++	{DEVICE_SWI(0x1199, 0x9055)},	/* Netgear AirCard 341U */
++	{DEVICE_SWI(0x1199, 0x9056)},	/* Sierra Wireless Modem */
++	{DEVICE_SWI(0x1199, 0x9060)},	/* Sierra Wireless Modem */
++	{DEVICE_SWI(0x1199, 0x9061)},	/* Sierra Wireless Modem */
++	{DEVICE_SWI(0x1199, 0x9070)},	/* Sierra Wireless MC74xx */
++	{DEVICE_SWI(0x1199, 0x9071)},	/* Sierra Wireless MC74xx */
++	{DEVICE_SWI(0x1199, 0x9078)},	/* Sierra Wireless EM74xx */
++	{DEVICE_SWI(0x1199, 0x9079)},	/* Sierra Wireless EM74xx */
++	{DEVICE_SWI(0x413c, 0x81a2)},	/* Dell Wireless 5806 Gobi(TM) 4G LTE Mobile Broadband Card */
++	{DEVICE_SWI(0x413c, 0x81a3)},	/* Dell Wireless 5570 HSPA+ (42Mbps) Mobile Broadband Card */
++	{DEVICE_SWI(0x413c, 0x81a4)},	/* Dell Wireless 5570e HSPA+ (42Mbps) Mobile Broadband Card */
++	{DEVICE_SWI(0x413c, 0x81a8)},	/* Dell Wireless 5808 Gobi(TM) 4G LTE Mobile Broadband Card */
++	{DEVICE_SWI(0x413c, 0x81a9)},	/* Dell Wireless 5808e Gobi(TM) 4G LTE Mobile Broadband Card */
++	{DEVICE_SWI(0x413c, 0x81b1)},	/* Dell Wireless 5809e Gobi(TM) 4G LTE Mobile Broadband Card */
++	{DEVICE_SWI(0x413c, 0x81b3)},	/* Dell Wireless 5809e Gobi(TM) 4G LTE Mobile Broadband Card (rev3) */
++
++	/* Huawei devices */
++	{DEVICE_HWI(0x03f0, 0x581d)},	/* HP lt4112 LTE/HSPA+ Gobi 4G Modem (Huawei me906e) */
+ 
+ 	{ }				/* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, id_table);
+ 
++static int handle_quectel_ec20(struct device *dev, int ifnum)
++{
++	int altsetting = 0;
++
++	/*
++	 * Quectel EC20 Mini PCIe LTE module layout:
++	 * 0: DM/DIAG (use libqcdm from ModemManager for communication)
++	 * 1: NMEA
++	 * 2: AT-capable modem port
++	 * 3: Modem interface
++	 * 4: NDIS
++	 */
++	switch (ifnum) {
++	case 0:
++		dev_dbg(dev, "Quectel EC20 DM/DIAG interface found\n");
++		break;
++	case 1:
++		dev_dbg(dev, "Quectel EC20 NMEA GPS interface found\n");
++		break;
++	case 2:
++	case 3:
++		dev_dbg(dev, "Quectel EC20 Modem port found\n");
++		break;
++	case 4:
++		/* Don't claim the QMI/net interface */
++		altsetting = -1;
++		break;
++	}
++
++	return altsetting;
++}
++
+ static int qcprobe(struct usb_serial *serial, const struct usb_device_id *id)
+ {
+ 	struct usb_host_interface *intf = serial->interface->cur_altsetting;
+@@ -199,10 +215,12 @@ static int qcprobe(struct usb_serial *serial, const struct usb_device_id *id)
+ 	int retval = -ENODEV;
+ 	__u8 nintf;
+ 	__u8 ifnum;
+-	bool is_gobi1k = id->driver_info ? true : false;
+ 	int altsetting = -1;
++	bool sendsetup = false;
+ 
+-	dev_dbg(dev, "Is Gobi 1000 = %d\n", is_gobi1k);
++	/* we only support vendor specific functions */
++	if (intf->desc.bInterfaceClass != USB_CLASS_VENDOR_SPEC)
++		goto done;
+ 
+ 	nintf = serial->dev->actconfig->desc.bNumInterfaces;
+ 	dev_dbg(dev, "Num Interfaces = %d\n", nintf);
+@@ -231,32 +249,29 @@ static int qcprobe(struct usb_serial *serial, const struct usb_device_id *id)
+ 
+ 	}
+ 
+-	/* allow any number of interfaces when doing direct interface match */
+-	if (id->match_flags & USB_DEVICE_ID_MATCH_INT_NUMBER) {
+-		dev_dbg(dev, "Generic Qualcomm serial interface found\n");
+-		altsetting = 0;
+-		goto done;
+-	}
+-
+-	if (nintf < 3 || nintf > 4) {
+-		dev_err(dev, "unknown number of interfaces: %d\n", nintf);
+-		goto done;
+-	}
+-
+ 	/* default to enabling interface */
+ 	altsetting = 0;
+ 
+-	/* Composite mode; don't bind to the QMI/net interface as that
++	/*
++	 * Composite mode; don't bind to the QMI/net interface as that
+ 	 * gets handled by other drivers.
+ 	 */
+ 
+-	if (is_gobi1k) {
+-		/* Gobi 1K USB layout:
++	switch (id->driver_info) {
++	case QCSERIAL_G1K:
++		/*
++		 * Gobi 1K USB layout:
+ 		 * 0: DM/DIAG (use libqcdm from ModemManager for communication)
+ 		 * 1: serial port (doesn't respond)
+ 		 * 2: AT-capable modem port
+ 		 * 3: QMI/net
+ 		 */
++		if (nintf < 3 || nintf > 4) {
++			dev_err(dev, "unknown number of interfaces: %d\n", nintf);
++			altsetting = -1;
++			goto done;
++		}
++
+ 		if (ifnum == 0) {
+ 			dev_dbg(dev, "Gobi 1K DM/DIAG interface found\n");
+ 			altsetting = 1;
+@@ -264,13 +279,27 @@ static int qcprobe(struct usb_serial *serial, const struct usb_device_id *id)
+ 			dev_dbg(dev, "Modem port found\n");
+ 		else
+ 			altsetting = -1;
+-	} else {
+-		/* Gobi 2K+ USB layout:
++		break;
++	case QCSERIAL_G2K:
++		/* handle non-standard layouts */
++		if (nintf == 5 && id->idProduct == QUECTEL_EC20_PID) {
++			altsetting = handle_quectel_ec20(dev, ifnum);
++			goto done;
++		}
++
++		/*
++		 * Gobi 2K+ USB layout:
+ 		 * 0: QMI/net
+ 		 * 1: DM/DIAG (use libqcdm from ModemManager for communication)
+ 		 * 2: AT-capable modem port
+ 		 * 3: NMEA
+ 		 */
++		if (nintf < 3 || nintf > 4) {
++			dev_err(dev, "unknown number of interfaces: %d\n", nintf);
++			altsetting = -1;
++			goto done;
++		}
++
+ 		switch (ifnum) {
+ 		case 0:
+ 			/* Don't claim the QMI/net interface */
+@@ -291,6 +320,73 @@ static int qcprobe(struct usb_serial *serial, const struct usb_device_id *id)
+ 			dev_dbg(dev, "Gobi 2K+ NMEA GPS interface found\n");
+ 			break;
+ 		}
++		break;
++	case QCSERIAL_SWI:
++		/*
++		 * Sierra Wireless layout:
++		 * 0: DM/DIAG (use libqcdm from ModemManager for communication)
++		 * 2: NMEA
++		 * 3: AT-capable modem port
++		 * 8: QMI/net
++		 */
++		switch (ifnum) {
++		case 0:
++			dev_dbg(dev, "DM/DIAG interface found\n");
++			break;
++		case 2:
++			dev_dbg(dev, "NMEA GPS interface found\n");
++			break;
++		case 3:
++			dev_dbg(dev, "Modem port found\n");
++			sendsetup = true;
++			break;
++		default:
++			/* don't claim any unsupported interface */
++			altsetting = -1;
++			break;
++		}
++		break;
++	case QCSERIAL_HWI:
++		/*
++		 * Huawei devices map functions by subclass + protocol
++		 * instead of interface numbers. The protocol identify
++		 * a specific function, while the subclass indicate a
++		 * specific firmware source
++		 *
++		 * This is a blacklist of functions known to be
++		 * non-serial.  The rest are assumed to be serial and
++		 * will be handled by this driver
++		 */
++		switch (intf->desc.bInterfaceProtocol) {
++			/* QMI combined (qmi_wwan) */
++		case 0x07:
++		case 0x37:
++		case 0x67:
++			/* QMI data (qmi_wwan) */
++		case 0x08:
++		case 0x38:
++		case 0x68:
++			/* QMI control (qmi_wwan) */
++		case 0x09:
++		case 0x39:
++		case 0x69:
++			/* NCM like (huawei_cdc_ncm) */
++		case 0x16:
++		case 0x46:
++		case 0x76:
++			altsetting = -1;
++			break;
++		default:
++			dev_dbg(dev, "Huawei type serial port found (%02x/%02x/%02x)\n",
++				intf->desc.bInterfaceClass,
++				intf->desc.bInterfaceSubClass,
++				intf->desc.bInterfaceProtocol);
++		}
++		break;
++	default:
++		dev_err(dev, "unsupported device layout type: %lu\n",
++			id->driver_info);
++		break;
+ 	}
+ 
+ done:
+@@ -304,17 +400,25 @@ done:
+ 		}
+ 	}
+ 
++	if (!retval)
++		usb_set_serial_data(serial, (void *)(unsigned long)sendsetup);
++
+ 	return retval;
+ }
+ 
+ static int qc_attach(struct usb_serial *serial)
+ {
+ 	struct usb_wwan_intf_private *data;
++	bool sendsetup;
+ 
+ 	data = kzalloc(sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+ 
++	sendsetup = !!(unsigned long)(usb_get_serial_data(serial));
++	if (sendsetup)
++		data->use_send_setup = 1;
++
+ 	spin_lock_init(&data->susp_lock);
+ 
+ 	usb_set_serial_data(serial, data);
+@@ -341,6 +445,7 @@ static struct usb_serial_driver qcdevice = {
+ 	.probe               = qcprobe,
+ 	.open		     = usb_wwan_open,
+ 	.close		     = usb_wwan_close,
++	.dtr_rts	     = usb_wwan_dtr_rts,
+ 	.write		     = usb_wwan_write,
+ 	.write_room	     = usb_wwan_write_room,
+ 	.chars_in_buffer     = usb_wwan_chars_in_buffer,
+diff --git a/drivers/usb/serial/usb-wwan.h b/drivers/usb/serial/usb-wwan.h
+index 684739b..44b25c0 100644
+--- a/drivers/usb/serial/usb-wwan.h
++++ b/drivers/usb/serial/usb-wwan.h
+@@ -11,15 +11,11 @@ extern void usb_wwan_close(struct usb_serial_port *port);
+ extern int usb_wwan_port_probe(struct usb_serial_port *port);
+ extern int usb_wwan_port_remove(struct usb_serial_port *port);
+ extern int usb_wwan_write_room(struct tty_struct *tty);
+-extern void usb_wwan_set_termios(struct tty_struct *tty,
+-				 struct usb_serial_port *port,
+-				 struct ktermios *old);
+ extern int usb_wwan_tiocmget(struct tty_struct *tty);
+ extern int usb_wwan_tiocmset(struct tty_struct *tty,
+ 			     unsigned int set, unsigned int clear);
+ extern int usb_wwan_ioctl(struct tty_struct *tty,
+ 			  unsigned int cmd, unsigned long arg);
+-extern int usb_wwan_send_setup(struct usb_serial_port *port);
+ extern int usb_wwan_write(struct tty_struct *tty, struct usb_serial_port *port,
+ 			  const unsigned char *buf, int count);
+ extern int usb_wwan_chars_in_buffer(struct tty_struct *tty);
+@@ -38,8 +34,9 @@ extern int usb_wwan_resume(struct usb_serial *serial);
+ struct usb_wwan_intf_private {
+ 	spinlock_t susp_lock;
+ 	unsigned int suspended:1;
++	unsigned int use_send_setup:1;
+ 	int in_flight;
+-	int (*send_setup) (struct usb_serial_port *port);
++	unsigned int open_ports;
+ 	void *private;
+ };
+ 
+@@ -51,7 +48,6 @@ struct usb_wwan_port_private {
+ 	struct urb *out_urbs[N_OUT_URB];
+ 	u8 *out_buffer[N_OUT_URB];
+ 	unsigned long out_busy;	/* Bit vector of URBs in use */
+-	int opened;
+ 	struct usb_anchor delayed;
+ 
+ 	/* Settings for the port */
+diff --git a/drivers/usb/serial/usb_wwan.c b/drivers/usb/serial/usb_wwan.c
+index d91a988..d1b9613 100644
+--- a/drivers/usb/serial/usb_wwan.c
++++ b/drivers/usb/serial/usb_wwan.c
+@@ -36,14 +36,48 @@
+ #include <linux/serial.h>
+ #include "usb-wwan.h"
+ 
++/*
++ * Generate DTR/RTS signals on the port using the SET_CONTROL_LINE_STATE request
++ * in CDC ACM.
++ */
++static int usb_wwan_send_setup(struct usb_serial_port *port)
++{
++	struct usb_serial *serial = port->serial;
++	struct usb_wwan_port_private *portdata;
++	int val = 0;
++	int ifnum;
++	int res;
++
++	portdata = usb_get_serial_port_data(port);
++
++	if (portdata->dtr_state)
++		val |= 0x01;
++	if (portdata->rts_state)
++		val |= 0x02;
++
++	ifnum = serial->interface->cur_altsetting->desc.bInterfaceNumber;
++
++	res = usb_autopm_get_interface(serial->interface);
++	if (res)
++		return res;
++
++	res = usb_control_msg(serial->dev, usb_sndctrlpipe(serial->dev, 0),
++				0x22, 0x21, val, ifnum, NULL, 0,
++				USB_CTRL_SET_TIMEOUT);
++
++	usb_autopm_put_interface(port->serial->interface);
++
++	return res;
++}
++
+ void usb_wwan_dtr_rts(struct usb_serial_port *port, int on)
+ {
+ 	struct usb_wwan_port_private *portdata;
+ 	struct usb_wwan_intf_private *intfdata;
+ 
+-	intfdata = port->serial->private;
++	intfdata = usb_get_serial_data(port->serial);
+ 
+-	if (!intfdata->send_setup)
++	if (!intfdata->use_send_setup)
+ 		return;
+ 
+ 	portdata = usb_get_serial_port_data(port);
+@@ -51,24 +85,10 @@ void usb_wwan_dtr_rts(struct usb_serial_port *port, int on)
+ 	portdata->rts_state = on;
+ 	portdata->dtr_state = on;
+ 
+-	intfdata->send_setup(port);
++	usb_wwan_send_setup(port);
+ }
+ EXPORT_SYMBOL(usb_wwan_dtr_rts);
+ 
+-void usb_wwan_set_termios(struct tty_struct *tty,
+-			  struct usb_serial_port *port,
+-			  struct ktermios *old_termios)
+-{
+-	struct usb_wwan_intf_private *intfdata = port->serial->private;
+-
+-	/* Doesn't support option setting */
+-	tty_termios_copy_hw(&tty->termios, old_termios);
+-
+-	if (intfdata->send_setup)
+-		intfdata->send_setup(port);
+-}
+-EXPORT_SYMBOL(usb_wwan_set_termios);
+-
+ int usb_wwan_tiocmget(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+@@ -96,9 +116,9 @@ int usb_wwan_tiocmset(struct tty_struct *tty,
+ 	struct usb_wwan_intf_private *intfdata;
+ 
+ 	portdata = usb_get_serial_port_data(port);
+-	intfdata = port->serial->private;
++	intfdata = usb_get_serial_data(port->serial);
+ 
+-	if (!intfdata->send_setup)
++	if (!intfdata->use_send_setup)
+ 		return -EINVAL;
+ 
+ 	/* FIXME: what locks portdata fields ? */
+@@ -111,7 +131,7 @@ int usb_wwan_tiocmset(struct tty_struct *tty,
+ 		portdata->rts_state = 0;
+ 	if (clear & TIOCM_DTR)
+ 		portdata->dtr_state = 0;
+-	return intfdata->send_setup(port);
++	return usb_wwan_send_setup(port);
+ }
+ EXPORT_SYMBOL(usb_wwan_tiocmset);
+ 
+@@ -192,7 +212,6 @@ int usb_wwan_ioctl(struct tty_struct *tty,
+ }
+ EXPORT_SYMBOL(usb_wwan_ioctl);
+ 
+-/* Write */
+ int usb_wwan_write(struct tty_struct *tty, struct usb_serial_port *port,
+ 		   const unsigned char *buf, int count)
+ {
+@@ -205,7 +224,7 @@ int usb_wwan_write(struct tty_struct *tty, struct usb_serial_port *port,
+ 	unsigned long flags;
+ 
+ 	portdata = usb_get_serial_port_data(port);
+-	intfdata = port->serial->private;
++	intfdata = usb_get_serial_data(port->serial);
+ 
+ 	dev_dbg(&port->dev, "%s: write (%d chars)\n", __func__, count);
+ 
+@@ -246,9 +265,9 @@ int usb_wwan_write(struct tty_struct *tty, struct usb_serial_port *port,
+ 			spin_unlock_irqrestore(&intfdata->susp_lock, flags);
+ 			err = usb_submit_urb(this_urb, GFP_ATOMIC);
+ 			if (err) {
+-				dev_dbg(&port->dev,
+-					"usb_submit_urb %p (write bulk) failed (%d)\n",
+-					this_urb, err);
++				dev_err(&port->dev,
++					"%s: submit urb %d failed: %d\n",
++					__func__, i, err);
+ 				clear_bit(i, &portdata->out_busy);
+ 				spin_lock_irqsave(&intfdata->susp_lock, flags);
+ 				intfdata->in_flight--;
+@@ -297,7 +316,7 @@ static void usb_wwan_indat_callback(struct urb *urb)
+ 	/* Resubmit urb so we continue receiving */
+ 	err = usb_submit_urb(urb, GFP_ATOMIC);
+ 	if (err) {
+-		if (err != -EPERM) {
++		if (err != -EPERM && err != -ENODEV) {
+ 			dev_err(dev, "%s: resubmit read urb failed. (%d)\n",
+ 				__func__, err);
+ 			/* busy also in error unless we are killed */
+@@ -316,7 +335,7 @@ static void usb_wwan_outdat_callback(struct urb *urb)
+ 	int i;
+ 
+ 	port = urb->context;
+-	intfdata = port->serial->private;
++	intfdata = usb_get_serial_data(port->serial);
+ 
+ 	usb_serial_port_softint(port);
+ 	usb_autopm_put_interface_async(port->serial->interface);
+@@ -386,12 +405,12 @@ int usb_wwan_open(struct tty_struct *tty, struct usb_serial_port *port)
+ 	struct urb *urb;
+ 
+ 	portdata = usb_get_serial_port_data(port);
+-	intfdata = serial->private;
++	intfdata = usb_get_serial_data(serial);
+ 
+ 	if (port->interrupt_in_urb) {
+ 		err = usb_submit_urb(port->interrupt_in_urb, GFP_KERNEL);
+ 		if (err) {
+-			dev_dbg(&port->dev, "%s: submit int urb failed: %d\n",
++			dev_err(&port->dev, "%s: submit int urb failed: %d\n",
+ 				__func__, err);
+ 		}
+ 	}
+@@ -403,17 +422,15 @@ int usb_wwan_open(struct tty_struct *tty, struct usb_serial_port *port)
+ 			continue;
+ 		err = usb_submit_urb(urb, GFP_KERNEL);
+ 		if (err) {
+-			dev_dbg(&port->dev, "%s: submit urb %d failed (%d) %d\n",
+-				__func__, i, err, urb->transfer_buffer_length);
++			dev_err(&port->dev,
++				"%s: submit read urb %d failed: %d\n",
++				__func__, i, err);
+ 		}
+ 	}
+ 
+-	if (intfdata->send_setup)
+-		intfdata->send_setup(port);
+-
+-	serial->interface->needs_remote_wakeup = 1;
+ 	spin_lock_irq(&intfdata->susp_lock);
+-	portdata->opened = 1;
++	if (++intfdata->open_ports == 1)
++		serial->interface->needs_remote_wakeup = 1;
+ 	spin_unlock_irq(&intfdata->susp_lock);
+ 	/* this balances a get in the generic USB serial code */
+ 	usb_autopm_put_interface(serial->interface);
+@@ -440,14 +457,18 @@ void usb_wwan_close(struct usb_serial_port *port)
+ 	int i;
+ 	struct usb_serial *serial = port->serial;
+ 	struct usb_wwan_port_private *portdata;
+-	struct usb_wwan_intf_private *intfdata = port->serial->private;
++	struct usb_wwan_intf_private *intfdata = usb_get_serial_data(serial);
+ 	struct urb *urb;
+ 
+ 	portdata = usb_get_serial_port_data(port);
+ 
+-	/* Stop reading/writing urbs */
++	/*
++	 * Need to take susp_lock to make sure port is not already being
++	 * resumed, but no need to hold it due to ASYNC_INITIALIZED.
++	 */
+ 	spin_lock_irq(&intfdata->susp_lock);
+-	portdata->opened = 0;
++	if (--intfdata->open_ports == 0)
++		serial->interface->needs_remote_wakeup = 0;
+ 	spin_unlock_irq(&intfdata->susp_lock);
+ 
+ 	for (;;) {
+@@ -464,13 +485,10 @@ void usb_wwan_close(struct usb_serial_port *port)
+ 		usb_kill_urb(portdata->out_urbs[i]);
+ 	usb_kill_urb(port->interrupt_in_urb);
+ 
+-	/* balancing - important as an error cannot be handled*/
+ 	usb_autopm_get_interface_no_resume(serial->interface);
+-	serial->interface->needs_remote_wakeup = 0;
+ }
+ EXPORT_SYMBOL(usb_wwan_close);
+ 
+-/* Helper functions used by usb_wwan_setup_urbs */
+ static struct urb *usb_wwan_setup_urb(struct usb_serial_port *port,
+ 				      int endpoint,
+ 				      int dir, void *ctx, char *buf, int len,
+@@ -483,7 +501,6 @@ static struct urb *usb_wwan_setup_urb(struct usb_serial_port *port,
+ 	if (!urb)
+ 		return NULL;
+ 
+-	/* Fill URB using supplied data. */
+ 	usb_fill_bulk_urb(urb, serial->dev,
+ 			  usb_sndbulkpipe(serial->dev, endpoint) | dir,
+ 			  buf, len, callback, ctx);
+@@ -561,32 +578,28 @@ int usb_wwan_port_remove(struct usb_serial_port *port)
+ 	portdata = usb_get_serial_port_data(port);
+ 	usb_set_serial_port_data(port, NULL);
+ 
+-	/* Stop reading/writing urbs and free them */
+ 	for (i = 0; i < N_IN_URB; i++) {
+-		usb_kill_urb(portdata->in_urbs[i]);
+ 		usb_free_urb(portdata->in_urbs[i]);
+ 		free_page((unsigned long)portdata->in_buffer[i]);
+ 	}
+ 	for (i = 0; i < N_OUT_URB; i++) {
+-		usb_kill_urb(portdata->out_urbs[i]);
+ 		usb_free_urb(portdata->out_urbs[i]);
+ 		kfree(portdata->out_buffer[i]);
+ 	}
+ 
+-	/* Now free port private data */
+ 	kfree(portdata);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(usb_wwan_port_remove);
+ 
+ #ifdef CONFIG_PM
+-static void stop_read_write_urbs(struct usb_serial *serial)
++static void stop_urbs(struct usb_serial *serial)
+ {
+ 	int i, j;
+ 	struct usb_serial_port *port;
+ 	struct usb_wwan_port_private *portdata;
+ 
+-	/* Stop reading/writing urbs */
+ 	for (i = 0; i < serial->num_ports; ++i) {
+ 		port = serial->port[i];
+ 		portdata = usb_get_serial_port_data(port);
+@@ -596,12 +609,13 @@ static void stop_read_write_urbs(struct usb_serial *serial)
+ 			usb_kill_urb(portdata->in_urbs[j]);
+ 		for (j = 0; j < N_OUT_URB; j++)
+ 			usb_kill_urb(portdata->out_urbs[j]);
++		usb_kill_urb(port->interrupt_in_urb);
+ 	}
+ }
+ 
+ int usb_wwan_suspend(struct usb_serial *serial, pm_message_t message)
+ {
+-	struct usb_wwan_intf_private *intfdata = serial->private;
++	struct usb_wwan_intf_private *intfdata = usb_get_serial_data(serial);
+ 
+ 	spin_lock_irq(&intfdata->susp_lock);
+ 	if (PMSG_IS_AUTO(message)) {
+@@ -613,43 +627,52 @@ int usb_wwan_suspend(struct usb_serial *serial, pm_message_t message)
+ 	intfdata->suspended = 1;
+ 	spin_unlock_irq(&intfdata->susp_lock);
+ 
+-	stop_read_write_urbs(serial);
++	stop_urbs(serial);
+ 
+ 	return 0;
+ }
+ EXPORT_SYMBOL(usb_wwan_suspend);
+ 
+-static int play_delayed(struct usb_serial_port *port)
++/* Caller must hold susp_lock. */
++static int usb_wwan_submit_delayed_urbs(struct usb_serial_port *port)
+ {
+-	struct usb_wwan_intf_private *data;
++	struct usb_serial *serial = port->serial;
++	struct usb_wwan_intf_private *data = usb_get_serial_data(serial);
+ 	struct usb_wwan_port_private *portdata;
+ 	struct urb *urb;
+-	int err = 0;
++	int err_count = 0;
++	int err;
+ 
+ 	portdata = usb_get_serial_port_data(port);
+-	data = port->serial->private;
+-	while ((urb = usb_get_from_anchor(&portdata->delayed))) {
+-		err = usb_submit_urb(urb, GFP_ATOMIC);
+-		if (!err) {
+-			data->in_flight++;
+-		} else {
+-			/* we have to throw away the rest */
+-			do {
+-				unbusy_queued_urb(urb, portdata);
+-				usb_autopm_put_interface_no_suspend(port->serial->interface);
+-			} while ((urb = usb_get_from_anchor(&portdata->delayed)));
++
++	for (;;) {
++		urb = usb_get_from_anchor(&portdata->delayed);
++		if (!urb)
+ 			break;
++
++		err = usb_submit_urb(urb, GFP_ATOMIC);
++		if (err) {
++			dev_err(&port->dev, "%s: submit urb failed: %d\n",
++					__func__, err);
++			err_count++;
++			unbusy_queued_urb(urb, portdata);
++			usb_autopm_put_interface_async(serial->interface);
++			continue;
+ 		}
++		data->in_flight++;
+ 	}
+ 
+-	return err;
++	if (err_count)
++		return -EIO;
++
++	return 0;
+ }
+ 
+ int usb_wwan_resume(struct usb_serial *serial)
+ {
+ 	int i, j;
+ 	struct usb_serial_port *port;
+-	struct usb_wwan_intf_private *intfdata = serial->private;
++	struct usb_wwan_intf_private *intfdata = usb_get_serial_data(serial);
+ 	struct usb_wwan_port_private *portdata;
+ 	struct urb *urb;
+ 	int err;
+@@ -657,14 +680,13 @@ int usb_wwan_resume(struct usb_serial *serial)
+ 
+ 	spin_lock_irq(&intfdata->susp_lock);
+ 	for (i = 0; i < serial->num_ports; i++) {
+-		/* walk all ports */
+ 		port = serial->port[i];
+-		portdata = usb_get_serial_port_data(port);
+ 
+-		/* skip closed ports */
+-		if (!portdata || !portdata->opened)
++		if (!test_bit(ASYNCB_INITIALIZED, &port->port.flags))
+ 			continue;
+ 
++		portdata = usb_get_serial_port_data(port);
++
+ 		if (port->interrupt_in_urb) {
+ 			err = usb_submit_urb(port->interrupt_in_urb,
+ 					GFP_ATOMIC);
+@@ -676,7 +698,7 @@ int usb_wwan_resume(struct usb_serial *serial)
+ 			}
+ 		}
+ 
+-		err = play_delayed(port);
++		err = usb_wwan_submit_delayed_urbs(port);
+ 		if (err)
+ 			err_count++;
+ 
+@@ -684,8 +706,9 @@ int usb_wwan_resume(struct usb_serial *serial)
+ 			urb = portdata->in_urbs[j];
+ 			err = usb_submit_urb(urb, GFP_ATOMIC);
+ 			if (err < 0) {
+-				dev_err(&port->dev, "%s: Error %d for bulk URB %d\n",
+-					__func__, err, i);
++				dev_err(&port->dev,
++					"%s: submit read urb %d failed: %d\n",
++					__func__, i, err);
+ 				err_count++;
+ 			}
+ 		}
+diff --git a/drivers/usb/serial/zte_ev.c b/drivers/usb/serial/zte_ev.c
+deleted file mode 100644
+index c9bb107..0000000
+--- a/drivers/usb/serial/zte_ev.c
++++ /dev/null
+@@ -1,305 +0,0 @@
+-/*
+- * ZTE_EV USB serial driver
+- *
+- * Copyright (C) 2012 Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+- * Copyright (C) 2012 Linux Foundation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * This driver is based on code found in a ZTE_ENV patch that modified
+- * the usb-serial generic driver.  Comments were left in that I think
+- * show the commands used to talk to the device, but I am not sure.
+- */
+-#include <linux/kernel.h>
+-#include <linux/tty.h>
+-#include <linux/slab.h>
+-#include <linux/module.h>
+-#include <linux/usb.h>
+-#include <linux/usb/serial.h>
+-#include <linux/uaccess.h>
+-
+-#define  MAX_SETUP_DATA_SIZE	32
+-
+-static void debug_data(struct device *dev, const char *function, int len,
+-		       const unsigned char *data, int result)
+-{
+-	dev_dbg(dev, "result = %d\n", result);
+-	if (result == len)
+-		dev_dbg(dev, "%s - length = %d, data = %*ph\n", function,
+-			len, len, data);
+-}
+-
+-static int zte_ev_usb_serial_open(struct tty_struct *tty,
+-				  struct usb_serial_port *port)
+-{
+-	struct usb_device *udev = port->serial->dev;
+-	struct device *dev = &port->dev;
+-	int result = 0;
+-	int len;
+-	unsigned char *buf;
+-
+-	buf = kmalloc(MAX_SETUP_DATA_SIZE, GFP_KERNEL);
+-	if (!buf)
+-		return -ENOMEM;
+-
+-	/* send 1st ctl cmd(CTL    21 22 01 00  00 00 00 00) */
+-	len = 0;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x22, 0x21,
+-				 0x0001, 0x0000, NULL, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	dev_dbg(dev, "result = %d\n", result);
+-
+-	/* send 2st cmd and receive data */
+-	/*
+-	 * 16.0  CTL    a1 21 00 00  00 00 07 00   CLASS              25.1.0(5)
+-	 * 16.0  DI     00 96 00 00  00 00 08
+-	 */
+-	len = 0x0007;
+-	result = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+-				 0x21, 0xa1,
+-				 0x0000, 0x0000, buf, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	debug_data(dev, __func__, len, buf, result);
+-
+-	/* send 3rd cmd */
+-	/*
+-	 * 16.0 CTL    21 20 00 00  00 00 07 00    CLASS                30.1.0
+-	 * 16.0 DO     80 25 00 00  00 00 08       .%.....              30.2.0
+-	 */
+-	len = 0x0007;
+-	buf[0] = 0x80;
+-	buf[1] = 0x25;
+-	buf[2] = 0x00;
+-	buf[3] = 0x00;
+-	buf[4] = 0x00;
+-	buf[5] = 0x00;
+-	buf[6] = 0x08;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x20, 0x21,
+-				 0x0000, 0x0000, buf, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	debug_data(dev, __func__, len, buf, result);
+-
+-	/* send 4th cmd */
+-	/*
+-	 * 16.0 CTL    21 22 03 00  00 00 00 00
+-	 */
+-	len = 0;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x22, 0x21,
+-				 0x0003, 0x0000, NULL, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	dev_dbg(dev, "result = %d\n", result);
+-
+-	/* send 5th cmd */
+-	/*
+-	 * 16.0  CTL    a1 21 00 00  00 00 07 00   CLASS               33.1.0
+-	 * 16.0  DI     80 25 00 00  00 00 08
+-	 */
+-	len = 0x0007;
+-	result = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+-				 0x21, 0xa1,
+-				 0x0000, 0x0000, buf, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	debug_data(dev, __func__, len, buf, result);
+-
+-	/* send 6th cmd */
+-	/*
+-	 * 16.0  CTL    21 20 00 00  00 00 07 00    CLASS               34.1.0
+-	 * 16.0  DO     80 25 00 00  00 00 08
+-	 */
+-	len = 0x0007;
+-	buf[0] = 0x80;
+-	buf[1] = 0x25;
+-	buf[2] = 0x00;
+-	buf[3] = 0x00;
+-	buf[4] = 0x00;
+-	buf[5] = 0x00;
+-	buf[6] = 0x08;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x20, 0x21,
+-				 0x0000, 0x0000, buf, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	debug_data(dev, __func__, len, buf, result);
+-	kfree(buf);
+-
+-	return usb_serial_generic_open(tty, port);
+-}
+-
+-/*
+- *       CTL    21 22 02 00  00 00 00 00         CLASS               338.1.0
+- *
+- * 16.1  DI     a1 20 00 00  00 00 02 00  02 00  . ........          340.1.0
+- * 16.0  CTL    21 22 03 00  00 00 00 00         CLASS               341.1.0
+- *
+- * 16.0  CTL    a1 21 00 00  00 00 07 00         CLASS               346.1.0(3)
+- * 16.0  DI     00 08 07 00  00 00 08            .......             346.2.0
+- *
+- * 16.0  CTL    21 20 00 00  00 00 07 00         CLASS               349.1.0
+- * 16.0  DO     00 c2 01 00  00 00 08            .......             349.2.0
+- *
+- * 16.0  CTL    21 22 03 00  00 00 00 00         CLASS               350.1.0(2)
+- *
+- * 16.0  CTL    a1 21 00 00  00 00 07 00         CLASS               352.1.0
+- * 16.0  DI     00 c2 01 00  00 00 08            .......             352.2.0
+- *
+- * 16.1  DI     a1 20 00 00  00 00 02 00  02 00  . ........          353.1.0
+- *
+- * 16.0  CTL    21 20 00 00  00 00 07 00         CLASS               354.1.0
+- * 16.0  DO     00 c2 01 00  00 00 08            .......             354.2.0
+- *
+- * 16.0  CTL    21 22 03 00  00 00 00 00
+-*/
+-
+-static void zte_ev_usb_serial_close(struct usb_serial_port *port)
+-{
+-	struct usb_device *udev = port->serial->dev;
+-	struct device *dev = &port->dev;
+-	int result = 0;
+-	int len;
+-	unsigned char *buf;
+-
+-	buf = kmalloc(MAX_SETUP_DATA_SIZE, GFP_KERNEL);
+-	if (!buf)
+-		return;
+-
+-	/* send 1st ctl cmd(CTL    21 22 02 00  00 00 00 00) */
+-	len = 0;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x22, 0x21,
+-				 0x0002, 0x0000, NULL, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	dev_dbg(dev, "result = %d\n", result);
+-
+-	/* send 2st ctl cmd(CTL    21 22 03 00  00 00 00 00 ) */
+-	len = 0;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x22, 0x21,
+-				 0x0003, 0x0000, NULL, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	dev_dbg(dev, "result = %d\n", result);
+-
+-	/* send  3st cmd and recieve data */
+-	/*
+-	 * 16.0  CTL    a1 21 00 00  00 00 07 00      CLASS         25.1.0(5)
+-	 * 16.0  DI     00 08 07 00  00 00 08
+-	 */
+-	len = 0x0007;
+-	result = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+-				 0x21, 0xa1,
+-				 0x0000, 0x0000, buf, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	debug_data(dev, __func__, len, buf, result);
+-
+-	/* send 4th cmd */
+-	/*
+-	 * 16.0 CTL    21 20 00 00  00 00 07 00      CLASS            30.1.0
+-	 * 16.0  DO    00 c2 01 00  00 00 08         .%.....          30.2.0
+-	 */
+-	len = 0x0007;
+-	buf[0] = 0x00;
+-	buf[1] = 0xc2;
+-	buf[2] = 0x01;
+-	buf[3] = 0x00;
+-	buf[4] = 0x00;
+-	buf[5] = 0x00;
+-	buf[6] = 0x08;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x20, 0x21,
+-				 0x0000, 0x0000, buf, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	debug_data(dev, __func__, len, buf, result);
+-
+-	/* send 5th cmd */
+-	/*
+-	 * 16.0 CTL    21 22 03 00  00 00 00 00
+-	 */
+-	len = 0;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x22, 0x21,
+-				 0x0003, 0x0000, NULL, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	dev_dbg(dev, "result = %d\n", result);
+-
+-	/* send 6th cmd */
+-	/*
+-	 * 16.0  CTL    a1 21 00 00  00 00 07 00        CLASS          33.1.0
+-	 * 16.0  DI     00 c2 01 00  00 00 08
+-	 */
+-	len = 0x0007;
+-	result = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+-				 0x21, 0xa1,
+-				 0x0000, 0x0000, buf, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	debug_data(dev, __func__, len, buf, result);
+-
+-	/* send 7th cmd */
+-	/*
+-	 * 16.0  CTL    21 20 00 00  00 00 07 00  CLASS               354.1.0
+-	 * 16.0  DO     00 c2 01 00  00 00 08     .......             354.2.0
+-	 */
+-	len = 0x0007;
+-	buf[0] = 0x00;
+-	buf[1] = 0xc2;
+-	buf[2] = 0x01;
+-	buf[3] = 0x00;
+-	buf[4] = 0x00;
+-	buf[5] = 0x00;
+-	buf[6] = 0x08;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x20, 0x21,
+-				 0x0000, 0x0000, buf, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	debug_data(dev, __func__, len, buf, result);
+-
+-	/* send 8th cmd */
+-	/*
+-	 * 16.0 CTL    21 22 03 00  00 00 00 00
+-	 */
+-	len = 0;
+-	result = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+-				 0x22, 0x21,
+-				 0x0003, 0x0000, NULL, len,
+-				 USB_CTRL_GET_TIMEOUT);
+-	dev_dbg(dev, "result = %d\n", result);
+-
+-	kfree(buf);
+-
+-	usb_serial_generic_close(port);
+-}
+-
+-static const struct usb_device_id id_table[] = {
+-	{ USB_DEVICE(0x19d2, 0xffec) },
+-	{ USB_DEVICE(0x19d2, 0xffee) },
+-	{ USB_DEVICE(0x19d2, 0xfff6) },
+-	{ USB_DEVICE(0x19d2, 0xfff7) },
+-	{ USB_DEVICE(0x19d2, 0xfff8) },
+-	{ USB_DEVICE(0x19d2, 0xfff9) },
+-	{ USB_DEVICE(0x19d2, 0xfffb) },
+-	{ USB_DEVICE(0x19d2, 0xfffc) },
+-	/* MG880 */
+-	{ USB_DEVICE(0x19d2, 0xfffd) },
+-	{ },
+-};
+-MODULE_DEVICE_TABLE(usb, id_table);
+-
+-static struct usb_serial_driver zio_device = {
+-	.driver = {
+-		.owner =	THIS_MODULE,
+-		.name =		"zte_ev",
+-	},
+-	.id_table =		id_table,
+-	.num_ports =		1,
+-	.open =			zte_ev_usb_serial_open,
+-	.close =		zte_ev_usb_serial_close,
+-};
+-
+-static struct usb_serial_driver * const serial_drivers[] = {
+-	&zio_device, NULL
+-};
+-
+-module_usb_serial_driver(serial_drivers, id_table);
+-MODULE_LICENSE("GPL v2");
+-- 
+2.10.2
+

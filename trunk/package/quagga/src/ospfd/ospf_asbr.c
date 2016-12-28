@@ -122,6 +122,7 @@ ospf_reset_route_map_set_values (struct route_map_set_values *values)
 {
   values->metric = -1;
   values->metric_type = -1;
+  values->tag = 0;
 }
 
 int
@@ -129,13 +130,15 @@ ospf_route_map_set_compare (struct route_map_set_values *values1,
 			    struct route_map_set_values *values2)
 {
   return values1->metric == values2->metric &&
-    values1->metric_type == values2->metric_type;
+    values1->metric_type == values2->metric_type && 
+    values1->tag == values2->tag;
 }
 
 /* Add an External info for AS-external-LSA. */
 struct external_info *
 ospf_external_info_add (u_char type, struct prefix_ipv4 p,
-			unsigned int ifindex, struct in_addr nexthop)
+        unsigned int ifindex, struct in_addr nexthop, 
+        u_short tag)
 {
   struct external_info *new;
   struct route_node *rn;
@@ -162,7 +165,8 @@ ospf_external_info_add (u_char type, struct prefix_ipv4 p,
   new->p = p;
   new->ifindex = ifindex;
   new->nexthop = nexthop;
-  new->tag = 0;
+  new->tag = tag;
+  new->route_map_set.tag = tag;
 
   if (rn)
     rn->info = new;

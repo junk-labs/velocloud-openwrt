@@ -2992,7 +2992,7 @@ ospf_read_from_zebra_mq(struct ospf *ospf, unsigned int ifindex, char *buf, u_in
     {
       zlog_warn ("ospf_recv_packet read length mismatch: ip_len is %d, "
        		 "but recvmsg returned %d", ip_len, length);
-      return NULL;
+      return 0;
     }
   
   return ospf_do_read(ospf, ifp, ibuf);

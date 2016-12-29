@@ -5378,7 +5378,7 @@ void
 bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
                       const struct in_addr *nexthop,
 		              const struct in6_addr *nexthop6,
-		              u_int32_t metric, u_char type)
+		              u_int32_t metric, u_char type, u_short tag)
 {
   struct bgp_info *new;
   struct bgp_info *bi;
@@ -5405,6 +5405,7 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 
   attr.med = metric;
   attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC);
+  attr.extra->tag = tag;
 
       afi = family2afi (p->family);
 
@@ -6046,6 +6047,9 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
 
       if (attr->extra && attr->extra->weight != 0)
 	vty_out (vty, ", weight %u", attr->extra->weight);
+
+    if (attr->extra && attr->extra->tag != 0)
+        vty_out (vty, ", tag %d", attr->extra->tag);
 	
       if (! CHECK_FLAG (binfo->flags, BGP_INFO_HISTORY))
 	vty_out (vty, ", valid");

@@ -1,0 +1,360 @@
+diff --git a/lib/librte_eal/linuxapp/eal/include/exec-env/rte_kni_common.h b/lib/librte_eal/linuxapp/eal/include/exec-env/rte_kni_common.h
+index 2acdfd9..0892a4f 100644
+--- a/lib/librte_eal/linuxapp/eal/include/exec-env/rte_kni_common.h
++++ b/lib/librte_eal/linuxapp/eal/include/exec-env/rte_kni_common.h
+@@ -160,6 +160,7 @@ struct rte_kni_device_info {
+ 	uint32_t core_id;             /**< core ID to bind for kernel thread */
+ 
+ 	uint8_t force_bind : 1;       /**< Flag for kernel thread binding */
++    uint8_t persist_on_close : 1; /**< Dont delete interface on dev/kni close */
+ 
+ 	/* mbuf size */
+ 	unsigned mbuf_size;
+diff --git a/lib/librte_eal/linuxapp/kni/kni_dev.h b/lib/librte_eal/linuxapp/kni/kni_dev.h
+index a0e5cb6..1d12f61 100644
+--- a/lib/librte_eal/linuxapp/kni/kni_dev.h
++++ b/lib/librte_eal/linuxapp/kni/kni_dev.h
+@@ -96,6 +96,12 @@ struct kni_dev {
+ 	/* synchro for request processing */
+ 	unsigned long synchro;
+ 
++    /* Persist netdev on /dev/kni close */
++    uint8_t netdev_persist : 1;
++
++    /* /dev/kni is closed or not */
++    uint8_t kni_released : 1;
++
+ #ifdef RTE_KNI_VHOST
+ 	struct kni_vhost_queue* vhost_queue;
+ 	volatile enum {
+diff --git a/lib/librte_eal/linuxapp/kni/kni_misc.c b/lib/librte_eal/linuxapp/kni/kni_misc.c
+index 59d15ca..392a0ac 100644
+--- a/lib/librte_eal/linuxapp/kni/kni_misc.c
++++ b/lib/librte_eal/linuxapp/kni/kni_misc.c
+@@ -64,7 +64,7 @@ static int kni_ioctl(struct inode *inode, unsigned int ioctl_num,
+ 					unsigned long ioctl_param);
+ static int kni_compat_ioctl(struct inode *inode, unsigned int ioctl_num,
+ 						unsigned long ioctl_param);
+-static int kni_dev_remove(struct kni_dev *dev);
++static int kni_dev_remove(struct kni_dev *dev, int netdev_remove);
+ 
+ static int __init kni_parse_kthread_mode(void);
+ 
+@@ -139,9 +139,23 @@ static int __net_init kni_init_net(struct net *net)
+ 
+ static void __net_exit kni_exit_net(struct net *net)
+ {
+-#ifndef HAVE_SIMPLIFIED_PERNET_OPERATIONS
+ 	struct kni_net *knet = net_generic(net, kni_net_id);
++    struct kni_dev *dev, *n;
++
++    /*
++     * Remove all the persistent KNI interfaces.
++     */
++    down_write(&knet->kni_list_lock);
++    list_for_each_entry_safe(dev, n, &knet->kni_list_head, list) {
++       if (dev->net_dev) {
++           unregister_netdev(dev->net_dev);
++           free_netdev(dev->net_dev);
++       }
++       list_del(&dev->list);
++   }
++   up_write(&knet->kni_list_lock);
+ 
++#ifndef HAVE_SIMPLIFIED_PERNET_OPERATIONS
+ 	kfree(knet);
+ #endif
+ }
+@@ -279,8 +293,12 @@ kni_release(struct inode *inode, struct file *file)
+ #ifdef RTE_KNI_VHOST
+ 		kni_vhost_backend_release(dev);
+ #endif
+-		kni_dev_remove(dev);
+-		list_del(&dev->list);
++        kni_dev_remove(dev, !dev->netdev_persist);
++        if (!dev->netdev_persist) { 
++            list_del(&dev->list);
++        } else {
++            dev->kni_released = 1;
++        }
+ 	}
+ 	up_write(&knet->kni_list_lock);
+ 
+@@ -348,7 +366,7 @@ kni_thread_multiple(void *param)
+ }
+ 
+ static int
+-kni_dev_remove(struct kni_dev *dev)
++kni_dev_remove(struct kni_dev *dev, int netdev_remove)
+ {
+ 	if (!dev)
+ 		return -ENODEV;
+@@ -366,7 +384,7 @@ kni_dev_remove(struct kni_dev *dev)
+ 		break;
+ 	}
+ 
+-	if (dev->net_dev) {
++	if (dev->net_dev && netdev_remove) {
+ 		unregister_netdev(dev->net_dev);
+ 		free_netdev(dev->net_dev);
+ 	}
+@@ -400,7 +418,8 @@ kni_ioctl_create(struct net *net,
+ 	struct pci_dev *found_pci = NULL;
+ 	struct net_device *net_dev = NULL;
+ 	struct net_device *lad_dev = NULL;
+-	struct kni_dev *kni, *dev, *n;
++    struct kni_dev *kni = NULL, *dev, *n;
++    int kni_exists = 0;
+ 
+ 	printk(KERN_INFO "KNI: Creating kni...\n");
+ 	/* Check the buffer size, to avoid warning */
+@@ -428,25 +447,41 @@ kni_ioctl_create(struct net *net,
+ 	down_read(&knet->kni_list_lock);
+ 	list_for_each_entry_safe(dev, n, &knet->kni_list_head, list) {
+ 		if (kni_check_param(dev, &dev_info) < 0) {
+-			up_read(&knet->kni_list_lock);
+-			return -EINVAL;
++            kni = dev;
++            kni_exists = 1;             
++            break;  
+ 		}
+ 	}
+ 	up_read(&knet->kni_list_lock);
+ 
+-	net_dev = alloc_netdev(sizeof(struct kni_dev), dev_info.name,
++    if (kni_exists && !dev_info.persist_on_close) {
++        return -EINVAL;
++    }
++
++    if (!kni_exists) {
++        net_dev = alloc_netdev(sizeof(struct kni_dev), dev_info.name,
+ #ifdef NET_NAME_UNKNOWN
+ 							NET_NAME_UNKNOWN,
+ #endif
+ 							kni_net_init);
+-	if (net_dev == NULL) {
+-		KNI_ERR("error allocating device \"%s\"\n", dev_info.name);
+-		return -EBUSY;
+-	}
++	    if (net_dev == NULL) {
++		    KNI_ERR("error allocating device \"%s\"\n", dev_info.name);
++		    return -EBUSY;
++	    }
++    } else {
++        net_dev = kni->net_dev;
++    } 
+ 
+ 	dev_net_set(net_dev, net);
+ 
+-	kni = netdev_priv(net_dev);
++    if (!kni_exists) {
++        kni = netdev_priv(net_dev);
++    }
++    if (dev_info.persist_on_close) {
++        kni->netdev_persist = 1;
++    } else {
++        kni->netdev_persist = 0;
++    }
+ 
+ 	kni->net_dev = net_dev;
+ 	kni->group_id = dev_info.group_id;
+@@ -554,13 +589,15 @@ kni_ioctl_create(struct net *net,
+ 		 */
+ 		random_ether_addr(net_dev->dev_addr);
+ 
+-	ret = register_netdev(net_dev);
+-	if (ret) {
+-		KNI_ERR("error %i registering device \"%s\"\n",
+-					ret, dev_info.name);
+-		kni_dev_remove(kni);
+-		return -ENODEV;
+-	}
++    if (!kni_exists) {
++	    ret = register_netdev(net_dev);
++	    if (ret) {
++		    KNI_ERR("error %i registering device \"%s\"\n",
++			   		ret, dev_info.name);
++		    kni_dev_remove(kni, 1);
++		    return -ENODEV;
++	    }
++    }
+ 
+ #ifdef RTE_KNI_VHOST
+ 	kni_vhost_init(kni);
+@@ -575,7 +612,12 @@ kni_ioctl_create(struct net *net,
+ 					      (void *)kni,
+ 					      "kni_%s", kni->name);
+ 		if (IS_ERR(kni->pthread)) {
+-			kni_dev_remove(kni);
++            kni_dev_remove(kni, 1);
++            if (kni_exists) {
++                down_write(&knet->kni_list_lock);
++                list_del(&kni->list);
++                up_write(&knet->kni_list_lock);               
++            }
+ 			return -ECANCELED;
+ 		}
+ 		if (dev_info.force_bind)
+@@ -583,9 +625,13 @@ kni_ioctl_create(struct net *net,
+ 		wake_up_process(kni->pthread);
+ 	}
+ 
+-	down_write(&knet->kni_list_lock);
+-	list_add(&kni->list, &knet->kni_list_head);
+-	up_write(&knet->kni_list_lock);
++    if (!kni_exists) {
++        down_write(&knet->kni_list_lock);
++        list_add(&kni->list, &knet->kni_list_head);
++        up_write(&knet->kni_list_lock);
++    } else {
++        kni->kni_released = 0;
++    }
+ 
+ 	return 0;
+ }
+@@ -625,7 +671,7 @@ kni_ioctl_release(struct net *net,
+ #ifdef RTE_KNI_VHOST
+ 		kni_vhost_backend_release(dev);
+ #endif
+-		kni_dev_remove(dev);
++		kni_dev_remove(dev, 1);
+ 		list_del(&dev->list);
+ 		ret = 0;
+ 		break;
+diff --git a/lib/librte_eal/linuxapp/kni/kni_net.c b/lib/librte_eal/linuxapp/kni/kni_net.c
+index fc82193..34cbcb6 100644
+--- a/lib/librte_eal/linuxapp/kni/kni_net.c
++++ b/lib/librte_eal/linuxapp/kni/kni_net.c
+@@ -71,6 +71,10 @@ kni_net_open(struct net_device *dev)
+ 	struct rte_kni_request req;
+ 	struct kni_dev *kni = netdev_priv(dev);
+ 
++    if (kni->kni_released) {
++        return -EAGAIN;
++    }
++
+ 	netif_start_queue(dev);
+ 
+ 	memset(&req, 0, sizeof(req));
+@@ -90,6 +94,10 @@ kni_net_release(struct net_device *dev)
+ 	struct rte_kni_request req;
+ 	struct kni_dev *kni = netdev_priv(dev);
+ 
++    if (kni->kni_released) {
++        return -EAGAIN;
++    }
++
+ 	netif_stop_queue(dev); /* can't transmit any more */
+ 
+ 	memset(&req, 0, sizeof(req));
+@@ -397,6 +405,10 @@ kni_net_rx_lo_fifo_skb(struct kni_dev *kni)
+ void
+ kni_net_rx(struct kni_dev *kni)
+ {
++    if (kni->kni_released) {
++        return;
++    }
++
+ 	/**
+ 	 * It doesn't need to check if it is NULL pointer,
+ 	 * as it has a default value
+@@ -413,6 +425,10 @@ kni_net_tx(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct kni_dev *kni = netdev_priv(dev);
+ 
++    if (kni->kni_released) {
++        return NETDEV_TX_BUSY;
++    }
++
+ 	dev_kfree_skb(skb);
+ 	kni->stats.tx_dropped++;
+ 
+@@ -428,6 +444,10 @@ kni_net_tx(struct sk_buff *skb, struct net_device *dev)
+ 	struct rte_kni_mbuf *pkt_kva = NULL;
+ 	struct rte_kni_mbuf *pkt_va = NULL;
+ 
++    if (kni->kni_released) {
++        return NETDEV_TX_BUSY;
++    }
++
+ 	/* save the timestamp */
+ #ifdef HAVE_TRANS_START_HELPER
+ 	netif_trans_update(dev);
+@@ -507,6 +527,10 @@ kni_net_tx_timeout (struct net_device *dev)
+ {
+ 	struct kni_dev *kni = netdev_priv(dev);
+ 
++    if (kni->kni_released) {
++        return;
++    }
++
+ 	KNI_DBG("Transmit timeout at %ld, latency %ld\n", jiffies,
+ 			jiffies - dev->trans_start);
+ 
+@@ -521,6 +545,12 @@ kni_net_tx_timeout (struct net_device *dev)
+ static int
+ kni_net_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
+ {
++    struct kni_dev *kni = netdev_priv(dev);
++
++    if (kni->kni_released) {
++        return -EAGAIN;
++    }
++
+ 	KNI_DBG("kni_net_ioctl %d\n",
+ 		((struct kni_dev *)netdev_priv(dev))->group_id);
+ 
+@@ -539,6 +569,10 @@ kni_net_change_mtu(struct net_device *dev, int new_mtu)
+ 	struct rte_kni_request req;
+ 	struct kni_dev *kni = netdev_priv(dev);
+ 
++    if (kni->kni_released) {
++        return -EAGAIN;
++    }
++
+ 	KNI_DBG("kni_net_change_mtu new mtu %d to be set\n", new_mtu);
+ 
+ 	memset(&req, 0, sizeof(req));
+@@ -557,6 +591,9 @@ kni_net_change_mtu(struct net_device *dev, int new_mtu)
+ void
+ kni_net_poll_resp(struct kni_dev *kni)
+ {
++    if (kni->kni_released) {
++        return;
++    }
+ 	if (kni_fifo_count(kni->resp_q))
+ 		wake_up_interruptible(&kni->wq);
+ }
+diff --git a/lib/librte_kni/rte_kni.c b/lib/librte_kni/rte_kni.c
+index 5581630..8eb94da 100644
+--- a/lib/librte_kni/rte_kni.c
++++ b/lib/librte_kni/rte_kni.c
+@@ -363,6 +363,7 @@ rte_kni_alloc(struct rte_mempool *pktmbuf_pool,
+ 	dev_info.device_id = conf->id.device_id;
+ 	dev_info.core_id = conf->core_id;
+ 	dev_info.force_bind = conf->force_bind;
++    dev_info.persist_on_close = conf->persist_on_close;
+ 	dev_info.group_id = conf->group_id;
+ 	dev_info.mbuf_size = conf->mbuf_size;
+ 
+diff --git a/lib/librte_kni/rte_kni.h b/lib/librte_kni/rte_kni.h
+index 7363e6c..bffe016 100644
+--- a/lib/librte_kni/rte_kni.h
++++ b/lib/librte_kni/rte_kni.h
+@@ -72,6 +72,8 @@ struct rte_kni_ops {
+ 	int (*config_network_if)(uint8_t port_id, uint8_t if_up);
+ };
+ 
++#define HAS_KNI_PERSIST_ON_CLOSE
++
+ /**
+  * Structure for configuring KNI device.
+  */
+@@ -89,6 +91,7 @@ struct rte_kni_conf {
+ 	struct rte_pci_id id;
+ 
+ 	uint8_t force_bind : 1; /* Flag to bind kernel thread */
++    uint8_t persist_on_close : 1; /* Flag to keep KNI around post /dev/kni close */
+ };
+ 
+ /**

@@ -5,9 +5,11 @@
 . /lib/netifd/netifd-proto.sh
 
 set_classless_routes() {
+	local metric="$1"
+	shift
 	local max=128
 	while [ -n "$1" -a -n "$2" -a $max -gt 0 ]; do
-		proto_add_ipv4_route "${1%%/*}" "${1##*/}" "$2" "$ip" "$3" # BROKEN!
+		proto_add_ipv4_route "${1%%/*}" "${1##*/}" "$2" "$ip" "$metric"
 		max=$(($max-1))
 		shift 2
 	done
@@ -24,13 +26,13 @@ setup_interface () {
 		proto_add_ipv4_route 0.0.0.0 0 "$i" "$ip" "$metric" "$mtu"
 
 		for r in $CUSTOMROUTES; do
-			proto_add_ipv4_route "${r%%/*}" "${r##*/}" "$i" "$ip" # $metric?
+			proto_add_ipv4_route "${r%%/*}" "${r##*/}" "$i" "$ip" "$metric"
 		done
 	done
 
 	# CIDR STATIC ROUTES (rfc3442)
-	[ -n "$staticroutes" ] && set_classless_routes $staticroutes $metric
-	[ -n "$msstaticroutes" ] && set_classless_routes $msstaticroutes $metric
+	[ -n "$staticroutes" ] && set_classless_routes $metric $staticroutes
+	[ -n "$msstaticroutes" ] && set_classless_routes $metric $msstaticroutes
 
 	for dns in $dns; do
 		proto_add_dns_server "$dns"

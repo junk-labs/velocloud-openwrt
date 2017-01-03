@@ -1887,6 +1887,28 @@ peer_flag_unset_vty (struct vty *vty, const char *ip_str, u_int16_t flag)
   return peer_flag_modify_vty (vty, ip_str, flag, 0);
 }
 
+/* neighbor dont-advertise-user. */
+DEFUN (neighbor_dont_advertise_user,
+       neighbor_dont_advertise_user_cmd,
+       NEIGHBOR_CMD2 "dont-advertise-user",
+       NEIGHBOR_STR
+       NEIGHBOR_ADDR_STR2
+       "Don't send user update messages to this neighbor\n")
+{
+  return peer_flag_set_vty (vty, argv[0], PEER_FLAG_DONT_ADVERTISE_USER);
+}
+
+DEFUN (no_neighbor_dont_advertise_user,
+       no_neighbor_dont_advertise_user_cmd,
+       NO_NEIGHBOR_CMD2 "dont-advertise-user",
+       NO_STR
+       NEIGHBOR_STR
+       NEIGHBOR_ADDR_STR2
+       "Don't send user update messages to this neighbor\n")
+{
+  return peer_flag_unset_vty (vty, argv[0], PEER_FLAG_DONT_ADVERTISE_USER);
+}
+
 /* neighbor passive. */
 DEFUN (neighbor_passive,
        neighbor_passive_cmd,
@@ -9552,6 +9574,8 @@ bgp_vty_init (void)
   /* "neighbor passive" commands. */
   install_element (BGP_NODE, &neighbor_passive_cmd);
   install_element (BGP_NODE, &no_neighbor_passive_cmd);
+  install_element (BGP_NODE, &neighbor_dont_advertise_user_cmd);
+  install_element (BGP_NODE, &no_neighbor_dont_advertise_user_cmd);
 
   /* "neighbor shutdown" commands. */
   install_element (BGP_NODE, &neighbor_shutdown_cmd);

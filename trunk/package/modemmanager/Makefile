@@ -12,7 +12,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=modemmanager
 PKG_VERSION:=1.7.0-20161109
-PKG_RELEASE:=1
+PKG_RELEASE:=3
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://anongit.freedesktop.org/git/ModemManager/ModemManager.git
@@ -37,6 +37,7 @@ define Package/modemmanager
 	+libqmi \
 	+libmbim \
 	+dbus \
+	+usb-modeswitch \
 	+kmod-usb-net-cdc-ncm \
 	+kmod-usb-net-huawei-cdc-ncm \
 	+kmod-usb-net-cdc-mbim \

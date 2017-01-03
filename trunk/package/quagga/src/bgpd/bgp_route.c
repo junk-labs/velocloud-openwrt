@@ -812,6 +812,10 @@ bgp_announce_check (struct bgp_info *ri, struct peer *peer, struct prefix *p,
   if (DISABLE_BGP_ANNOUNCE)
     return 0;
 
+  if (CHECK_FLAG (peer->flags, PEER_FLAG_DONT_ADVERTISE_USER) &&
+      ri->sub_type == BGP_ROUTE_REDISTRIBUTE_USER)
+    return 0;
+
   /* Do not send announces to RS-clients from the 'normal' bgp_table. */
   if (CHECK_FLAG(peer->af_flags[afi][safi], PEER_FLAG_RSERVER_CLIENT))
     return 0;
@@ -5374,7 +5378,7 @@ void
 bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
                       const struct in_addr *nexthop,
 		              const struct in6_addr *nexthop6,
-		              u_int32_t metric, u_char type)
+		              u_int32_t metric, u_char type, u_short tag)
 {
   struct bgp_info *new;
   struct bgp_info *bi;
@@ -5401,6 +5405,7 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 
   attr.med = metric;
   attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC);
+  attr.extra->tag = tag;
 
       afi = family2afi (p->family);
 
@@ -5449,11 +5454,17 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 
  	  for (bi = bn->info; bi; bi = bi->next)
  	    if (bi->peer == bgp->peer_self
- 		&& bi->sub_type == BGP_ROUTE_REDISTRIBUTE)
+ 		&& (bi->sub_type == BGP_ROUTE_REDISTRIBUTE ||
+            bi->sub_type == BGP_ROUTE_REDISTRIBUTE_USER))
  	      break;
  
  	  if (bi)
  	    {
+          if (type == ZEBRA_ROUTE_USER)
+            bi->sub_type = BGP_ROUTE_REDISTRIBUTE_USER;
+          else
+            bi->sub_type = BGP_ROUTE_REDISTRIBUTE;
+
  	      if (attrhash_cmp (bi->attr, new_attr) &&
 		  !CHECK_FLAG(bi->flags, BGP_INFO_REMOVED))
  		{
@@ -5489,7 +5500,10 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 
 	  new = bgp_info_new ();
 	  new->type = type;
-	  new->sub_type = BGP_ROUTE_REDISTRIBUTE;
+      if (type == ZEBRA_ROUTE_USER)
+          new->sub_type = BGP_ROUTE_REDISTRIBUTE_USER;
+      else
+          new->sub_type = BGP_ROUTE_REDISTRIBUTE;
 	  new->peer = bgp->peer_self;
 	  SET_FLAG (new->flags, BGP_INFO_VALID);
 	  new->attr = new_attr;
@@ -6033,6 +6047,9 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
 
       if (attr->extra && attr->extra->weight != 0)
 	vty_out (vty, ", weight %u", attr->extra->weight);
+
+    if (attr->extra && attr->extra->tag != 0)
+        vty_out (vty, ", tag %d", attr->extra->tag);
 	
       if (! CHECK_FLAG (binfo->flags, BGP_INFO_HISTORY))
 	vty_out (vty, ", valid");

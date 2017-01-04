@@ -1,6 +1,6 @@
 diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
---- a/drivers/platform/x86/Kconfig	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Kconfig	2015-10-29 10:36:31.703579817 -0700
+--- a/drivers/platform/x86/Kconfig	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/platform/x86/Kconfig	2017-01-03 15:42:20.802069864 -0800
 @@ -827,4 +827,37 @@
  	  Interface. This is a requirement for systems that need to configure
  	  the PUNIT for power management features such as RAPL.
@@ -40,8 +40,8 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 +
  endif # X86_PLATFORM_DEVICES
 diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
---- a/drivers/platform/x86/Makefile	2015-05-17 09:54:01.000000000 -0700
-+++ b/drivers/platform/x86/Makefile	2015-10-29 10:36:31.703579817 -0700
+--- a/drivers/platform/x86/Makefile	2016-04-19 23:41:04.000000000 -0700
++++ b/drivers/platform/x86/Makefile	2017-01-03 15:42:20.826067910 -0800
 @@ -55,4 +55,8 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
@@ -53,7 +53,7 @@ diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
 diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 --- a/drivers/platform/x86/velocloud.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud.c	2016-11-23 10:36:30.000000000 -0800
++++ b/drivers/platform/x86/velocloud.c	2017-01-03 15:42:20.826067910 -0800
 @@ -0,0 +1,201 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
@@ -258,7 +258,7 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +
 diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/velocloud-nmi.c
 --- a/drivers/platform/x86/velocloud-nmi.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-nmi.c	2015-10-29 10:36:50.282732526 -0700
++++ b/drivers/platform/x86/velocloud-nmi.c	2017-01-03 15:42:20.826067910 -0800
 @@ -0,0 +1,276 @@
 +#include <linux/module.h>
 +#include <linux/init.h>
@@ -538,8 +538,8 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
 --- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2016-12-02 15:07:08.083110483 -0800
-@@ -0,0 +1,4623 @@
++++ b/drivers/platform/x86/velocloud-vc.c	2017-01-03 15:45:04.690585075 -0800
+@@ -0,0 +1,4728 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -761,16 +761,21 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +#define EMC2104_VELOCLOUD_FAN_MULTI   5898240
 +
 +// fan ctrl;
-+
++#define EDGE5x0_FAN_RPM_SPEED	6000
 +#define EDGE5X0_FAN_CTRL (0x5e>>1)
++
++#define FAN1_DRIVER_SETTING	0x40
++#define FAN2_DRIVER_SETTING	0x80
 +
 +#define FAN_LUT_MAX_TABLE_ENTRIES     0x8
 +#define FAN_LUT_MAX_ROW_LEN           0x5
 +
 +#define FAN_CONFIG_EN_ALGO            0x80
 +#define FAN_CONFIG_RANGE_MIN_RPM_500  0
-+#define FAN_CONFIG_MIN_TACH_7EDGES    0x10
-+#define FAN_LUT_OFFSET_LUT_LOCK       0x20
++#define TACH_DRIVE	0x10
++#define LUT_LOCK	0x20
++#define USE_DTS_F2	0x40
++#define USE_DTS_F1	0x80
 +
 +// mfg eeprom;
 +//XXX
@@ -2388,6 +2393,105 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +        return sprintf(buf, "%d\n", EMC2104_VELOCLOUD_FAN_MULTI / tach_reading);
 +}
 +
++static ssize_t set_vc_5x0_fan_manual(struct device *dev,
++		struct device_attribute *attr, char *buf, size_t size)
++{
++	int rv;
++	unsigned long val;
++	vc_data_t *vcd = &vc_data;
++	struct i2c_client *client = vcd->i2c.client[VC_I2C_4];
++
++	rv = kstrtoul(buf, 10, &val);
++	if (rv)
++		return rv;
++	
++	rv = vc_read_byte(client, EMC2104_FAN1_LUT_OFFSET);
++	if (rv < 0)
++		return (rv);
++
++	/* XXX Fixme: Enabling direct setting mode should not be difficult, however,
++	 * it proves to be a little tricky.  I need to understand the datasheet a little
++	 * more I suspect to figure out how to correctly enable that mode, but the following
++	 * order seems to work for now: Enable Direct Setting Mode for direct fan control. 
++	 */
++	if (val > 0) {
++
++		rv |= (LUT_LOCK|TACH_DRIVE);
++		vc_write_byte(client, EMC2104_FAN1_LUT_OFFSET, rv);
++
++		mdelay(50);
++
++		rv &= ~(TACH_DRIVE | LUT_LOCK);
++		vc_write_byte(client, EMC2104_FAN1_LUT_OFFSET, rv);
++
++		mdelay(50);
++
++		rv |= (LUT_LOCK|TACH_DRIVE);
++		vc_write_byte(client, EMC2104_FAN1_LUT_OFFSET, rv);
++		
++		mdelay(50);
++
++		rv &= ~(TACH_DRIVE | LUT_LOCK);
++		vc_write_byte(client, EMC2104_FAN1_LUT_OFFSET, rv);
++
++	} else if (val == 0) {
++		rv |= LUT_LOCK;
++		vc_write_byte(client, EMC2104_FAN1_LUT_OFFSET, rv);
++	}
++
++	return size;
++}
++
++static ssize_t show_vc_5x0_fan_manual(struct device *dev, 
++		struct device_attribute *attr, char *buf)
++{
++	int err, val;
++	vc_data_t *vcd = &vc_data;
++	struct i2c_client *client = vcd->i2c.client[VC_I2C_4];
++	
++	err = vc_read_byte(client, EMC2104_FAN1_LUT_OFFSET);
++	if (err < 0)
++		return (err);
++	
++	if (err & (LUT_LOCK | TACH_DRIVE))
++		val = 1;
++	else
++		val = 0;
++
++       	return sprintf(buf, "%d\n", val);
++}
++
++static DEVICE_ATTR(fan_manual, S_IRUGO | S_IWUSR, show_vc_5x0_fan_manual, set_vc_5x0_fan_manual);
++
++static ssize_t set_vc_5x0_fan_manual_speed(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	int err;
++	unsigned long fan_rpm, pwm;
++	vc_data_t *vcd = &vc_data;
++	struct i2c_client *client = vcd->i2c.client[VC_I2C_4];
++
++	err = kstrtoul(buf, 10, &fan_rpm);
++	if (err)
++		return err;
++
++	if (fan_rpm > EDGE5x0_FAN_RPM_SPEED)
++		return -EINVAL;
++	/*
++	 * Now that we know the percentage of the full-on RPM speed to set,
++	 * we simply use a ratio to derive the PWM from the desired RPM.
++	 */
++	pwm = (255 * fan_rpm) / EDGE5x0_FAN_RPM_SPEED;
++
++	err = vc_write_byte(client, FAN1_DRIVER_SETTING, pwm);
++	if(err < 0)
++		return(err);
++
++	return size;
++}
++
++static DEVICE_ATTR(fan_manual_speed, S_IWUSR, NULL, set_vc_5x0_fan_manual_speed);
++
 +static ssize_t show_vc_5x0_external_temp_sensor(struct device *dev, 
 +			char *buf, unsigned index)
 +{
@@ -2486,6 +2590,8 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +	&dev_attr_temp_sensor_under_poe.attr,
 +	&dev_attr_temp_sensor_near_board_edge.attr,
 +	&dev_attr_temp_sensor_under_soc_hs.attr,
++	&dev_attr_fan_manual,
++	&dev_attr_fan_manual_speed,
 +	NULL,
 +};
 +
@@ -3734,7 +3840,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +
 +	err = vc_write_byte(client, EMC2104_FAN1_CONFIG, FAN_CONFIG_EN_ALGO |
 +						 FAN_CONFIG_RANGE_MIN_RPM_500 |
-+						 FAN_CONFIG_MIN_TACH_7EDGES);
++						 TACH_DRIVE);
 +	if (err < 0) 
 +		return err;
 +
@@ -3748,8 +3854,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +                return err;                      
 +      
 +	/* Enable the FSC/LUT algorithm. */ 
-+        err = vc_write_byte(client,
-+                EMC2104_FAN1_LUT_OFFSET, FAN_LUT_OFFSET_LUT_LOCK);
++        err = vc_write_byte(client, EMC2104_FAN1_LUT_OFFSET, LUT_LOCK);
 +        if (err < 0)
 +                return err;
 +
@@ -5165,7 +5270,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +module_exit(vc_exit);
 diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
 --- a/include/misc/velocloud.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/include/misc/velocloud.h	2016-11-23 10:32:30.000000000 -0800
++++ b/include/misc/velocloud.h	2017-01-03 15:42:20.830067531 -0800
 @@ -0,0 +1,42 @@
 +/*
 + * velocloud.h

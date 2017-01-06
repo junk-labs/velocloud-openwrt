@@ -388,6 +388,7 @@ bgp_info_cmp (struct bgp *bgp, struct bgp_info *new, struct bgp_info *exist,
    *  - BGP_ROUTE_STATIC
    *  - BGP_ROUTE_AGGREGATE
    *  - BGP_ROUTE_REDISTRIBUTE
+   *  - BGP_ROUTE_REDISTRIBUTE_USER
    */
   if (! (new->sub_type == BGP_ROUTE_NORMAL))
      return 1;
@@ -810,6 +811,10 @@ bgp_announce_check (struct bgp_info *ri, struct peer *peer, struct prefix *p,
   riattr = bgp_info_mpath_count (ri) ? bgp_info_mpath_attr (ri) : ri->attr;
   
   if (DISABLE_BGP_ANNOUNCE)
+    return 0;
+
+  if (CHECK_FLAG (peer->flags, PEER_FLAG_DONT_ADVERTISE_USER) &&
+      ri->sub_type == BGP_ROUTE_REDISTRIBUTE_USER)
     return 0;
 
   /* Do not send announces to RS-clients from the 'normal' bgp_table. */
@@ -1306,10 +1311,38 @@ struct bgp_info_pair
   struct bgp_info *new;
 };
 
+
+static void
+bgp_zebra_check_and_announce(struct prefix *p, struct bgp_info *bi, struct bgp *bgp, safi_t safi)
+{
+    if (bi && (ZEBRA_ROUTE_BGP == bi->type) && (BGP_ROUTE_NORMAL == bi->sub_type)) {
+        if (CHECK_FLAG(bi->flags, BGP_INFO_ATTR_CHANGED) || !CHECK_FLAG(bi->flags,
+                    BGP_INFO_ANNOUNCED)) {
+            SET_FLAG (bi->flags, BGP_INFO_ANNOUNCED);
+            UNSET_FLAG (bi->flags, BGP_INFO_ATTR_CHANGED);
+            bgp_zebra_announce (p, bi, bgp, safi);
+        }
+    }
+
+    return;
+}
+
+static void
+bgp_zebra_check_and_withdraw(struct prefix *p, struct bgp_info *bi, safi_t safi)
+{
+    if (bi && (ZEBRA_ROUTE_BGP == bi->type) && (BGP_ROUTE_NORMAL == bi->sub_type)) {
+        bgp_zebra_withdraw (p, bi, safi);
+        UNSET_FLAG (bi->flags, BGP_INFO_ANNOUNCED);
+    }
+
+    return;
+}
+
 static void
 bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
 		    struct bgp_maxpaths_cfg *mpath_cfg,
-		    struct bgp_info_pair *result)
+		    struct bgp_info_pair *result,
+            safi_t safi, int announce_or_withdraw)
 {
   struct bgp_info *new_select;
   struct bgp_info *old_select;
@@ -1317,6 +1350,7 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
   struct bgp_info *ri1;
   struct bgp_info *ri2;
   struct bgp_info *nextri = NULL;
+  struct prefix *p = &rn->p;
   int paths_eq, do_mpath;
   struct list mp_list;
 
@@ -1389,9 +1423,13 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
           /* reap REMOVED routes, if needs be 
            * selected route must stay for a while longer though
            */
-          if (CHECK_FLAG (ri->flags, BGP_INFO_REMOVED)
-              && (ri != old_select))
-              bgp_info_reap (rn, ri);
+            if (CHECK_FLAG (ri->flags, BGP_INFO_REMOVED)
+                    && (ri != old_select)) {
+                if (announce_or_withdraw) {
+                    bgp_zebra_check_and_withdraw(p, ri, safi);
+                }
+                bgp_info_reap (rn, ri);
+            }
           
           continue;
         }
@@ -1423,6 +1461,10 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
 
       if (do_mpath && paths_eq)
 	bgp_mp_list_add (&mp_list, ri);
+      
+      if (announce_or_withdraw) {
+          bgp_zebra_check_and_announce(p, ri, bgp, safi);
+      }
     }
     
 
@@ -1511,7 +1553,7 @@ bgp_process_rsclient (struct work_queue *wq, void *data)
   struct peer *rsclient = bgp_node_table (rn)->owner;
   
   /* Best path selection. */
-  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new);
+  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new, safi, 0);
   new_select = old_and_new.new;
   old_select = old_and_new.old;
 
@@ -1574,7 +1616,7 @@ bgp_process_main (struct work_queue *wq, void *data)
   struct peer *peer;
   
   /* Best path selection. */
-  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new);
+  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new, safi, 1);
   old_select = old_and_new.old;
   new_select = old_and_new.new;
 
@@ -1593,8 +1635,10 @@ bgp_process_main (struct work_queue *wq, void *data)
         }
     }
 
-  if (old_select)
+  if (old_select) {
     bgp_info_unset_flag (rn, old_select, BGP_INFO_SELECTED);
+  }
+
   if (new_select)
     {
       bgp_info_set_flag (rn, new_select, BGP_INFO_SELECTED);
@@ -1611,24 +1655,27 @@ bgp_process_main (struct work_queue *wq, void *data)
 
   /* FIB update. */ /*Updating for view too */
   if (safi == SAFI_UNICAST || safi == SAFI_MULTICAST)
-    {
+  {
       if (new_select 
-	  && new_select->type == ZEBRA_ROUTE_BGP 
-	  && new_select->sub_type == BGP_ROUTE_NORMAL)
-	bgp_zebra_announce (p, new_select, bgp, safi);
-      else
+              && new_select->type == ZEBRA_ROUTE_BGP 
+              && new_select->sub_type == BGP_ROUTE_NORMAL) {
+          bgp_zebra_check_and_announce(p, new_select, bgp, safi);
+    }  else
 	{
 	  /* Withdraw the route from the kernel. */
 	  if (old_select 
 	      && old_select->type == ZEBRA_ROUTE_BGP
-	      && old_select->sub_type == BGP_ROUTE_NORMAL)
-	    bgp_zebra_withdraw (p, old_select, safi);
+	      && old_select->sub_type == BGP_ROUTE_NORMAL) {
+	    // bgp_zebra_withdraw (p, old_select, safi);
+      }
 	}
     }
     
   /* Reap old select bgp_info, it it has been removed */
-  if (old_select && CHECK_FLAG (old_select->flags, BGP_INFO_REMOVED))
+  if (old_select && CHECK_FLAG (old_select->flags, BGP_INFO_REMOVED)) {
+      bgp_zebra_check_and_withdraw(p, old_select, safi);
     bgp_info_reap (rn, old_select);
+  }
   
   UNSET_FLAG (rn->flags, BGP_NODE_PROCESS_SCHEDULED);
   return WQ_SUCCESS;
@@ -5374,7 +5421,7 @@ void
 bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
                       const struct in_addr *nexthop,
 		              const struct in6_addr *nexthop6,
-		              u_int32_t metric, u_char type)
+		              u_int32_t metric, u_char type, u_short tag, u_int32_t user_no_pref)
 {
   struct bgp_info *new;
   struct bgp_info *bi;
@@ -5401,6 +5448,11 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 
   attr.med = metric;
   attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC);
+  attr.extra->tag = tag;
+          
+  if ((type == ZEBRA_ROUTE_USER) && user_no_pref) {
+      attr.extra->weight = 0;
+  }
 
       afi = family2afi (p->family);
 
@@ -5449,11 +5501,17 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 
  	  for (bi = bn->info; bi; bi = bi->next)
  	    if (bi->peer == bgp->peer_self
- 		&& bi->sub_type == BGP_ROUTE_REDISTRIBUTE)
+ 		&& (bi->sub_type == BGP_ROUTE_REDISTRIBUTE ||
+            bi->sub_type == BGP_ROUTE_REDISTRIBUTE_USER))
  	      break;
  
  	  if (bi)
  	    {
+          if (type == ZEBRA_ROUTE_USER)
+            bi->sub_type = BGP_ROUTE_REDISTRIBUTE_USER;
+          else
+            bi->sub_type = BGP_ROUTE_REDISTRIBUTE;
+
  	      if (attrhash_cmp (bi->attr, new_attr) &&
 		  !CHECK_FLAG(bi->flags, BGP_INFO_REMOVED))
  		{
@@ -5489,7 +5547,10 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 
 	  new = bgp_info_new ();
 	  new->type = type;
-	  new->sub_type = BGP_ROUTE_REDISTRIBUTE;
+      if (type == ZEBRA_ROUTE_USER)
+          new->sub_type = BGP_ROUTE_REDISTRIBUTE_USER;
+      else
+          new->sub_type = BGP_ROUTE_REDISTRIBUTE;
 	  new->peer = bgp->peer_self;
 	  SET_FLAG (new->flags, BGP_INFO_VALID);
 	  new->attr = new_attr;
@@ -6033,6 +6094,9 @@ route_vty_out_detail (struct vty *vty, struct bgp *bgp, struct prefix *p,
 
       if (attr->extra && attr->extra->weight != 0)
 	vty_out (vty, ", weight %u", attr->extra->weight);
+
+    if (attr->extra && attr->extra->tag != 0)
+        vty_out (vty, ", tag %d", attr->extra->tag);
 	
       if (! CHECK_FLAG (binfo->flags, BGP_INFO_HISTORY))
 	vty_out (vty, ", valid");

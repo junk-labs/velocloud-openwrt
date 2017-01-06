@@ -82,6 +82,7 @@ struct bgp_info
 #define BGP_INFO_COUNTED	(1 << 10)
 #define BGP_INFO_MULTIPATH      (1 << 11)
 #define BGP_INFO_MULTIPATH_CHG  (1 << 12)
+#define BGP_INFO_ANNOUNCED      (1 << 13)
 
   /* BGP route type.  This can be static, RIP, OSPF, BGP etc.  */
   u_char type;
@@ -93,6 +94,7 @@ struct bgp_info
 #define BGP_ROUTE_STATIC       1
 #define BGP_ROUTE_AGGREGATE    2
 #define BGP_ROUTE_REDISTRIBUTE 3 
+#define BGP_ROUTE_REDISTRIBUTE_USER 4 
 };
 
 /* BGP static route configuration. */
@@ -201,7 +203,7 @@ extern int bgp_maximum_prefix_overflow (struct peer *, afi_t, safi_t, int);
 extern void bgp_redistribute_add (struct bgp *, struct prefix *,
                                   const struct in_addr *,
 				                  const struct in6_addr *,
-				                  u_int32_t, u_char);
+				                  u_int32_t, u_char, u_short, u_int32_t);
 extern void bgp_redistribute_delete (struct bgp *, struct prefix *, u_char);
 extern void bgp_redistribute_withdraw (struct bgp *, afi_t, int);
 

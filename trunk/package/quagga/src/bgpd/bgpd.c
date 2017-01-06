@@ -2393,6 +2393,7 @@ static const struct peer_flag_action peer_flag_action_list[] =
     { PEER_FLAG_STRICT_CAP_MATCH,         0, peer_change_none },
     { PEER_FLAG_DYNAMIC_CAPABILITY,       0, peer_change_reset },
     { PEER_FLAG_DISABLE_CONNECTED_CHECK,  0, peer_change_reset },
+    { PEER_FLAG_DONT_ADVERTISE_USER,      0, peer_change_reset },
     { 0, 0, 0 }
   };
 
@@ -4908,6 +4909,13 @@ bgp_config_write_peer (struct vty *vty, struct bgp *bgp,
         if (! peer_group_active (peer) ||
 	    ! CHECK_FLAG (g_peer->flags, PEER_FLAG_PASSIVE))
 	  vty_out (vty, " neighbor %s passive%s", addr, VTY_NEWLINE);
+
+      /* Dont advertise user routes. */
+      if (CHECK_FLAG (peer->flags, PEER_FLAG_DONT_ADVERTISE_USER))
+        if (! peer_group_active (peer) ||
+	    ! CHECK_FLAG (g_peer->flags, PEER_FLAG_DONT_ADVERTISE_USER))
+	  vty_out (vty, " neighbor %s dont-advertise-user%s", addr, VTY_NEWLINE);
+
 
       /* EBGP multihop.  */
       if (peer->sort != BGP_PEER_IBGP && peer->ttl != 1 &&

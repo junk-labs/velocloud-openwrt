@@ -251,6 +251,7 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
   char iname_tmp[INSTANCE_NAMSIZ + 1];
   size_t namelen;
   struct bgp *bgp;
+  u_int32_t user_no_pref = 0;
 
   s = zclient->ibuf;
   nexthop.s_addr = 0;
@@ -306,6 +307,10 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
       return 0;
     }
 
+    if (ZAPI_REDIS_PREF_NON_USER & api.flags) {
+        user_no_pref = 1; 
+    }
+
   if (command == ZEBRA_IPV4_ROUTE_ADD)
     {
       if (BGP_DEBUG(zebra, ZEBRA))
@@ -319,7 +324,7 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
 		     api.metric, api.tag, api.iname);
 	}
       bgp_redistribute_add(bgp, (struct prefix *)&p, &nexthop, NULL,
-			   api.metric, api.type, api.tag);
+			   api.metric, api.type, api.tag, user_no_pref);
     }
   else
     {
@@ -420,7 +425,7 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
 		     api.metric, api.tag);
 	}
       bgp_redistribute_add (bgp, (struct prefix *)&p, NULL, &nexthop,
-			    api.metric, api.type, api.tag);
+			    api.metric, api.type, api.tag, 0);
     }
   else
     {

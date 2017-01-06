@@ -99,6 +99,9 @@ struct zclient
 #define ZAPI_MESSAGE_PROTO2   0x80
 #endif
 
+/* Zebra API message redis flag. */
+#define ZAPI_REDIS_PREF_NON_USER  0x01
+
 /* Zserv protocol message header */
 struct zserv_header
 {

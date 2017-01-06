@@ -1630,6 +1630,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   memset (&mp_update, 0, sizeof (struct bgp_nlri));
   memset (&mp_withdraw, 0, sizeof (struct bgp_nlri));
   attr.extra = &extra;
+  attr.extra->weight = 1;
 
   s = peer->ibuf;
   end = stream_pnt (s) + size;

@@ -237,6 +237,7 @@ remove_device_config()
 	if [ "$network_type" == "wwan" ]; then
 		uci -c $network_config delete network.$usbifname
 		uci -c $network_config commit network
+		ubus call network reload
 		log "Removed network config: $usbifname"
 	fi
 }

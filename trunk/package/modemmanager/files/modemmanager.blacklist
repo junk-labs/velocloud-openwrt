@@ -6,6 +6,9 @@
 # will be logged whenever the events for the device are ignored.
 #
 
+# Franklin Wireless
+1fac:0232 rndis (e.g. U770)
+
 # Alcatel
 1bbb:0195 rndis
 

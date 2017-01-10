@@ -1,0 +1,16 @@
+--- openvswitch-2.6.1-orig/acinclude.m4   2016-12-19 16:25:02.641239200 -0800
++++ openvswitch-2.6.1/acinclude.m4        2016-12-19 16:26:39.528291200 -0800
+@@ -180,9 +180,9 @@
+         DPDK_INCLUDE="$with_dpdk/include"
+         # If 'with_dpdk' is passed install directory, point to headers
+         # installed in $DESTDIR/$prefix/include/dpdk
+-        AC_CHECK_FILE([$DPDK_INCLUDE/rte_config.h], [],
+-                      [AC_CHECK_FILE([$DPDK_INCLUDE/dpdk/rte_config.h],
+-                                     [DPDK_INCLUDE=$DPDK_INCLUDE/dpdk], [])])
++        AC_CHECK_HEADER([$DPDK_INCLUDE/rte_config.h], [],
++                      [AC_CHECK_HEADER([$DPDK_INCLUDE/dpdk/rte_config.h],
++                                     [DPDK_INCLUDE=$DPDK_INCLUDE/dpdk], [])])
+         DPDK_LIB_DIR="$with_dpdk/lib"
+         ;;
+     esac
+

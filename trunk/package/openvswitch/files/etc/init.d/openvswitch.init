@@ -4,29 +4,20 @@
 START=99
 # DEBUG="echo"
 
+. /usr/share/openvswitch/scripts/ovs-lib || exit 1
+
 start() {
 	[ -x /etc/openvswitch ] || mkdir -p /etc/openvswitch
 	[ -x /var/run/openvswitch ] || mkdir -p /var/run/openvswitch
-	[ -e /etc/openvswitch/conf.db ] || {
-		$DEBUG /usr/bin/ovsdb-tool create /etc/openvswitch/conf.db \
-		/usr/share/openvswitch/vswitch.ovsschema
-	}
+	[ -x /var/log/openvswitch ] || mkdir -p /var/log/openvswitch
 
-	$DEBUG start-stop-daemon -q -S -x  /usr/sbin/ovsdb-server -- \
-		--remote=punix:/var/run/db.sock --remote=db:Open_vSwitch,Open_vSwitch,manager_options \
-		--pidfile=/var/run/ovsdb-server.pid --detach --log-file=/var/log/ovsdb-server.log
-	sleep 3
+        ovs_ctl load-kmod || exit $?
 
-	$DEBUG ovs-vsctl --no-wait init
-	sleep 1
-
-	$DEBUG start-stop-daemon -q -S -x  /usr/sbin/ovs-vswitchd -- \
-		--pidfile=/var/run/ovs-vswitchd.pid --detach --log-file=/var/log/ovs-vswitchd.log
+        ovs_ctl ${1-start} --system-id=random
 }
 
 stop() {
-	$DEBUG start-stop-daemon -q -K -p /var/run/ovsdb-server.pid
-	$DEBUG start-stop-daemon -q -K -p /var/run/ovs-vswitchd.pid
+	ovs_ctl stop
 }
 
 restart() {

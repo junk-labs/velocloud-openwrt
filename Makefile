@@ -188,7 +188,7 @@ $(OPENWRT_TSYS): $(OPENWRT_CONFIG)
 	$(call OpenwrtConfig,$@)
 	$(call CopyFiles,$@)
 	@rm -rf trunk/bin/$(OPENWRT_ARCH)-eglibc/root-$(OPENWRT_ARCH) trunk/bin/$(OPENWRT_ARCH)-eglibc/packages
-	make -C $(OPENWRT_ROOT) -j $(NCPU)
+	make -C $(OPENWRT_ROOT) -j $(NCPU) V=$(V)
 	@rm -rf $(OPENWRT_ROOT)/files
 	@echo "`date -Iseconds`: Finished subtarget: $@"
 

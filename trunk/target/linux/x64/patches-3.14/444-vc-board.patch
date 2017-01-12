@@ -537,9 +537,9 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +MODULE_LICENSE("GPL");
 +
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
---- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-vc.c	2017-01-03 15:45:04.690585075 -0800
-@@ -0,0 +1,4728 @@
+--- /dev/null	2016-06-08 16:21:10.044842971 -0700
++++ b/drivers/platform/x86/velocloud-vc.c	2017-01-11 10:50:01.132042861 -0800
+@@ -0,0 +1,4729 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -833,6 +833,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +#define PCA9539_REG_OUTPUT	0x02
 +#define PCA9539_REG_POL		0x04
 +#define PCA9539_REG_CONFIG	0x06
++// below are NXP part only;
 +#define PCA9539_REG_DRIVE0	0x40
 +#define PCA9539_REG_DRIVE1	0x42
 +#define PCA9539_REG_INLR	0x44
@@ -4520,10 +4521,10 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +#endif // VC_DEBUG_GPIO
 +
 +	// set output config to push/pull drivers;
++	// OUTCFG does not exist in TI versions, so ignore error;
++	// avoid using special registers, only NXP parts have;
 +
-+	err = vc_write_byte(client, PCA9539_REG_OUTCFG, 0x00);
-+	if(err < 0)
-+		return(err);
++	vc_write_byte(client, PCA9539_REG_OUTCFG, 0x00);
 +
 +	// do not use any input inversion;
 +

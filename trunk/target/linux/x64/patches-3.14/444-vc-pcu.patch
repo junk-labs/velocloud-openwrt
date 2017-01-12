@@ -28,8 +28,8 @@ diff -Naur a/drivers/gpio/Makefile b/drivers/gpio/Makefile
  obj-$(CONFIG_GPIO_RC5T583)	+= gpio-rc5t583.o
 diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 --- /dev/null
-+++ b/drivers/gpio/gpio-pcu.c	2016-11-23 10:29:30.000000000 -0800
-@@ -0,0 +1,842 @@
++++ b/drivers/gpio/gpio-pcu.c	2016-12-14 10:19:17.417422782 -0800
+@@ -0,0 +1,893 @@
 +/*
 + * Copyright (C) 2014 Velocloud Inc.
 + *
@@ -83,6 +83,9 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +#define	REG_LPC_GBASE_EN 0x02		// BAR GBASE is enabled;
 +#define	REG_LPC_GBASE_IO 0x01		// BAR is i/o mapped;
 +#define	REG_LPC_GBASE_MASK 0xff00	// GBASE in 00:1f.0 config space;
++
++#define REG_LPC_IOBASE 0x4c		// IOBASE for PFUNCx;
++#define REG_LPC_IOBASE_MASK 0xfffffe00
 +
 +// core well and suspend well registers have the same structure;
 +// core well: GBASE + 0x00;
@@ -564,6 +567,16 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +	mfd_remove_devices(&pdev->dev);
 +}
 +
++// alternative pin config;
++
++typedef struct pcu_pconf pcu_pconf_t;
++struct pcu_pconf {
++	char *name;	// descriptor string;
++	u32 off;	// offset from iobase;
++	u32 mask;	// bit mask;
++	u32 val;	// value to set;
++};
++
 +// per-device use_sel configs;
 +
 +typedef struct pcu_hwcfg pcu_hwcfg_t;
@@ -572,6 +585,7 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +	u32 clear[N_PCU_GPIO];
 +	u32 iosel[N_PCU_GPIO];
 +	u32 out[N_PCU_GPIO];
++	pcu_pconf_t *pconf;
 +};
 +
 +static pcu_hwcfg_t pcu_hw_edge500 = {
@@ -607,6 +621,12 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +	.out[PCU_GPIO_SUS] = EDGE5X0B_PCU_GPIO_OUT_SUS,
 +};
 +
++static pcu_pconf_t pcu_pconf_510[] = {
++	{ "uart0-rxd", 0x160, 0x7, 2 },
++	{ "uart0-txd", 0x170, 0x7, 2 },
++	{ 0 },
++};
++
 +static pcu_hwcfg_t pcu_hw_edge510 = {
 +	.mask[PCU_GPIO_SC] = EDGE510_PCU_GPIO_MASK_SC,
 +	.mask[PCU_GPIO_SUS] = EDGE510_PCU_GPIO_MASK_SUS,
@@ -616,6 +636,7 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +	.iosel[PCU_GPIO_SUS] = EDGE510_PCU_GPIO_IOSEL_SUS,
 +	.out[PCU_GPIO_SC] = EDGE510_PCU_GPIO_OUT_SC,
 +	.out[PCU_GPIO_SUS] = EDGE510_PCU_GPIO_OUT_SUS,
++	.pconf = pcu_pconf_510,
 +};
 +
 +// map velocloud board id to hw data;
@@ -636,12 +657,14 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +{
 +	s32 ret;
 +	struct pcu_gpio *chip;
-+	u32 gbase;
-+	u32 bad;
++	u32 gbase, iobase;
++	u32 bad, val;
 +	unsigned long id = VC_NONE;
 +	pcu_gpio_regs_t __iomem *sc, *sus;
++	u8 __iomem *ioa, *paddr;
 +	const struct dmi_system_id *dmi;
 +	pcu_hwcfg_t *hw;
++	pcu_pconf_t *pconf;
 +
 +	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
 +	ret = -ENOMEM;
@@ -689,6 +712,14 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +	chip->regs[PCU_GPIO_SC] = sc;
 +	chip->regs[PCU_GPIO_SUS] = sus;
 +
++	// the IOBASE is only i/o mapped;
++
++	pci_bus_read_config_dword(pdev->bus,
++		PCI_DEVFN(PCI_SLOT(pdev->devfn), 0),
++		REG_LPC_IOBASE, &iobase);
++	dev_info(&pdev->dev, "iobase is 0x%x\n", iobase);
++	iobase &= REG_LPC_IOBASE_MASK;
++
 +	// determine velocloud board;
 +
 +	dmi = vc_dmi;
@@ -698,6 +729,26 @@ diff -Naur a/drivers/gpio/gpio-pcu.c b/drivers/gpio/gpio-pcu.c
 +		if(id < VC_N_BOARDS)
 +			hw = vc_board_hw[id];
 +		dev_info(&pdev->dev, "%s\n", dmi->ident);
++	}
++
++	// patch alternative function PCONF;
++	// really have to read-mod-write only affected bits;
++
++	pconf = hw->pconf;
++	if(hw && iobase && pconf) {
++		ioa = ioremap(iobase, 0x100);
++		if( !ioa) {
++			dev_err(&pdev->dev, "%s: iobase remap failed\n", __func__);
++			ret = -ENOMEM;
++			goto err_iomap;
++		}
++		for(; pconf->name; pconf++) {
++			dev_info(&pdev->dev, "pconf %s\n", pconf->name);
++			paddr = ioa + pconf->off;
++			val = readl(paddr);
++			val = (val & ~pconf->mask) | (pconf->val & pconf->mask);
++			writel(val, paddr);
++		}
 +	}
 +
 +	// per-system GPIO configuration;

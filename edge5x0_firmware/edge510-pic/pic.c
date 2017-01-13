@@ -1,20 +1,19 @@
 // main.c v1 Sandra Berndt
 // velocloud dolphin pic code;
 
+#define PIC_BOARD_V1
+#define SIZE_MSG 400
+
 // CONFIG1
 #pragma config FEXTOSC = OFF    // FEXTOSC External Oscillator mode Selection bits (Oscillator not enabled)
 #pragma config RSTOSC = HFINT1  // Power-up default value for COSC bits (HFINTOSC (1MHz))
-// #pragma config CLKOUTEN = ON
 #pragma config CLKOUTEN = OFF   // Clock Out Enable bit (CLKOUT function is disabled; I/O or oscillator function on OSC2)
 #pragma config CSWEN = ON       // Clock Switch Enable bit (Writing to NOSC and NDIV is allowed)
 #pragma config FCMEN = ON       // Fail-Safe Clock Monitor Enable (Fail-Safe Clock Monitor is enabled)
 
 // CONFIG2
-//XXX MCLRE-OFF to fix glitch bug on MCLR pin when host is powered on;
-#pragma config MCLRE = OFF       // Master Clear Enable bit (MCLR/VPP pin function is MCLR; Weak pull-up enabled)
-// #pragma config MCLRE = ON       // Master Clear Enable bit (MCLR/VPP pin function is MCLR; Weak pull-up enabled)
 #pragma config PWRTE = OFF      // Power-up Timer Enable bit (PWRT disabled)
-#pragma config WDTE = OFF       // Watchdog Timer Enable bits (WDT disbled, SWDTEN is ignored)
+#pragma config WDTE = ON        // Watchdog Timer Enable bits (WDT disbled, SWDTEN is ignored)
 #pragma config LPBOREN = OFF    // Low-power BOR enable bit (ULPBOR disabled)
 #pragma config BOREN = ON       // Brown-out Reset Enable bits (Brown-out Reset enabled, SBOREN bit ignored)
 #pragma config BORV = LOW       // Brown-out Reset Voltage selection bit (Brown-out voltage (Vbor) set to 2.45V)
@@ -23,13 +22,21 @@
 #pragma config DEBUG = OFF      // Debugger enable bit (Background debugger disabled)
 
 // CONFIG3
-#pragma config WRT = OFF        // User NVM self-write protection bits (Write protection off)
-#pragma config LVP = OFF         // Low Voltage Programming Enable bit (Low Voltage programming enabled. MCLR/VPP pin function is MCLR. MCLRE configuration bit is ignored.)
-// #pragma config LVP = ON         // Low Voltage Programming Enable bit (Low Voltage programming enabled. MCLR/VPP pin function is MCLR. MCLRE configuration bit is ignored.)
+#pragma config WRT = OFF	// User NVM self-write protection bits (Write protection off)
 
 // CONFIG4
 #pragma config CP = OFF         // User NVM Program Memory Code Protection bit (User NVM code protection disabled)
 #pragma config CPD = OFF        // Data NVM Memory Code Protection bit (Data NVM code protection disabled)
+
+// board rev1 MCLR was broken, need to turn off;
+
+#ifdef PIC_BOARD_V1
+#pragma config MCLRE = OFF	// MCLRE-OFF to fix glitch bug on MCLR pin when host is powered on;
+#pragma config LVP = OFF	// Low Voltage Programming disabled;
+#else // PIC_BOARD_V1
+#pragma config MCLRE = ON	// Master Clear Enable bit, enables weak pullup;
+#pragma config LVP = ON		// Low Voltage Programming enabled;
+#endif // PIC_BOARD_V1
 
 // #pragma config statements should precede project file includes.
 // Use project enums instead of #define for ON and OFF.
@@ -43,7 +50,7 @@
 
 typedef unsigned char u8;
 typedef unsigned short u16;
-typedef unsigned int u32;
+typedef unsigned long u32;
 typedef signed char s8;
 typedef signed short s16;
 typedef signed int s32;
@@ -140,10 +147,17 @@ typedef signed int s32;
 #define SDA_MAP RB4PPS
 
 // misc io to host;
+// as of board rev 2, this is thermtrip soignal from cpu;
 
+#ifdef PIC_BOARD_V1
 #define SUS2_PORT PORTCbits.RC0
 #define SUS2_TRIS TRISCbits.TRISC0
 #define SUS2_OUT LATCbits.LATC0
+#else // PIC_BOARD_V1
+#define THMTRIP_PORT PORTCbits.RC0
+#define THMTRIP_TRIS TRISCbits.TRISC0
+#define THMTRIP_OUT LATCbits.LATC0
+#endif // PIC_BOARD_V1
 
 // BLE chip reset;
 // 0 keeps BLE/IOT chip in reset;
@@ -164,8 +178,7 @@ union reset {
 		unsigned RST_MCLR : 1;
 		unsigned RST_INS : 1;
 		unsigned RST_STK : 1;
-		unsigned : 1;
-		unsigned EE_BCS : 1;
+		unsigned : 2;
 	} b;
 };
 
@@ -189,6 +202,7 @@ enum pstate {
 	PST_RESET_DELAY,	// reset delay;
 	PST_RUNNING,		// running state;
 	PST_COLD_RESET,		// cold reset;
+	PST_SLP_CR_DELAY,	// wait for PMU SLP to reassert for cold reset;
 };
 
 enum pstate_times {
@@ -201,11 +215,50 @@ enum pstate_times {
 	PSTATE_COREPWR_DELAY = 150,	// delay CLKPWRGD -> COREPWR rising;
 	PSTATE_RESET_DELAY = 100,	// delay COREPWR -> RESET deassertion;
 	PSTATE_RSMRST_ASSERT = 100,	// RSMRST assertion duration for cold reset;
+	PSTATE_SLP_CR_DELAY = 5100,	// cold reset reassert delay;
 };
+
+// ble reset state;
+// eeprom tells if BLE should be kept in reset on pic startup;
+
+enum ble_set {
+	BLE_NONE = 0,
+	BLE_RST_ASSERT,		// assert BLE reset;
+	BLE_RST_DEASSERT,	// deassert BLE reset;
+};
+
+typedef union ble_get ble_get_t;
+union ble_get {
+	unsigned char v;
+	struct {
+		unsigned IN_RESET : 1;	// ble chip held in reset;
+		unsigned EE_RESET : 1;	// eeprom forces ble held in reset;
+		unsigned : 6;
+	} b;
+};
+
+// eeprom data;
+
+#define EE_SWDT 	0	// 0:1: default swdt;
+#define EE_BLE_RESET 	2	// 2: BLE reset byte;
+
+enum eests {
+	EE_IDLE = 0,
+	EE_ERROR,	// must be before others;
+	EE_START,
+	EE_BUSY,
+};
+
+// globals;
 
 u8 pstate;	// power state;
 u8 nstate;	// new power requested by host;
 u8 rgb[3];	// LED pwm values per RGB;
+u8 thmtrip;	// # of thermal shutdowns;
+ble_get_t ble;	// ble reset state;
+u8 eeaddr;	// write address;
+u8 eedata;	// write data byte;
+u8 eests;	// eeprom status;
 
 // i2c commands;
 // each address has specific command;
@@ -218,7 +271,20 @@ enum i2c_cmds {
 	I2C_LED_GET,		// read rgb LED;
 	I2C_PST,		// host requests reset/power state change;
 	I2C_RESET,		// read reset cause;
-	//XXX more BLE,eeprom
+	I2C_SWDT_SET,		// set system watchdog;
+	I2C_SWDT_GET,		// get system watchdog;
+	I2C_BLE_SET,		// set BLE reset state;
+	I2C_BLE_GET,		// get BLE reset state;
+
+	I2C_EE_WRITE,		// write eeprom byte;
+	I2C_EE_STS,		// eeprom status;
+	I2C_EE_ADDR,		// set eeprom read address;
+	I2C_EE_READ,		// read eeprom byte(s);
+
+	I2C_MSG_SET,		// set msg ptr;
+	I2C_MSG_GET,		// get msg ptr;
+	I2C_MSG_PUTC,		// write msg byte;
+	I2C_MSG_GETC,		// read msg byte;
 };
 
 // i2c byte for I2C_PST command;
@@ -242,7 +308,32 @@ typedef union {
 i2c_addr_t i2c_addr;	// address byte;
 u8 i2c_idx;		// buffer index;
 u8 i2c_nb;		// # of bytes;
-u8 i2c_buf[16];		// cmd/data buffer;
+u8 i2c_buf[8];		// cmd/data buffer;
+
+// message buffer;
+
+typedef union mptr mptr_t;
+union mptr {
+	u8 b[2];	// as bytes, little endian;
+	u16 p;		// as offset;
+};
+
+mptr_t mptr;
+u8 msg[SIZE_MSG];
+
+// system watchdog;
+// ticks at 25 Hz (40ms);
+
+#define SWDT_TICK 25
+#define SWDT_MIN (1*60*SWDT_TICK)	// min time to do anything;
+#define SWDT_DEFAULT (5*60*SWDT_TICK)	// default if eeprom is not programmed;
+
+typedef union swdt swdt_t;
+union swdt {
+	u8 b[2];	// as bytes, little endian;
+	u16 v;		// value;
+};
+swdt_t swdt;		// system watchdog timer;
 
 // interrupt enable/disable;
 
@@ -286,6 +377,85 @@ led_red(void)
 	led_set();
 }
 
+// eeprom setup;
+
+static inline void
+ee_setup(void)
+{
+        NVMCON1bits.NVMREGS = 1;
+        NVMCON1bits.LWLO = 0;
+	NVMADRH = 0x70;
+}
+
+// read eeprom byte;
+
+static inline u8
+ee_read(u8 addr)
+{
+	NVMCON1bits.WREN = 0;
+	NVMADRL = addr;
+	NVMCON1bits.RD = 1;
+	return(NVMDATL);
+}
+
+// write eeprom byte;
+
+static inline void
+ee_write(void)
+{
+	ee_setup();
+	NVMCON1bits.WREN = 1;
+	NVMADRL = eeaddr;
+	NVMDATL = eedata;
+	NVMCON2 = 0x55;
+	NVMCON2 = 0xaa;
+	NVMCON1bits.WR = 1;
+}
+
+// check eeprom done;
+// returns new eests;
+
+static inline u8
+ee_done(void)
+{
+	if(NVMCON1bits.WR)
+		return(EE_BUSY);
+	NVMCON1bits.WREN = 0;
+	if(NVMCON1bits.WRERR)
+		return(EE_ERROR);
+	return(EE_IDLE);
+}
+
+// read swdt from eeprom;
+// set to default if not programmed;
+
+static inline void
+swdt_init(void)
+{
+	ee_setup();
+	swdt.b[0] = ee_read(EE_SWDT + 0);
+	swdt.b[1] = ee_read(EE_SWDT + 1);
+	if(swdt.v == 0xffff)
+		swdt.v = SWDT_DEFAULT;
+	if(swdt.v < SWDT_MIN)
+		swdt.v = SWDT_DEFAULT;
+}
+
+// handle system watchdog;
+
+static inline void
+swdt_fsm(void)
+{
+	if(swdt.v) {
+		if(TMR4IF) {
+			TMR4IF = 0;
+			swdt.v--;
+		}
+		if(swdt.v == 0)
+			pstate = PST_COLD_RESET;
+	}
+}
+
 // start new i2c transaction;
 
 u8
@@ -311,6 +481,65 @@ i2c_start(void)
 	case I2C_RESET:
 		i2c_buf[0] = reset.v;
 	case I2C_PST:
+		i2c_nb = 1;
+		break;
+
+	// system watchdog timer;
+	// write data is actual next timeout;
+	// 0 effectively stops it;
+	case I2C_SWDT_GET:
+		i2c_buf[0] = swdt.b[0];
+		i2c_buf[1] = swdt.b[1];
+	case I2C_SWDT_SET:
+		i2c_nb = 2;
+		break;
+
+	// BLE reset handling;
+	case I2C_BLE_GET:
+		i2c_buf[0] = ble.v;
+	case I2C_BLE_SET:
+		i2c_nb = 1;
+		break;
+
+	// eeprom access;
+	case I2C_EE_STS:
+		i2c_buf[0] = eests;
+		i2c_nb = 1;
+		break;
+	case I2C_EE_WRITE:
+		if(eests >= EE_START)
+			return(0);
+		i2c_nb = 2;
+		break;
+	case I2C_EE_READ:
+		if(eests >= EE_START)
+			return(0);
+		ee_setup();
+		i2c_buf[0] = ee_read(eeaddr);
+		eeaddr++;
+		i2c_nb = 1;
+		break;
+	case I2C_EE_ADDR:
+		if(eests >= EE_START)
+			return(0);
+		i2c_nb = 1;
+		break;
+
+	// message buffer;
+	case I2C_MSG_GET:
+		i2c_buf[0] = mptr.b[0];
+		i2c_buf[1] = mptr.b[1];
+	case I2C_MSG_SET:
+		i2c_nb = 2;
+		break;
+	case I2C_MSG_GETC:
+	case I2C_MSG_PUTC:
+		if(mptr.p >= SIZE_MSG)
+			return(0);
+		if(i2c_addr.read) {
+			i2c_buf[0] = msg[mptr.p];
+			mptr.p++;
+		}
 		i2c_nb = 1;
 		break;
 
@@ -347,6 +576,38 @@ i2c_exec(void)
 			nstate = PST_COLD_RESET;
 		else if(i2c_buf[0] == POWER_OFF)
 			nstate = PST_TURN_OFF;
+		break;
+
+	// system watchdog;
+	case I2C_SWDT_SET:
+		swdt.b[0] = i2c_buf[0];
+		swdt.b[1] = i2c_buf[1];
+		break;
+
+	// BLE reset handling;
+	case I2C_BLE_SET:
+		if(i2c_buf[0] == BLE_RST_ASSERT)
+			ble.b.IN_RESET = 1;
+		else if(i2c_buf[0] == BLE_RST_DEASSERT)
+			ble.b.IN_RESET = 0;
+		break;
+
+	// eeprom access;
+	case I2C_EE_WRITE:
+		eedata = i2c_buf[1];
+		eests = EE_START;
+	case I2C_EE_ADDR:
+		eeaddr = i2c_buf[0];
+		break;
+
+	// msg putc;
+	case I2C_MSG_SET:
+		mptr.b[0] = i2c_buf[0];
+		mptr.b[1] = i2c_buf[1];
+		break;
+	case I2C_MSG_PUTC:
+		msg[mptr.p] = i2c_buf[0];
+		mptr.p++;
 		break;
 
 	// default, NACK;
@@ -515,6 +776,9 @@ power_fsm(void)
 	// start power-on sequence;
 	// turn on supplies, start power timer;
 	case PST_TURN_ON:
+		RSMRST_OUT = 0;
+		COREPWR_OUT = 0;
+		CLKPWRGD_OUT = 0;
 		PSON_OUT = 1;
 		led_red();
 		pst_start(PSTATE_PWRGD_TO);
@@ -578,6 +842,7 @@ power_fsm(void)
 	case PST_COREPWR_DELAY:
 		if(pst_expired()) {
 			COREPWR_OUT = 1;
+			swdt_init();
 			pstate = PST_RUNNING;
 		}
 		break;
@@ -595,16 +860,18 @@ power_fsm(void)
 	case PST_RESET_DELAY:
 		if(pst_expired()) {
 			PICRST_TRIS = 1;
+			swdt_init();
 			pstate++;
 		}
 		break;
 
 	// running state;
 	// PWRGD and PMU_SLP are monitored below;
-	// nothing to do here;
+	// cold reset system is SWDT triggers;
 	case PST_RUNNING:
 		if(rst_button())
 			pstate = PST_RESET_ASSERT;
+		swdt_fsm();
 		break;
 
 	// cold reset;
@@ -616,10 +883,30 @@ power_fsm(void)
 		pstate = PST_RSMRST_DELAY;
 		break;
 
+	// PMU_SLP cold reset / power off delay;
+	case PST_SLP_CR_DELAY:
+		if(pst_expired()) {
+			if(PMU_SLP_PORT)
+				pstate = PST_COLD_RESET;
+			else
+				pstate = PST_TURN_OFF;
+		}
+		break;
+
 	// this should never happen;
 	default:
 		goto fail_pst;
 	}
+
+	// if thermtrip ever goes active, power off hard;
+
+#ifndef PIC_BOARD_V1
+	if((pstate > PST_TURN_ON) && THMTRIP_PORT) {
+		if(thmtrip != 0xff)
+			thmtrip++;
+		goto fail_pst;
+	}
+#endif // PIC_BOARD_V1
 
 	// if >= PST_RSMRST_DELAY, PWRGD must never go 0;
 	// if it does we have a power issue, so shut down;
@@ -627,10 +914,14 @@ power_fsm(void)
 	if((pstate >= PST_RSMRST_DELAY) && !PWRGD_PORT)
 		goto fail_pst;
 
+	// cpu signals cold reset or power off via PMU_SLP;
+	// if it reasserts within 5secs, then cold reset, else power off;
 	// if >= PST_CLKPWRGD_DELAY and PMU_SLP goes 0, then power off;
 
-	if((pstate >= PST_CLKPWRGD_DELAY) && !PMU_SLP_PORT)
-		pstate = PST_TURN_OFF;
+	if((pstate >= PST_CLKPWRGD_DELAY) && (pstate != PST_SLP_CR_DELAY) && !PMU_SLP_PORT) {
+		pst_start(PSTATE_SLP_CR_DELAY);
+		pstate = PST_SLP_CR_DELAY;
+	}
 
 	return(0);
 
@@ -720,8 +1011,6 @@ main(void)
 	// however, later, eeprom may tell us otherwise;
 
 	BLERST_OUT = BLERST_PORT;
-//XXX for now, keep in reset;
-BLERST_OUT = 0;
 	BLERST_TRIS = 0;
 
 	// init TMR2 for pwm operation;
@@ -732,6 +1021,15 @@ BLERST_OUT = 0;
 	T2CON = 0x06;
 	PR2 = 0xfe;
 	TMR2 = 0;
+
+	// init TMR4 for SWDT;
+	// this is an 8-bit timer, counting 0..ff;
+	// prescaler=64, timer on, postscaler=10;
+	// tick req is fosc/4/pre/250/post = 25 Hz;
+
+	T4CON = 0x4f;
+	PR4 = 250;
+	TMR4 = 0;
 
 	// init CCP mapping for LED pwm control;
 	// pwm mode, enabled, left-aligned mode;
@@ -754,6 +1052,30 @@ BLERST_OUT = 0;
 	// init LED to full red;
 
 	led_red();
+
+	// read eeprom variables;
+
+	eeaddr = 0;
+	eests = EE_IDLE;
+
+	// setup ble reset behaviour;
+	// eeprom tells if BLE should be kept in reset;
+	// main loop updates BLERST_OUT;
+
+	ble.v = 0;
+	if( !BLERST_PORT)
+		ble.b.IN_RESET = 1;
+	ee_setup();
+	eedata = ee_read(EE_BLE_RESET);
+	if(eedata == 0xff) {
+		ble.b.EE_RESET = 1;
+		ble.b.IN_RESET = 1;
+		BLERST_OUT = 0;
+	}
+
+	// set msg ptr beyon buffer to force pointer setting;
+
+	mptr.p = SIZE_MSG;
 
 	// 1ms timer;
 	// TMR0 divides clock to 1000Hz (1ms);
@@ -796,6 +1118,11 @@ BLERST_OUT = 0;
 
 	pstate = PST_TURN_ON;
 	nstate = PST_OK;
+	thmtrip = 0;
+
+	// reduce watchdog to 256ms;
+
+	WDTCON = 8;
 
 	// enable peripheral interrupts;
 	// enable global interrupts;
@@ -806,8 +1133,14 @@ BLERST_OUT = 0;
 	// main loop;
 	// the power state machine is polling;
 	// i2c transactions are mostly handled in intr;
+	// no function in here should block;
 
 	while(1) {
+		asm("clrwdt");
+
+		// handle power/reset state machine;
+		// remember states that had errors;
+
 		power_fsm();
 		//XXX fail log
 
@@ -816,6 +1149,19 @@ BLERST_OUT = 0;
 		if(nstate) {
 			pstate = nstate;
 			nstate = PST_OK;
+		}
+
+		// update BLE reset;
+
+		BLERST_OUT = !ble.b.IN_RESET;
+
+		// eeprom byte write state machine;
+
+		if(eests == EE_START) {
+			ee_write();
+			eests = EE_BUSY;
+		} else if(eests == EE_BUSY) {
+			eests = ee_done();
 		}
 	}
 

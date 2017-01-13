@@ -7,11 +7,11 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=six
+PKG_NAME:=python-six
 PKG_VERSION:=1.10.0
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=six-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://pypi.python.org/packages/source/s/six
 PKG_MD5SUM:=34eed507548117b2ab523ab14b2f8b55
 

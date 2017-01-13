@@ -7,6 +7,7 @@
 # $Id: Makefile $
 
 include $(TOPDIR)/rules.mk
+include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=openvswitch
 
@@ -19,7 +20,6 @@ PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_DEPENDS:=python/host python-six/host
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/kernel.mk
 
 PKG_FIXUP=libtool
 
@@ -101,6 +101,7 @@ CONFIGURE_ARGS += --with-rundir=/var/run
 CONFIGURE_ARGS += --enable-ndebug
 CONFIGURE_ARGS += --with-dpdk=$(STAGING_DIR)/usr/dpdk
 CONFIGURE_ARGS += PATH="$(TARGET_PATH)"
+CONFIGURE_ARGS += PYTHON="$(STAGING_DIR_HOST)/bin/python2.7"
 
 define Build/Configure
 	(cd $(PKG_BUILD_DIR); \
@@ -110,6 +111,7 @@ define Build/Configure
 endef
 
 define Build/Compile
+	-cp ./files/six.py $(PKG_BUILD_DIR)/python
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		$(TARGET_CONFIGURE_OPTS) \
 		CFLAGS="-I$(PKG_BUILD_DIR)/lib $(TARGET_CFLAGS) -std=gnu99" \

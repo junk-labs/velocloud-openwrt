@@ -1,7 +1,7 @@
 // main.c v1 Sandra Berndt
 // velocloud dolphin pic code;
 
-#define PIC_BOARD_V1
+#undef PIC_BOARD_V1
 #define SIZE_MSG 400
 
 // CONFIG1
@@ -285,6 +285,9 @@ enum i2c_cmds {
 	I2C_MSG_GET,		// get msg ptr;
 	I2C_MSG_PUTC,		// write msg byte;
 	I2C_MSG_GETC,		// read msg byte;
+
+	I2C_VNOP,
+	I2C_VERSION,		// get pic code version;
 };
 
 // i2c byte for I2C_PST command;
@@ -428,6 +431,7 @@ ee_done(void)
 
 // read swdt from eeprom;
 // set to default if not programmed;
+// if smaller than mininum time, just turn it off;
 
 static inline void
 swdt_init(void)
@@ -438,7 +442,7 @@ swdt_init(void)
 	if(swdt.v == 0xffff)
 		swdt.v = SWDT_DEFAULT;
 	if(swdt.v < SWDT_MIN)
-		swdt.v = SWDT_DEFAULT;
+		swdt.v = 0;
 }
 
 // handle system watchdog;
@@ -543,6 +547,17 @@ i2c_start(void)
 		i2c_nb = 1;
 		break;
 
+	// pic version;
+
+	case I2C_VERSION:
+		i2c_buf[0] = 'v';
+		i2c_buf[1] = '3';
+		i2c_buf[2] = 0;
+		i2c_buf[3] = 0;
+	case I2C_VNOP:
+		i2c_nb = 4;
+		break;
+
 	// NACK invalid addresses;
 	default:
 		i2c_nb = 0;
@@ -608,6 +623,10 @@ i2c_exec(void)
 	case I2C_MSG_PUTC:
 		msg[mptr.p] = i2c_buf[0];
 		mptr.p++;
+		break;
+
+	// version write is nop;
+	case I2C_VNOP:
 		break;
 
 	// default, NACK;
@@ -878,6 +897,8 @@ power_fsm(void)
 	// going through RSMRST;
 	case PST_COLD_RESET:
 		RSMRST_OUT = 0;
+		COREPWR_OUT = 0;
+		CLKPWRGD_OUT = 0;
 		led_red();
 		pst_start(PSTATE_RSMRST_ASSERT);
 		pstate = PST_RSMRST_DELAY;
@@ -901,7 +922,7 @@ power_fsm(void)
 	// if thermtrip ever goes active, power off hard;
 
 #ifndef PIC_BOARD_V1
-	if((pstate > PST_TURN_ON) && THMTRIP_PORT) {
+	if((pstate > PST_PWRGD_STABLE) && THMTRIP_PORT) {
 		if(thmtrip != 0xff)
 			thmtrip++;
 		goto fail_pst;

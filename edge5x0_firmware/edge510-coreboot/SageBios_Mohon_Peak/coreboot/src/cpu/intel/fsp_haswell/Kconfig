@@ -1,0 +1,77 @@
+##
+## This file is part of the coreboot project.
+##
+## Copyright (C) 2014 Sage Electronic Engineering, LLC.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+##
+
+config CPU_INTEL_FSP_HASWELL
+	bool
+
+if CPU_INTEL_FSP_HASWELL
+
+config CPU_SPECIFIC_OPTIONS
+	def_bool y
+	select ARCH_BOOTBLOCK_X86_32
+	select ARCH_ROMSTAGE_X86_32
+	select ARCH_RAMSTAGE_X86_32
+	select PLATFORM_USES_FSP
+	select BACKUP_DEFAULT_SMM_REGION
+	select SMP
+	select SSE2
+	select UDELAY_TSC
+	select TSC_CONSTANT_RATE
+	select SMM_TSEG if HAVE_SMI_HANDLER
+	select SMM_MODULES if HAVE_SMI_HANDLER
+	select RELOCATABLE_MODULES
+	select DYNAMIC_CBMEM
+	select SUPPORT_CPU_UCODE_IN_CBFS if HAVE_FSP_BIN
+	select TSC_SYNC_MFENCE
+	select PARALLEL_MP
+	select SAVE_EARLY_TIMESTAMPS_TO_CMOS if COLLECT_TIMESTAMPS
+
+config BOOTBLOCK_CPU_INIT
+	string
+	default "cpu/intel/fsp_haswell/bootblock.c"
+
+config SERIAL_CPU_INIT
+	bool
+	default n
+
+config SMM_TSEG_SIZE
+	hex
+	default 0x800000
+	#TODO - check this against the FSP
+
+config IED_REGION_SIZE
+	hex
+	default 0x400000
+	#TODO - Check this against the FSP
+
+config SMM_RESERVED_SIZE
+	hex
+	default 0x100000
+	#TODO - Check this against the FSP
+
+config CPU_MICROCODE_CBFS_LOC
+	hex
+	depends on SUPPORT_CPU_UCODE_IN_CBFS
+	default 0xfff10000
+
+config MICROCODE_INCLUDE_PATH
+	string "Location of the intel microcode patches"
+	default "../intel/cpu/haswell/microcode"
+
+endif

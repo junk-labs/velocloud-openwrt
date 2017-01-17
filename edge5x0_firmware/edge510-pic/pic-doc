@@ -111,6 +111,7 @@ message putc
 	writes single char to message buffer pointer
 	increments msg pointer
 	NACKed when msg buffer full
+	i2cset -y 1 0x27 c
 
 I2C_MSG_GETC
 message getc
@@ -118,6 +119,13 @@ message getc
 	reads single char from message buffer pointer
 	increments msg pointer
 	NACKed when outside valid range
+	i2cget -y 1 0x27
+
+I2C_VERSION
+get pic version string
+	0x51 C C C C
+	reads upto 4 bytes of version string
+	i2cget -y 1 0x27 0 w
 
 EEPROM bytes:
 

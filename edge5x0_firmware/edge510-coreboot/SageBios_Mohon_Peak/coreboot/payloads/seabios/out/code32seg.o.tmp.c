@@ -1,0 +1,7 @@
+#include "/home/jordanr/volume1/dolphin_12012016/SageBios_Mohon_Peak/coreboot/payloads/seabios/src/string.c"
+ #include "/home/jordanr/volume1/dolphin_12012016/SageBios_Mohon_Peak/coreboot/payloads/seabios/src/output.c"
+ #include "/home/jordanr/volume1/dolphin_12012016/SageBios_Mohon_Peak/coreboot/payloads/seabios/src/pcibios.c"
+ #include "/home/jordanr/volume1/dolphin_12012016/SageBios_Mohon_Peak/coreboot/payloads/seabios/src/apm.c"
+ #include "/home/jordanr/volume1/dolphin_12012016/SageBios_Mohon_Peak/coreboot/payloads/seabios/src/stacks.c"
+ #include "/home/jordanr/volume1/dolphin_12012016/SageBios_Mohon_Peak/coreboot/payloads/seabios/src/hw/pci.c"
+ #include "/home/jordanr/volume1/dolphin_12012016/SageBios_Mohon_Peak/coreboot/payloads/seabios/src/hw/serialio.c"

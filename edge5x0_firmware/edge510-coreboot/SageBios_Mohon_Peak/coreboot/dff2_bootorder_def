@@ -1,0 +1,13 @@
+/pci@i0cf8/usb@16/hub@1/usb-*@4
+/pci@i0cf8/usb@16/hub@1/usb-*@2
+/pci@i0cf8/*@18/drive@0/disk@0
+/pci@i0cf8/*@18/drive@1/disk@0
+/pci@i0cf8/*@17/drive@3/disk@0
+/pci@i0cf8/*@17/drive@0/disk@0
+/pci@i0cf8/*@17/drive@1/disk@0
+/pci@i0cf8/*@17/drive@2/disk@0
+/pci@i0cf8/usb@16/hub@1/usb-*@3
+/pci@i0cf8/*@14
+/pci@i0cf8/*@14,1
+/pci@i0cf8/*@14,2
+/pci@i0cf8/*@14,3

@@ -4472,8 +4472,8 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +// 1: input, 0 = usb2 overcurrent;
 +// 2: output, 1 = enable usb1 power;
 +// 3: output, 1 = enable usb2 power;
-+// 4: output, 0 = reset slot A;
-+// 5: output, 0 = reset slot B;
++// 4: output, 1 = reset slot A;
++// 5: output, 1 = reset slot B;
 +// 6: input, 0 = card in slot B;
 +// 7: output, 0 = reset 88e1543 quad phy;
 +// 8: output, 0 = slot A rfkill A;
@@ -4486,7 +4486,7 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +// 15: output, sim detect to slot B;
 +
 +static pca9539_chip_t pca9539[1] = {
-+	{ .out = 0x000c, .dir = 0x6043,
++	{ .out = 0x003c, .dir = 0x6043,
 +	  .gpio = {
 +		.owner = THIS_MODULE,
 +		.base = EDGE510_GPIO_PCA9539,

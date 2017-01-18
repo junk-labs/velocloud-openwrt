@@ -1,6 +1,6 @@
 #!/bin/sh
 
-MYNAME=`readlink $0`
+MYNAME=`readlink -f $0`
 MYDIR=`dirname "$MYNAME"`
 MYDIR=`(cd "$MYDIR" && pwd)`
 
@@ -78,9 +78,13 @@ done
 echo "Enabling password-based root sshd login"
 sed -i -e 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-# Copy a disabled wifi configuration by default
-echo "Disabling wi-fi by default. See /root/stress/wifi-cfg/README.wireless.txt"
-cp $MYDIR/wifi-cfg/wireless.emissions /etc/config/wireless
+if [ "$BOARD" = "edge510" ]; then
+    :
+else
+    # Copy a disabled wifi configuration by default
+    echo "Disabling wi-fi by default. See /root/stress/wifi-cfg/README.wireless.txt"
+    cp $MYDIR/wifi-cfg/wireless.emissions /etc/config/wireless
+fi
 
 if [ "$BOARD" = "edge510" ]; then
     echo "Restarting network to apply new configuration"

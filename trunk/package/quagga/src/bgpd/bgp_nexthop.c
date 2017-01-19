@@ -314,6 +314,10 @@ bgp_nexthop_lookup (afi_t afi, struct peer *peer, struct bgp_info *ri,
   struct bgp_nexthop_cache *bnc;
   struct in_addr addr;
   
+  /* Temporary change: for now, we are only supporting the directly connected
+     e/iBGP peers, so the onlink check is enough */
+  return (bgp_nexthop_onlink (peer->bgp, afi, ri->attr));
+
   /* If lookup is not enabled, return valid. */
   if (zlookup->sock < 0)
     {

@@ -99,7 +99,7 @@ done
 . /etc/modems/modem.path
 
 # Load profile
-local PROFILE=${modem_config_path}/${USB}.profile
+local PROFILE=${modem_config_path}/${ifname}.profile
 if [ -f ${PROFILE} ]; then
     . ${PROFILE}
 fi

@@ -12,11 +12,13 @@ restart_pppd() {
         dialnumber="#777"
         apnscript="3g_noapn.chat"
     elif  [ "$cdmagsm" == "GSM" ]; then
-        # If no explicit APN requested, we just default to the one in PDP context #1
-        dialnumber="*99***1#"
         if [ -z "$APN" ]; then
+            # If no explicit APN requested, we just default to the one in PDP context #1
+            dialnumber="*99***1#"
             apnscript="3g_noapn.chat"
         else
+            # If APN requested, the chat script will create and use a PDP context
+            dialnumber=""
             apnscript="3g_apn.chat"
         fi
     else

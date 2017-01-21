@@ -12,7 +12,7 @@ PKG_RELEASE:=4
 
 PKG_SOURCE:=dpdk-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://dpdk.org/browse/dpdk/snapshot/
-PKG_MD5SUM:=4afdc7951e21ff878a85ecade7f6f488
+PKG_MD5SUM:=d1048a0edb60e0f47f875aff529ffce1
 
 include $(INCLUDE_DIR)/host-build.mk
 

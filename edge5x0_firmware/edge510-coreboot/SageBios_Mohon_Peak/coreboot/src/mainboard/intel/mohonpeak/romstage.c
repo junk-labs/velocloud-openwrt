@@ -79,20 +79,20 @@ void early_mainboard_romstage_entry(void)
 
 	vc_register_i2c_gpio(&bb_i2c1);
 
-	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3,4 high. */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x2, 0xc);
+	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3,7N high. */
+	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x2, 0x8c);
 
 	/* SMBUS IO Expander addr=0x74, cmd 0x4 (register 0 no polarity inv). */
 	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x4, 0x0);
 	
 	/* SMBUS IO Expander addr=0x74, cmd 0x6 (register 0 output), bit 2,3,4,5. */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x6, 0xe3);
+	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x6, 0x63);
 
 	for (i = 0 ; i < 200; i++)
 		vc_early_udelay(100);
 	
-	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3 high. */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x2, 0x3c);
+	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3,4,5,7N high. */
+	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x2, 0xbc);
 
 	vc_deregister_i2c_gpio(&bb_i2c1);
 

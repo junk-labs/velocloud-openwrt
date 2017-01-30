@@ -206,7 +206,7 @@ enum pstate {
 };
 
 enum pstate_times {
-	PSTATE_MIN_OFF = 2000,		// min power off time;
+	PSTATE_MIN_OFF = 3000,		// min power off time;
 	PSTATE_PWRGD_TO = 200,		// max PWRGD timout;
 	PSTATE_PWRGD_STABLE = 100,	// wait for PWRGD to stabilize;
 	PSTATE_RSMRST_DELAY = 10,	// delay PWRDGD -> RSMRST rising;
@@ -252,7 +252,9 @@ enum eests {
 // globals;
 
 u8 pstate;	// power state;
+u8 rstate;	// system reset state;
 u8 nstate;	// new power requested by host;
+u8 pcycle;	// power cycle;
 u8 rgb[3];	// LED pwm values per RGB;
 u8 thmtrip;	// # of thermal shutdowns;
 ble_get_t ble;	// ble reset state;
@@ -269,8 +271,8 @@ enum i2c_cmds {
 
 	I2C_LED_SET = I2C_BASE,	// set rgb LED;
 	I2C_LED_GET,		// read rgb LED;
-	I2C_PST,		// host requests reset/power state change;
-	I2C_RESET,		// read reset cause;
+	I2C_PST_SET,		// host requests reset/power state change;
+	I2C_PST_GET,		// read reset cause;
 	I2C_SWDT_SET,		// set system watchdog;
 	I2C_SWDT_GET,		// get system watchdog;
 	I2C_BLE_SET,		// set BLE reset state;
@@ -288,14 +290,24 @@ enum i2c_cmds {
 
 	I2C_VNOP,
 	I2C_VERSION,		// get pic code version;
+	I2C_RNOP,
+	I2C_RESET,		// get pic reset cause;
 };
 
 // i2c byte for I2C_PST command;
 
 enum i2c_reset {
-	RESET_WARM = 0,		// warm reset;
+	PST_NONE = 0,
+	RESET_WARM,		// warm reset;
 	RESET_COLD,		// cold reset;
 	POWER_OFF,		// turn off power;
+	POWER_CYCLE,		// power off, then back on;
+	RESET_SWDT,		// swdt triggered;
+	RESET_BUTTON,		// button was pushed;
+	THERM_TRIP,		// thermal trigger;
+	POWER_GOOD,		// power switchers not good;
+	PMU_SLP,		// PMU_SLP did not assert;
+	PST_UNKNOWN,		// unknown case;
 };
 
 // i2c state;
@@ -455,8 +467,10 @@ swdt_fsm(void)
 			TMR4IF = 0;
 			swdt.v--;
 		}
-		if(swdt.v == 0)
+		if(swdt.v == 0) {
 			pstate = PST_COLD_RESET;
+			rstate = RESET_SWDT;
+		}
 	}
 }
 
@@ -482,9 +496,9 @@ i2c_start(void)
 
 	// power/reset something;
 	// only byte is reset/power type;
-	case I2C_RESET:
-		i2c_buf[0] = reset.v;
-	case I2C_PST:
+	case I2C_PST_GET:
+		i2c_buf[0] = rstate;
+	case I2C_PST_SET:
 		i2c_nb = 1;
 		break;
 
@@ -551,11 +565,19 @@ i2c_start(void)
 
 	case I2C_VERSION:
 		i2c_buf[0] = 'v';
-		i2c_buf[1] = '3';
+		i2c_buf[1] = '4';
 		i2c_buf[2] = 0;
 		i2c_buf[3] = 0;
 	case I2C_VNOP:
 		i2c_nb = 4;
+		break;
+
+	// pic reset cause;
+	// only byte is reset/power type;
+	case I2C_RESET:
+		i2c_buf[0] = reset.v;
+	case I2C_RNOP:
+		i2c_nb = 1;
 		break;
 
 	// NACK invalid addresses;
@@ -584,13 +606,18 @@ i2c_exec(void)
 
 	// reset something;
 	// single byte is reset type;
-	case I2C_PST:
-		if(i2c_buf[0] == RESET_WARM)
+	case I2C_PST_SET:
+		rstate = i2c_buf[0];
+		if(rstate == RESET_WARM)
 			nstate = PST_RESET_ASSERT;
-		else if(i2c_buf[0] == RESET_COLD)
+		else if(rstate == RESET_COLD)
 			nstate = PST_COLD_RESET;
-		else if(i2c_buf[0] == POWER_OFF)
+		else if(rstate == POWER_OFF)
 			nstate = PST_TURN_OFF;
+		else if(rstate == POWER_CYCLE) {
+			nstate = PST_TURN_OFF;
+			pcycle = 1;
+		}
 		break;
 
 	// system watchdog;
@@ -770,6 +797,7 @@ power_fsm(void)
 	// turn power off;
 	// assert resets first, then take away power goods;
 	case PST_TURN_OFF:
+		PICRST_TRIS = 1;
 		RSMRST_OUT = 0;
 		COREPWR_OUT = 0;
 		CLKPWRGD_OUT = 0;
@@ -787,9 +815,11 @@ power_fsm(void)
 
 	// min power off time has expired;
 	// monitor reset button, if pushed then power on;
+	// power back on if power cycle reset;
 	case PST_OFF:
-		if(rst_button())
+		if(rst_button() || pcycle)
 			pstate++;
+		pcycle = 0;
 		break;
 
 	// start power-on sequence;
@@ -811,6 +841,7 @@ power_fsm(void)
 			pst_start(PSTATE_PWRGD_STABLE);
 			pstate++;
 		} else if(pst_expired()) {
+			rstate = POWER_GOOD;
 			goto fail_pst;
 		}
 		break;
@@ -840,6 +871,7 @@ power_fsm(void)
 	// turn power off if timed out;
 	case PST_WAIT_PMUSLP:
 		if(pst_expired()) {
+			rstate = PMU_SLP;
 			goto fail_pst;
 		} else if(PMU_SLP_PORT) {
 			pst_start(PSTATE_CLKPWRGD_DELAY);
@@ -886,10 +918,12 @@ power_fsm(void)
 
 	// running state;
 	// PWRGD and PMU_SLP are monitored below;
-	// cold reset system is SWDT triggers;
+	// cold reset system if SWDT triggers;
 	case PST_RUNNING:
-		if(rst_button())
+		if(rst_button()) {
 			pstate = PST_RESET_ASSERT;
+			rstate = RESET_BUTTON;
+		}
 		swdt_fsm();
 		break;
 
@@ -907,15 +941,19 @@ power_fsm(void)
 	// PMU_SLP cold reset / power off delay;
 	case PST_SLP_CR_DELAY:
 		if(pst_expired()) {
-			if(PMU_SLP_PORT)
+			if(PMU_SLP_PORT) {
 				pstate = PST_COLD_RESET;
-			else
+				rstate = RESET_COLD;
+			} else {
 				pstate = PST_TURN_OFF;
+				rstate = POWER_OFF;
+			}
 		}
 		break;
 
 	// this should never happen;
 	default:
+		rstate = PST_UNKNOWN;
 		goto fail_pst;
 	}
 
@@ -925,6 +963,7 @@ power_fsm(void)
 	if((pstate > PST_PWRGD_STABLE) && THMTRIP_PORT) {
 		if(thmtrip != 0xff)
 			thmtrip++;
+		rstate = THERM_TRIP;
 		goto fail_pst;
 	}
 #endif // PIC_BOARD_V1
@@ -932,8 +971,10 @@ power_fsm(void)
 	// if >= PST_RSMRST_DELAY, PWRGD must never go 0;
 	// if it does we have a power issue, so shut down;
 
-	if((pstate >= PST_RSMRST_DELAY) && !PWRGD_PORT)
+	if((pstate >= PST_RSMRST_DELAY) && !PWRGD_PORT) {
+		rstate = POWER_GOOD;
 		goto fail_pst;
+	}
 
 	// cpu signals cold reset or power off via PMU_SLP;
 	// if it reasserts within 5secs, then cold reset, else power off;
@@ -1139,6 +1180,8 @@ main(void)
 
 	pstate = PST_TURN_ON;
 	nstate = PST_OK;
+	rstate = POWER_OFF;
+	pcycle = 0;
 	thmtrip = 0;
 
 	// reduce watchdog to 256ms;

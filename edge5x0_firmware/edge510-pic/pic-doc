@@ -15,22 +15,18 @@ LED get
 	i2cget -y 1 0x20 ...
 	cat /sys/devices/platform/vc/leds/logo
 
-I2C_PST
+I2C_PST_SET
 power control
-	0x42 CTRL
-	CTRL: 0=warm reset, 1=cold reset, 2=power off
-	i2cset -y 1 0x21 CTRL
+	0x42 PST
+	PST: 1=warm reset, 2=cold reset, 3=power off 4=power-cycle, else nop
+	i2cset -y 1 0x21 PST
 
-I2C_RESET
-reset cause
-	0x43 RST
-	RST:
-		[0]=power-on reset
-		[1]=brown-out reset
-		[2]=PIC watchdog reset
-		[3]=MCLR pin reset
-		[4]=reset instruction
-		[5]= stack over/underflow
+I2C_PST_GET
+get reset/power cause
+	0x43 PST
+	PST: 1=warm reset, 2=cold reset, 3=power off, 4=power-cycle,
+	     5=swdt, 6=button push, 7=therm trip, 8=pwrgd, 9=PMU_SLP, 10=unknown
+	     else previous write;
 	i2cget -y 1 0x21
 
 I2C_SWDT_SET
@@ -126,6 +122,17 @@ get pic version string
 	0x51 C C C C
 	reads upto 4 bytes of version string
 	i2cget -y 1 0x27 0 w
+
+I2C_RESET
+pic reset cause
+	0x53 RST
+	RST:
+		[0]=power-on reset
+		[1]=brown-out reset
+		[2]=PIC watchdog reset
+		[3]=MCLR pin reset
+		[4]=reset instruction
+		[5]= stack over/underflow
 
 EEPROM bytes:
 

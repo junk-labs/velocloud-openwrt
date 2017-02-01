@@ -187,14 +187,17 @@ class Qmi(IPModems.IPModems):
 			wwan_down = True
 
 		# If we're connected, we'll do an IP check
-		if self.connection_status == 'connected' and self.expected_ip != '':
-			ip_valid = self.runcmd("/usr/sbin/ip addr ls dev " + self.wwan_iface + " | grep " + self.expected_ip + " | wc -l")
-			if ip_valid == '0':
-				logging.warning("[dev=%s]: IP check (%s) failed", self.USB, self.expected_ip)
-				self.ip_check_errors += 1
+		if self.connection_status == 'connected':
+			if self.expected_ip != '':
+				ip_valid = self.runcmd("/usr/sbin/ip addr ls dev " + self.wwan_iface + " | grep '" + self.expected_ip + "' | wc -l")
+				if ip_valid == '0':
+					logging.warning("[dev=%s]: IP check (%s) failed", self.USB, self.expected_ip)
+					self.ip_check_errors += 1
+				else:
+					logging.debug("[dev=%s]: IP check (%s) succeeded", self.USB, self.expected_ip)
 			else:
-				logging.debug("[dev=%s]: IP check (%s) succeeded", self.USB, self.expected_ip)
-
+				logging.warning("[dev=%s]: IP check (unset) failed", self.USB)
+				self.ip_check_errors += 1
 
 		# Do we need to force a full explicit disconnection of all our state info?
 		if wwan_down:

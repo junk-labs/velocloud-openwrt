@@ -124,6 +124,7 @@ class Qmi(IPModems.IPModems):
 		self.linkid = 'unknown'
 		self.modem_name = 'unknown'
 		self.modem_version = 'unknown'
+		self.isp_name = 'unknown'
 
 		try:
 			self.linkid = self.qmicli_dms("--dms-uim-get-imsi | awk -F\"'\" '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}/)){printf $i} } }'")

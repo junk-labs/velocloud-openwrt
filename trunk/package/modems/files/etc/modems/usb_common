@@ -347,6 +347,41 @@ get_modem_type()
 	echo $modemtype
 }
 
+at_probe()
+{
+	local status=1
+	local tries=0
+	local device=$1
+	while [ $status -ne 0 -a $tries -le 3 ]; do
+		gcom -d "$device" -s /etc/gcom/vccheck.gcom | grep 'OK' &>/dev/null
+		status=$?
+		tries=$((tries + 1))
+	done
+	if [ $status -ne 0 ]; then
+		log "Device $device is not AT-capable"
+		return
+	fi
+	log "Device $device is AT-capable"
+	echo $device
+}
+
+get_at_device() {
+	local device=$1
+
+	if [ ! -e $device ]; then
+		log "Device $device does not exist... Waiting!"
+		sleep 1
+		# Error out if tty device doesn't exist after 1s
+		if [ ! -e $device ]; then
+			return
+		fi
+	fi
+	log "Device $device exists"
+
+	device=$(at_probe "$device")
+	echo $device
+}
+
 uci_get_modem_type()
 {
 	local usbifname=$1
@@ -371,6 +406,12 @@ uci_get_modem_ifname()
 {
 	local usbifname=$1
 	echo $(uci -c $modem_config_path get modems.$usbifname.ifname)
+}
+
+uci_get_modem_auxdevice()
+{
+	local usbifname=$1
+	echo $(uci -c $modem_config_path get modems.$usbifname.auxdevice)
 }
 
 debug_hotplugevents()
@@ -411,7 +452,7 @@ cleanup_etc_config_modems() {
 
         if [ ! -f /tmp/.modem_hotplug.init  ];
         then
-            date >> /tmp/.modem_hotplug.init 
+            date >> /tmp/.modem_hotplug.init
             modem_cleanup
         fi
     ) < /dev/null 9> /tmp/.modem_cleanup.lock

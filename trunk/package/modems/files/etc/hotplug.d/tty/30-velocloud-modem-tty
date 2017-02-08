@@ -1,42 +1,6 @@
 #!/bin/sh
 # Copyright (C) 2013-2014 Velocloud Inc
 
-usb_serial_detect() {
-	local status=1
-	local tries=0
-	local device=$1
-	while [ $status -ne 0 -a $tries -le 3 ]; do
-		gcom -d "$device" -s /etc/gcom/vccheck.gcom | grep 'OK' &>/dev/null
-		status=$?
-		tries=$((tries + 1))
-	done
-	if [ $status -ne 0 ]; then
-		# Not a serial port
-		log "No output from device $device"
-		return
-	fi
-	log "Detected device $device is found"
-	echo $device
-}
-
-gettty_device() {
-	local ttydevice=$DEVICENAME
-
-	if [ ! -e /dev/$ttydevice ]; then
-		log "Serial device does not exists... Waiting!"
-		sleep 1
-		# Wait for tty file exists
-		if [ ! -e /dev/$ttydevice ]; then
-			ttydevice=""
-			return
-		fi
-	fi
-	log "Device /dev/$ttydevice exists"
-
-	ttydevice=$(usb_serial_detect "/dev/$ttydevice")
-	echo $ttydevice
-}
-
 get_cdma_gsm() {
 	local tries=0
 	local device=$1
@@ -270,6 +234,42 @@ handle_sierranet() {
 	$modem_script_path/modem_service.sh $usbifname start
 }
 
+# Other hybrid modems (e.g. qmiwwan or huawei-ncm)
+handle_other_hybrid() {
+	local ifname
+
+	# Store auxdevice if none already set
+	local auxdevice=$(uci_get_modem_auxdevice $usbifname)
+	if [ -n "$auxdevice" ]; then
+		return
+	fi
+
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.auxdevice=''"$ttydevice"''
+	uci -c $modem_config_path commit modems
+
+	# For huawei-ncm, check if we need to start at this point
+	local modemtype=$(uci_get_modem_type $usbifname)
+	if [ "$modemtype" = "huawei-ncm" ]; then
+		local device=$(uci_get_modem_device $usbifname)
+		if [ -z "$device" ]; then
+			uci -c $modem_config_path set modems.$usbifname.device=''"/dev/$ttydevice"''
+			uci -c $modem_config_path commit modems
+
+			# huawei profile generation
+			apn=$(at_get_apn $ttydevice $usbifname)
+			${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
+
+			# For Huawei NCM modems, we just create the profile at this point.
+			# The modem_service.sh script will launch the connection.
+			log "WWAN modem setup: Huawei NCM"
+			$modem_script_path/modem_service.sh $usbifname start
+			return
+		fi
+	fi
+}
+
 add_to_config() {
 	# Action for the each USB
 	local ttydevice
@@ -294,10 +294,10 @@ add_to_config() {
 	# This is the common profile path
 	profile=${modem_config_path}/${usbifname}.profile
 
-	# Ignore if no device file
-	ttydevice=$(gettty_device)
+	# Ignore if device isn't AT-capable
+	ttydevice=$(get_at_device "/dev/$DEVICENAME")
 	if [ -z "$ttydevice" ]; then
-		log "No TTY device: $usbpath"
+		log "Not an AT-capable TTY device: $usbpath"
 		return
 	fi
 
@@ -313,7 +313,7 @@ add_to_config() {
 		handle_sierranet
 		return
 	elif [ "$modemtype" == "None" ]; then
-		log "Hybrid modem selected for $modemtype: DEVICENAME:$DEVICENAME"
+		handle_other_hybrid
 		return
 	fi
 

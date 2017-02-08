@@ -181,9 +181,30 @@ setup_wwan_modem()
 	# huawei-ncm devices are AT-controlled NET devices
 	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
 	if [ $modemtype == "huawei-ncm" ]; then
-		local device=$(ls $usbpath/../../usbmisc)
-		uci -c $modem_config_path set modems.$usbifname.device=''"/dev/$device"''
+		local wdmdevice=$(ls $usbpath/../../usbmisc)
+
 		uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+		uci -c $modem_config_path commit modems
+
+		# Check if cdc-wdm device is AT-capable
+		local atdevice=$(get_at_device "/dev/$wdmdevice")
+		if [ -z "$atdevice" ]; then
+			log "Not an AT-capable cdc-wdm device: $wdmdevice"
+			local ttydevice=$(uci_get_modem_auxdevice $usbifname)
+
+			# If we have the tty already defined, we're ready to go; otherwise
+			# we'll need to wait and it will get launched later when the tty is
+			# processed.
+			if [ -z "$ttydevice" ]; then
+				log "TTY not yet defined in huawei-ncm modem: deferred"
+				return
+			fi
+
+			atdevice=$ttydevice
+			log "Running Huawei NCM support with a TTY as control port: $atdevice"
+		fi
+
+		uci -c $modem_config_path set modems.$usbifname.device=''"$atdevice"''
 		uci -c $modem_config_path commit modems
 
 		# huawei profile generation
@@ -191,7 +212,7 @@ setup_wwan_modem()
 		# instead, we already have access to the AT-capable cdc-wdm device, so
 		# we create the profile here in the net device handler.
 		#
-		apn=$(at_get_apn $device $usbifname)
+		apn=$(at_get_apn $atdevice $usbifname)
 		${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
 
 		# For Huawei NCM modems, we just create the profile at this point.

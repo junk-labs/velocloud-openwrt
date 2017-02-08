@@ -81,14 +81,14 @@ get_imei_number() {
 }
 
 get_imsi_number() {
-    # IMSI N/A in CDMA/EVDO devices without SIM
-    if [ $cdmagsm == "CDMA" ]; then
-        echo ""
-        return
-    fi
+	# IMSI N/A in CDMA/EVDO devices without SIM
+	if [ $cdmagsm == "CDMA" ]; then
+		echo ""
+		return
+	fi
 
 	local device=$1
-    local cdmagsm=$2
+	local cdmagsm=$2
 	local imsi_tries=3
 	local tempfile="$tmpdir/$usbifname.siminfo"
 	local imsicmd="gcom -d $dialdevice -s /etc/gcom/vcgetimsi.gcom"
@@ -116,36 +116,36 @@ get_linkid() {
 }
 
 update_hardware_info() {
-    device=$1
-    cdmagsm=$2
+	device=$1
+	cdmagsm=$2
 	local tempfile="$tmpdir/$usbifname.cardinfo"
 
-    # Read hardware details into a temporary file
+	# Read hardware details into a temporary file
 	local cardinfo_tries=3
 	while [ ! -s $tempfile ] && [ "$cardinfo_tries" -ne 0 ]; do
-	    gcom -d $device -s /etc/gcom/vcgetcardinfo.gcom | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
+		gcom -d $device -s /etc/gcom/vcgetcardinfo.gcom | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
 		cardinfo_tries=$(expr $cardinfo_tries - 1)
 	done
-    if [ ! -s $tempfile ]; then
-        log "Couldn't read hardware info"
-        return
-    fi
+	if [ ! -s $tempfile ]; then
+		log "Couldn't read hardware info"
+		return
+	fi
 
-    # Basic hardware details
+	# Basic hardware details
 	local man=$(awk '{if(match(tolower($0), "manufacturer")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
-	local mod=$(awk '{if(match(tolower($0), "model"))        {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
-	local rev=$(awk '{if(match(tolower($0), "revision"))     {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+	local mod=$(awk '{if(match(tolower($0), "model"))		 {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+	local rev=$(awk '{if(match(tolower($0), "revision"))	 {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
 
-    log "Manufacturer: $man"
-    log "Model: $mod"
-    log "Revision: $rev"
+	log "Manufacturer: $man"
+	log "Model: $mod"
+	log "Revision: $rev"
 
-    # Build link id.
-    # Notes:
-    #  * IMSI is only applicable when the device has a SIM, so 3GPP-only
-    #  * IMEI is only applicable when the device is 3GPP
-    #  * ESN may be used as unique device id for 3GPP2 devices
-    #
+	# Build link id.
+	# Notes:
+	#  * IMSI is only applicable when the device has a SIM, so 3GPP-only
+	#  * IMEI is only applicable when the device is 3GPP
+	#  * ESN may be used as unique device id for 3GPP2 devices
+	#
 	local imei_number=$(get_imei_number $tempfile $cdmagsm)
 	local imsi_number=$(get_imsi_number $device $cdmagsm)
 	local linkid=$(get_linkid "$imsi_number" "$imei_number")
@@ -329,21 +329,21 @@ add_to_config() {
 	ret=$(check_device_config $usbifname)
 	if [ "$ret" == "True" ]; then
 		# We got a TTY for dial-up already; so use this second one for management,
-        # unless there is one already
-	    uci -c $modem_config_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
-	    if [ $? -ne 0 ]; then
-		    log "Device $ttydevice set to be used as management device"
-	        uci -c $modem_config_path set modems.$usbifname.mgmt="$ttydevice"
-	        uci -c $modem_config_path commit modems
-		    return
-        fi
+		# unless there is one already
+		uci -c $modem_config_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
+		if [ $? -ne 0 ]; then
+			log "Device $ttydevice set to be used as management device"
+			uci -c $modem_config_path set modems.$usbifname.mgmt="$ttydevice"
+			uci -c $modem_config_path commit modems
+			return
+		fi
 
 		log "Device $ttydevice not needed (dial-up and management TTYs already set)"
-        return
-    fi
+		return
+	fi
 
-    # 3GPP or 3GPP2?
-    local cdmagsm=$(get_cdma_gsm $ttydevice)
+	# 3GPP or 3GPP2?
+	local cdmagsm=$(get_cdma_gsm $ttydevice)
 
 	log "Device $ttydevice set to be used as dial-up device ($cdmagsm)"
 
@@ -356,15 +356,15 @@ add_to_config() {
 	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
 	uci -c $modem_config_path commit modems
 
-    # Update other hardware configuration
-    update_hardware_info $ttydevice $cdmagsm
+	# Update other hardware configuration
+	update_hardware_info $ttydevice $cdmagsm
 
 	# Create profile for the PPP based connection, but look for APN only if this
-    # is a GSM/3GPP device (not needed for CDMA/3GPP2 devices).
-    local apn=""
-    if [ "$cdmagsm" == "GSM" ]; then
-	    apn=$(at_get_apn $ttydevice $usbifname)
-    fi
+	# is a GSM/3GPP device (not needed for CDMA/3GPP2 devices).
+	local apn=""
+	if [ "$cdmagsm" == "GSM" ]; then
+		apn=$(at_get_apn $ttydevice $usbifname)
+	fi
 	${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
 
 	log "Starting pppd script for $ttydevice"
@@ -418,14 +418,14 @@ if [ -f /etc/modemmanager/25-modemmanager-common ]; then
 fi
 
 case "$DEVICENAME" in
-    console|ttyS[0-9]*)
-	# do NOT write to console or "real" serial terminals
-	;;
-    *)
-	if [ "$ACTION" = add ]; then
-		add_to_config
-	elif [ "$ACTION" = remove ]; then
-		remove_device_config
-	fi
-	;;
+	console|ttyS[0-9]*)
+		# do NOT write to console or "real" serial terminals
+		;;
+	*)
+		if [ "$ACTION" = add ]; then
+			add_to_config
+		elif [ "$ACTION" = remove ]; then
+			remove_device_config
+		fi
+		;;
 esac

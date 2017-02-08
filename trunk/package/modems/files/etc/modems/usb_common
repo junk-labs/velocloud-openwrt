@@ -242,6 +242,30 @@ remove_device_config()
 	fi
 }
 
+get_vid_pid() {
+	local tmp_path="$1"
+
+	while [ 1 ]; do
+		tmp_path=$(dirname ${tmp_path})
+
+		# avoid infinite loops iterating
+		if [ -z "${tmp_path}" ] || [ "${tmp_path}" == "/" ]; then
+			return
+		fi
+
+		# the physical device will be that with a idVendor and idProduct pair of files
+		if [ -f ${tmp_path}/idVendor ] && [ -f ${tmp_path}/idProduct ]; then
+			vid=$(cat ${tmp_path}/idVendor)
+			pid=$(cat ${tmp_path}/idProduct)
+			if [ -z "${vid}" ] || [ -z "${pid}" ]; then
+				return
+			fi
+			printf "%04x:%04x" "0x${vid}" "0x${pid}"
+			return
+		fi
+	done
+}
+
 get_modem_type()
 {
 	local ifname=$1 # full interface name

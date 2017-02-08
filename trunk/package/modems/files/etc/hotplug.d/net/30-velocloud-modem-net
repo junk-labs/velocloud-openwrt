@@ -286,13 +286,16 @@ add_to_config()
 	local modemtype
 	local product
 
-	if [ -z "$usbifname" ]
-	then
-		# log "Not a modem:devpath=$DEVPATH"
+	if [ -z "$usbifname" ]; then
 		return
 	fi
 
-	log "Hotplug add event: network device $usbpath"
+	product=$(get_vid_pid $usbpath)
+	if [ -z "$product" ]; then
+		return
+	fi
+
+	log "Hotplug add event: network device ($product)"
 
 	# Common initialization
 	init_modem_support
@@ -300,11 +303,7 @@ add_to_config()
 	# This is the common profile path
 	profile=${modem_config_path}/${usbifname}.profile
 
-	product=$(cat $usbpath/../../uevent | awk -F= '/PRODUCT/ { print $2}' | tr '/' ':')
-	product=${product%:*}
-
 	modemtype=$(get_modem_type "$DEVICENAME" "$product")
-
 	if [ "$modemtype" == "None" ]; then
 		log "Hybrid modem selected for $modemtype: $INTERFACE DEVICENAME:$DEVICENAME"
 		return

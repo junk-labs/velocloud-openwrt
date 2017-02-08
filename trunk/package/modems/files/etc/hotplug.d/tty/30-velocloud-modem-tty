@@ -271,35 +271,28 @@ handle_sierranet() {
 }
 
 add_to_config() {
-
 	# Action for the each USB
 	local ttydevice
 	local modemtype
 	local product
 	local ret
 
-	if [ -z "$usbifname" ]
-	then
-		# log "Not a modem:devpath=$DEVPATH"
+	if [ -z "$usbifname" ]; then
 		return
 	fi
 
-	log "Hotplug add event: serial"
+	product=$(get_vid_pid $usbpath)
+	if [ -z "$product" ]; then
+		return
+	fi
+
+	log "Hotplug add event: serial ($product)"
 
 	# Common initialization
 	init_modem_support
 
 	# This is the common profile path
 	profile=${modem_config_path}/${usbifname}.profile
-
-	product=$(cat $usbpath/../uevent | awk -F= '/PRODUCT/ { print $2}')
-	if [ -z "$product" ]; then
-		log "Ignoring tty device, no product: DEVICENAME:$DEVICENAME"
-		return
-	fi
-	product="${product%/*}"
-	# Normalize the USB ID so that it's ####:#### (4 chars each)
-	product=$(printf "%04x:%04x" "0x${product%/*}" "0x${product#*/}")
 
 	# Ignore if no device file
 	ttydevice=$(gettty_device)
@@ -395,7 +388,14 @@ if [ -z "$usbifname" ] || [ "$usbifname" == "error" ]; then
 	return
 fi
 
-set_eventdir "$usbifname: usb: $DEVICENAME"
+# We require a device name
+# This will filter out the 'usb-serial' subsystem events and leave us only with
+# the 'tty' events
+if [ -z "$DEVNAME" ]; then
+	return
+fi
+
+set_eventdir "$usbifname: usb: $DEVNAME"
 
 debug_hotplugevents
 cleanup_etc_config_modems
@@ -417,7 +417,7 @@ if [ -f /etc/modemmanager/25-modemmanager-common ]; then
 	fi
 fi
 
-case "$DEVICENAME" in
+case "$DEVNAME" in
 	console|ttyS[0-9]*)
 		# do NOT write to console or "real" serial terminals
 		;;

@@ -1,0 +1,59 @@
+commit 1a72e6330a1def7dac7234f1f5e01b7b72d1e18c
+Author: Antoine Pitrou <solipsis@pitrou.net>
+Date:   Mon May 6 22:19:48 2013 +0200
+
+    Issue #17918: When using SSLSocket.accept(), if the SSL handshake failed on the new socket, the socket would linger indefinitely.
+    Thanks to Peter Saveliev for reporting.
+
+diff --git a/Lib/ssl.py b/Lib/ssl.py
+index 8829635..329b9d1 100644
+--- a/Lib/ssl.py
++++ b/Lib/ssl.py
+@@ -344,17 +344,21 @@ class SSLSocket(socket):
+         SSL channel, and the address of the remote client."""
+ 
+         newsock, addr = socket.accept(self)
+-        return (SSLSocket(newsock,
+-                          keyfile=self.keyfile,
+-                          certfile=self.certfile,
+-                          server_side=True,
+-                          cert_reqs=self.cert_reqs,
+-                          ssl_version=self.ssl_version,
+-                          ca_certs=self.ca_certs,
+-                          ciphers=self.ciphers,
+-                          do_handshake_on_connect=self.do_handshake_on_connect,
+-                          suppress_ragged_eofs=self.suppress_ragged_eofs),
+-                addr)
++        try:
++            return (SSLSocket(newsock,
++                              keyfile=self.keyfile,
++                              certfile=self.certfile,
++                              server_side=True,
++                              cert_reqs=self.cert_reqs,
++                              ssl_version=self.ssl_version,
++                              ca_certs=self.ca_certs,
++                              ciphers=self.ciphers,
++                              do_handshake_on_connect=self.do_handshake_on_connect,
++                              suppress_ragged_eofs=self.suppress_ragged_eofs),
++                    addr)
++        except socket_error as e:
++            newsock.close()
++            raise e
+ 
+     def makefile(self, mode='r', bufsize=-1):
+ 
+diff --git a/Misc/NEWS b/Misc/NEWS
+index 7989eb3..7cef7ef 100644
+--- a/Misc/NEWS
++++ b/Misc/NEWS
+@@ -34,6 +34,10 @@ Core and Builtins
+ Library
+ -------
+ 
++- Issue #17918: When using SSLSocket.accept(), if the SSL handshake failed
++  on the new socket, the socket would linger indefinitely.  Thanks to
++  Peter Saveliev for reporting.
++
+ - Issue #12065: connect_ex() on an SSL socket now returns the original errno
+   when the socket's timeout expires (it used to return None).
+ 

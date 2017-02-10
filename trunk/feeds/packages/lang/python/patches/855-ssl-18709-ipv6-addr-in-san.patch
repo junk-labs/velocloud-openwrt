@@ -1,0 +1,39 @@
+commit 1c857e316b5fbc2a2bf37cfdf1e0944912449ccb
+Author: Christian Heimes <christian@cheimes.de>
+Date:   Sun Aug 25 14:12:41 2013 +0200
+
+    Issue #18709: Fix issue with IPv6 address in subjectAltName on Mac OS X Tiger
+
+diff --git a/Lib/test/test_ssl.py b/Lib/test/test_ssl.py
+index 563f929..f5390f6 100644
+--- a/Lib/test/test_ssl.py
++++ b/Lib/test/test_ssl.py
+@@ -137,13 +137,21 @@ class BasicSocketTests(unittest.TestCase):
+                    (('emailAddress', 'python-dev@python.org'),))
+         self.assertEqual(p['subject'], subject)
+         self.assertEqual(p['issuer'], subject)
+-        self.assertEqual(p['subjectAltName'],
+-                         (('DNS', 'altnull.python.org\x00example.com'),
+-                         ('email', 'null@python.org\x00user@example.org'),
+-                         ('URI', 'http://null.python.org\x00http://example.org'),
+-                         ('IP Address', '192.0.2.1'),
+-                         ('IP Address', '2001:DB8:0:0:0:0:0:1\n'))
+-                        )
++        if ssl.OPENSSL_API_VERSION >= (0, 9, 8):
++            san = (('DNS', 'altnull.python.org\x00example.com'),
++                   ('email', 'null@python.org\x00user@example.org'),
++                   ('URI', 'http://null.python.org\x00http://example.org'),
++                   ('IP Address', '192.0.2.1'),
++                   ('IP Address', '2001:DB8:0:0:0:0:0:1\n'))
++        else:
++            # OpenSSL 0.9.7 doesn't support IPv6 addresses in subjectAltName
++            san = (('DNS', 'altnull.python.org\x00example.com'),
++                   ('email', 'null@python.org\x00user@example.org'),
++                   ('URI', 'http://null.python.org\x00http://example.org'),
++                   ('IP Address', '192.0.2.1'),
++                   ('IP Address', '<invalid>'))
++
++        self.assertEqual(p['subjectAltName'], san)
+ 
+     def test_DER_to_PEM(self):
+         with open(SVN_PYTHON_ORG_ROOT_CERT, 'r') as f:

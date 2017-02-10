@@ -1,0 +1,89 @@
+commit 0317e7391d1b083bd632b9f7f1d1c0c0710578e1
+Author: Antoine Pitrou <solipsis@pitrou.net>
+Date:   Sat Dec 28 17:26:33 2013 +0100
+
+    Issue #19422: Explicitly disallow non-SOCK_STREAM sockets in the ssl module, rather than silently let them emit clear text data.
+
+diff --git a/Doc/library/ssl.rst b/Doc/library/ssl.rst
+index 5b73767..ff166f5 100644
+--- a/Doc/library/ssl.rst
++++ b/Doc/library/ssl.rst
+@@ -69,13 +69,16 @@ Functions, Constants, and Exceptions
+ 
+    Takes an instance ``sock`` of :class:`socket.socket`, and returns an instance
+    of :class:`ssl.SSLSocket`, a subtype of :class:`socket.socket`, which wraps
+-   the underlying socket in an SSL context.  For client-side sockets, the
+-   context construction is lazy; if the underlying socket isn't connected yet,
+-   the context construction will be performed after :meth:`connect` is called on
+-   the socket.  For server-side sockets, if the socket has no remote peer, it is
+-   assumed to be a listening socket, and the server-side SSL wrapping is
+-   automatically performed on client connections accepted via the :meth:`accept`
+-   method.  :func:`wrap_socket` may raise :exc:`SSLError`.
++   the underlying socket in an SSL context.  ``sock`` must be a
++   :data:`~socket.SOCK_STREAM` socket; other socket types are unsupported.
++
++   For client-side sockets, the context construction is lazy; if the
++   underlying socket isn't connected yet, the context construction will be
++   performed after :meth:`connect` is called on the socket.  For
++   server-side sockets, if the socket has no remote peer, it is assumed
++   to be a listening socket, and the server-side SSL wrapping is
++   automatically performed on client connections accepted via the
++   :meth:`accept` method.  :func:`wrap_socket` may raise :exc:`SSLError`.
+ 
+    The ``keyfile`` and ``certfile`` parameters specify optional files which
+    contain a certificate to be used to identify the local side of the
+diff --git a/Lib/ssl.py b/Lib/ssl.py
+index 329b9d1..666cea3 100644
+--- a/Lib/ssl.py
++++ b/Lib/ssl.py
+@@ -89,6 +89,7 @@ else:
+ 
+ from socket import socket, _fileobject, _delegate_methods, error as socket_error
+ from socket import getnameinfo as _getnameinfo
++from socket import SOL_SOCKET, SO_TYPE, SOCK_STREAM
+ import base64        # for DER-to-PEM translation
+ import errno
+ 
+@@ -108,6 +109,10 @@ class SSLSocket(socket):
+                  ssl_version=PROTOCOL_SSLv23, ca_certs=None,
+                  do_handshake_on_connect=True,
+                  suppress_ragged_eofs=True, ciphers=None):
++        # Can't use sock.type as other flags (such as SOCK_NONBLOCK) get
++        # mixed in.
++        if sock.getsockopt(SOL_SOCKET, SO_TYPE) != SOCK_STREAM:
++            raise NotImplementedError("only stream sockets are supported")
+         socket.__init__(self, _sock=sock._sock)
+         # The initializer for socket overrides the methods send(), recv(), etc.
+         # in the instancce, which we don't need -- but we want to provide the
+diff --git a/Lib/test/test_ssl.py b/Lib/test/test_ssl.py
+index 6723865..c1c3384 100644
+--- a/Lib/test/test_ssl.py
++++ b/Lib/test/test_ssl.py
+@@ -232,6 +232,13 @@ class BasicSocketTests(unittest.TestCase):
+         self.assertRaises(socket.error, ss.send, b'x')
+         self.assertRaises(socket.error, ss.sendto, b'x', ('0.0.0.0', 0))
+ 
++    def test_unsupported_dtls(self):
++        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
++        self.addCleanup(s.close)
++        with self.assertRaises(NotImplementedError) as cx:
++            ssl.wrap_socket(s, cert_reqs=ssl.CERT_NONE)
++        self.assertEqual(str(cx.exception), "only stream sockets are supported")
++
+ 
+ class NetworkedTests(unittest.TestCase):
+ 
+diff --git a/Misc/NEWS b/Misc/NEWS
+index 04f2770..fe793e8 100644
+--- a/Misc/NEWS
++++ b/Misc/NEWS
+@@ -27,6 +27,9 @@ Core and Builtins
+ Library
+ -------
+ 
++- Issue #19422: Explicitly disallow non-SOCK_STREAM sockets in the ssl
++  module, rather than silently let them emit clear text data.
++
+ - Issue #17918: When using SSLSocket.accept(), if the SSL handshake failed
+   on the new socket, the socket would linger indefinitely.  Thanks to
+   Peter Saveliev for reporting.

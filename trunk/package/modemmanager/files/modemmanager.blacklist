@@ -59,6 +59,8 @@
 1410:b005 ecm
 1410:b00b ecm
 1410:b009 ecm
+1410:9022 auto-connected device with AT control port (e.g. USB620L)
+1410:b00c ecm auto-connected (e.g. Verizon Jetpack 620L)
 
 # SK Teletech
 10a9:6085 rndis

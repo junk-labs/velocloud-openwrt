@@ -36,7 +36,7 @@
       <Info>The kind of installed guest operating system</Info>
       <Description>Other 3.x Linux (64-bit)</Description>
     </OperatingSystemSection>
-    <VirtualHardwareSection>
+    <VirtualHardwareSection ovf:transport="iso">
       <Info>Virtual hardware requirements</Info>
       <System>
         <vssd:ElementName>Virtual Hardware Family</vssd:ElementName>
@@ -168,6 +168,15 @@
         <rasd:ResourceType>17</rasd:ResourceType>
         <vmw:Config ovf:required="false" vmw:key="backing.writeThrough" vmw:value="false"/>
       </Item>
+      <Item ovf:required="false">
+        <rasd:AddressOnParent>0</rasd:AddressOnParent>
+        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
+        <rasd:ElementName>CD-ROM 1</rasd:ElementName>
+        <rasd:InstanceID>14</rasd:InstanceID>
+        <rasd:Parent>4</rasd:Parent>
+        <rasd:ResourceSubType>vmware.cdrom.remoteatapi</rasd:ResourceSubType>
+        <rasd:ResourceType>15</rasd:ResourceType>
+      </Item>
       <vmw:Config ovf:required="false" vmw:key="cpuHotAddEnabled" vmw:value="false"/>
       <vmw:Config ovf:required="false" vmw:key="cpuHotRemoveEnabled" vmw:value="false"/>
       <vmw:Config ovf:required="false" vmw:key="firmware" vmw:value="bios"/>
@@ -186,13 +195,28 @@
       <vmw:Config ovf:required="false" vmw:key="tools.syncTimeWithHost" vmw:value="true"/>
       <vmw:Config ovf:required="false" vmw:key="tools.toolsUpgradePolicy" vmw:value="manual"/>
     </VirtualHardwareSection>
-    <ProductSection>
+    <ProductSection ovf:required="false">
       <Info>Product Information</Info>
       <Product>VeloCloud Edge</Product>
       <Vendor>VeloCloud Networks</Vendor>
       <Version>@VERSION@</Version>
       <FullVersion>@FULLVERSION@</FullVersion>
       <VendorUrl>http://www.velocloud.com</VendorUrl>
+      <Property ovf:key="instance-id" ovf:type="string" ovf:userConfigurable="true" ovf:value="id-ovf">
+        <Label>A Unique Instance ID for this instance</Label>
+        <Description>Specifies the instance id.  This is required and used to determine if the machine should take "first boot" actions</Description>
+      </Property>
+      <Property ovf:key="user-data" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>Encoded user-data</Label>
+        <Description>In order to fit into a xml attribute, this value is base64 encoded . It will be decoded, and then processed normally as user-data.</Description>
+        <!--  The following represents '#!/bin/sh\necho "hi world"'
+          ovf:value="IyEvYmluL3NoCmVjaG8gImhpIHdvcmxkIgo="
+        -->
+      </Property>
+      <Property ovf:key="password" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+          <Label>Default User's password</Label>
+          <Description>If set, the default user's password will be set to this value to allow password based login.  The password will be good for only a single login.  If set to the string 'RANDOM' then a random password will be generated, and written to the console.</Description>
+      </Property>
     </ProductSection>
   </VirtualSystem>
 </Envelope>                     

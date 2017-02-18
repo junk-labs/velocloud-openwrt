@@ -1,0 +1,40 @@
+commit 219a011af741f36f92ce2aebb5c1d85fa0d547ad
+Author: Victor Stinner <victor.stinner@gmail.com>
+Date:   Sun Jun 23 15:15:10 2013 +0200
+
+    Issue #18135: Fix a possible integer overflow in ssl.SSLSocket.write()
+    for strings longer than 2 gigabytes.
+
+diff --git a/Misc/NEWS b/Misc/NEWS
+index b455366..d7e15f3 100644
+--- a/Misc/NEWS
++++ b/Misc/NEWS
+@@ -21,6 +21,9 @@ Core and Builtins
+ Library
+ -------
+ 
++- Issue #18135: Fix a possible integer overflow in ssl.SSLSocket.write()
++  for strings longer than 2 gigabytes.
++
+ - Issue #6884: Fix long-standing bugs with MANIFEST.in parsing in distutils
+   on Windows.
+ 
+diff --git a/Modules/_ssl.c b/Modules/_ssl.c
+index 195e5b6..907429d 100644
+--- a/Modules/_ssl.c
++++ b/Modules/_ssl.c
+@@ -1212,8 +1212,13 @@ static PyObject *PySSL_SSLwrite(PySSLObject *self, PyObject *args)
+         goto error;
+     }
+     do {
++        if (buf.len <= INT_MAX)
++            len = (int)buf.len;
++        else
++            len = INT_MAX;
++
+         PySSL_BEGIN_ALLOW_THREADS
+-        len = SSL_write(self->ssl, buf.buf, buf.len);
++        len = SSL_write(self->ssl, buf.buf, len);
+         err = SSL_get_error(self->ssl, len);
+         PySSL_END_ALLOW_THREADS
+         if (PyErr_CheckSignals()) {

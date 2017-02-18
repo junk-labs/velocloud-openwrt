@@ -1,0 +1,24 @@
+commit 2db70f54f6ee5fdc64c4e17224d2917530615ce2
+Author: Benjamin Peterson <benjamin@python.org>
+Date:   Wed Aug 20 21:37:01 2014 -0500
+
+    fix error message for invalid curve name
+
+diff --git a/Modules/_ssl.c b/Modules/_ssl.c
+index ed4bbfd..5518032 100644
+--- a/Modules/_ssl.c
++++ b/Modules/_ssl.c
+@@ -2855,8 +2855,12 @@ set_ecdh_curve(PySSLContext *self, PyObject *name)
+     }
+     nid = OBJ_sn2nid(name_bytes);
+     if (nid == 0) {
++        PyObject *r = PyObject_Repr(name);
++        if (!r)
++            return NULL;
+         PyErr_Format(PyExc_ValueError,
+-                     "unknown elliptic curve name %R", name);
++                     "unknown elliptic curve name %s", PyString_AS_STRING(r));
++        Py_DECREF(r);
+         return NULL;
+     }
+     key = EC_KEY_new_by_curve_name(nid);

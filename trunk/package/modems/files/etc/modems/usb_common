@@ -28,7 +28,12 @@ mm_add_to_config()
 	# This is the common profile path
 	profile=${modem_config_path}/${usbifname}.profile
 
-	log "Hotplug add event: MM device in $usbifname: $usbpath"
+	local product=$(get_vid_pid $usbpath)
+	if [ -z "$product" ]; then
+		return
+	fi
+
+	log "Hotplug add event: MM device in $usbifname: $usbpath ($product)"
 	ret=$(check_device_config $usbifname)
 	if [ "$ret" == "True" ]; then
 		log "MM device at $usbifname already detected"
@@ -47,6 +52,7 @@ mm_add_to_config()
 	uci -c $modem_config_path set modems.$usbifname.type=''"modemmanager"''
 	uci -c $modem_config_path set modems.$usbifname.sysfs=''"$physdev_sysfs_path"''
 	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	uci -c $modem_config_path set modems.$usbifname.product=''"$product"''
 	uci -c $modem_config_path commit modems
 
 	log "initialized configuration for ${usbifname}"

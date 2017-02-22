@@ -3,6 +3,7 @@
 import logging
 import commands
 import IPModems
+import time
 
 class Qmi(IPModems.IPModems):
 
@@ -19,6 +20,11 @@ class Qmi(IPModems.IPModems):
 		self.connection_errors = 0
 		self.ip_check_errors = 0
 		self.expected_ip = ''
+
+		# Maximum number of attemps to set LLP via WDA Set Data Format
+		self.llp_update_max_attempts = 18
+		# Time to sleep between attempts
+		self.llp_update_sleep_interval = 10
 
 		# If we have 100 consecutive IP check errors (~300s), we request a hard reset
 		self.ip_check_errors_threshold = 100
@@ -53,6 +59,40 @@ class Qmi(IPModems.IPModems):
 
 	def setup(self):
 		IPModems.IPModems.setup(self)
+
+		# All QMI modems need to use the 802.3 link data format (i.e. packets with
+		# ethernet headers) instead of raw-ip (i.e. packets without ethernet headers).
+		# 802.3 is the format expected by the qmi_wwan kernel driver in the upstream
+		# Linux kernel, it cannot be changed programmatically.
+		#
+		# If the modem supports the WDA service, we'll use that one. Otherwise we'll
+		# run a DMS NOOP operation asking for 802.3 in the CTL service (the old way,
+		# always supported by modems without WDA).
+
+		try:
+			wda_version = self.qmicli("--get-service-version-info | sed -n \"s/\\s*wda (\\([^']*\\))/\\1/p\"")
+			if wda_version != "":
+				logging.debug("[dev=%s]: device supports WDA (version %s)", self.USB, wda_version);
+				data_format = self.qmicli("--wda-get-data-format | sed -n \"s/\\s*Link layer protocol: '\\([^']*\\)'/\\1/p\"")
+				logging.debug("[dev=%s]: current QMI link layer protocol: %s", self.USB, data_format);
+				if data_format == 'raw-ip':
+					for num_attempts in range(1,self.llp_update_max_attempts):
+						logging.debug("[dev=%s]: trying to set QMI link layer protocol to 802.3 (WDA): attempt %u/%u...",
+							      self.USB, num_attempts, self.llp_update_max_attempts);
+						data_format = self.qmicli("--wda-set-data-format=\"802-3\" | sed -n \"s/\\s*Link layer protocol: '\\([^']*\\)'/\\1/p\"")
+						if data_format != 'raw-ip':
+				                        logging.debug("[dev=%s]: QMI link layer protocol updated: %s", self.USB, data_format);
+							break
+						time.sleep(self.llp_update_sleep_interval)
+					else:
+						logging.debug("[dev=%s]: giving up on trying to set QMI link layer protocol to 802-3", self.USB);
+				else:
+                                        logging.debug("[dev=%s]: no need to update QMI link layer protocol to 802.3", self.USB)
+			else:
+				logging.debug("[dev=%s]: trying to set QMI link layer protocol to 802.3 (CTL)...", self.USB);
+				self.qmicli("--device-open-net=\"net-802-3|net-no-qos-header\" --dms-noop 1>/dev/null")
+		except:
+			logging.warning("[dev=%s]: couldn't set QMI link layer protocol to 802.3", self.USB)
 		try:
 			logging.debug("[dev=%s]: allocating DMS QMI client...", self.USB);
 			self.dms_cid = int(self.qmicli("--dms-noop --client-no-release-cid | sed  -n \"s/.*CID.*'\(.*\)'.*/\\1/p\""))

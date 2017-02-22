@@ -8,27 +8,6 @@
 #
 ################################################################################
 
-qmi_get_wda_version()
-{
-	qmicli -d "$1" --get-service-version-info | sed -ne "s/\s*wda (\([^']*\))/\1/p"
-}
-
-qmi_get_wda_data_format()
-{
-	qmicli -d "$1" --wda-get-data-format | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
-}
-
-qmi_set_wda_data_format()
-{
-	qmicli -d "$1" --wda-set-data-format="802-3" | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
-}
-
-qmi_set_ctl_data_format()
-{
-	# Note: There's no explicit error if this action fails. It usually just works.
-	qmicli -d "$1" --device-open-net="net-802-3|net-no-qos-header" --dms-noop 1>/dev/null
-}
-
 qmi_set_ctl_sync()
 {
 	# Note: There's no explicit error if this action fails. It usually just works.
@@ -73,49 +52,6 @@ qmi_get_apn()
 	# This approach is better than just trying with some random APN.
 
 	echo $apn
-}
-
-# All QMI modems need to use the 802.3 link data format (i.e. packets with
-# ethernet headers) instead of raw-ip (i.e. packets without ethernet headers).
-# 802.3 is the format expected by the qmi_wwan kernel driver in the upstream
-# Linux kernel, it cannot be changed programmatically.
-#
-# If the modem supports the WDA service, we'll use that one. Otherwise we'll
-# run a DMS NOOP operation asking for 802.3 in the CTL service (the old way,
-# always supported by modems without WDA).
-qmi_ensure_802_3_data_format()
-{
-	local device=$1
-
-	wda_version=`qmi_get_wda_version $device`
-	if [ ! -z "$wda_version" ]; then
-		cur_mode=`qmi_get_wda_data_format $device`
-		if [ "$cur_mode" != "raw-ip" ]; then
-			# Either OK, or in a bad state; either way, give up
-			return
-		fi
-
-		# mode is raw-ip, and the device is reachable. Try setting to 802-3.
-		echo "Trying to set QMI link layer protocol to 802-3" > /dev/kmsg
-		num_attempts=0
-		max_attempts=18
-		sleep_interval=10
-		cur_mode=`qmi_set_wda_data_format $device`
-		while [ "$cur_mode" = "raw-ip" ]; do
-			# sometimes retries help. Try up to 4 retries at 15 seconds each
-			num_attempts=$((num_attempts+1))
-			if [ $num_attempts -gt $max_attempts ]; then
-				echo "Giving up on trying to set QMI link layer protocol to 802-3" > /dev/kmsg
-				return
-			fi
-			echo "Re-trying to set QMI link layer protocol to 802-3, attempt $num_attempts (out of $max_attempts)" > /dev/kmsg
-			sleep $sleep_interval
-			cur_mode=`qmi_set_wda_data_format $device`
-		done
-	else
-		echo "Trying to set QMI link layer protocol to 802.3... (CTL)" > /dev/kmsg
-		qmi_set_ctl_data_format $device
-	fi
 }
 
 # AC340U seems to have some bug when it starts locking into 2G mode, where the
@@ -232,9 +168,6 @@ setup_wwan_modem()
 
 		# Start with a sync, so that we reset the endpoint
 		qmi_set_ctl_sync /dev/$device
-
-		# Ensure that 802.3 is used in the QMI modems, as that is what qmi_wwan expects
-		qmi_ensure_802_3_data_format /dev/$device
 
 		# Disable 2G mode for AC340U
 		qmi_disable_AC340U_2G /dev/$device

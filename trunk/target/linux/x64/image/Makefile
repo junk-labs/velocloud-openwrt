@@ -288,19 +288,11 @@ define Image/Build/velocloud/updatable-gpt
 	$(call Image/Build/grub/$(1))
 endef
 
-ifneq ($(CONFIG_VELOCLOUD_MANUFACTURING_INSTALLER),)
-  define Image/Build/velocloud-manufacturing
-	echo "Building VeloCloud Manufacturing Image."
-	$(call Image/Build/velocloud/grubcfg,root.grub,grub-manufacturing.cfg,grub.cfg)
-	$(call Image/Build/velocloud/gpt,$(1),$(IMG_PREFIX)-manufacturing-$(1).img)
-  endef
-endif
-
 ifneq ($(CONFIG_VELOCLOUD_INSTALLER),)
   define Image/Build/velocloud-installer
 	echo "Building VeloCloud Installer Image."
 	$(call Image/Build/velocloud/grubcfg,root.grub,grub-installer.cfg,grub.cfg)
-	$(call Image/Build/velocloud/gpt,$(1),$(IMG_PREFIX)-installer-$(1).img)
+	$(call Image/Build/velocloud/gpt,$(1),$(IMG_PREFIX)-installer-usb-$(1).img)
   endef
 endif
 
@@ -384,10 +376,6 @@ define Image/Build
 	echo ENV_CONFIG_NO_INSTALLER_IMAGE=$(ENV_CONFIG_NO_INSTALLER_IMAGE)
     ifeq ($(ENV_CONFIG_NO_INSTALLER_IMAGE),)
 	$(call Image/Build/velocloud-installer,$(1))
-    endif
-	echo ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE=$(ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE)
-    ifeq ($(ENV_CONFIG_NO_MANUFACTURING_INSTALLER_IMAGE),)
-	$(call Image/Build/velocloud-manufacturing,$(1))
     endif
 	echo ENV_CONFIG_NO_COMBINED_IMAGE=$(ENV_CONFIG_NO_COMBINED_IMAGE)
     ifeq ($(ENV_CONFIG_NO_COMBINED_IMAGE),)

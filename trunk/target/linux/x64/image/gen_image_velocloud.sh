@@ -86,7 +86,7 @@ if [ ! -z "$EMBEDDED" ]; then
     fi
     if [ -r $IROOT/$INST_PATH/root-x64/root/installer ]; then
         cp -a $IROOT/$INST_PATH/root-x64/root/installer $IROOT
-        tar cjf "$EMBEDDED" $IROOT installer $INST_PATH
+        tar cjf "$EMBEDDED" -C $IROOT installer $INST_PATH
     fi
 fi
 rm -rf "$IROOT"

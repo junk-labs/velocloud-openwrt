@@ -8,3 +8,6 @@ START=05
 # turn all RGB LEDs off;
 echo 0 > /sys/devices/platform/vc/leds/off
 
+if [ -x /sbin/e510_piccfg.sh ]; then
+	/sbin/e510_piccfg.sh
+fi

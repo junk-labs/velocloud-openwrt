@@ -224,7 +224,7 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	}
 +	switch (id) {
 +		case VC_EDGE500:
-+		// case VC_EDGE510: // XXX Not until we have the real PIC
++		case VC_EDGE510: // Requires PIC v5
 +		case VC_EDGE520:
 +		case VC_EDGE540:
 +		case VC_EDGE520B:

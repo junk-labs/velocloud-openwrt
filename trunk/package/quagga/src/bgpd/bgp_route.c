@@ -388,7 +388,6 @@ bgp_info_cmp (struct bgp *bgp, struct bgp_info *new, struct bgp_info *exist,
    *  - BGP_ROUTE_STATIC
    *  - BGP_ROUTE_AGGREGATE
    *  - BGP_ROUTE_REDISTRIBUTE
-   *  - BGP_ROUTE_REDISTRIBUTE_USER
    */
   if (! (new->sub_type == BGP_ROUTE_NORMAL))
      return 1;
@@ -1316,12 +1315,9 @@ static void
 bgp_zebra_check_and_announce(struct prefix *p, struct bgp_info *bi, struct bgp *bgp, safi_t safi)
 {
     if (bi && (ZEBRA_ROUTE_BGP == bi->type) && (BGP_ROUTE_NORMAL == bi->sub_type)) {
-        if (CHECK_FLAG(bi->flags, BGP_INFO_ATTR_CHANGED) || !CHECK_FLAG(bi->flags,
-                    BGP_INFO_ANNOUNCED)) {
-            SET_FLAG (bi->flags, BGP_INFO_ANNOUNCED);
-            UNSET_FLAG (bi->flags, BGP_INFO_ATTR_CHANGED);
-            bgp_zebra_announce (p, bi, bgp, safi);
-        }
+        SET_FLAG (bi->flags, BGP_INFO_ANNOUNCED);
+        UNSET_FLAG (bi->flags, BGP_INFO_ATTR_CHANGED);
+        bgp_zebra_announce (p, bi, bgp, safi);
     }
 
     return;
@@ -1462,7 +1458,8 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
       if (do_mpath && paths_eq)
 	bgp_mp_list_add (&mp_list, ri);
       
-      if (announce_or_withdraw) {
+      if (announce_or_withdraw && (CHECK_FLAG(ri->flags, BGP_INFO_ATTR_CHANGED) || !CHECK_FLAG(ri->flags,
+                          BGP_INFO_ANNOUNCED))) {
           bgp_zebra_check_and_announce(p, ri, bgp, safi);
       }
     }
@@ -1655,12 +1652,12 @@ bgp_process_main (struct work_queue *wq, void *data)
 
   /* FIB update. */ /*Updating for view too */
   if (safi == SAFI_UNICAST || safi == SAFI_MULTICAST)
-  {
+    {
       if (new_select 
-              && new_select->type == ZEBRA_ROUTE_BGP 
-              && new_select->sub_type == BGP_ROUTE_NORMAL) {
-          bgp_zebra_check_and_announce(p, new_select, bgp, safi);
-    }  else
+	  && new_select->type == ZEBRA_ROUTE_BGP 
+	  && new_select->sub_type == BGP_ROUTE_NORMAL)
+	bgp_zebra_announce (p, new_select, bgp, safi);
+      else
 	{
 	  /* Withdraw the route from the kernel. */
 	  if (old_select 
@@ -5421,7 +5418,7 @@ void
 bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
                       const struct in_addr *nexthop,
 		              const struct in6_addr *nexthop6,
-		              u_int32_t metric, u_char type, u_short tag, u_int32_t user_no_pref)
+		              u_int32_t metric, u_char type, u_short tag)
 {
   struct bgp_info *new;
   struct bgp_info *bi;
@@ -5449,10 +5446,6 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
   attr.med = metric;
   attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC);
   attr.extra->tag = tag;
-          
-  if ((type == ZEBRA_ROUTE_USER) && user_no_pref) {
-      attr.extra->weight = 0;
-  }
 
       afi = family2afi (p->family);
 

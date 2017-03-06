@@ -1,14 +1,24 @@
+From 57ed7bd83f02d15171c785956cec0444b51a9d84 Mon Sep 17 00:00:00 2001
+From: "egorovv@gmail.com" <egorovv@gmail.com>
+Date: Mon, 6 Mar 2017 14:56:18 -0800
+Subject: [PATCH 6/7] 0030-kni-onememseg-pool.patch
+
+--
 commit e3bb01cda9f3cfa0798de1f854318d3427d27c52
 Author: gopakumar <gopa@velocloud.net>
 Date:   Sun Jul 31 11:18:34 2016 -0700
 
         mempool mgmt
+---
+ lib/librte_mempool/rte_mempool.c | 129 +++++++++++++++++++++++++++++++++++++++
+ lib/librte_mempool/rte_mempool.h |   7 +++
+ 2 files changed, 136 insertions(+)
 
 diff --git a/lib/librte_mempool/rte_mempool.c b/lib/librte_mempool/rte_mempool.c
-index 2e28e2e..4e3f76b 100644
+index aa513b9..80807cf 100644
 --- a/lib/librte_mempool/rte_mempool.c
 +++ b/lib/librte_mempool/rte_mempool.c
-@@ -514,6 +514,90 @@ rte_mempool_populate_virt(struct rte_mempool *mp, char *addr,
+@@ -513,6 +513,89 @@ rte_mempool_populate_virt(struct rte_mempool *mp, char *addr,
   * value on error.
   */
  int
@@ -77,12 +87,11 @@ index 2e28e2e..4e3f76b 100644
 +				mz->len, pg_sz,
 +				rte_mempool_memchunk_mz_free,
 +				(void *)(uintptr_t)mz);
-+		if (ret < 0)
++		if (ret < n) {
++			rte_memzone_free(mz);
++			ret = -ENOMEM;
 +			goto fail;
-+        if (ret < n) {
-+            ret = -ENOMEM;
-+            goto fail;
-+        }
++		}
 +	}
 +
 +	return mp->size;
@@ -99,7 +108,7 @@ index 2e28e2e..4e3f76b 100644
  rte_mempool_populate_default(struct rte_mempool *mp)
  {
  	int mz_flags = RTE_MEMZONE_1GB|RTE_MEMZONE_SIZE_HINT_ONLY;
-@@ -862,6 +946,52 @@ exit_unlock:
+@@ -863,6 +946,52 @@ rte_mempool_create_empty(const char *name, unsigned n, unsigned elt_size,
  
  /* create the mempool */
  struct rte_mempool *
@@ -153,7 +162,7 @@ index 2e28e2e..4e3f76b 100644
  	unsigned cache_size, unsigned private_data_size,
  	rte_mempool_ctor_t *mp_init, void *mp_init_arg,
 diff --git a/lib/librte_mempool/rte_mempool.h b/lib/librte_mempool/rte_mempool.h
-index 059ad9e..fbcd274 100644
+index 440f3b1..d7bc08f 100644
 --- a/lib/librte_mempool/rte_mempool.h
 +++ b/lib/librte_mempool/rte_mempool.h
 @@ -674,6 +674,13 @@ rte_mempool_create(const char *name, unsigned n, unsigned elt_size,
@@ -170,3 +179,6 @@ index 059ad9e..fbcd274 100644
  /**
   * Create a new mempool named *name* in memory.
   *
+-- 
+2.7.4
+

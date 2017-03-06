@@ -1,8 +1,18 @@
+From 17ea9930f6c7b15f30563f972677a6b3f4aee167 Mon Sep 17 00:00:00 2001
+From: "egorovv@gmail.com" <egorovv@gmail.com>
+Date: Mon, 6 Mar 2017 14:56:19 -0800
+Subject: [PATCH 4/7] 0070-refcnt-atomic.patch
+
+--
+---
+ lib/librte_mbuf/rte_mbuf.h | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
+
 diff --git a/lib/librte_mbuf/rte_mbuf.h b/lib/librte_mbuf/rte_mbuf.h
-index 7ea66ed..1ca3ebc 100644
+index ead7c6e..7144c3e 100644
 --- a/lib/librte_mbuf/rte_mbuf.h
 +++ b/lib/librte_mbuf/rte_mbuf.h
-@@ -1059,19 +1059,7 @@ rte_mbuf_refcnt_set(struct rte_mbuf *m, uint16_t new_value)
+@@ -670,19 +670,7 @@ rte_mbuf_refcnt_set(struct rte_mbuf *m, uint16_t new_value)
  static inline uint16_t
  rte_mbuf_refcnt_update(struct rte_mbuf *m, int16_t value)
  {
@@ -23,3 +33,6 @@ index 7ea66ed..1ca3ebc 100644
  }
  
  #else /* ! RTE_MBUF_REFCNT_ATOMIC */
+-- 
+2.7.4
+

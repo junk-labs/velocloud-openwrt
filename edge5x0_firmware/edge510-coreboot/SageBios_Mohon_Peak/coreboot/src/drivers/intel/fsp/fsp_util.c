@@ -547,11 +547,19 @@ static void find_fsp_hob_update_mrc(void *unused)
 		/* 0x0000: Print all types */
 		print_hob_type_structure(0x000, FspHobListPtr);
 
+/* XXX Disable MRC cache.  Observation is occasional hang in the FSP.
+ * Decision was made to disable this to mitigate risk of a hang in the field.
+ * May take a few second hit to reinit memory, however, it's worth it
+ * provided the system makes progress.
+ */
+
+	#if 0
 	#if IS_ENABLED(CONFIG_ENABLE_MRC_CACHE)
 		if(save_mrc_data(FspHobListPtr))
 			update_mrc_cache(NULL);
 		else
 			printk(BIOS_DEBUG,"Not updating MRC data in flash.\n");
+	#endif
 	#endif
 	}
 }

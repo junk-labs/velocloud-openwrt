@@ -142,6 +142,10 @@ void vc_deregister_i2c_gpio(struct i2c_gpio_dev *dev);
 
 int vc_i2c_gpio_write_byte(struct i2c_gpio_dev *dev, u8 addr, u8 cmd, u8 data);
 
+int vc_i2c_gpio_block_write_data(struct i2c_gpio_dev *dev, u8 addr, u8 datalen, u8 *data);
+
+int vc_i2c_gpio_block_read_data(struct i2c_gpio_dev *dev, u8 addr, u8 datalen, u8 *data);
+
 u32 vc_read_reset_button_level(void);
 
 void vc_early_udelay(const uint32_t delay_us);

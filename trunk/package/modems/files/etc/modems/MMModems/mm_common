@@ -484,6 +484,27 @@ process_initial_state()
         uci -c ${modem_config_path} set modems.${USB}.linkid=''"${EQUIPMENT_ID}"''
     fi
 
+    # 3gpp imei
+    local IMEI=$(helper_get_field "${MODEM_STATUS}" "3GPP" "imei")
+    log_debug "modem IMEI: ${IMEI}"
+    if [ -n "${IMEI}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.imei=''"${IMEI}"''
+    fi
+
+    # 3gpp2 esn
+    local ESN=$(helper_get_field "${MODEM_STATUS}" "CDMA" "esn")
+    log_debug "modem ESN: ${ESN}"
+    if [ -n "${ESN}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.esn=''"${ESN}"''
+    fi
+
+    # 3gpp2 meid
+    local MEID=$(helper_get_field "${MODEM_STATUS}" "CDMA" "meid")
+    log_debug "modem MEID: ${MEID}"
+    if [ -n "${MEID}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.meid=''"${MEID}"''
+    fi
+
     # sim imsi
     local SIM_IMSI=$(helper_get_field "${SIM_STATUS}" "Properties" "imsi")
     log_debug "SIM IMSI: ${SIM_IMSI}"

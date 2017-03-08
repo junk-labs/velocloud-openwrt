@@ -597,7 +597,7 @@ process_modem()
 
         local OPERATOR_NAME=$(helper_get_field "${MODEM_STATUS}" "3GPP" "operator name")
         if [ -n "${OPERATOR_NAME}" ]; then
-            log_debug "operator name: ${OPERATOR_NAME}"
+            log_debug "3gpp operator name: ${OPERATOR_NAME}"
             uci -c ${modem_config_path} set modems.${USB}.isp=''"${OPERATOR_NAME}"''
         else
             uci -c ${modem_config_path} delete modems.${USB}.isp
@@ -605,10 +605,26 @@ process_modem()
 
         local OPERATOR_MCCMNC=$(helper_get_field "${MODEM_STATUS}" "3GPP" "operator id")
         if [ -n "${OPERATOR_MCCMNC}" ]; then
-            log_debug "operator mccmnc: ${OPERATOR_MCCMNC}"
+            log_debug "3gpp operator mccmnc: ${OPERATOR_MCCMNC}"
             uci -c ${modem_config_path} set modems.${USB}.isp_mccmnc=''"${OPERATOR_MCCMNC}"''
         else
             uci -c ${modem_config_path} delete modems.${USB}.isp_mccmnc
+        fi
+
+        local SID=$(helper_get_field "${MODEM_STATUS}" "CDMA" "sid")
+        if [ -n "${SID}" ]; then
+            log_debug "cdma sid: ${SID}"
+            uci -c ${modem_config_path} set modems.${USB}.sid=''"${SID}"''
+        else
+            uci -c ${modem_config_path} delete modems.${USB}.sid
+        fi
+
+        local NID=$(helper_get_field "${MODEM_STATUS}" "CDMA" "nid")
+        if [ -n "${NID}" ]; then
+            log_debug "cdma nid: ${NID}"
+            uci -c ${modem_config_path} set modems.${USB}.nid=''"${NID}"''
+        else
+            uci -c ${modem_config_path} delete modems.${USB}.nid
         fi
 
         uci -c ${modem_config_path} commit modems

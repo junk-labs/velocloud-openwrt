@@ -292,6 +292,20 @@ static inline void vc_clock_low(struct i2c_gpio_dev *dev)
 	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
 }
 
+static inline void vc_data_high(struct i2c_gpio_dev *dev)
+{
+	/* Write data line high. */
+	dev->active_io_sel |= (1 << dev->sdl_pin);
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+}
+
+static inline void vc_data_low(struct i2c_gpio_dev *dev)
+{
+	/* Write data line low. */
+	dev->active_io_sel &= ~(1 << dev->sdl_pin);
+	outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+}
+
 inline int vc_i2c_gpio_write_byte(struct i2c_gpio_dev *dev, u8 addr, u8 cmd, u8 data)
 {
 	int i = 0, err = 0, j, val;
@@ -400,11 +414,10 @@ inline int vc_i2c_gpio_block_write_data(struct i2c_gpio_dev *dev, u8 addr, u8 da
 			vc_early_udelay(1);
 
 			if ((val & 0x80))
-				dev->active_io_sel |= (1 << dev->sdl_pin);
+				vc_data_high(dev);
 			else
-				dev->active_io_sel &= ~(1 << dev->sdl_pin);
+				vc_data_low(dev);
 
-			outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
 			vc_early_udelay(2);
 
 			/* Write clock line high. */
@@ -415,9 +428,7 @@ inline int vc_i2c_gpio_block_write_data(struct i2c_gpio_dev *dev, u8 addr, u8 da
 		}
 		vc_clock_low(dev);
 
-		/* Set data line low (output). */
-		dev->active_io_sel &= ~(1 << dev->sdl_pin);
-		outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+		vc_data_low(dev);
 
 		vc_early_udelay(20);
 
@@ -438,9 +449,9 @@ inline int vc_i2c_gpio_block_write_data(struct i2c_gpio_dev *dev, u8 addr, u8 da
 
 inline int vc_i2c_gpio_block_read_data(struct i2c_gpio_dev *dev, u8 addr, u8 datalen, u8 *data)
 {
-	int i = 0, err = 0, j, k = 0;
+	int release;
+	int i = 0, j, k = 0;
 	volatile int val;
-	int release = 0;
 
 #define I2C_READ_ADDR	1
 #define I2C_READ_BYTE	8
@@ -459,15 +470,14 @@ inline int vc_i2c_gpio_block_read_data(struct i2c_gpio_dev *dev, u8 addr, u8 dat
 
 			vc_early_udelay(10);
 
-			//release = 0;
+			release = 0;
+
 			if (i == 0) {
-				if ((val & 0x80)) {
-					dev->active_io_sel |= (1 << dev->sdl_pin);
-					outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
-				} else {
-					dev->active_io_sel &= ~(1 << dev->sdl_pin);
-					outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
-				}
+				if ((val & 0x80))
+					vc_data_high(dev);
+				else
+					vc_data_low(dev);
+
 				val = val << 1;
 			} else {
 				data[k] = (data[k] << 1);
@@ -475,12 +485,9 @@ inline int vc_i2c_gpio_block_read_data(struct i2c_gpio_dev *dev, u8 addr, u8 dat
 				if (! release) {
 					release = 1;
 
-					/* Set data line high (input). */
-					dev->active_io_sel |= (1 << dev->sdl_pin);
-
-					/* Set direction to 'in' for data. */
-					outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+					vc_data_high(dev);
 				}
+
 				/* Read current level */
 				data[k] |= ((inl(dev->gpiobase + GPIO_SC_GP_LVL) >> dev->sdl_pin) & 1);
 			}
@@ -493,17 +500,14 @@ inline int vc_i2c_gpio_block_read_data(struct i2c_gpio_dev *dev, u8 addr, u8 dat
 		}
 		vc_clock_low(dev);
 
-		/* Set data line low (output). */
-		dev->active_io_sel &= ~(1 << dev->sdl_pin);
-		outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
+		vc_data_low(dev);
 
 		vc_early_udelay(20);
 
-		if (i == datalen) {
-		/* Set data line high (input). */
-		dev->active_io_sel |= (1 << dev->sdl_pin);
-		outl(dev->active_io_sel, dev->gpiobase + GPIO_SC_IO_SEL);
-		}
+		/* Signal the end of this transaction. */
+		if (i == datalen)
+			vc_data_high(dev);
+
 		vc_clock_high(dev);
 
 		vc_early_udelay(10);
@@ -518,7 +522,7 @@ inline int vc_i2c_gpio_block_read_data(struct i2c_gpio_dev *dev, u8 addr, u8 dat
 	}
 	vc_i2c_gpio_new_stop_condition(dev);
 
-	return err;
+	return (0);
 }
 
 void setup_soc_gpios(const struct soc_gpio_map *gpio)

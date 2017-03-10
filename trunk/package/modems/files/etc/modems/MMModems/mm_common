@@ -217,6 +217,20 @@ update_bearer_status()
     fi
 }
 
+update_sim_status()
+{
+    local SIM_DBUSPATH=$(helper_get_field "${MODEM_STATUS}" "SIM" "path")
+    if [ -z "$SIM_DBUSPATH" ]; then
+        SIM_STATUS=""
+        return
+    fi
+
+    SIM_STATUS=$(${MMCLI} --sim ${SIM_DBUSPATH})
+    if [ -z "${SIM_STATUS}" ]; then
+        log_error "couldn't load sim status"
+    fi
+}
+
 modem_disable()
 {
     log_debug "disabling modem..."
@@ -421,6 +435,8 @@ modem_connected()
 process_initial_state()
 {
     update_modem_status
+    update_sim_status
+
     local STATE=$(helper_get_field "${MODEM_STATUS}" "Status" "state")
     log_info "initial modem state: ${STATE}"
 
@@ -445,21 +461,76 @@ process_initial_state()
 
     # Set static configurations on initial state loading
 
-    local MANUFACTURER=$(helper_get_field "${MODEM_STATUS}" "Status" "manufacturer")
+    # modelnumber
+    local MANUFACTURER=$(helper_get_field "${MODEM_STATUS}" "Hardware" "manufacturer")
     log_debug "modem manufacturer: ${MANUFACTURER}"
-
-    local MODEL=$(helper_get_field "${MODEM_STATUS}" "Status" "model")
+    local MODEL=$(helper_get_field "${MODEM_STATUS}" "Hardware" "model")
     log_debug "modem model: ${MODEL}"
-
     if [ -n "${MANUFACTURER}" ] && [ -n "${MODEL}" ]; then
         uci -c ${modem_config_path} set modems.${USB}.modelnumber=''"${MANUFACTURER} ${MODEL}"''
     fi
 
-    local EQUIPMENT_ID=$(helper_get_field "${MODEM_STATUS}" "Status" "equipment id")
-    log_debug "modem equipment id: ${EQUIPMENT_ID}"
+    # fw version
+    local REVISION=$(helper_get_field "${MODEM_STATUS}" "Hardware" "revision")
+    log_debug "modem fw revision: ${REVISION}"
+    if [ -n "${REVISION}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.fw_revision=''"${REVISION}"''
+    fi
 
+    # linkid
+    local EQUIPMENT_ID=$(helper_get_field "${MODEM_STATUS}" "Hardware" "equipment id")
+    log_debug "modem equipment id: ${EQUIPMENT_ID}"
     if [ -n "${EQUIPMENT_ID}" ]; then
         uci -c ${modem_config_path} set modems.${USB}.linkid=''"${EQUIPMENT_ID}"''
+    fi
+
+    # 3gpp imei
+    local IMEI=$(helper_get_field "${MODEM_STATUS}" "3GPP" "imei")
+    log_debug "modem IMEI: ${IMEI}"
+    if [ -n "${IMEI}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.imei=''"${IMEI}"''
+    fi
+
+    # 3gpp2 esn
+    local ESN=$(helper_get_field "${MODEM_STATUS}" "CDMA" "esn")
+    log_debug "modem ESN: ${ESN}"
+    if [ -n "${ESN}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.esn=''"${ESN}"''
+    fi
+
+    # 3gpp2 meid
+    local MEID=$(helper_get_field "${MODEM_STATUS}" "CDMA" "meid")
+    log_debug "modem MEID: ${MEID}"
+    if [ -n "${MEID}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.meid=''"${MEID}"''
+    fi
+
+    # sim imsi
+    local SIM_IMSI=$(helper_get_field "${SIM_STATUS}" "Properties" "imsi")
+    log_debug "SIM IMSI: ${SIM_IMSI}"
+    if [ -n "${SIM_IMSI}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.sim_imsi=''"${SIM_IMSI}"''
+    fi
+
+    # sim iccid
+    local SIM_ICCID=$(helper_get_field "${SIM_STATUS}" "Properties" "id")
+    log_debug "SIM ICCID: ${SIM_ICCID}"
+    if [ -n "${SIM_ICCID}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.sim_iccid=''"${SIM_ICCID}"''
+    fi
+
+    # sim isp
+    local SIM_ISP=$(helper_get_field "${SIM_STATUS}" "Properties" "operator name")
+    log_debug "SIM ISP: ${SIM_ISP}"
+    if [ -n "${SIM_ISP}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.sim_isp=''"${SIM_ISP}"''
+    fi
+
+    # sim isp mccmnc
+    local SIM_ISP_MCCMNC=$(helper_get_field "${SIM_STATUS}" "Properties" "operator id")
+    log_debug "SIM ISP MCCMNC: ${SIM_ISP_MCCMNC}"
+    if [ -n "${SIM_ISP_MCCMNC}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.sim_isp_mccmnc=''"${SIM_ISP_MCCMNC}"''
     fi
 
     uci -c ${modem_config_path} set modems.${USB}.activated='activated'
@@ -526,10 +597,34 @@ process_modem()
 
         local OPERATOR_NAME=$(helper_get_field "${MODEM_STATUS}" "3GPP" "operator name")
         if [ -n "${OPERATOR_NAME}" ]; then
-            log_debug "operator name: ${OPERATOR_NAME}"
+            log_debug "3gpp operator name: ${OPERATOR_NAME}"
             uci -c ${modem_config_path} set modems.${USB}.isp=''"${OPERATOR_NAME}"''
         else
             uci -c ${modem_config_path} delete modems.${USB}.isp
+        fi
+
+        local OPERATOR_MCCMNC=$(helper_get_field "${MODEM_STATUS}" "3GPP" "operator id")
+        if [ -n "${OPERATOR_MCCMNC}" ]; then
+            log_debug "3gpp operator mccmnc: ${OPERATOR_MCCMNC}"
+            uci -c ${modem_config_path} set modems.${USB}.isp_mccmnc=''"${OPERATOR_MCCMNC}"''
+        else
+            uci -c ${modem_config_path} delete modems.${USB}.isp_mccmnc
+        fi
+
+        local SID=$(helper_get_field "${MODEM_STATUS}" "CDMA" "sid")
+        if [ -n "${SID}" ]; then
+            log_debug "cdma sid: ${SID}"
+            uci -c ${modem_config_path} set modems.${USB}.sid=''"${SID}"''
+        else
+            uci -c ${modem_config_path} delete modems.${USB}.sid
+        fi
+
+        local NID=$(helper_get_field "${MODEM_STATUS}" "CDMA" "nid")
+        if [ -n "${NID}" ]; then
+            log_debug "cdma nid: ${NID}"
+            uci -c ${modem_config_path} set modems.${USB}.nid=''"${NID}"''
+        else
+            uci -c ${modem_config_path} delete modems.${USB}.nid
         fi
 
         uci -c ${modem_config_path} commit modems

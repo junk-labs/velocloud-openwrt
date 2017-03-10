@@ -15,12 +15,20 @@ ROOT_FSIMAGE="$5"
 INST_ROOT_SIZE="$6"
 INST_DIR="$7"
 
+OUTPUTBASE="${OUTPUT//-usb-ext4.img}"
+if [ "${OUTPUTBASE}" != "$OUTPUT" ]; then
+    EMBEDDED="${OUTPUT//-usb-ext4.img}-embedded-ext4.tar.bz2"
+else
+    EMBEDDED=""
+fi
+
 # translate install images dirs;
 # first inst_dir entry must point to a dir without ':' separator;
 
 IROOT="${OUTPUT}.iroot"
 INST_PATH="images"
 
+all_arg_dirs=""
 root_dirs=""
 inst_dirs=""
 i=6
@@ -30,6 +38,7 @@ do
 	base=`basename $arg`
 	root_dirs="$root_dirs ${IROOT}/${INST_PATH}/${base}"
 	inst_dirs="$inst_dirs -d ${arg}:/${INST_PATH}/${base}"
+	all_arg_dirs="$all_arg_dirs ${arg}"
 	i=$(($i + 1))
 done
 
@@ -70,6 +79,16 @@ mkdir -p $root_dirs || exit 1
 echo $INST_ROOT_SIZE > $IROOT/$INST_PATH/root-size
 echo $GRUB2_MODULES > $IROOT/$INST_PATH/grub-modules
 $STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$IROOT" -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.inst" || exit 1
+if [ ! -z "$EMBEDDED" ]; then
+    # Generate an "installer tarball" for Dolphin and newer hardware platforms
+    if [ ! -z "$all_arg_dirs" ]; then
+        cp -a $all_arg_dirs $IROOT/$INST_PATH
+    fi
+    if [ -r $IROOT/$INST_PATH/root-x64/root/installer ]; then
+        cp -a $IROOT/$INST_PATH/root-x64/root/installer $IROOT
+        tar cjf "$EMBEDDED" -C $IROOT installer $INST_PATH
+    fi
+fi
 rm -rf "$IROOT"
 $STAGING_DIR_HOST/bin/genext2fs -U -x "$OUTPUT.inst" $inst_dirs -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.inst" || exit 1
 INST_UUID=`uuidgen`

@@ -59,7 +59,7 @@ config KERNEL_ENABLE_DEFAULT_TRACERS
 
 config KERNEL_DEBUG_KERNEL
 	bool
-	default n
+	default y
 
 config KERNEL_DEBUG_INFO
 	bool "Compile the kernel with debug information"

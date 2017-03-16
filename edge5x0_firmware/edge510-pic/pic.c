@@ -1,4 +1,4 @@
-// main.c v1 Sandra Berndt
+// main.c v5 Sandra Berndt
 // velocloud dolphin pic code;
 
 #undef PIC_BOARD_V1
@@ -170,7 +170,7 @@ typedef signed int s32;
 
 typedef union reset reset_t;
 union reset {
-	unsigned char v;
+	u8 v;
 	struct {
 		unsigned RST_POR : 1;
 		unsigned RST_BOR : 1;
@@ -183,6 +183,35 @@ union reset {
 };
 
 reset_t reset;
+
+// reset button states;
+
+#define RSTBTN_DEB 20	// reset button debounce time, in tmr6 ticks;
+
+typedef union rstbtn rstbtn_t;
+union rstbtn {
+	u8 v;
+	struct {
+		unsigned cur : 1;	// current state;
+		unsigned prev : 1;	// previous state;
+		unsigned push : 1;	// push event;
+		unsigned : 5;
+	} b;
+};
+
+typedef union rstcnt rstcnt_t;
+union rstcnt {
+	u16 v;
+	u8 b[2];
+};
+
+// power cycle types;
+
+enum pwrcyc {
+	PC_NOT = 0,
+	PC_NOW,		// do it asap;
+	PC_CR,		// on cold reset;
+};
 
 // power states;
 
@@ -215,7 +244,7 @@ enum pstate_times {
 	PSTATE_COREPWR_DELAY = 150,	// delay CLKPWRGD -> COREPWR rising;
 	PSTATE_RESET_DELAY = 100,	// delay COREPWR -> RESET deassertion;
 	PSTATE_RSMRST_ASSERT = 100,	// RSMRST assertion duration for cold reset;
-	PSTATE_SLP_CR_DELAY = 5100,	// cold reset reassert delay;
+	PSTATE_SLP_CR_DELAY = 6000,	// cold reset reassert delay;
 };
 
 // ble reset state;
@@ -229,7 +258,7 @@ enum ble_set {
 
 typedef union ble_get ble_get_t;
 union ble_get {
-	unsigned char v;
+	u8 v;
 	struct {
 		unsigned IN_RESET : 1;	// ble chip held in reset;
 		unsigned EE_RESET : 1;	// eeprom forces ble held in reset;
@@ -249,18 +278,23 @@ enum eests {
 	EE_BUSY,
 };
 
+// reset button
+
 // globals;
 
-u8 pstate;	// power state;
-u8 rstate;	// system reset state;
-u8 nstate;	// new power requested by host;
-u8 pcycle;	// power cycle;
-u8 rgb[3];	// LED pwm values per RGB;
-u8 thmtrip;	// # of thermal shutdowns;
-ble_get_t ble;	// ble reset state;
-u8 eeaddr;	// write address;
-u8 eedata;	// write data byte;
-u8 eests;	// eeprom status;
+rstbtn_t rstbtn;	// reset button state;
+u8 rstdeb;		// debounce timer, in msec;
+rstcnt_t rstcnt;	// reset button push counter, in msec;
+u8 pstate;		// power state;
+u8 rstate;		// system reset state;
+u8 nstate;		// new power requested by host;
+u8 pcycle;		// power cycle flags;
+u8 rgb[3];		// LED pwm values per RGB;
+u8 thmtrip;		// # of thermal shutdowns;
+ble_get_t ble;		// ble reset state;
+u8 eeaddr;		// write address;
+u8 eedata;		// write data byte;
+u8 eests;		// eeprom status;
 
 // i2c commands;
 // each address has specific command;
@@ -292,6 +326,8 @@ enum i2c_cmds {
 	I2C_VERSION,		// get pic code version;
 	I2C_RNOP,
 	I2C_RESET,		// get pic reset cause;
+	I2C_PNOP,
+	I2C_RBPT,		// get reset button push time;
 };
 
 // i2c byte for I2C_PST command;
@@ -307,6 +343,7 @@ enum i2c_reset {
 	THERM_TRIP,		// thermal trigger;
 	POWER_GOOD,		// power switchers not good;
 	PMU_SLP,		// PMU_SLP did not assert;
+	POWER_CYCLE_CR,		// power cycle on cold reset;
 	PST_UNKNOWN,		// unknown case;
 };
 
@@ -565,7 +602,7 @@ i2c_start(void)
 
 	case I2C_VERSION:
 		i2c_buf[0] = 'v';
-		i2c_buf[1] = '4';
+		i2c_buf[1] = '5';
 		i2c_buf[2] = 0;
 		i2c_buf[3] = 0;
 	case I2C_VNOP:
@@ -578,6 +615,14 @@ i2c_start(void)
 		i2c_buf[0] = reset.v;
 	case I2C_RNOP:
 		i2c_nb = 1;
+		break;
+
+	// reset button push time;
+	case I2C_RBPT:
+		i2c_buf[0] = rstcnt.b[0];
+		i2c_buf[1] = rstcnt.b[1];
+	case I2C_PNOP:
+		i2c_nb = 2;
 		break;
 
 	// NACK invalid addresses;
@@ -616,7 +661,9 @@ i2c_exec(void)
 			nstate = PST_TURN_OFF;
 		else if(rstate == POWER_CYCLE) {
 			nstate = PST_TURN_OFF;
-			pcycle = 1;
+			pcycle = PC_NOW;
+		} else if(rstate == POWER_CYCLE_CR) {
+			pcycle = PC_CR;
 		}
 		break;
 
@@ -652,8 +699,10 @@ i2c_exec(void)
 		mptr.p++;
 		break;
 
-	// version write is nop;
+	// write nops;
 	case I2C_VNOP:
+	case I2C_RNOP:
+	case I2C_PNOP:
 		break;
 
 	// default, NACK;
@@ -814,22 +863,24 @@ power_fsm(void)
 		break;
 
 	// min power off time has expired;
-	// monitor reset button, if pushed then power on;
+	// a reset button push powers back on;
 	// power back on if power cycle reset;
 	case PST_OFF:
-		if(rst_button() || pcycle)
+		if(rstbtn.b.push || (pcycle == PC_NOW))
 			pstate++;
-		pcycle = 0;
+		pcycle = PC_NOT;
 		break;
 
 	// start power-on sequence;
 	// turn on supplies, start power timer;
+	// clear rstbtn if it power us on;
 	case PST_TURN_ON:
 		RSMRST_OUT = 0;
 		COREPWR_OUT = 0;
 		CLKPWRGD_OUT = 0;
 		PSON_OUT = 1;
 		led_red();
+		rstbtn.b.push = 0;
 		pst_start(PSTATE_PWRGD_TO);
 		pstate++;
 		break;
@@ -920,7 +971,8 @@ power_fsm(void)
 	// PWRGD and PMU_SLP are monitored below;
 	// cold reset system if SWDT triggers;
 	case PST_RUNNING:
-		if(rst_button()) {
+		if(rstbtn.b.push) {
+			rstbtn.b.push = 0;
 			pstate = PST_RESET_ASSERT;
 			rstate = RESET_BUTTON;
 		}
@@ -939,11 +991,18 @@ power_fsm(void)
 		break;
 
 	// PMU_SLP cold reset / power off delay;
+	// optionally, do power cycle on cold reset;
 	case PST_SLP_CR_DELAY:
 		if(pst_expired()) {
 			if(PMU_SLP_PORT) {
-				pstate = PST_COLD_RESET;
-				rstate = RESET_COLD;
+				if(pcycle == PC_CR) {
+					pstate = PST_TURN_OFF;
+					rstate = POWER_CYCLE_CR;
+					pcycle = PC_NOW;
+				} else {
+					pstate = PST_COLD_RESET;
+					rstate = RESET_COLD;
+				}
 			} else {
 				pstate = PST_TURN_OFF;
 				rstate = POWER_OFF;
@@ -992,6 +1051,50 @@ power_fsm(void)
 fail_pst:
 	pstate = PST_TURN_OFF;
 	return(failed);
+}
+
+// reset button fsm;
+// must debounce button;
+// poll TMR6 intr flag for tick;
+
+void
+rstbtn_fsm(void)
+{
+	// wait for TMR4 to tick;
+
+	if( !TMR6IF)
+		return;
+	TMR6IF = 0;
+
+	// ignore all events within debounce period;
+	// debounce at both push and release;
+
+	if(rstdeb) {
+		rstdeb++;
+		if(rstdeb < RSTBTN_DEB)
+			return;
+		rstdeb = 0;
+	}
+
+	// sample reset button;
+
+	rstbtn.b.prev = rstbtn.b.cur;
+	rstbtn.b.cur = rst_button();
+
+	// handle button push;
+	// handle button release;
+	// count push time, stop at max;
+
+	if( !rstbtn.b.prev && rstbtn.b.cur) {
+		rstbtn.b.push = 1;
+		rstdeb = 1;
+		rstcnt.v = RSTBTN_DEB;
+	} else if(rstbtn.b.prev && !rstbtn.b.cur) {
+		rstdeb = 1;
+	} else if(rstbtn.b.cur) {
+		if(rstcnt.v < 0xffff)
+			rstcnt.v++;
+	}
 }
 
 // main entry;
@@ -1093,6 +1196,15 @@ main(void)
 	PR4 = 250;
 	TMR4 = 0;
 
+	// init TMR6 for push button counter;
+	// this is an 8-bit timer, counting 0..ff;
+	// prescaler=16, timer on, postscaler=10;
+	// tick req is fosc/4/pre/250/post = 100 Hz;
+
+	T6CON = 0x4e;
+	PR6 = 250;
+	TMR6 = 0;
+
 	// init CCP mapping for LED pwm control;
 	// pwm mode, enabled, left-aligned mode;
 	// left-aligned only needs to write CCPxH, leave CCPRxL fixed;
@@ -1135,13 +1247,20 @@ main(void)
 		BLERST_OUT = 0;
 	}
 
-	// set msg ptr beyon buffer to force pointer setting;
+	// set msg ptr beyond buffer to force pointer setting;
 
 	mptr.p = SIZE_MSG;
+
+	// init reset button state;
+
+	rstbtn.v = 0;
+	rstdeb = 0;
+	rstcnt.v = 0;
 
 	// 1ms timer;
 	// TMR0 divides clock to 1000Hz (1ms);
 	// fosc/4, prescaler=16, period=250, postscaler=1;
+	// does not use interrupt, but can be polled;
 
 	T0CON0 = 0;		// disable timer, postscaler=2;
 	TMR0L = 0;		// clear timer;
@@ -1181,7 +1300,7 @@ main(void)
 	pstate = PST_TURN_ON;
 	nstate = PST_OK;
 	rstate = POWER_OFF;
-	pcycle = 0;
+	pcycle = PC_NOT;
 	thmtrip = 0;
 
 	// reduce watchdog to 256ms;
@@ -1201,6 +1320,10 @@ main(void)
 
 	while(1) {
 		asm("clrwdt");
+
+		// monitor falling edges of reset button;
+
+		rstbtn_fsm();
 
 		// handle power/reset state machine;
 		// remember states that had errors;

@@ -3,36 +3,42 @@
 
 MODEMMANAGER_BLACKLIST=/etc/modemmanager/modemmanager.blacklist
 MODEMMANAGER_EVENTS_CACHE=/tmp/ModemManager.events
+MODEMMANAGER_CDCWDM_CACHE=/tmp/ModemManager.cdcwdm
+
+################################################################################
+# Common logging
 
 mm_log() {
 	logger -t "ModemManager" "hotplug: $@"
 }
 
+################################################################################
 # Receives as input argument the full sysfs path of the device
 # Returns the physical device sysfs path
-find_physdev_sysfs_path() {
+
+mm_find_physdev_sysfs_path() {
 	local tmp_path="$1"
 
 	while [ 1 ]; do
 		tmp_path=$(dirname ${tmp_path})
 
 		# avoid infinite loops iterating
-		if [ -z "${tmp_path}" ] || [ "${tmp_path}" == "/" ]; then
-			return
-		fi
+		[ -z "${tmp_path}" ] || [ "${tmp_path}" = "/" ] && return
 
 		# the physical device will be that with a idVendor and idProduct pair of files
-		if [ -f ${tmp_path}/idVendor ] && [ -f ${tmp_path}/idProduct ]; then
+		[ -f ${tmp_path}/idVendor ] && [ -f ${tmp_path}/idProduct ] && {
 			tmp_path=$(readlink -f $tmp_path)
 			echo ${tmp_path}
 			return
-		fi
+		}
 	done
 }
 
+################################################################################
+
 # Receives as input argument the full sysfs path of the device
 # Returns the reason for being blacklisted
-check_modemmanager_blacklist() {
+mm_check_modemmanager_blacklist() {
 	local sysfs_path="$1"
 
 	local vid
@@ -40,35 +46,67 @@ check_modemmanager_blacklist() {
 	local reason
 	local physdev_sysfs_path
 
-	physdev_sysfs_path=$(find_physdev_sysfs_path ${sysfs_path})
-	if [ -z "${physdev_sysfs_path}" ]; then
+	physdev_sysfs_path=$(mm_find_physdev_sysfs_path ${sysfs_path})
+	[ -z "${physdev_sysfs_path}" ] && {
 		echo "couldn't get physical device sysfs path"
 		return
-	fi
+	}
 
 	vid=$(cat ${physdev_sysfs_path}/idVendor)
 	pid=$(cat ${physdev_sysfs_path}/idProduct)
 
-	if [ -z "${vid}" ] || [ -z "${pid}" ]; then
+	[ -z "${vid}" ] || [ -z "${pid}" ] && {
 		echo "couldn't get physical device vid:pid"
 		return
-	fi
+	}
 
 	# First, check whether it's in the list
 	reason=$(awk -v prod="$vid:$pid" '!/^#/ && $0 ~ prod { print "1" }' $MODEMMANAGER_BLACKLIST)
-	if [ -z "$reason" ]; then
-		# Not blacklisted
-		return
-	fi
+	# Not blacklisted?
+	[ -z "$reason" ] && return
 
 	# If it is, get the reason for the blacklisting
 	reason=$(awk -v prod="$vid:$pid" '!/^#/ && $0 ~ prod { $1=""; print $0 }' $MODEMMANAGER_BLACKLIST)
-	if [ -n "$reason" ]; then
+	[ -n "$reason" ] && {
 		echo "$reason"
 		return
-	fi
+	}
 
 	echo "unknown reason"
+}
+
+################################################################################
+
+# Returns the cdc-wdm name retrieved from sysfs
+mm_track_cdcwdm() {
+	local wwan="$1"
+	local cdcwdm
+
+	cdcwdm=$(ls "/sys/class/net/${wwan}/device/usbmisc/")
+	[ -n "${cdcwdm}" ] || return
+
+	# We have to cache it for later, as we won't be able to get the
+	# associated cdc-wdm device on a remove event
+	echo "${wwan} ${cdcwdm}" >> "${MODEMMANAGER_CDCWDM_CACHE}"
+
+	echo "${cdcwdm}"
+}
+
+# Returns the cdc-wdm name retrieved from the cache
+mm_untrack_cdcwdm() {
+	local wwan="$1"
+	local cdcwdm
+
+	# Look for the cached associated cdc-wdm device
+	[ -f "${MODEMMANAGER_CDCWDM_CACHE}" ] || return
+
+	cdcwdm=$(awk -v wwan="${wwan}" '!/^#/ && $0 ~ wwan { print $2 }' "${MODEMMANAGER_CDCWDM_CACHE}")
+	[ -n "${cdcwdm}" ] || return
+
+	# Remove from cache
+	sed -i "/${wwan} ${cdcwdm}/d" "${MODEMMANAGER_CDCWDM_CACHE}"
+
+	echo "${cdcwdm}"
 }
 
 ################################################################################

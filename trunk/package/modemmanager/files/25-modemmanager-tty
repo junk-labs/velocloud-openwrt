@@ -5,18 +5,16 @@
 . /etc/modemmanager/25-modemmanager-common
 
 # We require a device name
-if [ -z "$DEVNAME" ]; then
-	return
-fi
+[ -n "$DEVNAME" ] || return
 
 # If blacklisted by VID:PID, ignore 'add' event
-if [ "${ACTION}" == "add" ]; then
-	local BLACKLIST_REASON=$(check_modemmanager_blacklist /sys${DEVPATH})
-	if [ -n "${BLACKLIST_REASON}" ]; then
+[ "${ACTION}" == "add" ] && {
+	local BLACKLIST_REASON=$(mm_check_modemmanager_blacklist /sys${DEVPATH})
+	[ -n "${BLACKLIST_REASON}" ] && {
 		mm_log "${ACTION} serial interface ${DEVNAME}: event ignored: ${BLACKLIST_REASON}"
 		return
-	fi
-fi
+	}
+}
 
 # Report TTY
 mm_log "${ACTION} serial interface ${DEVNAME}: event processed"

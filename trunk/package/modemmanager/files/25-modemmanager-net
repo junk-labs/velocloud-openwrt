@@ -24,7 +24,7 @@ fi
 
 # Report network interface
 mm_log "${ACTION} network interface ${INTERFACE}: event processed"
-report_event "${ACTION}" "${INTERFACE}" "net"
+mm_report_event "${ACTION}" "${INTERFACE}" "net"
 
 # Look for an associated cdc-wdm interface
 if [ "${ACTION}" == "add" ]; then
@@ -53,5 +53,5 @@ fi
 # Report cdc-wdm device, if any
 if [ -n "${CDCWDM_NAME}" ]; then
 	mm_log "${ACTION} cdc interface ${CDCWDM_NAME}: custom event processed"
-	report_event "${ACTION}" "${CDCWDM_NAME}" "usbmisc"
+	mm_report_event "${ACTION}" "${CDCWDM_NAME}" "usbmisc"
 fi

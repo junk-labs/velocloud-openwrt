@@ -405,7 +405,7 @@ cleanup_etc_config_modems
 # logic.
 if [ -f /etc/modemmanager/25-modemmanager-common ]; then
 	. /etc/modemmanager/25-modemmanager-common
-	local BLACKLIST_REASON=$(check_modemmanager_blacklist $usbpath)
+	local BLACKLIST_REASON=$(mm_check_modemmanager_blacklist $usbpath)
 	if [ -z "${BLACKLIST_REASON}" ]; then
 		# ModemManager specific logic
 		if [ "$ACTION" = add ]; then

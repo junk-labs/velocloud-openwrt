@@ -4,54 +4,34 @@
 # Load hotplug common utilities
 . /etc/modemmanager/25-modemmanager-common
 
-# Other common definitions
-MODEMMANAGER_WWAN_CDCWDM_CACHE=/tmp/modemmanager-wwan-cdcwdm.cache
-CDCWDM_NAME=
-
 # We require a interface name
-if [ -z "${INTERFACE}" ]; then
-	return
-fi
+[ -n "${INTERFACE}" ] || return
 
 # If blacklisted by VID:PID, ignore 'add' event
-if [ "${ACTION}" == "add" ]; then
-	local BLACKLIST_REASON=$(check_modemmanager_blacklist /sys${DEVPATH})
-	if [ -n "${BLACKLIST_REASON}" ]; then
+[ "${ACTION}" == "add" ] && {
+	local BLACKLIST_REASON=$(mm_check_modemmanager_blacklist /sys${DEVPATH})
+	[ -n "${BLACKLIST_REASON}" ] && {
 		mm_log "${ACTION} network interface ${INTERFACE}: event ignored: ${BLACKLIST_REASON}"
 		return
-	fi
-fi
+	}
+}
 
 # Report network interface
 mm_log "${ACTION} network interface ${INTERFACE}: event processed"
 mm_report_event "${ACTION}" "${INTERFACE}" "net"
 
 # Look for an associated cdc-wdm interface
-if [ "${ACTION}" == "add" ]; then
-	# WWAN devices may have associated cdc-wdm control ports. This happens,
-	# e.g. in qmi_wwan, cdc-mbim or huawei-cdc-ncm. We'll look for cdc-wdm
-	# devices that are exposed from the same USB interface as the actual
-	# WWAN device.
-	CDCWDM_NAME=$(ls /sys/class/net/${INTERFACE}/device/usbmisc/)
+{
+	local cdcwdm
 
-	# We have to cache it for later, as we won't be able to get the
-	# associated cdc-wdm device on a remove event
-	if [ -n "${CDCWDM_NAME}" ]; then
-		echo "${INTERFACE} ${CDCWDM_NAME}" >> ${MODEMMANAGER_WWAN_CDCWDM_CACHE}
-	fi
-elif [ "${ACTION}" == "remove" ]; then
-	# Look for the cached associated cdc-wdm device
-	if [ -f ${MODEMMANAGER_WWAN_CDCWDM_CACHE} ]; then
-		CDCWDM_NAME=$(awk -v wwan="${INTERFACE}" '!/^#/ && $0 ~ wwan { print $2 }' ${MODEMMANAGER_WWAN_CDCWDM_CACHE})
-		if [ -n "${CDCWDM_NAME}" ]; then
-			grep -v "${INTERFACE} ${CDCWDM_NAME}" ${MODEMMANAGER_WWAN_CDCWDM_CACHE} > ${MODEMMANAGER_WWAN_CDCWDM_CACHE}.tmp
-			mv ${MODEMMANAGER_WWAN_CDCWDM_CACHE}.tmp ${MODEMMANAGER_WWAN_CDCWDM_CACHE}
-		fi
-	fi
-fi
+	case "${ACTION}" in
+		"add")	  cdcwdm=$(mm_track_cdcwdm "${INTERFACE}") ;;
+		"remove") cdcwdm=$(mm_untrack_cdcwdm "${INTERFACE}") ;;
+	esac
 
-# Report cdc-wdm device, if any
-if [ -n "${CDCWDM_NAME}" ]; then
-	mm_log "${ACTION} cdc interface ${CDCWDM_NAME}: custom event processed"
-	mm_report_event "${ACTION}" "${CDCWDM_NAME}" "usbmisc"
-fi
+	# Report cdc-wdm device, if any
+	[ -n "${cdcwdm}" ] && {
+		mm_log "${ACTION} cdc interface ${cdcwdm}: custom event processed"
+		mm_report_event "${ACTION}" "${cdcwdm}" "usbmisc"
+	}
+}

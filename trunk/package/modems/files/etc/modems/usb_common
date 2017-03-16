@@ -43,7 +43,7 @@ mm_add_to_config()
 	# Set the 'device' property so that from now on it's only processed
 	# once. We want to launch the MM management script for this device
 	# only once!
-	local physdev_sysfs_path=$(find_physdev_sysfs_path $usbpath)
+	local physdev_sysfs_path=$(mm_find_physdev_sysfs_path $usbpath)
 
 	touch $modem_config_path/modems
 	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'

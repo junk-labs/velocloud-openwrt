@@ -2,6 +2,7 @@
 # Copyright (C) 2016 Velocloud Inc
 
 MODEMMANAGER_BLACKLIST=/etc/modemmanager/modemmanager.blacklist
+MODEMMANAGER_EVENTS_CACHE=/tmp/ModemManager.events
 
 mm_log() {
 	logger -t "ModemManager" "hotplug: $@"
@@ -70,14 +71,28 @@ check_modemmanager_blacklist() {
 	echo "unknown reason"
 }
 
+################################################################################
+# Event reporting
+
 # Receives as input the action, the device name and the subsystem
-report_event() {
+mm_report_event() {
 	local action=$1
 	local name=$2
 	local subsystem=$3
 
-	local event="action=${action},name=${name},subsystem=${subsystem}"
+	# Track/untrack events in cache
+	case "${action}" in
+		"add")
+			# On add events, store event details in cache
+			echo "action=${action},name=${name},subsystem=${subsystem}" >> "${MODEMMANAGER_EVENTS_CACHE}"
+			;;
+		"remove")
+			# On remove events, remove old events from cache (match by subsystem+name)
+			sed -i "/name=${name},subsystem=${subsystem}/d" "${MODEMMANAGER_EVENTS_CACHE}"
+			;;
+	esac
 
-	echo ${event} >> /tmp/ModemManager.events
-	/usr/bin/mmcli --report-kernel-event="${event}" 1>/dev/null 2>&1 &
+	# Report the event
+	mm_log "event reported: action=${action}, name=${name}, subsystem=${subsystem}"
+	/usr/bin/mmcli --report-kernel-event="action=${action},name=${name},subsystem=${subsystem}" 1>/dev/null 2>&1 &
 }

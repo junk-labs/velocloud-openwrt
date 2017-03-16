@@ -18,14 +18,15 @@ LED get
 I2C_PST_SET
 power control
 	0x42 PST
-	PST: 1=warm reset, 2=cold reset, 3=power off 4=power-cycle, else nop
+	PST: 1=warm reset, 2=cold reset, 3=power off 4=power-cycle, 10=pwr cycle on cold reset, else nop
 	i2cset -y 1 0x21 PST
 
 I2C_PST_GET
 get reset/power cause
 	0x43 PST
 	PST: 1=warm reset, 2=cold reset, 3=power off, 4=power-cycle,
-	     5=swdt, 6=button push, 7=therm trip, 8=pwrgd, 9=PMU_SLP, 10=unknown
+	     5=swdt, 6=button push, 7=therm trip, 8=pwrgd, 9=PMU_SLP,
+	     10=pwr cycle on cold reset, 11=unknown
 	     else previous write;
 	i2cget -y 1 0x21
 
@@ -55,7 +56,7 @@ get BLE reset
 	0x47 STATUS
 	STATUS: [0]=in reset [1]=eeprom reset
 	default loaded from PIC eeprom byte 2, on PIC startup;
-	0xff in eeprom (unprogrammed) keep PIC in reset, STATUS=0x03
+	0xff in eeprom (unprogrammed) keep BLE in reset, STATUS=0x03
 	i2cget -y 1 0x23
 
 I2C_EE_WRITE
@@ -121,7 +122,7 @@ I2C_VERSION
 get pic version string
 	0x51 C C C C
 	reads upto 4 bytes of version string
-	i2cget -y 1 0x27 0 w
+	i2cget -y 1 0x28 0 w
 
 I2C_RESET
 pic reset cause
@@ -133,6 +134,18 @@ pic reset cause
 		[3]=MCLR pin reset
 		[4]=reset instruction
 		[5]= stack over/underflow
+	i2cget -y 1 0x29
+
+I2C_RBPT
+reset button push timer
+	reset button is debounce, all <200ms are ignored;
+	pushing reset button turns on system if it was off;
+	pushing reset button resets system if it was on;
+	a button push timer start at push event, increments to max;
+	this comamnd reads that timer, which could still be ticking, if button is still pushed;
+	timer in 10msec ticks
+	0x55 LSB MSB
+	i2cget -y 1 0x2a 0 w
 
 EEPROM bytes:
 

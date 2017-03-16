@@ -20,4 +20,4 @@ fi
 
 # Report TTY
 mm_log "${ACTION} serial interface ${DEVNAME}: event processed"
-report_event "${ACTION}" "${DEVNAME}" "tty"
+mm_report_event "${ACTION}" "${DEVNAME}" "tty"

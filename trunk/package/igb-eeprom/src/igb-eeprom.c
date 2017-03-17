@@ -892,7 +892,7 @@ main(int argc, char **argv)
 	// write it out to bitmap;
 
 	macns = g->macs;
-	sprintf(file, "igb-eeprom-%d-%s.bin", g->opt_x, g->opt_mac? macns->str : g->bid);
+	sprintf(file, "/tmp/igb-eeprom-%d-%s.bin", g->opt_x, g->opt_mac? macns->str : g->bid);
 	fd = open(file, O_RDWR | O_CREAT | O_TRUNC, 0600);
 	if(fd < 0)
 		Msg("@cannot open bitmap file '%s'\n", file);
@@ -912,6 +912,9 @@ main(int argc, char **argv)
 		if(n)
 			return(n);
 	}
+
+	// remove the temp file above
+	unlink(file);
 
 	return(0);
 }

@@ -689,6 +689,7 @@ main(int argc, char **argv)
 	char bid[20];
 	char file[50];
 	char cmd[200];
+	char *override_ifname = NULL;
 
 	g->cmd = argv[0];
 	g->ifname = "eth0";
@@ -739,7 +740,7 @@ main(int argc, char **argv)
 			g->opt_pciid = 1;
 			break;
 		case 'i':
-			g->ifname = optarg;
+			override_ifname = optarg;
 			break;
 		case 't' :
 			g->tmp = optarg;
@@ -828,6 +829,9 @@ main(int argc, char **argv)
 		msg = mfg_init(g);
 		if(msg)
 			Msg("@%s: %s\n", g->umac, msg);
+	}
+	if(override_ifname) {
+		g->ifname = override_ifname;
 	}
 
 	// allow pciid overwrite;

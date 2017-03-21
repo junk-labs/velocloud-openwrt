@@ -74,8 +74,8 @@ mfg_t Mfg[] = {
 	  { "atom-c2000-igb-sgmii.bin", },
 	  { 0x8086, },
 	  { 0x1f41, },
-	  { 1, 20, 0 }, 4,
-	  { 0xF0,0x8E,0xDB,0x00,0x01,0x00 }, { 0xF0,0x8E,0xDB,0x00,0x01,0x4f }, },
+	  { 1, 959, 0 }, 4,
+	  { 0xF0,0x8E,0xDB,0x00,0x01,0x00 }, { 0xF0,0x8E,0xDB,0x00,0x0f,0xff }, },
 
 
 	// all above squeezed into 01:0x:xx 4k block;
@@ -166,6 +166,16 @@ mfg_t Mfg[] = {
 	  { 11923, 33767, 11923 }, 6,
 	  { 0xF0,0x8E,0xDB,0x04,0x00,0x00 }, { 0xF0,0x8E,0xDB,0x05,0xff,0xff }, },
           // next batch starts at 33768 ^^
+
+	// Dolphin production
+	{ "510-prod",
+	  "edge510",
+	  { "eth0", },
+	  { "atom-c2000-igb-sgmii.bin", },
+	  { 0x8086, },
+	  { 0x1f41, },
+	  { 1001, 132072, 1001 }, 4,
+	  { 0xF0,0x8E,0xDB,0x10,0x00,0x00 }, { 0xF0,0x8E,0xDB,0x17,0xff,0xff }, },
 
 	{ 0 },
 };
@@ -679,6 +689,7 @@ main(int argc, char **argv)
 	char bid[20];
 	char file[50];
 	char cmd[200];
+	char *override_ifname = NULL;
 
 	g->cmd = argv[0];
 	g->ifname = "eth0";
@@ -729,7 +740,7 @@ main(int argc, char **argv)
 			g->opt_pciid = 1;
 			break;
 		case 'i':
-			g->ifname = optarg;
+			override_ifname = optarg;
 			break;
 		case 't' :
 			g->tmp = optarg;
@@ -819,6 +830,9 @@ main(int argc, char **argv)
 		if(msg)
 			Msg("@%s: %s\n", g->umac, msg);
 	}
+	if(override_ifname) {
+		g->ifname = override_ifname;
+	}
 
 	// allow pciid overwrite;
 	// for eeproms that change pciid after flashing;
@@ -878,7 +892,7 @@ main(int argc, char **argv)
 	// write it out to bitmap;
 
 	macns = g->macs;
-	sprintf(file, "igb-eeprom-%d-%s.bin", g->opt_x, g->opt_mac? macns->str : g->bid);
+	sprintf(file, "/tmp/igb-eeprom-%d-%s.bin", g->opt_x, g->opt_mac? macns->str : g->bid);
 	fd = open(file, O_RDWR | O_CREAT | O_TRUNC, 0600);
 	if(fd < 0)
 		Msg("@cannot open bitmap file '%s'\n", file);
@@ -898,6 +912,9 @@ main(int argc, char **argv)
 		if(n)
 			return(n);
 	}
+
+	// remove the temp file above
+	unlink(file);
 
 	return(0);
 }

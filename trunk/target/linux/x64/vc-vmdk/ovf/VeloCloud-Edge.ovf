@@ -202,21 +202,69 @@
       <Version>@VERSION@</Version>
       <FullVersion>@FULLVERSION@</FullVersion>
       <VendorUrl>http://www.velocloud.com</VendorUrl>
+	  <Category>Velocloud properties</Category>
       <Property ovf:key="instance-id" ovf:type="string" ovf:userConfigurable="true" ovf:value="id-ovf">
         <Label>A Unique Instance ID for this instance</Label>
         <Description>Specifies the instance id.  This is required and used to determine if the machine should take "first boot" actions</Description>
       </Property>
-      <Property ovf:key="user-data" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
-        <Label>Encoded user-data</Label>
-        <Description>In order to fit into a xml attribute, this value is base64 encoded . It will be decoded, and then processed normally as user-data.</Description>
-        <!--  The following represents '#!/bin/sh\necho "hi world"'
-          ovf:value="IyEvYmluL3NoCmVjaG8gImhpIHdvcmxkIgo="
-        -->
+      <Property ovf:key="velocloud.vce.vco" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>Velocloud Orchestrator address</Label>
+        <Description>Velocloud Orchestrator address for VCE activation</Description>
       </Property>
-      <Property ovf:key="password" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+      <Property ovf:key="velocloud.vce.activation_code" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>VCE activation code</Label>
+        <Description>VCE activation code</Description>
+      </Property>
+      <Property ovf:key="velocloud.vce.vco_ignore_cert_errors" ovf:type="boolean" ovf:userConfigurable="true" ovf:value="false">
+        <Label>Ignore VCO certificate errors</Label>
+        <Description>Ignore VCO certificate validation errors</Description>
+      </Property>
+      <Property ovf:key="password" ovf:type="string" ovf:userConfigurable="true" ovf:password="true" ovf:value="">
           <Label>Default User's password</Label>
           <Description>If set, the default user's password will be set to this value to allow password based login.  The password will be good for only a single login.  If set to the string 'RANDOM' then a random password will be generated, and written to the console.</Description>
       </Property>
+      <Property ovf:key="velocloud.vce.dns1" ovf:type="string" ovf:userConfigurable="true" ovf:value="8.8.8.8">
+        <Label>DNS1 IP address</Label>
+        <Description>DNS1 IP address</Description>
+	  </Property>
+      <Property ovf:key="velocloud.vce.dns2" ovf:type="string" ovf:userConfigurable="true" ovf:value="8.8.4.4">
+        <Label>DNS2 IP address</Label>
+        <Description>DNS2 IP address</Description>
+	  </Property>
+      <Property ovf:key="eth2.ipAllocationType" ovf:type="string" ovf:userConfigurable="true" ovf:value="DHCP"
+	            ovf:qualifiers="ValueMap{&quot;DHCP&quot;, &quot;STATIC&quot;}">
+        <Label>eth2 (GE3) interface IP allocation type</Label>
+        <Description>eth2 (GE3) interface IP allocation type</Description>
+	  </Property>
+      <Property ovf:key="eth2.ipAddress" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>eth2 (GE3) interface IP (if static ipAllocationType)</Label>
+        <Description>eth2 (GE3) interface IP (if static ipAllocationType)</Description>
+	  </Property>
+      <Property ovf:key="eth2.subnetMask" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>eth2 (GE3) subnet mask (for static ipAllocationType)</Label>
+        <Description>eth2 (GE3) subnet mask (if static ipAllocationType)</Description>
+	  </Property>
+      <Property ovf:key="eth2.gatewayAddress" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>eth2 (GE3) interface default gateway (if static ipAllocationType)</Label>
+        <Description>eth2 (GE3) interface default gateway (if static ipAllocationType)</Description>
+	  </Property>
+      <Property ovf:key="eth3.ipAllocationType" ovf:type="string" ovf:userConfigurable="true" ovf:value="DHCP"
+	            ovf:qualifiers="ValueMap{&quot;DHCP&quot;, &quot;STATIC&quot;}">
+        <Label>eth3 (GE4) interface IP allocation type</Label>
+        <Description>eth3 (GE4) interface IP allocation type</Description>
+	  </Property>
+      <Property ovf:key="eth3.ipAddress" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>eth3 (GE4) interface IP (if static ipAllocationType)</Label>
+        <Description>eth3 (GE4) interface IP (if static ipAllocationType)</Description>
+	  </Property>
+      <Property ovf:key="eth3.subnetMask" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>eth3 (GE4) interface subnet mask (if static ipAllocationType)</Label>
+        <Description>eth3 (GE4) interface subnet mask (if static ipAllocationType)</Description>
+	  </Property>
+      <Property ovf:key="eth3.gatewayAddress" ovf:type="string" ovf:userConfigurable="true" ovf:value="">
+        <Label>eth3 (GE4) interface default gateway (if static ipAllocationType)</Label>
+        <Description>eth3 (GE4) interface default gateway (if static ipAllocationType)</Description>
+	  </Property>
     </ProductSection>
   </VirtualSystem>
-</Envelope>                     
+</Envelope>

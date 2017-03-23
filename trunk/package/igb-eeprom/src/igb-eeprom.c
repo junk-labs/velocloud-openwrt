@@ -67,7 +67,9 @@ mfg_t Mfg[] = {
 	// Range for miscellaneous new pilot projects: 00:01:00 to 00:ff:ff
 	// Starting with Dolphin pilot
 
-	// Dolphin pilot 1
+	// Dolphin pilot 1 - moved to 510-prod list below. Other new pilots
+	// should be added below this one..
+	/**
 	{ "510-pilot",
 	  "edge510",
 	  { "eth0", },
@@ -76,6 +78,7 @@ mfg_t Mfg[] = {
 	  { 0x1f41, },
 	  { 1, 959, 0 }, 4,
 	  { 0xF0,0x8E,0xDB,0x00,0x01,0x00 }, { 0xF0,0x8E,0xDB,0x00,0x0f,0xff }, },
+	  */
 
 
 	// all above squeezed into 01:0x:xx 4k block;
@@ -168,6 +171,17 @@ mfg_t Mfg[] = {
           // next batch starts at 33768 ^^
 
 	// Dolphin production
+	// Also includes the pilot range from above, for ease of use
+	// for ADI/SMTC.  You can program 1..959 using either manuf. run.
+	{ "510-prod",
+	  "edge510",
+	  { "eth0", },
+	  { "atom-c2000-igb-sgmii.bin", },
+	  { 0x8086, },
+	  { 0x1f41, },
+	  { 1, 959, 0 }, 4,
+	  { 0xF0,0x8E,0xDB,0x00,0x01,0x00 }, { 0xF0,0x8E,0xDB,0x00,0x0f,0xff }, },
+
 	{ "510-prod",
 	  "edge510",
 	  { "eth0", },

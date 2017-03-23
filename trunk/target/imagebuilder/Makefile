@@ -53,6 +53,10 @@ $(BIN_DIR)/$(IB_NAME).tar.bz2: clean
 	if [ -d $(LINUX_DIR)/arch/$(ARCH)/boot/dts ]; then \
 		$(CP) $(LINUX_DIR)/arch/$(ARCH)/boot/dts/* $(IB_DTSDIR); \
 	fi
+	(cd $(LINUX_DIR) ; find . -name Makefile -o -name Kconfig -o -name \*.pl > $(IB_KDIR)/.headers.lst)
+	(cd $(LINUX_DIR) ; find Module.symvers scripts -type f >> $(IB_KDIR)/.headers.lst)
+	(cd $(LINUX_DIR) ; find arch/x86/include include -type f >> $(IB_KDIR)/.headers.lst)
+	(cd $(LINUX_DIR) ; tar -c -f - -T $(IB_KDIR)/.headers.lst ) | (cd $(IB_LDIR); tar -xf -)
 	$(SED) 's,^# REVISION:=.*,REVISION:=$(REVISION),g' $(PKG_BUILD_DIR)/include/version.mk
 	find $(PKG_BUILD_DIR) -name CVS -o -name .git -o -name .svn \
 	  | $(XARGS) rm -rf

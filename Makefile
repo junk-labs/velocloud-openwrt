@@ -50,6 +50,8 @@ OPENWRT_ROOT = $(OPENWRT_NAME)
 # auto-detect # of cores
 NCPU ?= $(shell grep -c ^processor /proc/cpuinfo)
 
+MAKEFLAGS += --output-sync=target
+
 # default is to build all targets;
 default: $(DEFAULT_OPENWRT_TSYS)
 
@@ -173,24 +175,33 @@ define OpenwrtConfig
 	@if [ "$(call target_conf,$(1))" != "$(LAST_TSYS)" ]; then \
 		sed -i -e '/^CONFIG_SDK=y/d' $(OPENWRT_ROOT)/.config ; \
 	fi
-	make -C $(OPENWRT_ROOT) defconfig
-	make -C $(OPENWRT_ROOT) prereq
+	$(MAKE) -C $(OPENWRT_ROOT) defconfig
+	$(MAKE) -C $(OPENWRT_ROOT) prereq
+endef
+
+define OpenwrtPrepare
+	@echo "`date -Iseconds`: Making subtarget: $1"
+	$(call DownloadDir)
+	$(call OpenwrtConfig,$1)
+	$(call CopyFiles,$1)
 endef
 
 # parallel build;
 # if this fails:
 #   cd trunk; make V=s
 
-.PHONY: $(OPENWRT_TSYS)
-$(OPENWRT_TSYS): $(OPENWRT_CONFIG)
-	@echo "`date -Iseconds`: Making subtarget: $@"
-	$(call DownloadDir)
-	$(call OpenwrtConfig,$@)
-	$(call CopyFiles,$@)
+
+.PHONY: $(OPENWRT_TSYS) $(OPENWRT_TSYS: %=%/config)
+
+$(OPENWRT_TSYS:%=%/config):
+	$(call OpenwrtPrepare,$(@:%/config=%))
+
+$(OPENWRT_TSYS): % : %/config
 	@rm -rf trunk/bin/$(OPENWRT_ARCH)-eglibc/root-$(OPENWRT_ARCH) trunk/bin/$(OPENWRT_ARCH)-eglibc/packages
-	make -C $(OPENWRT_ROOT) -j $(NCPU) V=$(V)
+	$(MAKE) -C $(OPENWRT_ROOT) -j $(NCPU) V=$(V)
 	@rm -rf $(OPENWRT_ROOT)/files
 	@echo "`date -Iseconds`: Finished subtarget: $@"
+
 
 # clean the build;
 # cleans

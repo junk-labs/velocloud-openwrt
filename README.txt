@@ -26,6 +26,7 @@ I. Setting up Build System
 * texi2html
 * xsltproc
 * intltool
+* dia
 
 3. To install subversion, you need to get a special set of packages for
 subversion 1.6 from /eng/openwrt/svn-1.6 (there are three packages there).

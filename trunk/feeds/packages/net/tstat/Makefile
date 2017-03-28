@@ -24,19 +24,13 @@ define Package/tstat
   CATEGORY:=Network
   TITLE:=TCP STatistic and Analysis Tool from POLITO
   URL:=http://tstat.tlc.polito.it
-  DEPENDS:=+libpcap +libpthread +zlib +libstdcpp
+  DEPENDS:=+libpcap +libpthread +zlib
   MAINTAINER:=Tivadar Szemethy <tivadar.szemethy@netvisor.hu>
 endef
 
 define Package/tstat/description
  Tstat is a passive sniffer able to provide several insight on the traffic
  patterns at both the network and the transport levels.
-endef
-
-define Build/Configure
-	$(call Build/Configure/Default)
-	$(SED) s.^g++.$(TARGET_CXX).g $(PKG_BUILD_DIR)/build_dns
-	cd $(PKG_BUILD_DIR) && bash -x ./build_dns
 endef
 
 define Package/tstat/install

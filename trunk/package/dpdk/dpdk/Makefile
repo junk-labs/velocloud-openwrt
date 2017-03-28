@@ -6,12 +6,12 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=dpdk
-PKG_VERSION:=16.11
+PKG_VERSION:=16.07
 PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://dpdk.org/browse/dpdk/snapshot/
-PKG_MD5SUM:=24f057ec64c277fbb181ff29569f6844
+PKG_MD5SUM:=d1048a0edb60e0f47f875aff529ffce1
 
 PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_PARALLEL:=1
@@ -69,7 +69,7 @@ define Package/dpdk/install
 	$(INSTALL_DIR) \
 		$(1)/usr/share/dpdk/bin \
 		$(1)/usr/share/dpdk/kmod
-	$(INSTALL_BIN)  \
+	$(INSTALL_BIN) -s \
 		$(PKG_INSTALL_DIR)/bin/* \
 		$(1)/usr/share/dpdk/bin
 	$(CP) \

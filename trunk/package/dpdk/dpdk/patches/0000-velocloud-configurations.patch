@@ -1,61 +1,46 @@
-From 283b66c77eb33c71a094644c40a0520ea11cfb72 Mon Sep 17 00:00:00 2001
-From: "egorovv@gmail.com" <egorovv@gmail.com>
-Date: Mon, 6 Mar 2017 14:56:18 -0800
-Subject: [PATCH 1/7] 0000-velocloud-configurations.patch
-
---
 commit af1615def139380f459a31dd9e16ce1238abd0cd
 Author: gopakumar <gopa@velocloud.net>
 Date:   Sun Dec 11 09:33:09 2016 -0800
 
     x86 cfg
----
- config/common_base                           | 10 ++---
- config/defconfig_i686-openwrt-linuxapp-gcc   | 53 ++++++++++++++++++++++++
- config/defconfig_x86_64-openwrt-linuxapp-gcc | 52 ++++++++++++++++++++++++
- mk/machine/openwrt/rte.vars.mk               | 60 ++++++++++++++++++++++++++++
- 4 files changed, 170 insertions(+), 5 deletions(-)
- create mode 100644 config/defconfig_i686-openwrt-linuxapp-gcc
- create mode 100644 config/defconfig_x86_64-openwrt-linuxapp-gcc
- create mode 100644 mk/machine/openwrt/rte.vars.mk
 
 diff --git a/config/common_base b/config/common_base
-index 4bff83a..c8c1e11 100644
+index 7830535..15a0e29 100644
 --- a/config/common_base
 +++ b/config/common_base
-@@ -465,7 +465,7 @@ CONFIG_RTE_LIBRTE_JOBSTATS=y
+@@ -453,7 +453,7 @@ CONFIG_RTE_LIBRTE_JOBSTATS=y
  #
  # Compile librte_lpm
  #
 -CONFIG_RTE_LIBRTE_LPM=y
 +CONFIG_RTE_LIBRTE_LPM=n
  CONFIG_RTE_LIBRTE_LPM_DEBUG=n
- 
+
  #
-@@ -530,13 +530,13 @@ CONFIG_RTE_PORT_PCAP=n
+@@ -518,13 +518,13 @@ CONFIG_RTE_PORT_PCAP=n
  #
  # Compile librte_table
  #
 -CONFIG_RTE_LIBRTE_TABLE=y
 +CONFIG_RTE_LIBRTE_TABLE=n
  CONFIG_RTE_TABLE_STATS_COLLECT=n
- 
+
  #
  # Compile librte_pipeline
  #
 -CONFIG_RTE_LIBRTE_PIPELINE=y
 +CONFIG_RTE_LIBRTE_PIPELINE=n
  CONFIG_RTE_PIPELINE_STATS_COLLECT=n
- 
+
  #
-@@ -580,12 +580,12 @@ CONFIG_RTE_INSECURE_FUNCTION_WARNING=n
+@@ -575,12 +575,12 @@ CONFIG_RTE_INSECURE_FUNCTION_WARNING=n
  #
  # Compile the test application
  #
 -CONFIG_RTE_APP_TEST=y
 +CONFIG_RTE_APP_TEST=n
  CONFIG_RTE_APP_TEST_RESOURCE_TAR=n
- 
+
  #
  # Compile the PMD test application
  #
@@ -246,6 +231,16 @@ index 0000000..fff1355
 +MACHINE_CFLAGS = $(OPENWRT_CFLAGS)
 +MACHINE_LDFLAGS = $(OPENWRT_LDFLAGS)
 +MACHINE_ASFLAGS = $(OPENWRT_ASFLAGS)
--- 
-2.7.4
+diff --git a/mk/rte.sdkinstall.mk b/mk/rte.sdkinstall.mk
+index 5217063..47eff87 100644
+--- a/mk/rte.sdkinstall.mk
++++ b/mk/rte.sdkinstall.mk
+@@ -131,8 +131,6 @@ install-runtime:
+	$(Q)$(call rte_mkdir,      $(DESTDIR)$(sbindir))
+	$(Q)$(call rte_symlink,    $(DESTDIR)$(datadir)/tools/dpdk-devbind.py, \
+	                           $(DESTDIR)$(sbindir)/dpdk-devbind)
+-	$(Q)$(call rte_symlink,    $(DESTDIR)$(datadir)/tools/dpdk-pmdinfo.py, \
+-	                           $(DESTDIR)$(bindir)/dpdk-pmdinfo)
 
+ install-kmod:
+ ifneq ($(wildcard $O/kmod/*),)

@@ -1,26 +1,12 @@
-From fc7d021e4baf035d279bfebd7b8a2e8c20892489 Mon Sep 17 00:00:00 2001
-From: "egorovv@gmail.com" <egorovv@gmail.com>
-Date: Mon, 6 Mar 2017 14:56:18 -0800
-Subject: [PATCH 3/7] 0050-kni-ring-size.patch
-
---
----
- lib/librte_kni/rte_kni.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 diff --git a/lib/librte_kni/rte_kni.c b/lib/librte_kni/rte_kni.c
-index a80cefd..bf955a8 100644
+index 3028fd4..5581630 100644
 --- a/lib/librte_kni/rte_kni.c
 +++ b/lib/librte_kni/rte_kni.c
 @@ -53,7 +53,7 @@
  #define MAX_MBUF_BURST_NUM            32
- 
+
  /* Maximum number of ring entries */
 -#define KNI_FIFO_COUNT_MAX     1024
 +#define KNI_FIFO_COUNT_MAX     64
  #define KNI_FIFO_SIZE          (KNI_FIFO_COUNT_MAX * sizeof(void *) + \
- 					sizeof(struct rte_kni_fifo))
- 
--- 
-2.7.4
-
+					sizeof(struct rte_kni_fifo))

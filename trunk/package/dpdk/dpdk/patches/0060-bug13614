@@ -1,0 +1,11 @@
+diff -Naur a/lib/librte_eal/linuxapp/kni/ethtool/igb/igb_main.c b/lib/librte_eal/linuxapp/kni/ethtool/igb/igb_main.c
+--- a/lib/librte_eal/linuxapp/kni/ethtool/igb/igb_main.c	2016-08-02 20:33:00.000000000 -0700
++++ b/lib/librte_eal/linuxapp/kni/ethtool/igb/igb_main.c	2016-09-15 12:32:14.024106542 -0700
+@@ -10280,7 +10280,7 @@
+ //	                             pci_select_bars(pdev, IORESOURCE_MEM));
+ //err_pci_reg:
+ //err_dma:
+-	pci_disable_device(pdev);
++//	pci_disable_device(pdev);
+	return err;
+ }

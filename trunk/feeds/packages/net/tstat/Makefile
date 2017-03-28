@@ -1,15 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tstat
-PKG_REV:=528
-PKG_VERSION:=r$(PKG_REV)
+PKG_VERSION:=3.1.1
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=http://tstat.polito.it/svn/software/tstat/trunk
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=$(PKG_REV)
-PKG_SOURCE_PROTO:=svn
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=http://tstat.polito.it/download
+PKG_MD5SUM:=2460381664b5abbd4d4c466b46092726
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -24,7 +21,7 @@ define Package/tstat
   CATEGORY:=Network
   TITLE:=TCP STatistic and Analysis Tool from POLITO
   URL:=http://tstat.tlc.polito.it
-  DEPENDS:=+libpcap +libpthread +zlib
+  DEPENDS:=+libpcap +libpthread +zlib +libstdcpp
   MAINTAINER:=Tivadar Szemethy <tivadar.szemethy@netvisor.hu>
 endef
 

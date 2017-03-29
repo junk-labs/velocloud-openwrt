@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "thread.h"
 
 #include "bgpd/bgpd.h"
+#include "bgpd/bgp_community.h"
 #include "bgpd/bgp_route.h"
 #include "bgpd/bgp_attr.h"
 #include "bgpd/bgp_nexthop.h"
@@ -38,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "bgpd/bgp_fsm.h"
 #include "bgpd/bgp_debug.h"
 #include "bgpd/bgp_mpath.h"
+#include "bgpd/bgp_aspath.h"
 
 /* All information about zebra. */
 struct zclient *zclient = NULL;
@@ -251,6 +253,8 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
   char iname_tmp[INSTANCE_NAMSIZ + 1];
   size_t namelen;
   struct bgp *bgp;
+  u_int32_t user_no_pref = 0;
+  struct community community;
 
   s = zclient->ibuf;
   nexthop.s_addr = 0;
@@ -306,6 +310,13 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
       return 0;
     }
 
+    memset(&community, 0, sizeof(struct community));
+    if (CHECK_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES)) {
+        community.size = stream_getl (s);
+        community.val = (u_int32_t *)stream_pnt(s);
+        stream_forward_getp(s,  bgp_attr_buf.community_size * sizeof(u_int32_t)); 
+    }
+
   if (command == ZEBRA_IPV4_ROUTE_ADD)
     {
       if (BGP_DEBUG(zebra, ZEBRA))
@@ -319,7 +330,7 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
 		     api.metric, api.tag, api.iname);
 	}
       bgp_redistribute_add(bgp, (struct prefix *)&p, &nexthop, NULL,
-			   api.metric, api.type, api.tag);
+			   api.metric, api.type, api.tag, &community);
     }
   else
     {
@@ -352,6 +363,7 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
   char iname_tmp[INSTANCE_NAMSIZ + 1];
   size_t namelen;
   struct bgp *bgp;
+  struct community community;
 
   s = zclient->ibuf;
   memset (&nexthop, 0, sizeof (struct in6_addr));
@@ -420,7 +432,7 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
 		     api.metric, api.tag);
 	}
       bgp_redistribute_add (bgp, (struct prefix *)&p, NULL, &nexthop,
-			    api.metric, api.type, api.tag);
+			    api.metric, api.type, api.tag, &community);
     }
   else
     {
@@ -819,6 +831,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
       else
         bgp_attr_buf.local_pref = bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES)) {
+          bgp_attr_buf.community_size = (u_int32_t)info->attr->community->size;
+          bgp_attr_buf.community_val = info->attr->community->val;
+          SET_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES);
+      }
       api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
 
       if (BGP_DEBUG(zebra, ZEBRA))
@@ -911,6 +928,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
       else
         bgp_attr_buf.local_pref = bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES)) {
+          bgp_attr_buf.community_size = (u_int32_t)info->attr->community->size;
+          bgp_attr_buf.community_val = info->attr->community->val;
+          SET_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES);
+      }
       api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
 
       if (BGP_DEBUG(zebra, ZEBRA))
@@ -987,6 +1009,14 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       else
         bgp_attr_buf.local_pref = peer->bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES) && 
+          info->attr->community) {
+          bgp_attr_buf.community_size = (u_int32_t)info->attr->community->size;
+          SET_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES);
+          if (info->attr->community->val) {
+              bgp_attr_buf.community_val = info->attr->community->val;
+          }
+      }
       api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
 
       if (BGP_DEBUG(zebra, ZEBRA))
@@ -1062,6 +1092,14 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       else
         bgp_attr_buf.local_pref = peer->bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+			if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES) && 
+          info->attr->community) {
+          bgp_attr_buf.community_size = (u_int32_t)info->attr->community->size;
+          SET_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES);
+          if (info->attr->community->val) {
+              bgp_attr_buf.community_val = info->attr->community->val;
+          }
+      }
       api.proto_data = (struct zapi_bgp_attr *) &bgp_attr_buf;
 
       if (BGP_DEBUG(zebra, ZEBRA))

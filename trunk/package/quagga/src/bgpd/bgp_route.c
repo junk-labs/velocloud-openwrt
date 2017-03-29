@@ -37,12 +37,12 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
 #include "bgpd/bgpd.h"
 #include "bgpd/bgp_table.h"
+#include "bgpd/bgp_community.h"
 #include "bgpd/bgp_route.h"
 #include "bgpd/bgp_attr.h"
 #include "bgpd/bgp_debug.h"
 #include "bgpd/bgp_aspath.h"
 #include "bgpd/bgp_regex.h"
-#include "bgpd/bgp_community.h"
 #include "bgpd/bgp_ecommunity.h"
 #include "bgpd/bgp_clist.h"
 #include "bgpd/bgp_packet.h"
@@ -5378,7 +5378,8 @@ void
 bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
                       const struct in_addr *nexthop,
 		              const struct in6_addr *nexthop6,
-		              u_int32_t metric, u_char type, u_short tag)
+		              u_int32_t metric, u_char type, u_short tag, 
+                      struct community *in_community)
 {
   struct bgp_info *new;
   struct bgp_info *bi;
@@ -5406,6 +5407,11 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
   attr.med = metric;
   attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC);
   attr.extra->tag = tag;
+
+  if (in_community && in_community->size > 0) {
+      attr.community = community_uniq_sort(in_community); 
+      attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_COMMUNITIES);
+  }
 
       afi = family2afi (p->family);
 

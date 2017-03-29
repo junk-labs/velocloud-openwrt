@@ -13,7 +13,7 @@ case "$1" in
 
                 echo "Removing all "$PACKAGE" DKMS modules"
                 dkms remove -m "$NAME" -v $VERSION --all
-               
+
                 echo "Done."
         ;;
 esac

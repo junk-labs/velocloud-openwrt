@@ -46,7 +46,7 @@ case "$1" in
 
                 echo "Adding module to DKMS"
                 dkms_configure
-                
+
                 echo "Adding hugepages to grub kernel config"
                 grub=`cat /etc/default/grub | sed -rn 's/^[\s]*GRUB_CMDLINE_LINUX[\s]*=[\s]*\"(.*)\"/\1/p'`
                 if [ "$grub" = "" ];
@@ -64,7 +64,7 @@ case "$1" in
                 egrep -q '^uio$' /etc/modules || echo 'uio' >> /etc/modules
                 egrep -q '^igb_uio$' /etc/modules || echo 'igb_uio' >> /etc/modules
                 egrep -q '^rte_kni$' /etc/modules || echo 'rte_kni' >> /etc/modules
-                
+
                 echo "Done."
         ;;
 esac

@@ -314,7 +314,7 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
     if (CHECK_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES)) {
         community.size = stream_getl (s);
         community.val = (u_int32_t *)stream_pnt(s);
-        stream_forward_getp(s,  bgp_attr_buf.community_size * sizeof(u_int32_t)); 
+        stream_forward_getp(s, community.size * sizeof(u_int32_t)); 
     }
 
   if (command == ZEBRA_IPV4_ROUTE_ADD)

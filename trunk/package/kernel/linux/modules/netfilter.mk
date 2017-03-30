@@ -295,23 +295,6 @@ endef
 $(eval $(call KernelPackage,ipt-nflog))
 
 
-define KernelPackage/ipt-nfqueue
-  TITLE:=Module for user-space packet queuing
-  KCONFIG:=$(KCONFIG_IPT_NFQUEUE)
-  FILES:=$(foreach mod,$(IPT_NFQUEUE-m),$(LINUX_DIR)/net/$(mod).ko)
-  AUTOLOAD:=$(call AutoProbe,$(notdir $(IPT_NFQUEUE-m)))
-  $(call AddDepends/ipt,+kmod-nfnetlink-queue)
-endef
-
-define KernelPackage/ipt-nfqueue/description
- Netfilter module for user-space packet queuing
- Includes:
- - NFQUEUE
-endef
-
-$(eval $(call KernelPackage,ipt-nfqueue))
-
-
 define KernelPackage/ipt-debug
   TITLE:=Module for debugging/development
   KCONFIG:=$(KCONFIG_IPT_DEBUG)

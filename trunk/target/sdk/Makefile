@@ -50,13 +50,16 @@ KERNEL_FILES_ARCH = \
 	scripts \
 	kernel/asm-offsets.s
 
+KERNEL_SDK_KARCH := \
+	$(strip $(subst x86_64,x86,$(LINUX_KARCH)))
+
 KERNEL_FILES_BASE := \
 	.config \
 	Makefile \
 	scripts \
 	include \
 	Module.symvers \
-	$(addprefix arch/$(LINUX_KARCH)/,$(KERNEL_FILES_ARCH))
+	$(addprefix arch/$(KERNEL_SDK_KARCH)/,$(KERNEL_FILES_ARCH))
 
 KERNEL_FILES := $(patsubst $(TOPDIR)/%,%,$(wildcard $(addprefix $(LINUX_DIR)/,$(KERNEL_FILES_BASE))))
 

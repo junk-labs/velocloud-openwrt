@@ -81,8 +81,7 @@ CONFIGURE_ARGS += \
 	--disable-uuidd		\
 	--disable-tls		\
 	--disable-nls		\
-	--disable-rpath         \
-	--disable-fuse2fs
+	--disable-rpath
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
@@ -95,14 +94,12 @@ define Build/Compile
 		CFLAGS="" \
 		CPPFLAGS="" \
 		LDFLAGS="" \
-		V=$(V) \
 		subst
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		LDFLAGS=-Wl,--gc-sections \
 		BUILDCC="$(HOSTCC)" \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
 		LIBBLKID="$(PKG_BUILD_DIR)/lib/libblkid.a -luuid" \
-		V=$(V) \
 		all
 endef
 

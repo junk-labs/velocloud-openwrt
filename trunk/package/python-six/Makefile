@@ -49,7 +49,7 @@ define Build/Compile
 endef
 
 define Host/Compile
-        $(call HostPython, cd $(HOST_BUILD_DIR)/../six-$(PKG_VERSION); , ./setup.py install --prefix="" --root=$(STAGING_DIR_HOST))
+        $(call HostPython, cd $(HOST_BUILD_DIR); , ./setup.py install --prefix="" --root=$(STAGING_DIR_HOST))
 endef
 
 define Host/Install

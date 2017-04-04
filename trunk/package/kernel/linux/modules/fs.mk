@@ -445,16 +445,3 @@ define KernelPackage/fs-jfs/description
 endef
 
 $(eval $(call KernelPackage,fs-jfs))
-
-
-define KernelPackage/fs-9p
-  SUBMENU:=$(FS_MENU)
-  TITLE:=9p filesystem support
-  KCONFIG:=CONFIG_9P_FS \
-	CONFIG_9P_FS_POSIX_ACL=n \
-	CONFIG_9P_FS_SECURITY=n
-  FILES:=$(LINUX_DIR)/fs/9p/9p.ko
-  DEPENDS:= +kmod-9p-net
-endef
-
-$(eval $(call KernelPackage,fs-9p))

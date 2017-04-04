@@ -1,0 +1,172 @@
+commit e3bb01cda9f3cfa0798de1f854318d3427d27c52
+Author: gopakumar <gopa@velocloud.net>
+Date:   Sun Jul 31 11:18:34 2016 -0700
+
+        mempool mgmt
+
+diff --git a/lib/librte_mempool/rte_mempool.c b/lib/librte_mempool/rte_mempool.c
+index 2e28e2e..4e3f76b 100644
+--- a/lib/librte_mempool/rte_mempool.c
++++ b/lib/librte_mempool/rte_mempool.c
+@@ -514,6 +514,90 @@ rte_mempool_populate_virt(struct rte_mempool *mp, char *addr,
+  * value on error.
+  */
+ int
++rte_mempool_populate_default_oneseg(struct rte_mempool *mp)
++{
++	int mz_flags = RTE_MEMZONE_1GB|RTE_MEMZONE_SIZE_HINT_ONLY;
++	char mz_name[RTE_MEMZONE_NAMESIZE];
++	const struct rte_memzone *mz;
++	size_t size, total_elt_sz, align, pg_sz, pg_shift;
++	phys_addr_t paddr;
++	unsigned mz_id, n;
++	int ret;
++
++	/* mempool must not be populated */
++	if (mp->nb_mem_chunks != 0)
++		return -EEXIST;
++
++	if (rte_xen_dom0_supported()) {
++		pg_sz = RTE_PGSIZE_2M;
++		pg_shift = rte_bsf32(pg_sz);
++		align = pg_sz;
++	} else if (rte_eal_has_hugepages()) {
++		pg_shift = 0; /* not needed, zone is physically contiguous */
++		pg_sz = 0;
++		align = RTE_CACHE_LINE_SIZE;
++	} else {
++		pg_sz = getpagesize();
++		pg_shift = rte_bsf32(pg_sz);
++		align = pg_sz;
++	}
++
++	total_elt_sz = mp->header_size + mp->elt_size + mp->trailer_size;
++	for (mz_id = 0, n = mp->size; n > 0; mz_id++, n -= ret) {
++		size = rte_mempool_xmem_size(n, total_elt_sz, pg_shift);
++
++		ret = snprintf(mz_name, sizeof(mz_name),
++			RTE_MEMPOOL_MZ_FORMAT "_%d", mp->name, mz_id);
++		if (ret < 0 || ret >= (int)sizeof(mz_name)) {
++			ret = -ENAMETOOLONG;
++			goto fail;
++		}
++
++		mz = rte_memzone_reserve_aligned(mz_name, size,
++			mp->socket_id, mz_flags, align);
++		/* not enough memory, retry with the biggest zone we have */
++		if (mz == NULL)
++			mz = rte_memzone_reserve_aligned(mz_name, 0,
++				mp->socket_id, mz_flags, align);
++		if (mz == NULL) {
++			ret = -rte_errno;
++			goto fail;
++		}
++
++		if (mp->flags & MEMPOOL_F_NO_PHYS_CONTIG)
++			paddr = RTE_BAD_PHYS_ADDR;
++		else
++			paddr = mz->phys_addr;
++
++		if (rte_eal_has_hugepages() && !rte_xen_dom0_supported())
++			ret = rte_mempool_populate_phys(mp, mz->addr,
++				paddr, mz->len,
++				rte_mempool_memchunk_mz_free,
++				(void *)(uintptr_t)mz);
++		else
++			ret = rte_mempool_populate_virt(mp, mz->addr,
++				mz->len, pg_sz,
++				rte_mempool_memchunk_mz_free,
++				(void *)(uintptr_t)mz);
++		if (ret < 0)
++			goto fail;
++        if (ret < n) {
++            ret = -ENOMEM;
++            goto fail;
++        }
++	}
++
++	return mp->size;
++
++ fail:
++	rte_mempool_free_memchunks(mp);
++	return ret;
++}
++/* Default function to populate the mempool: allocate memory in memzones,
++ * and populate them. Return the number of objects added, or a negative
++ * value on error.
++ */
++int
+ rte_mempool_populate_default(struct rte_mempool *mp)
+ {
+ 	int mz_flags = RTE_MEMZONE_1GB|RTE_MEMZONE_SIZE_HINT_ONLY;
+@@ -862,6 +946,52 @@ exit_unlock:
+ 
+ /* create the mempool */
+ struct rte_mempool *
++rte_mempool_create_oneseg(const char *name, unsigned n, unsigned elt_size,
++    unsigned cache_size, unsigned private_data_size,
++    rte_mempool_ctor_t *mp_init, void *mp_init_arg,
++    rte_mempool_obj_cb_t *obj_init, void *obj_init_arg,
++    int socket_id, unsigned flags)
++{
++    struct rte_mempool *mp;
++
++    mp = rte_mempool_create_empty(name, n, elt_size, cache_size,
++        private_data_size, socket_id, flags);
++    if (mp == NULL)
++        return NULL;
++
++    /*
++     * Since we have 4 combinations of the SP/SC/MP/MC examine the flags to
++     * set the correct index into the table of ops structs.
++     */
++    if (flags & (MEMPOOL_F_SP_PUT | MEMPOOL_F_SC_GET))
++        rte_mempool_set_ops_byname(mp, "ring_sp_sc", NULL);
++    else if (flags & MEMPOOL_F_SP_PUT)
++        rte_mempool_set_ops_byname(mp, "ring_sp_mc", NULL);
++    else if (flags & MEMPOOL_F_SC_GET)
++        rte_mempool_set_ops_byname(mp, "ring_mp_sc", NULL);
++    else
++        rte_mempool_set_ops_byname(mp, "ring_mp_mc", NULL);
++
++    /* call the mempool priv initializer */
++    if (mp_init)
++        mp_init(mp, mp_init_arg);
++
++    if (rte_mempool_populate_default_oneseg(mp) < 0)
++        goto fail;
++
++    /* call the object initializers */
++    if (obj_init)
++        rte_mempool_obj_iter(mp, obj_init, obj_init_arg);
++
++    return mp;
++
++ fail:
++    rte_mempool_free(mp);
++    return NULL;
++}
++
++/* create the mempool */
++struct rte_mempool *
+ rte_mempool_create(const char *name, unsigned n, unsigned elt_size,
+ 	unsigned cache_size, unsigned private_data_size,
+ 	rte_mempool_ctor_t *mp_init, void *mp_init_arg,
+diff --git a/lib/librte_mempool/rte_mempool.h b/lib/librte_mempool/rte_mempool.h
+index 059ad9e..fbcd274 100644
+--- a/lib/librte_mempool/rte_mempool.h
++++ b/lib/librte_mempool/rte_mempool.h
+@@ -674,6 +674,13 @@ rte_mempool_create(const char *name, unsigned n, unsigned elt_size,
+ 		   rte_mempool_obj_cb_t *obj_init, void *obj_init_arg,
+ 		   int socket_id, unsigned flags);
+ 
++struct rte_mempool *
++rte_mempool_create_oneseg(const char *name, unsigned n, unsigned elt_size,
++		   unsigned cache_size, unsigned private_data_size,
++		   rte_mempool_ctor_t *mp_init, void *mp_init_arg,
++		   rte_mempool_obj_cb_t *obj_init, void *obj_init_arg,
++		   int socket_id, unsigned flags);
++
+ /**
+  * Create a new mempool named *name* in memory.
+  *

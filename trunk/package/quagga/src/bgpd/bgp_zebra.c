@@ -842,7 +842,7 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
         bgp_attr_buf.local_pref = info->attr->local_pref;
       else
         bgp_attr_buf.local_pref = bgp->default_local_pref;
-      bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath) + 1;
       if (info->attr->aspath->segments) {
           int i = 0;
           struct assegment *seg = info->attr->aspath->segments;

@@ -530,13 +530,21 @@ zapi_ipv4_route (u_char cmd, struct zclient *zclient, struct prefix_ipv4 *p,
     {
       stream_putl (s, ((struct zapi_bgp_attr *) api->proto_data)->local_pref);  
       stream_putc (s, ((struct zapi_bgp_attr *) api->proto_data)->aspath_len);
+      if (CHECK_FLAG (api->message, ZAPI_MESSAGE_ASPATH))
+      {
+          stream_putl (s, ((struct zapi_bgp_attr *) api->proto_data)->aspath_len);
+          for (i = 0; i < (int)((struct zapi_bgp_attr *) api->proto_data)->aspath_len; i++)
+          {
+              stream_putl (s, ((struct zapi_bgp_attr *) api->proto_data)->aspath_val[i]);
+          }
+      }
       if (CHECK_FLAG (api->message, ZAPI_MESSAGE_COMMUNITIES)) 
       {
         stream_putl (s, ((struct zapi_bgp_attr *) api->proto_data)->community_size);
         for (i = 0; i < (int)((struct zapi_bgp_attr *) api->proto_data)->community_size; i++)
         {
           stream_putl (s, ((struct zapi_bgp_attr *) api->proto_data)->community_val[i]);
-        }  
+        }
       }
     }
 

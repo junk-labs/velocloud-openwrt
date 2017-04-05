@@ -93,11 +93,12 @@ struct zclient
 #define ZAPI_MESSAGE_DISTANCE 0x04
 #define ZAPI_MESSAGE_METRIC   0x08
 #define ZAPI_MESSAGE_TAG      0x10
-#define ZAPI_MESSAGE_COMMUNITIES 0x20
+#define ZAPI_MESSAGE_ASPATH   0x20
+#define ZAPI_MESSAGE_COMMUNITIES 0x40
 #ifdef HAVE_ZEBRA_MQ
 // Protocol specific info
-#define ZAPI_MESSAGE_PROTO1   0x40
-#define ZAPI_MESSAGE_PROTO2   0x80
+#define ZAPI_MESSAGE_PROTO1   0x80
+#define ZAPI_MESSAGE_PROTO2   0x100
 #endif
 
 /* Zserv protocol message header */
@@ -116,6 +117,7 @@ struct zapi_bgp_attr
 {
   u_int32_t local_pref;
   u_char    aspath_len;
+  u_int32_t aspath_val[10];
   u_int32_t community_size;
   u_int32_t *community_val;
 };

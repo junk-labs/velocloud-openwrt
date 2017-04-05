@@ -1,0 +1,12 @@
+diff --git a/lib/librte_kni/rte_kni.c b/lib/librte_kni/rte_kni.c
+index 3028fd4..5581630 100644
+--- a/lib/librte_kni/rte_kni.c
++++ b/lib/librte_kni/rte_kni.c
+@@ -53,7 +53,7 @@
+ #define MAX_MBUF_BURST_NUM            32
+
+ /* Maximum number of ring entries */
+-#define KNI_FIFO_COUNT_MAX     1024
++#define KNI_FIFO_COUNT_MAX     64
+ #define KNI_FIFO_SIZE          (KNI_FIFO_COUNT_MAX * sizeof(void *) + \
+					sizeof(struct rte_kni_fifo))

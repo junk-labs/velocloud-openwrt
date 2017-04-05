@@ -1,0 +1,246 @@
+commit af1615def139380f459a31dd9e16ce1238abd0cd
+Author: gopakumar <gopa@velocloud.net>
+Date:   Sun Dec 11 09:33:09 2016 -0800
+
+    x86 cfg
+
+diff --git a/config/common_base b/config/common_base
+index 7830535..15a0e29 100644
+--- a/config/common_base
++++ b/config/common_base
+@@ -453,7 +453,7 @@ CONFIG_RTE_LIBRTE_JOBSTATS=y
+ #
+ # Compile librte_lpm
+ #
+-CONFIG_RTE_LIBRTE_LPM=y
++CONFIG_RTE_LIBRTE_LPM=n
+ CONFIG_RTE_LIBRTE_LPM_DEBUG=n
+
+ #
+@@ -518,13 +518,13 @@ CONFIG_RTE_PORT_PCAP=n
+ #
+ # Compile librte_table
+ #
+-CONFIG_RTE_LIBRTE_TABLE=y
++CONFIG_RTE_LIBRTE_TABLE=n
+ CONFIG_RTE_TABLE_STATS_COLLECT=n
+
+ #
+ # Compile librte_pipeline
+ #
+-CONFIG_RTE_LIBRTE_PIPELINE=y
++CONFIG_RTE_LIBRTE_PIPELINE=n
+ CONFIG_RTE_PIPELINE_STATS_COLLECT=n
+
+ #
+@@ -575,12 +575,12 @@ CONFIG_RTE_INSECURE_FUNCTION_WARNING=n
+ #
+ # Compile the test application
+ #
+-CONFIG_RTE_APP_TEST=y
++CONFIG_RTE_APP_TEST=n
+ CONFIG_RTE_APP_TEST_RESOURCE_TAR=n
+
+ #
+ # Compile the PMD test application
+ #
+-CONFIG_RTE_TEST_PMD=y
++CONFIG_RTE_TEST_PMD=n
+ CONFIG_RTE_TEST_PMD_RECORD_CORE_CYCLES=n
+ CONFIG_RTE_TEST_PMD_RECORD_BURST_STATS=n
+diff --git a/config/defconfig_i686-openwrt-linuxapp-gcc b/config/defconfig_i686-openwrt-linuxapp-gcc
+new file mode 100644
+index 0000000..25cf817
+--- /dev/null
++++ b/config/defconfig_i686-openwrt-linuxapp-gcc
+@@ -0,0 +1,53 @@
++#   BSD LICENSE
++#
++#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
++#   All rights reserved.
++#
++#   Redistribution and use in source and binary forms, with or without
++#   modification, are permitted provided that the following conditions
++#   are met:
++#
++#     * Redistributions of source code must retain the above copyright
++#       notice, this list of conditions and the following disclaimer.
++#     * Redistributions in binary form must reproduce the above copyright
++#       notice, this list of conditions and the following disclaimer in
++#       the documentation and/or other materials provided with the
++#       distribution.
++#     * Neither the name of Intel Corporation nor the names of its
++#       contributors may be used to endorse or promote products derived
++#       from this software without specific prior written permission.
++#
++#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++#   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++#   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++#   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++#   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++#   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++#   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++#   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++#   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++#   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++#   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++#
++
++#include "common_linuxapp"
++
++CONFIG_RTE_MACHINE="openwrt"
++
++CONFIG_RTE_ARCH="i686"
++CONFIG_RTE_ARCH_I686=y
++
++CONFIG_RTE_TOOLCHAIN="gcc"
++CONFIG_RTE_TOOLCHAIN_GCC=y
++
++CONFIG_RTE_PKTMBUF_HEADROOM=512
++
++#
++# KNI is not supported on 32-bit
++#
++CONFIG_RTE_LIBRTE_KNI=n
++
++#
++# Vectorized PMD is not supported on 32-bit
++#
++CONFIG_RTE_IXGBE_INC_VECTOR=n
+diff --git a/config/defconfig_x86_64-openwrt-linuxapp-gcc b/config/defconfig_x86_64-openwrt-linuxapp-gcc
+new file mode 100644
+index 0000000..866c46f
+--- /dev/null
++++ b/config/defconfig_x86_64-openwrt-linuxapp-gcc
+@@ -0,0 +1,52 @@
++#   BSD LICENSE
++#
++#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
++#   All rights reserved.
++#
++#   Redistribution and use in source and binary forms, with or without
++#   modification, are permitted provided that the following conditions
++#   are met:
++#
++#     * Redistributions of source code must retain the above copyright
++#       notice, this list of conditions and the following disclaimer.
++#     * Redistributions in binary form must reproduce the above copyright
++#       notice, this list of conditions and the following disclaimer in
++#       the documentation and/or other materials provided with the
++#       distribution.
++#     * Neither the name of Intel Corporation nor the names of its
++#       contributors may be used to endorse or promote products derived
++#       from this software without specific prior written permission.
++#
++#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++#   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++#   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++#   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++#   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++#   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++#   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++#   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++#   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++#   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++#   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++#
++
++#include "common_linuxapp"
++
++CONFIG_RTE_MACHINE="openwrt"
++
++CONFIG_RTE_ARCH="x86_64"
++CONFIG_RTE_ARCH_X86_64=y
++CONFIG_RTE_ARCH_X86=y
++CONFIG_RTE_ARCH_64=y
++
++CONFIG_RTE_TOOLCHAIN="gcc"
++CONFIG_RTE_TOOLCHAIN_GCC=y
++
++CONFIG_RTE_PKTMBUF_HEADROOM=512
++
++CONFIG_RTE_IXGBE_INC_VECTOR=y
++
++#
++# Turn on pcap ability
++#
++CONFIG_RTE_LIBRTE_PMD_PCAP=y
+diff --git a/mk/machine/openwrt/rte.vars.mk b/mk/machine/openwrt/rte.vars.mk
+new file mode 100644
+index 0000000..fff1355
+--- /dev/null
++++ b/mk/machine/openwrt/rte.vars.mk
+@@ -0,0 +1,60 @@
++#   BSD LICENSE
++#
++#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
++#   All rights reserved.
++#
++#   Redistribution and use in source and binary forms, with or without
++#   modification, are permitted provided that the following conditions
++#   are met:
++#
++#     * Redistributions of source code must retain the above copyright
++#       notice, this list of conditions and the following disclaimer.
++#     * Redistributions in binary form must reproduce the above copyright
++#       notice, this list of conditions and the following disclaimer in
++#       the documentation and/or other materials provided with the
++#       distribution.
++#     * Neither the name of Intel Corporation nor the names of its
++#       contributors may be used to endorse or promote products derived
++#       from this software without specific prior written permission.
++#
++#   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++#   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++#   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++#   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++#   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++#   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++#   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++#   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++#   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++#   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++#   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++#
++# machine:
++#
++#   - can define ARCH variable (overriden by cmdline value)
++#   - can define CROSS variable (overriden by cmdline value)
++#   - define MACHINE_CFLAGS variable (overriden by cmdline value)
++#   - define MACHINE_LDFLAGS variable (overriden by cmdline value)
++#   - define MACHINE_ASFLAGS variable (overriden by cmdline value)
++#   - can define CPU_CFLAGS variable (overriden by cmdline value) that
++#     overrides the one defined in arch.
++#   - can define CPU_LDFLAGS variable (overriden by cmdline value) that
++#     overrides the one defined in arch.
++#   - can define CPU_ASFLAGS variable (overriden by cmdline value) that
++#     overrides the one defined in arch.
++#   - may override any previously defined variable
++#
++
++# ARCH =
++# CROSS =
++# MACHINE_CFLAGS =
++# MACHINE_LDFLAGS =
++# MACHINE_ASFLAGS =
++# CPU_CFLAGS =
++# CPU_LDFLAGS =
++# CPU_ASFLAGS =
++
++MACHINE_CFLAGS = $(OPENWRT_CFLAGS)
++MACHINE_LDFLAGS = $(OPENWRT_LDFLAGS)
++MACHINE_ASFLAGS = $(OPENWRT_ASFLAGS)
+diff --git a/mk/rte.sdkinstall.mk b/mk/rte.sdkinstall.mk
+index 5217063..47eff87 100644
+--- a/mk/rte.sdkinstall.mk
++++ b/mk/rte.sdkinstall.mk
+@@ -131,8 +131,6 @@ install-runtime:
+	$(Q)$(call rte_mkdir,      $(DESTDIR)$(sbindir))
+	$(Q)$(call rte_symlink,    $(DESTDIR)$(datadir)/tools/dpdk-devbind.py, \
+	                           $(DESTDIR)$(sbindir)/dpdk-devbind)
+-	$(Q)$(call rte_symlink,    $(DESTDIR)$(datadir)/tools/dpdk-pmdinfo.py, \
+-	                           $(DESTDIR)$(bindir)/dpdk-pmdinfo)
+
+ install-kmod:
+ ifneq ($(wildcard $O/kmod/*),)

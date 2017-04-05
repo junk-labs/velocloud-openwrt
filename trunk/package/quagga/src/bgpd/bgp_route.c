@@ -5379,6 +5379,7 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
                       const struct in_addr *nexthop,
 		              const struct in6_addr *nexthop6,
 		              u_int32_t metric, u_char type, u_short tag, 
+                      struct redist_aspath *in_aspath,
                       struct community *in_community)
 {
   struct bgp_info *new;
@@ -5387,6 +5388,7 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
   struct bgp_node *bn;
   struct attr attr;
   struct attr *new_attr;
+  struct aspath *aspath;
   afi_t afi;
   int ret;
 
@@ -5408,6 +5410,15 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
   attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC);
   attr.extra->tag = tag;
 
+  if (in_aspath && in_aspath->aspath_len) {
+      int i;
+      for (i = 0; i < in_aspath->aspath_len; i++) {
+          aspath = aspath_dup (attr.aspath);
+          aspath = aspath_add_seq (aspath, in_aspath->val[i]);
+          aspath_unintern (&attr.aspath);
+          attr.aspath = aspath_intern (aspath);
+      }
+  }
   if (in_community && in_community->size > 0) {
       attr.community = community_uniq_sort(in_community); 
       attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_COMMUNITIES);

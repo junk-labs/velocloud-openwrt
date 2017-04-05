@@ -255,6 +255,7 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
   struct bgp *bgp;
   u_int32_t user_no_pref = 0;
   struct community community;
+  struct redist_aspath redist_aspath;
 
   s = zclient->ibuf;
   nexthop.s_addr = 0;
@@ -310,11 +311,21 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
       return 0;
     }
 
+    memset(&redist_aspath, 0, sizeof(struct redist_aspath));
+    if (CHECK_FLAG (api.message, ZAPI_MESSAGE_ASPATH)) {
+        redist_aspath.aspath_len = stream_getl (s);
+        zlog_debug("Zebra rcvd: redist_aspath.aspath_len %d", redist_aspath.aspath_len);
+        if (redist_aspath.aspath_len > 0 && redist_aspath.aspath_len < 10) { 
+        redist_aspath.val = (u_int32_t *)stream_pnt(s);
+        stream_forward_getp(s, (redist_aspath.aspath_len * sizeof(u_int32_t)));
+        }
+    }
+
     memset(&community, 0, sizeof(struct community));
     if (CHECK_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES)) {
         community.size = stream_getl (s);
         community.val = (u_int32_t *)stream_pnt(s);
-        stream_forward_getp(s, community.size * sizeof(u_int32_t)); 
+        stream_forward_getp(s, (community.size * sizeof(u_int32_t))); 
     }
 
   if (command == ZEBRA_IPV4_ROUTE_ADD)
@@ -322,15 +333,15 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
       if (BGP_DEBUG(zebra, ZEBRA))
 	{
 	  char buf[2][INET_ADDRSTRLEN];
-	  zlog_debug("Zebra rcvd: IPv4 route add %s %s/%d nexthop %s metric %u tag %d, instance %s",
+	  zlog_debug("Zebra rcvd: IPv4 route add %s %s/%d nexthop %s metric %u tag %d, asl=%d, instance %s",
 		     zebra_route_string(api.type),
 		     inet_ntop(AF_INET, &p.prefix, buf[0], sizeof(buf[0])),
 		     p.prefixlen,
 		     inet_ntop(AF_INET, &nexthop, buf[1], sizeof(buf[1])),
-		     api.metric, api.tag, api.iname);
+		     api.metric, api.tag, redist_aspath.aspath_len, api.iname);
 	}
       bgp_redistribute_add(bgp, (struct prefix *)&p, &nexthop, NULL,
-			   api.metric, api.type, api.tag, &community);
+			   api.metric, api.type, api.tag, &redist_aspath, &community);
     }
   else
     {
@@ -432,7 +443,7 @@ zebra_read_ipv6 (int command, struct zclient *zclient, zebra_size_t length)
 		     api.metric, api.tag);
 	}
       bgp_redistribute_add (bgp, (struct prefix *)&p, NULL, &nexthop,
-			    api.metric, api.type, api.tag, &community);
+			    api.metric, api.type, api.tag, NULL, &community);
     }
   else
     {
@@ -782,6 +793,7 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
     }
 
   stream_reset (bgp_nexthop_buf);
+  memset(&bgp_attr_buf, 0, sizeof(struct zapi_bgp_attr)); 
 
   if (p->family == AF_INET)
     {
@@ -831,6 +843,19 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
       else
         bgp_attr_buf.local_pref = bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      if (info->attr->aspath->segments) {
+          int i = 0;
+          struct assegment *seg = info->attr->aspath->segments;
+          bgp_attr_buf.aspath_val[i++] = bgp->as; // Add own AS
+          while (seg) {
+              int j;
+              for (j = 0; j < seg->length; j++) {
+                  bgp_attr_buf.aspath_val[i++] = seg->as[j];
+              }
+              seg = seg->next;
+          }
+          SET_FLAG (api.message, ZAPI_MESSAGE_ASPATH);
+      }
       if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES)) {
           bgp_attr_buf.community_size = (u_int32_t)info->attr->community->size;
           bgp_attr_buf.community_val = info->attr->community->val;
@@ -928,7 +953,20 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
       else
         bgp_attr_buf.local_pref = bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
-      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES)) {
+      if (info->attr->aspath->segments) {
+          int i = 0;
+          struct assegment *seg = info->attr->aspath->segments;
+          bgp_attr_buf.aspath_val[i++] = bgp->as; // Add own AS
+          while (seg) {
+              int j;
+              for (j = 0; j < seg->length; j++) {
+                  bgp_attr_buf.aspath_val[i++] = seg->as[j];
+              }
+              seg = seg->next;
+          }
+          SET_FLAG (api.message, ZAPI_MESSAGE_ASPATH);
+     }
+     if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES)) {
           bgp_attr_buf.community_size = (u_int32_t)info->attr->community->size;
           bgp_attr_buf.community_val = info->attr->community->val;
           SET_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES);
@@ -1009,6 +1047,19 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       else
         bgp_attr_buf.local_pref = peer->bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
+      if (info->attr->aspath->segments) {
+          int i = 0;
+          struct assegment *seg = info->attr->aspath->segments;
+          bgp_attr_buf.aspath_val[i++] = peer->bgp->as; // Add own AS
+          while (seg) {
+              int j;
+              for (j = 0; j < seg->length; j++) {
+                  bgp_attr_buf.aspath_val[i++] = seg->as[j];
+              }
+              seg = seg->next;
+          }
+          SET_FLAG (api.message, ZAPI_MESSAGE_ASPATH);
+      }
       if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES) && 
           info->attr->community) {
           bgp_attr_buf.community_size = (u_int32_t)info->attr->community->size;
@@ -1092,7 +1143,20 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       else
         bgp_attr_buf.local_pref = peer->bgp->default_local_pref;
       bgp_attr_buf.aspath_len = aspath_count_hops(info->attr->aspath);
-			if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES) && 
+	  if (info->attr->aspath->segments) {
+          int i = 0;
+          struct assegment *seg = info->attr->aspath->segments;
+          bgp_attr_buf.aspath_val[i++] = peer->bgp->as; // Add own AS
+          while (seg) {
+              int j;
+              for (j = 0; j < seg->length; j++) {
+                  bgp_attr_buf.aspath_val[i++] = seg->as[j];
+              }
+              seg = seg->next;
+          }
+          SET_FLAG (api.message, ZAPI_MESSAGE_ASPATH);
+      }
+      if (info->attr->flag & ATTR_FLAG_BIT(BGP_ATTR_COMMUNITIES) && 
           info->attr->community) {
           bgp_attr_buf.community_size = (u_int32_t)info->attr->community->size;
           SET_FLAG (api.message, ZAPI_MESSAGE_COMMUNITIES);

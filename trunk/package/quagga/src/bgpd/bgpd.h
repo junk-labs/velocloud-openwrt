@@ -29,6 +29,11 @@ typedef u_int32_t as_t;
 typedef u_int16_t as16_t; /* we may still encounter 16 Bit asnums */
 typedef u_int16_t bgp_size_t;
 
+struct redist_aspath {
+    u_int32_t aspath_len;
+    u_int32_t *val;
+};
+
 /* BGP master for system wide configurations and variables.  */
 struct bgp_master
 {

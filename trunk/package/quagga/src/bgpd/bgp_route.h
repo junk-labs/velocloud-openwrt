@@ -203,6 +203,7 @@ extern void bgp_redistribute_add (struct bgp *, struct prefix *,
                                   const struct in_addr *,
 				                  const struct in6_addr *,
 				                  u_int32_t, u_char, u_short, 
+                                  struct redist_aspath *,
                                   struct community *);
 extern void bgp_redistribute_delete (struct bgp *, struct prefix *, u_char);
 extern void bgp_redistribute_withdraw (struct bgp *, afi_t, int);

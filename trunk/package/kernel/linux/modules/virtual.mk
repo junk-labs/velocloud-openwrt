@@ -311,3 +311,15 @@ define KernelPackage/vmxnet3/description
 endef
 
 $(eval $(call KernelPackage,vmxnet3))
+
+define KernelPackage/9p-virtio
+  DEPENDS:=@TARGET_x86_kvm_guest||TARGET_x64_vc_kvm_guest +kmod-9p-net
+  SUBMENU:=$(NETWORK_SUPPORT_MENU)
+  TITLE:=9P virtio support
+  KCONFIG:= \
+	CONFIG_NET_9P_VIRTIO=m 
+  FILES:= \
+	$(LINUX_DIR)/net/9p/9pnet_virtio.ko
+endef
+
+$(eval $(call KernelPackage,9p-virtio))

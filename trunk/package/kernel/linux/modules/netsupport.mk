@@ -967,17 +967,3 @@ define KernelPackage/rxrpc/description
 endef
 
 $(eval $(call KernelPackage,rxrpc))
-
-define KernelPackage/9p-net
-  SUBMENU:=$(NETWORK_SUPPORT_MENU)
-  TITLE:=9P support
-  KCONFIG:= \
-	CONFIG_NET_9P \
-	CONFIG_NET_9P_VIRTIO \
-	CONFIG_NET_9P_DEBUG=n
-  FILES:= \
-	$(LINUX_DIR)/net/9p/9pnet.ko \
-	$(LINUX_DIR)/net/9p/9pnet_virtio.ko
-endef
-
-$(eval $(call KernelPackage,9p-net))

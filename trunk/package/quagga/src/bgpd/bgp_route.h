@@ -82,6 +82,7 @@ struct bgp_info
 #define BGP_INFO_COUNTED	(1 << 10)
 #define BGP_INFO_MULTIPATH      (1 << 11)
 #define BGP_INFO_MULTIPATH_CHG  (1 << 12)
+#define BGP_INFO_SELECTED_NORMAL (1 << 14)
 
   /* BGP route type.  This can be static, RIP, OSPF, BGP etc.  */
   u_char type;
@@ -204,7 +205,7 @@ extern void bgp_redistribute_add (struct bgp *, struct prefix *,
 				                  const struct in6_addr *,
 				                  u_int32_t, u_char, u_short, 
                                   struct redist_aspath *,
-                                  struct community *);
+                                  struct community *, u_int32_t);
 extern void bgp_redistribute_delete (struct bgp *, struct prefix *, u_char);
 extern void bgp_redistribute_withdraw (struct bgp *, afi_t, int);
 

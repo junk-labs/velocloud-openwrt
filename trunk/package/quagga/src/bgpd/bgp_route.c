@@ -388,6 +388,7 @@ bgp_info_cmp (struct bgp *bgp, struct bgp_info *new, struct bgp_info *exist,
    *  - BGP_ROUTE_STATIC
    *  - BGP_ROUTE_AGGREGATE
    *  - BGP_ROUTE_REDISTRIBUTE
+   *  - BGP_ROUTE_REDISTRIBUTE_USER
    */
   if (! (new->sub_type == BGP_ROUTE_NORMAL))
      return 1;
@@ -1310,13 +1311,22 @@ struct bgp_info_pair
   struct bgp_info *new;
 };
 
+/*
+    VK_Pending: This routine is modified to return old and new 'normal' best-path
+                as well. Normal is mostly non-redistributed one.
+
+                That logic of best-path among the normal paths is not yet
+                complete for non-deterministic MED and Multi-path.
+ */
 static void
 bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
 		    struct bgp_maxpaths_cfg *mpath_cfg,
-		    struct bgp_info_pair *result)
+		    struct bgp_info_pair *result, struct bgp_info_pair *result_normal)
 {
   struct bgp_info *new_select;
   struct bgp_info *old_select;
+  struct bgp_info *new_select_normal;
+  struct bgp_info *old_select_normal;
   struct bgp_info *ri;
   struct bgp_info *ri1;
   struct bgp_info *ri2;
@@ -1383,10 +1393,17 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
   /* Check old selected route and new selected route. */
   old_select = NULL;
   new_select = NULL;
+
+  old_select_normal = NULL;
+  new_select_normal = NULL;
+
   for (ri = rn->info; (ri != NULL) && (nextri = ri->next, 1); ri = nextri)
     {
       if (CHECK_FLAG (ri->flags, BGP_INFO_SELECTED))
 	old_select = ri;
+
+      if (CHECK_FLAG (ri->flags, BGP_INFO_SELECTED_NORMAL))
+    old_select_normal = ri;
 
       if (BGP_INFO_HOLDDOWN (ri))
         {
@@ -1394,7 +1411,7 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
            * selected route must stay for a while longer though
            */
           if (CHECK_FLAG (ri->flags, BGP_INFO_REMOVED)
-              && (ri != old_select))
+              && ((ri != old_select) && (ri != old_select_normal)))
               bgp_info_reap (rn, ri);
           
           continue;
@@ -1408,6 +1425,11 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
         }
       bgp_info_unset_flag (rn, ri, BGP_INFO_DMED_CHECK);
       bgp_info_unset_flag (rn, ri, BGP_INFO_DMED_SELECTED);
+
+      if (ri->sub_type == BGP_ROUTE_NORMAL &&
+          bgp_info_cmp (bgp, ri, new_select_normal, &paths_eq)) {
+	     new_select_normal = ri;
+      }
 
       if (bgp_info_cmp (bgp, ri, new_select, &paths_eq))
 	{
@@ -1438,6 +1460,9 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
 
   result->old = old_select;
   result->new = new_select;
+
+  result_normal->old = old_select_normal;
+  result_normal->new = new_select_normal;
 
   return;
 }
@@ -1511,11 +1536,12 @@ bgp_process_rsclient (struct work_queue *wq, void *data)
   struct bgp_info *new_select;
   struct bgp_info *old_select;
   struct bgp_info_pair old_and_new;
+  struct bgp_info_pair old_and_new_normal;
   struct listnode *node, *nnode;
   struct peer *rsclient = bgp_node_table (rn)->owner;
   
   /* Best path selection. */
-  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new);
+  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new, &old_and_new_normal);
   new_select = old_and_new.new;
   old_select = old_and_new.old;
 
@@ -1573,24 +1599,66 @@ bgp_process_main (struct work_queue *wq, void *data)
   struct prefix *p = &rn->p;
   struct bgp_info *new_select;
   struct bgp_info *old_select;
+  struct bgp_info *new_select_normal;
+  struct bgp_info *old_select_normal;
   struct bgp_info_pair old_and_new;
+  struct bgp_info_pair old_and_new_normal;
   struct listnode *node, *nnode;
   struct peer *peer;
+  int no_further_fib_change = 0;
   
   /* Best path selection. */
-  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new);
+  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new, &old_and_new_normal);
+
+  old_select_normal = old_and_new_normal.old;
+  new_select_normal = old_and_new_normal.new;
+
+  /* FIB update. */ /*Updating for view too */
+  if (old_select_normal && old_select_normal == new_select_normal)
+    {
+      if (! CHECK_FLAG (old_select_normal->flags, BGP_INFO_ATTR_CHANGED))
+        {
+          if (CHECK_FLAG (old_select_normal->flags, BGP_INFO_IGP_CHANGED) ||
+	      CHECK_FLAG (old_select_normal->flags, BGP_INFO_MULTIPATH_CHG))
+            bgp_zebra_announce (p, old_select_normal, bgp, safi);
+          
+	      UNSET_FLAG (old_select_normal->flags, BGP_INFO_MULTIPATH_CHG);
+          no_further_fib_change = 1;
+        }
+    }
+
+  if (!no_further_fib_change) {
+      if (old_select_normal)
+          bgp_info_unset_flag (rn, old_select_normal, BGP_INFO_SELECTED_NORMAL);
+      if (new_select_normal)
+      {
+          bgp_info_set_flag (rn, new_select_normal, BGP_INFO_SELECTED_NORMAL);
+      }
+
+      if (safi == SAFI_UNICAST || safi == SAFI_MULTICAST)
+      {
+          if (new_select_normal 
+                  && new_select_normal->type == ZEBRA_ROUTE_BGP 
+                  && new_select_normal->sub_type == BGP_ROUTE_NORMAL)
+              bgp_zebra_announce (p, new_select_normal, bgp, safi);
+          else
+          {
+              /* Withdraw the route from the kernel. */
+              if (old_select_normal 
+                      && old_select_normal->type == ZEBRA_ROUTE_BGP
+                      && old_select_normal->sub_type == BGP_ROUTE_NORMAL)
+                  bgp_zebra_withdraw (p, old_select_normal, safi);
+          }
+      }
+  }
+
   old_select = old_and_new.old;
   new_select = old_and_new.new;
 
-  /* Nothing to do. */
   if (old_select && old_select == new_select)
     {
       if (! CHECK_FLAG (old_select->flags, BGP_INFO_ATTR_CHANGED))
         {
-          if (CHECK_FLAG (old_select->flags, BGP_INFO_IGP_CHANGED) ||
-	      CHECK_FLAG (old_select->flags, BGP_INFO_MULTIPATH_CHG))
-            bgp_zebra_announce (p, old_select, bgp, safi);
-          
 	  UNSET_FLAG (old_select->flags, BGP_INFO_MULTIPATH_CHG);
           UNSET_FLAG (rn->flags, BGP_NODE_PROCESS_SCHEDULED);
           return WQ_SUCCESS;
@@ -1606,33 +1674,18 @@ bgp_process_main (struct work_queue *wq, void *data)
       UNSET_FLAG (new_select->flags, BGP_INFO_MULTIPATH_CHG);
     }
 
-
   /* Check each BGP peer. */
   for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
     {
       bgp_process_announce_selected (peer, new_select, rn, afi, safi);
     }
 
-  /* FIB update. */ /*Updating for view too */
-  if (safi == SAFI_UNICAST || safi == SAFI_MULTICAST)
-    {
-      if (new_select 
-	  && new_select->type == ZEBRA_ROUTE_BGP 
-	  && new_select->sub_type == BGP_ROUTE_NORMAL)
-	bgp_zebra_announce (p, new_select, bgp, safi);
-      else
-	{
-	  /* Withdraw the route from the kernel. */
-	  if (old_select 
-	      && old_select->type == ZEBRA_ROUTE_BGP
-	      && old_select->sub_type == BGP_ROUTE_NORMAL)
-	    bgp_zebra_withdraw (p, old_select, safi);
-	}
-    }
-    
   /* Reap old select bgp_info, it it has been removed */
   if (old_select && CHECK_FLAG (old_select->flags, BGP_INFO_REMOVED))
     bgp_info_reap (rn, old_select);
+  if (old_select_normal && (old_select_normal != old_select) &&
+      CHECK_FLAG (old_select_normal->flags, BGP_INFO_REMOVED))
+    bgp_info_reap (rn, old_select_normal);
   
   UNSET_FLAG (rn->flags, BGP_NODE_PROCESS_SCHEDULED);
   return WQ_SUCCESS;
@@ -3062,7 +3115,7 @@ bgp_cleanup_routes (void)
 
       for (rn = bgp_table_top (table); rn; rn = bgp_route_next (rn))
 	for (ri = rn->info; ri; ri = ri->next)
-	  if (CHECK_FLAG (ri->flags, BGP_INFO_SELECTED)
+	  if (CHECK_FLAG (ri->flags, BGP_INFO_SELECTED_NORMAL)
 	      && ri->type == ZEBRA_ROUTE_BGP 
 	      && ri->sub_type == BGP_ROUTE_NORMAL)
 	    bgp_zebra_withdraw (&rn->p, ri,SAFI_UNICAST);
@@ -3071,7 +3124,7 @@ bgp_cleanup_routes (void)
 
       for (rn = bgp_table_top (table); rn; rn = bgp_route_next (rn))
 	for (ri = rn->info; ri; ri = ri->next)
-	  if (CHECK_FLAG (ri->flags, BGP_INFO_SELECTED)
+	  if (CHECK_FLAG (ri->flags, BGP_INFO_SELECTED_NORMAL)
 	      && ri->type == ZEBRA_ROUTE_BGP 
 	      && ri->sub_type == BGP_ROUTE_NORMAL)
 	    bgp_zebra_withdraw (&rn->p, ri,SAFI_UNICAST);
@@ -5380,7 +5433,8 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 		              const struct in6_addr *nexthop6,
 		              u_int32_t metric, u_char type, u_short tag, 
                       struct redist_aspath *in_aspath,
-                      struct community *in_community)
+                      struct community *in_community,
+                      u_int32_t user_no_pref)
 {
   struct bgp_info *new;
   struct bgp_info *bi;
@@ -5409,6 +5463,10 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
   attr.med = metric;
   attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_MULTI_EXIT_DISC);
   attr.extra->tag = tag;
+          
+  if ((type == ZEBRA_ROUTE_USER) && user_no_pref) {
+      attr.extra->weight = 0;
+  }
 
   if (in_aspath && in_aspath->aspath_len) {
       int i;

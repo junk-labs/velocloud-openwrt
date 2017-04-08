@@ -95,7 +95,7 @@
       </Item>
       <Item>
         <rasd:AddressOnParent>7</rasd:AddressOnParent>
-        <rasd:AutomaticAllocation>false</rasd:AutomaticAllocation>
+        <rasd:AutomaticAllocation>true</rasd:AutomaticAllocation>
         <rasd:Connection>GE1</rasd:Connection>
         <rasd:Description>VmxNet3 ethernet adapter GE1</rasd:Description>
         <rasd:ElementName>Network adapter 1</rasd:ElementName>

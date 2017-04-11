@@ -93,8 +93,22 @@ void early_mainboard_romstage_entry(void)
 	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
 
 	cmd_buf[0] = 0x6;
-	cmd_buf[1] = 0x63;
-	/* SMBUS IO Expander addr=0x74, cmd 0x6 (register 0 output), bit 2,3,4,5. */
+	cmd_buf[1] = 0x43;
+	/* SMBUS IO Expander addr=0x74, cmd 0x6 (register 0 output), bit 2,3,4,5,7. */
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
+
+	vc_early_udelay(10000);
+
+	cmd_buf[0] = 0x2;
+	cmd_buf[1] = 0xc;
+	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3 high. */
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
+	
+	vc_early_udelay(10000);
+
+	cmd_buf[0] = 0x2;
+	cmd_buf[1] = 0x8c;
+	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3,7N high. */
 	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
 
 	vc_early_udelay(40000);

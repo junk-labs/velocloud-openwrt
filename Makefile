@@ -149,6 +149,7 @@ define OpenwrtConfig
 		-e '/CONFIG_X\(64\|86\)_/d' \
 		-e '/CONFIG_GRUB_/d' \
 		-e '/CONFIG_VMDK_/d' \
+		-e '/CONFIG_VHD_/d' \
 		-e '/CONFIG_OVA/d' \
 		-e '/CONFIG_QCOW2_/d' \
 		-e '/CONFIG.*_EC2_/d' \

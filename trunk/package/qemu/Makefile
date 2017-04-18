@@ -15,6 +15,10 @@ PKG_MD5SUM:=a315bc51ed443a08d2cf1416d76b9ab4
 
 include $(INCLUDE_DIR)/uclibc++.mk
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/host-build.mk
+
+HOST_BUILD_DEPENDS:=glib2/host
+PKG_BUILD_DEPENDS:=glib2/host qemu/host
 
 define Package/qemu
   SECTION:=base
@@ -31,6 +35,28 @@ endef
 
 # configure qemu;
 
+HOST_CFLAGS += -I$(STAGING_DIR_HOST)/include/e2fsprogs
+HOST_LDFLAGS += $(HOST_STATIC_LINKING)
+
+define Host/Configure
+	(cd $(HOST_BUILD_DIR); \
+		CFLAGS="$(HOST_CFLAGS)" \
+		LDFLAGS="$(HOST_LDFLAGS)" \
+		$(HOST_CONFIGURE_CMD) \
+		--extra-cflags="$(HOST_CFLAGS)" \
+		--enable-uuid \
+	)
+endef
+
+define Host/Compile
+	$(MAKE) -C $(HOST_BUILD_DIR) qemu-img
+endef
+
+define Host/Install
+	$(INSTALL_DIR) $(STAGING_DIR_HOST)/bin
+	$(INSTALL_BIN) $(HOST_BUILD_DIR)/qemu-img $(STAGING_DIR_HOST)/bin
+endef
+
 CONFIGURE_VARS += AS="$(TARGET_CROSS)as"
 MAKE_FLAGS += AS="$(TARGET_CROSS)as"
 CONFIGURE_ARGS = \
@@ -44,10 +70,10 @@ CONFIGURE_ARGS = \
 	--disable-xen \
 	--disable-vnc \
 	--disable-user \
-        --disable-bzip2 \
-        --disable-lzo \
-        --disable-gnutls \
-        --disable-nettle \
+	--disable-bzip2 \
+	--disable-lzo \
+	--disable-gnutls \
+	--disable-nettle \
 	--enable-system \
 	--enable-kvm \
 	--enable-vhost-net
@@ -91,4 +117,5 @@ define Package/qemu/install
 	$(call Package/qemu/install-bios, $(1)/usr/share/qemu)
 endef
 
+$(eval $(call HostBuild))
 $(eval $(call BuildPackage,qemu))

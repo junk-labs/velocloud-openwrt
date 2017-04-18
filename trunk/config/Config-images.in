@@ -260,6 +260,12 @@ menu "Target Images"
 		depends on TARGET_ROOTFS_EXT4FS
 		default y if TARGET_x86_sb_itc || TARGET_x64_pw_dev || TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge8x0 || TARGET_x64_edge1000
 
+	config VELOCLOUD_UPDATABLE_IMAGE
+		bool "Build raw Velocloud VM updatable image"
+		depends on GRUB_IMAGES
+		depends on TARGET_x86 || TARGET_x64
+		depends on TARGET_ROOTFS_EXT4FS
+
 	config VELOCLOUD_MANUFACTURING_INSTALLER
 		bool "Build Velocloud manufacturing installer image"
 		depends on GRUB_IMAGES
@@ -267,11 +273,24 @@ menu "Target Images"
 		depends on TARGET_ROOTFS_EXT4FS
 		#default y if TARGET_x64_edge500 || TARGET_x64_edge5x0 || TARGET_x64_edge1000
 
+	config VHD_IMAGES
+		bool "Build Hyper-V image files (VHD)"
+		depends on TARGET_x86 || TARGET_x86_64 || TARGET_x64
+		select GRUB_IMAGES
+		select TARGET_IMAGES_PAD
+		select VELOCLOUD_UPDATABLE_IMAGE
+		select PACKAGE_kmod-hyperv-balloon
+		select PACKAGE_kmod-hyperv-net-vsc
+		select PACKAGE_kmod-hyperv-util
+		select PACKAGE_kmod-hyperv-storage
+		default y if TARGET_x86_vc_xen_aws || TARGET_x64_vc_xen_aws
+
 	config VMDK_IMAGES
 		bool "Build VMware image files (VMDK)"
 		depends on TARGET_x86 || TARGET_x86_64 || TARGET_x64
 		select GRUB_IMAGES
 		select TARGET_IMAGES_PAD
+		select VELOCLOUD_UPDATABLE_IMAGE
 		select PACKAGE_kmod-e1000
 		select PACKAGE_kmod-pcnet32
 		default y if TARGET_x86_vc_vmdk || TARGET_x64_vc_vmdk
@@ -288,8 +307,8 @@ menu "Target Images"
 		bool "Build KVM image files (qcow2)"
 		depends on TARGET_x86 || TARGET_x86_64 || TARGET_x64
 		select GRUB_IMAGES
-		select VMDK_IMAGES
 		select TARGET_IMAGES_PAD
+		select VELOCLOUD_UPDATABLE_IMAGE
 		select PACKAGE_kmod-e1000
 		select PACKAGE_kmod-pcnet32
 		default y if TARGET_x86_vc_kvm_guest || TARGET_x64_vc_kvm_guest

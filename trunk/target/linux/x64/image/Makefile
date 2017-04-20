@@ -18,6 +18,8 @@ GRUB_CONSOLE_CMDLINE =
 
 USE_ATKBD = kvm_guest
 
+QEMU_IMG = STAGING_DIR_HOST=$(STAGING_DIR_HOST) sh ./qemu-img.sh
+
 ifneq ($(strip $(foreach subtarget,$(USE_ATKBD),$(CONFIG_TARGET_x64_$(subtarget)))),)
   GRUB2_MODULES += at_keyboard
   GRUB2_MODULES_ISO += at_keyboard
@@ -155,7 +157,7 @@ ifneq ($(CONFIG_VDI_IMAGES),)
     # left here because the image builder doesnt need these
     ifeq ($(1),ext4)
 		rm $(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vdi || true
-		qemu-img convert -f raw -O vdi \
+		$(QEMU_IMG) convert -f raw -O vdi \
 			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img \
 			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vdi
 		# XXX: VBoxManage insists on setting perms to 0600
@@ -328,7 +330,7 @@ ifneq ($(CONFIG_VMDK_IMAGES),)
   define Image/Build/vmdk
 	echo "Building VeloCloud Updatable Virtual Image."
 	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vmdk || true
-	qemu-img convert -f raw -O vmdk \
+	$(QEMU_IMG) convert -f raw -O vmdk \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vmdk
   endef
@@ -350,7 +352,7 @@ ifneq ($(CONFIG_QCOW2_IMAGES),)
   define Image/Build/qcow2
 	echo "Building VeloCloud Updatable Virtual Image."
 	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).qcow2 || true
-	qemu-img convert -f raw -O qcow2 \
+	$(QEMU_IMG) convert -f raw -O qcow2 \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).qcow2
   endef
@@ -360,7 +362,7 @@ ifneq ($(CONFIG_VHD_IMAGES),)
   define Image/Build/vhd
 	echo "Building VeloCloud Updatable Virtual Image."
 	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vhd || true
-	qemu-img convert -f raw -O vpc \
+	$(QEMU_IMG) convert -f raw -O vpc \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vhd
   endef

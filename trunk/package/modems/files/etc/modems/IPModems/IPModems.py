@@ -66,7 +66,6 @@ class IPModems():
 
     def __init__(self, USB):
         self.USB = USB
-        self.dontping = 0
         # Traces disabled by default
         self.notraces = 1
         # self.linkid
@@ -132,22 +131,6 @@ class IPModems():
             self.jsonfile = open(filename, "r+")
         except:
             logging.warning("[dev=%s]: Unable to open json modem info file %s", self.USB,filename)
-
-    def ping_test(self, max_tries, address):
-        with open(os.devnull, "wb") as limbo:
-            tries = 1
-            while tries <= max_tries:
-	        try:
-                    result=subprocess.Popen(["ping", "-I", self.ifname, "-c", "1", "-W", "2", address],
-                               stdout=limbo, stderr=limbo).wait()
-                    if not result:
-		        time.sleep(1)
-                        return 0, tries
-                except:
-                    pass
-                tries = tries + 1
-                time.sleep(1)
-        return 1, tries
 
     def print_pid(self):
         filew = open("/tmp/USB/" + self.USB + ".pid", "w")
@@ -259,15 +242,6 @@ class IPModems():
         else:
             logging.debug("[dev=%s,traces]: IP address set: %s", self.USB, ipaddr)
 
-        # Ping test
-        ret, tries = self.ping_test(1, '8.8.8.8')
-        if ret != 0:
-            pingtest = "ping failed"
-            logging.debug("[dev=%s,traces]: ping test failed", self.USB)
-        else:
-            pingtest = "ping success"
-            logging.debug("[dev=%s,traces]: ping test succeeded", self.USB)
-
         # Signal quality
         if self.signal_strength:
             signalstrength = self.signal_strength
@@ -280,20 +254,11 @@ class IPModems():
 
         # Write to file
         with open('/tmp/USB/' + self.USB + '_ipmodem_traces.log', "a") as myfile:
-            trace = "[%s] %s, %s, %s, %s dBm, %s%%\n" % (timestamp, self.ifname, ipaddr, pingtest, signalstrength, signalpercentage)
+            trace = "[%s] %s, %s, %s dBm, %s%%\n" % (timestamp, self.ifname, ipaddr, signalstrength, signalpercentage)
             myfile.write(trace)
 
     def monitor(self):
         logging.warning("[dev=%s]: Started monitoring device", self.USB)
-        if self.modemtype == "cdcether" and not self.dontping:
-            time.sleep(3) # Always takes 3 sec to get IP
-            ret, tries = self.ping_test(10, self.IP)
-            if ret != 0:
-                logging.warning("[dev=%s]: Ping Failed to %s", self.USB, self.IP)
-            else:
-                logging.warning("[dev=%s]: Ping test succeeded : tries %s", self.USB, str(tries))
-                self.set_modem_status()
-
         self.get_static_values()
         self.set_static_values_uci()
         while True:

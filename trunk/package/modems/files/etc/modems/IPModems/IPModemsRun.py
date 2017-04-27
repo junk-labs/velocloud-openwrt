@@ -90,10 +90,11 @@ while True:
                     found_plugin_id = device_type_string
                     break;
 
-        # Error out if no plugin really found
+        # Default to autoconnected if no plugin found
         if not found_plugin:
-            logging.warning("No plugin found for device (manufacturer %s, vidpid %s, type %s)", device_vendor_string, device_vidpid, device_type_string)
-            sys.exit(0)
+            logging.warning("No plugin found for device (manufacturer %s, vidpid %s, type %s): fallback to autoconnected", device_vendor_string, device_vidpid, device_type_string)
+            found_plugin = 'autoconnected'
+            found_plugin_id = device_vidpid
 
         obj_name = found_plugin.capitalize()
         exec "from %s import %s" %(found_plugin, obj_name)

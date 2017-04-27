@@ -10,6 +10,7 @@ import subprocess
 import socket
 import struct
 import datetime
+import commands
 
 # This signal strength table is obtained from rssi/cinr mapping
 # Source:

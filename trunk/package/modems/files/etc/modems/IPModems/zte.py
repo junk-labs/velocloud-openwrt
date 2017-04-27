@@ -5,7 +5,7 @@ import urllib2
 import json
 import re
 import IPModems
-import os
+import time
 
 class Zte(IPModems.IPModems):
 
@@ -39,6 +39,13 @@ class Zte(IPModems.IPModems):
         self.isp_name = ""
         self.modem_name = 'ZTE'
         self.modem_version = ""
+
+        logging.debug("[dev=%s]: setting up interface %s on start...", self.USB, self.ifname)
+        self.teardown_network_interface()
+        self.setup_network_interface()
+        self.set_modem_status_connected()
+        time.sleep(10)
+
 
     def get_dynamic_values(self):
         # Try connecting if last attempt failed

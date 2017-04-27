@@ -24,7 +24,7 @@ class Autoconnected(IPModems.IPModems):
         self.isp_name = 'unknown'
         self.activation_status = 'activated'
 
-        logging.debug("[dev=%s]: setting up interface interface %s on start...", self.USB, self.ifname)
+        logging.debug("[dev=%s]: setting up interface %s on start...", self.USB, self.ifname)
         self.teardown_network_interface()
         self.setup_network_interface()
 

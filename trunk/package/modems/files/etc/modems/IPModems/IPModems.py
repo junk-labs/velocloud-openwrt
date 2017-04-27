@@ -183,8 +183,8 @@ class IPModems():
         path = self.modem_path['modem_config_path']
         cmd = "uci -c " + path + " set modems." + self.USB
 
-        modem_manufacturer = self.modem_name + " " + self.modem_version
-        if self.modem_name:
+        if self.modem_name and self.modem_version:
+            modem_manufacturer = self.modem_name + " " + self.modem_version
             os.system(cmd + ".modelnumber='" + modem_manufacturer + "'")
         if self.linkid:
             os.system(cmd + ".linkid='" + self.linkid.lower() + "'")

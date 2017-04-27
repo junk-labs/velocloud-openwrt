@@ -88,10 +88,9 @@ qmi_disable_AC340U_2G()
 #
 ################################################################################
 
-setup_wwan_modem()
+setup_network_interface()
 {
 	local etherdevice=$DEVICENAME
-	local modemtype=$1
 
 	uci -c /etc/config add network interface\\\ '"$usbifname"'
 	uci -c /etc/config set network.$usbifname=interface
@@ -102,6 +101,12 @@ setup_wwan_modem()
 	uci -c /etc/config set network.$usbifname.reqopts=''"mtu"''
 	uci -c /etc/config commit network
 	log "Updated network config"
+}
+
+setup_wwan_modem()
+{
+	local etherdevice=$DEVICENAME
+	local modemtype=$1
 
 	manufacturer=$(cat /sys$DEVPATH/../../../manufacturer)
 
@@ -118,6 +123,9 @@ setup_wwan_modem()
 	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
 	if [ $modemtype == "huawei-ncm" ]; then
 		local wdmdevice=$(ls $usbpath/../../usbmisc)
+
+		# Setup network interface for DHCP
+		setup_network_interface
 
 		uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
 		uci -c $modem_config_path commit modems
@@ -162,6 +170,10 @@ setup_wwan_modem()
 	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
 	if [ $modemtype == "qmiwwan" ]; then
 		local device=$(ls $usbpath/../../usbmisc)
+
+		# Setup network interface for DHCP
+		setup_network_interface
+
 		uci -c $modem_config_path set modems.$usbifname.device=''"/dev/$device"''
 		uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
 		uci -c $modem_config_path commit modems
@@ -190,6 +202,9 @@ setup_wwan_modem()
 	if [ $modemtype == "qmihybrid" ]; then
 		local device=$(uci_get_modem_device $usbifname)
 
+		# Setup network interface for DHCP
+		setup_network_interface
+
 		# If we have the tty already defined as mgmt device, we're ready
 		# to go; otherwise we'll need to wait and it will get launched
 		# later when the tty is processed.
@@ -208,6 +223,9 @@ setup_wwan_modem()
 	if [ $modemtype == "sierranet" ]; then
 		local device=$(uci_get_modem_device $usbifname)
 
+		# Setup network interface for DHCP
+		setup_network_interface
+
 		# NOTE: Profile generation where the TTY is processed
 
 		# If we have the tty already defined as mgmt device, we're ready
@@ -223,13 +241,7 @@ setup_wwan_modem()
 		return
 	fi
 
-	# Plain ECM/NCM device without control port, which we just assume is
-	# connected by default (e.g. a MiFi) without a control port.
-	ubus call network reload
-	status="CONNECTED SUCCESSFULLY"
-	uci -c $modem_config_path set modems.$usbifname.status=''"$status"''
-	uci -c $modem_config_path commit modems
-
+	# Plain ECM/NCM device without control port
 	log "Unmanaged network device: $status"
 	$modem_script_path/modem_service.sh $usbifname start
 }

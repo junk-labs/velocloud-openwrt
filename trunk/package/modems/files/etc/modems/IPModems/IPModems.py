@@ -173,11 +173,38 @@ class IPModems():
     def get_dynamic_values(self):
         pass # It will be inherited by derived class
 
-    def set_modem_status(self):
+    def set_modem_status(self, status):
         path = self.modem_path['modem_config_path']
         cmd = "uci -c " + path + " set modems." + self.USB
-        os.system(cmd + ".status='CONNECTED SUCCESSFULLY'")
+        os.system(cmd + ".status='" + status + "'")
         os.system("uci -c " + path + " commit modems")
+
+    def set_modem_status_connected(self):
+        self.set_modem_status("CONNECTED SUCCESSFULLY")
+
+    def teardown_network_interface(self):
+        # Remove network configuration and notify netd
+        cmd = "uci -c " + self.modem_path['network_config']
+        self.runcmd(cmd + "delete network." + self.USB)
+        self.runcmd(cmd + "commit network")
+        self.runcmd("ubus call network reload")
+        # Bring interface down
+        self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " down")
+
+    def setup_network_interface(self):
+        # Bring interface up
+        self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " up")
+        # Add network configuration and notify netd
+        cmd = "uci -c " + self.modem_path['network_config'] + " "
+        self.runcmd(cmd + "add network interface\\\\\\ '\"" + self.USB + "\"'")
+        self.runcmd(cmd + "set network." + self.USB + "=interface")
+        self.runcmd(cmd + "set network." + self.USB + ".type='wwan'")
+        self.runcmd(cmd + "set network." + self.USB + ".ifname='" + self.ifname + "'")
+        self.runcmd(cmd + "set network." + self.USB + ".proto='dhcp'")
+        self.runcmd(cmd + "set network." + self.USB + ".hostname='vc-" + self.USB + "'")
+        self.runcmd(cmd + "set network." + self.USB + ".reqopts='mtu'")
+        self.runcmd(cmd + "commit network")
+        self.runcmd("ubus call network reload")
 
     def set_static_values_uci(self):
         # This has to be in uci network file as its one time config

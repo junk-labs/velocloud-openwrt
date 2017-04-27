@@ -3,6 +3,7 @@
 import xml.etree.ElementTree as ET
 import urllib2
 import subprocess
+import time
 
 import IPModems
 
@@ -47,6 +48,13 @@ class Pantech(IPModems.IPModems):
 		return root.findall(path)[index].text
 
 	def get_static_values(self):
+
+		logging.debug("[dev=%s]: setting up interface %s on start...", self.USB, self.ifname)
+		self.teardown_network_interface()
+		self.setup_network_interface()
+		self.set_modem_status_connected()
+		time.sleep(10)
+
 		root1 = root2 = ""
 		try:
 			address = "http://" + self.IP + "/condata"

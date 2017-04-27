@@ -126,9 +126,8 @@ class Qmi(IPModems.IPModems):
 		if (self.wds_cid > 0):
 			logging.debug("[dev=%s]: releasing WDS QMI client %d", self.USB, self.wds_cid);
 			self.qmicli("--wds-noop --client-cid=" + str(self.wds_cid))
-		if self.wwan_iface:
-			logging.debug("[dev=%s]: setting %s device down...", self.USB, self.wwan_iface)
-			self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " down")
+		self.teardown_network_interface()
+		self.set_modem_status("Teardown")
 
 	def reload_registration_status(self):
 		try:
@@ -148,12 +147,8 @@ class Qmi(IPModems.IPModems):
 		self.connection_errors = 0
 
 		# Make sure WWAN is always up when just connected
-		if self.wwan_iface:
-			logging.debug("[dev=%s]: setting %s device up...", self.USB, self.wwan_iface)
-			self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " up")
-
-		logging.debug("[dev=%s]: reloading network...", self.USB)
-		self.runcmd("ubus call network reload")
+		self.setup_network_interface()
+		self.set_modem_status_connected()
 
 		# We keep track of the IP address we expect to see in the network interface
 		self.expected_ip = self.qmicli_wds("--wds-get-current-settings | grep 'IPv4 address' | awk '{ print $3}'")
@@ -249,9 +244,8 @@ class Qmi(IPModems.IPModems):
 			self.ip_check_errors = 0
 
 			# If we have WWAN net info, bring it down
-			if self.wwan_iface:
-				logging.debug("[dev=%s]: setting %s device down...", self.USB, self.wwan_iface)
-				self.runcmd("/usr/sbin/ip link set dev " + self.wwan_iface + " down")
+			self.teardown_network_interface()
+			self.set_modem_status("Disconnected")
 
 			logging.debug("[dev=%s]: explicitly stopping connection...", self.USB)
 			self.runcmd("/usr/bin/qmi-network --profile=" + self.get_profile_path() + " " + self.device + " stop")

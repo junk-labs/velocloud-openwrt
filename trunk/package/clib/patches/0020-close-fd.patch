@@ -1,0 +1,26 @@
+commit 77ec180705accce6593d70d911a936c1177167ed
+Author: gopakumar <gopa@velocloud.net>
+Date:   Fri Apr 21 11:54:45 2017 -0700
+
+    close file after dumping logger
+
+diff --git a/clib/elog.h b/clib/elog.h
+index e1150c7..9d691f7 100644
+--- a/clib/elog.h
++++ b/clib/elog.h
+@@ -531,12 +531,15 @@ elog_write_file (elog_main_t * em, char *unix_file, int flush_ring)
+   serialize_main_t m;
+   clib_error_t *error;
+ 
++  m.stream.data_function_opaque = 0;
+   error = serialize_open_unix_file (&m, unix_file);
+   if (error)
+     return error;
+   error = serialize (&m, serialize_elog_main, em, flush_ring);
+   if (!error)
+     serialize_close (&m);
++  if (m.stream.data_function_opaque) 
++    close (m.stream.data_function_opaque);
+   return error;
+ }
+ 

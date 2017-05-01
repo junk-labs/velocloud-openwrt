@@ -1,0 +1,19 @@
+commit 3ffa8480841ab1b886a77b8f62fda3cb8706dd47
+Author: gopakumar <gopa@velocloud.net>
+Date:   Mon May 1 03:51:31 2017 -0700
+
+    map noreserve
+
+diff --git a/clib/vm_unix.h b/clib/vm_unix.h
+index 07e8651..a94d347 100644
+--- a/clib/vm_unix.h
++++ b/clib/vm_unix.h
+@@ -46,7 +46,7 @@ always_inline void *
+ clib_mem_vm_alloc (uword size)
+ {
+   void *mmap_addr;
+-  uword flags = MAP_PRIVATE;
++  uword flags = MAP_PRIVATE | MAP_NORESERVE;
+ 
+ #ifdef MAP_ANONYMOUS
+   flags |= MAP_ANONYMOUS;

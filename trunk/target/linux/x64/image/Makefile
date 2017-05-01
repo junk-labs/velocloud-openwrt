@@ -18,6 +18,8 @@ GRUB_CONSOLE_CMDLINE =
 
 USE_ATKBD = kvm_guest
 
+QEMU_IMG = STAGING_DIR_HOST=$(STAGING_DIR_HOST) sh ./qemu-img.sh
+
 ifneq ($(strip $(foreach subtarget,$(USE_ATKBD),$(CONFIG_TARGET_x64_$(subtarget)))),)
   GRUB2_MODULES += at_keyboard
   GRUB2_MODULES_ISO += at_keyboard
@@ -155,7 +157,7 @@ ifneq ($(CONFIG_VDI_IMAGES),)
     # left here because the image builder doesnt need these
     ifeq ($(1),ext4)
 		rm $(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vdi || true
-		qemu-img convert -f raw -O vdi \
+		$(QEMU_IMG) convert -f raw -O vdi \
 			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).img \
 			$(BIN_DIR)/$(IMG_PREFIX)-combined-$(1).vdi
 		# XXX: VBoxManage insists on setting perms to 0600
@@ -296,6 +298,14 @@ ifneq ($(CONFIG_VELOCLOUD_INSTALLER),)
   endef
 endif
 
+ifneq ($(CONFIG_VELOCLOUD_UPDATABLE_IMAGE),)
+  define Image/Build/velocloud-updatable-image
+	echo "Building raw VeloCloud VM Image."
+	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
+	$(call Image/Build/velocloud/updatable-gpt,$(1),$(IMG_PREFIX)-updatable-$(1).img)
+  endef
+endif
+
 ifneq ($(CONFIG_EC2_IMAGES),)
   define Image/Build/vc-ec2
 	# Build AWS (EC2) Image, too
@@ -319,10 +329,8 @@ endif
 ifneq ($(CONFIG_VMDK_IMAGES),)
   define Image/Build/vmdk
 	echo "Building VeloCloud Updatable Virtual Image."
-	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
-	$(call Image/Build/velocloud/updatable-gpt,$(1),$(IMG_PREFIX)-updatable-$(1).img)
 	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vmdk || true
-	qemu-img convert -f raw -O vmdk \
+	$(QEMU_IMG) convert -f raw -O vmdk \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vmdk
   endef
@@ -340,16 +348,23 @@ ifneq ($(CONFIG_VMDK_IMAGES),)
   endif
 endif
 
-# QCOW2 assumes VMDK images
 ifneq ($(CONFIG_QCOW2_IMAGES),)
   define Image/Build/qcow2
 	echo "Building VeloCloud Updatable Virtual Image."
-	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
-	$(call Image/Build/velocloud/updatable-gpt,$(1),$(IMG_PREFIX)-updatable-$(1).img)
 	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).qcow2 || true
-	qemu-img convert -f raw -O qcow2 \
+	$(QEMU_IMG) convert -f raw -O qcow2 \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).qcow2
+  endef
+endif
+
+ifneq ($(CONFIG_VHD_IMAGES),)
+  define Image/Build/vhd
+	echo "Building VeloCloud Updatable Virtual Image."
+	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vhd || true
+	$(QEMU_IMG) convert -f raw -O vpc \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vhd
   endef
 endif
 
@@ -381,10 +396,12 @@ define Image/Build
     ifeq ($(ENV_CONFIG_NO_COMBINED_IMAGE),)
 	$(call Image/Build/grub2,$(1))
     endif
+	$(call Image/Build/velocloud-updatable-image,$(1))
 	$(call Image/Build/vdi,$(1))
 	$(call Image/Build/vmdk,$(1))
 	$(call Image/Build/ova,$(1))
 	$(call Image/Build/qcow2,$(1))
+	$(call Image/Build/vhd,$(1))
 	$(call Image/Build/vc-ec2,$(1))
 	# not needed any more:
 	rm -f $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img

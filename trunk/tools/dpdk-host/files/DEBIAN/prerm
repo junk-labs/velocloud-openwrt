@@ -1,0 +1,19 @@
+#!/bin/sh
+
+#DEBHELPER#
+
+NAME=dpdk
+VERSION=__BASE_VERSION__
+
+case "$1" in
+    remove|upgrade)
+                echo "Removing DPDK modules from startup config"
+                sed -i '/^igb_uio$/d' /etc/modules
+                sed -i '/^rte_kni$/d' /etc/modules
+
+                echo "Removing all "$PACKAGE" DKMS modules"
+                dkms remove -m "$NAME" -v $VERSION --all
+               
+                echo "Done."
+        ;;
+esac

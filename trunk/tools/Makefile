@@ -31,9 +31,7 @@ tools-y += mm-macros xorg-macros xfce-macros missing-macros xz cmake scons bc
 tools-y += findutils
 tools-$(CONFIG_TARGET_orion_generic) += wrt350nv2-builder upslug2
 tools-$(CONFIG_powerpc) += upx
-ifneq ($(CONFIG_TARGET_x86)$(CONFIG_TARGET_x64),)
-tools-y += qemu
-endif
+tools-$(CONFIG_TARGET_x86) += qemu
 tools-$(CONFIG_TARGET_mxs) += elftosb
 tools-$(CONFIG_TARGET_brcm2708) += mtools dosfstools
 tools-$(CONFIG_TARGET_ar71xx) += lzma-old squashfs
@@ -41,7 +39,7 @@ tools-y += lzma squashfs4
 tools-$(BUILD_B43_TOOLS) += b43-tools
 tools-$(BUILD_PPL_CLOOG) += ppl cloog
 tools-$(CONFIG_USE_SPARSE) += sparse
-tools-y += vmware-vdiskmanager quagga-host
+tools-y += vmware-vdiskmanager quagga-host dpdk-host
 
 # builddir dependencies
 $(curdir)/bison/compile := $(curdir)/flex/install

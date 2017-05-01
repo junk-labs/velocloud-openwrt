@@ -51,12 +51,8 @@ class Sierranet(IPModems.IPModems):
 	def reconnected(self):
 		# Clear connection errors once connected
 		self.connection_errors = 0
-
-		# Make sure WWAN is always up when just connected
-		logging.debug("[dev=%s]: setting %s device up...", self.USB, self.ifname)
-		self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " up")
-		logging.debug("[dev=%s]: reloading network...", self.USB)
-		self.runcmd("ubus call network reload")
+		self.setup_network_interface()
+		self.set_modem_status_connected()
 
 	def get_static_values(self):
 		logging.debug("[dev=%s]: static values...", self.USB)
@@ -124,8 +120,8 @@ class Sierranet(IPModems.IPModems):
 			self.connection_errors += 1
 
 			# If we have WWAN net info, bring it down
-			logging.debug("[dev=%s]: setting %s device down...", self.USB, self.ifname)
-			self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " down")
+			self.teardown_network_interface()
+			self.set_modem_status("Disconnected")
 
 			# Get APN from profile
 			myvars = {}

@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 import os
+import time
 import urllib2
 import json
 import re
-import IPModems 
+import IPModems
 
 class Ubee(IPModems.IPModems):
 
@@ -13,7 +14,7 @@ class Ubee(IPModems.IPModems):
 		self.modem_str = 'ubee'
 		self.timer = 3
 		self.IP = '192.168.14.1'
-		
+
 	def get_static_values(self):
 		conn = actsatus = ""
         # In the current firmware versions of Becee modems, all the below glorious
@@ -22,6 +23,13 @@ class Ubee(IPModems.IPModems):
 		wanmac = self.mac
 		wanip = wangw = wandns = ""
 		modem_name = modem_version = isp_name = ""
+
+		logging.debug("[dev=%s]: setting up interface %s on start...", self.USB, self.ifname)
+		self.teardown_network_interface()
+		self.setup_network_interface()
+		self.set_modem_status_connected()
+		time.sleep(10)
+
 		try:
 			response = urllib2.urlopen('http://' + self.IP + '/cgi-bin/webstatus.cgi', timeout=1)
 			values = response.read()
@@ -45,14 +53,14 @@ class Ubee(IPModems.IPModems):
 		except:
 			self.log('summary.cgi unable to retrieve')
 			pass
-		
+
 		try:
 			response = urllib2.urlopen('http://' + self.IP + '/en-us.js', timeout=1)
 			contents = response.read()
 			for line in contents.split('\n'):
 				line = str(line)
 				if re.match('.*sta_str60=.*', line): # Ubee
-					modem_name = self.getRHSvalue(line)	
+					modem_name = self.getRHSvalue(line)
 				elif re.match('.*sta_str61=.*', line): # PXU1964
 					modem_version = self.getRHSvalue(line)
 				elif re.match('.*sta_str=.*', line): # Connected to FreedomPoP 4G
@@ -92,7 +100,7 @@ class Ubee(IPModems.IPModems):
 
 		rxvalue = int(os.popen('cat /sys/class/net/%s/statistics/rx_bytes' % self.ifname).read())
 		txvalue = int(os.popen('cat /sys/class/net/%s/statistics/tx_bytes' % self.ifname).read())
-		
+
 		# Set the values
 		self.signal_strength = rssi
 		self.signal_percentage = sspercentage
@@ -114,4 +122,3 @@ class Ubee(IPModems.IPModems):
 		line = line.split('=')[1].replace('\"', '')
 		line = line.replace(';', '')
 		return line
-

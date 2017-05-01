@@ -3,8 +3,9 @@
 import xml.etree.ElementTree as ET
 import urllib2
 import subprocess
+import time
 
-import IPModems 
+import IPModems
 
 # Note:
 # Assuming all Pantech modems behaves the same way as Pantech UML295
@@ -17,7 +18,6 @@ class Pantech(IPModems.IPModems):
 		self.modem_str = 'pantech'
 		self.timer = 3
 		self.IP = '192.168.32.2'
-		self.dontping = 1
 
 		# condata xml
 		self.p_id = './/p-answer/id'
@@ -43,11 +43,18 @@ class Pantech(IPModems.IPModems):
 		self.p_imsi = './/p-answer/discovery/uniqueids/ui[11]'
 		self.p_modem_name = './/p-answer/discovery/platform/hw'
 		self.p_modem_version = './/p-answer/discovery/platform/model'
-		
+
 	def traversexml(self, root, path, index=0):
 		return root.findall(path)[index].text
 
 	def get_static_values(self):
+
+		logging.debug("[dev=%s]: setting up interface %s on start...", self.USB, self.ifname)
+		self.teardown_network_interface()
+		self.setup_network_interface()
+		self.set_modem_status_connected()
+		time.sleep(10)
+
 		root1 = root2 = ""
 		try:
 			address = "http://" + self.IP + "/condata"
@@ -113,7 +120,7 @@ class Pantech(IPModems.IPModems):
 		except:
 		        pass
 
-		# The following things are available 
+		# The following things are available
 		# Enable it if necessary, and do enable the base class IPModems things
 		#
 		#self.supported_technologies = self.traversexml(root1, self.p_supported_technologies, 0) + " "

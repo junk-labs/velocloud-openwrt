@@ -10,6 +10,7 @@ import subprocess
 import socket
 import struct
 import datetime
+import commands
 
 # This signal strength table is obtained from rssi/cinr mapping
 # Source:
@@ -66,7 +67,6 @@ class IPModems():
 
     def __init__(self, USB):
         self.USB = USB
-        self.dontping = 0
         # Traces disabled by default
         self.notraces = 1
         # self.linkid
@@ -133,22 +133,6 @@ class IPModems():
         except:
             logging.warning("[dev=%s]: Unable to open json modem info file %s", self.USB,filename)
 
-    def ping_test(self, max_tries, address):
-        with open(os.devnull, "wb") as limbo:
-            tries = 1
-            while tries <= max_tries:
-	        try:
-                    result=subprocess.Popen(["ping", "-I", self.ifname, "-c", "1", "-W", "2", address],
-                               stdout=limbo, stderr=limbo).wait()
-                    if not result:
-		        time.sleep(1)
-                        return 0, tries
-                except:
-                    pass
-                tries = tries + 1
-                time.sleep(1)
-        return 1, tries
-
     def print_pid(self):
         filew = open("/tmp/USB/" + self.USB + ".pid", "w")
         filew.write(str(os.getpid()))
@@ -189,19 +173,46 @@ class IPModems():
     def get_dynamic_values(self):
         pass # It will be inherited by derived class
 
-    def set_modem_status(self):
+    def set_modem_status(self, status):
         path = self.modem_path['modem_config_path']
         cmd = "uci -c " + path + " set modems." + self.USB
-        os.system(cmd + ".status='CONNECTED SUCCESSFULLY'")
+        os.system(cmd + ".status='" + status + "'")
         os.system("uci -c " + path + " commit modems")
+
+    def set_modem_status_connected(self):
+        self.set_modem_status("CONNECTED SUCCESSFULLY")
+
+    def teardown_network_interface(self):
+        # Remove network configuration and notify netd
+        cmd = "uci -c " + self.modem_path['network_config']
+        self.runcmd(cmd + "delete network." + self.USB)
+        self.runcmd(cmd + "commit network")
+        self.runcmd("ubus call network reload")
+        # Bring interface down
+        self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " down")
+
+    def setup_network_interface(self):
+        # Bring interface up
+        self.runcmd("/usr/sbin/ip link set dev " + self.ifname + " up")
+        # Add network configuration and notify netd
+        cmd = "uci -c " + self.modem_path['network_config'] + " "
+        self.runcmd(cmd + "add network interface\\\\\\ '\"" + self.USB + "\"'")
+        self.runcmd(cmd + "set network." + self.USB + "=interface")
+        self.runcmd(cmd + "set network." + self.USB + ".type='wwan'")
+        self.runcmd(cmd + "set network." + self.USB + ".ifname='" + self.ifname + "'")
+        self.runcmd(cmd + "set network." + self.USB + ".proto='dhcp'")
+        self.runcmd(cmd + "set network." + self.USB + ".hostname='vc-" + self.USB + "'")
+        self.runcmd(cmd + "set network." + self.USB + ".reqopts='mtu'")
+        self.runcmd(cmd + "commit network")
+        self.runcmd("ubus call network reload")
 
     def set_static_values_uci(self):
         # This has to be in uci network file as its one time config
         path = self.modem_path['modem_config_path']
         cmd = "uci -c " + path + " set modems." + self.USB
 
-        modem_manufacturer = self.modem_name + " " + self.modem_version
-        if self.modem_name:
+        if self.modem_name and self.modem_version:
+            modem_manufacturer = self.modem_name + " " + self.modem_version
             os.system(cmd + ".modelnumber='" + modem_manufacturer + "'")
         if self.linkid:
             os.system(cmd + ".linkid='" + self.linkid.lower() + "'")
@@ -259,15 +270,6 @@ class IPModems():
         else:
             logging.debug("[dev=%s,traces]: IP address set: %s", self.USB, ipaddr)
 
-        # Ping test
-        ret, tries = self.ping_test(1, '8.8.8.8')
-        if ret != 0:
-            pingtest = "ping failed"
-            logging.debug("[dev=%s,traces]: ping test failed", self.USB)
-        else:
-            pingtest = "ping success"
-            logging.debug("[dev=%s,traces]: ping test succeeded", self.USB)
-
         # Signal quality
         if self.signal_strength:
             signalstrength = self.signal_strength
@@ -280,20 +282,11 @@ class IPModems():
 
         # Write to file
         with open('/tmp/USB/' + self.USB + '_ipmodem_traces.log', "a") as myfile:
-            trace = "[%s] %s, %s, %s, %s dBm, %s%%\n" % (timestamp, self.ifname, ipaddr, pingtest, signalstrength, signalpercentage)
+            trace = "[%s] %s, %s, %s dBm, %s%%\n" % (timestamp, self.ifname, ipaddr, signalstrength, signalpercentage)
             myfile.write(trace)
 
     def monitor(self):
         logging.warning("[dev=%s]: Started monitoring device", self.USB)
-        if self.modemtype == "cdcether" and not self.dontping:
-            time.sleep(3) # Always takes 3 sec to get IP
-            ret, tries = self.ping_test(10, self.IP)
-            if ret != 0:
-                logging.warning("[dev=%s]: Ping Failed to %s", self.USB, self.IP)
-            else:
-                logging.warning("[dev=%s]: Ping test succeeded : tries %s", self.USB, str(tries))
-                self.set_modem_status()
-
         self.get_static_values()
         self.set_static_values_uci()
         while True:

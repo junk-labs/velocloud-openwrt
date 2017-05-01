@@ -4,8 +4,8 @@ import os
 import urllib2
 import json
 import re
-import IPModems 
-import os
+import IPModems
+import time
 
 class Zte(IPModems.IPModems):
 
@@ -14,7 +14,6 @@ class Zte(IPModems.IPModems):
         self.modem_str = 'zte'
         self.timer = 3
         self.connected = 0
-        self.dontping = 1
 
     def connect(self):
         gwfname = "/tmp/%s_gip" % self.ifname
@@ -41,6 +40,13 @@ class Zte(IPModems.IPModems):
         self.modem_name = 'ZTE'
         self.modem_version = ""
 
+        logging.debug("[dev=%s]: setting up interface %s on start...", self.USB, self.ifname)
+        self.teardown_network_interface()
+        self.setup_network_interface()
+        self.set_modem_status_connected()
+        time.sleep(10)
+
+
     def get_dynamic_values(self):
         # Try connecting if last attempt failed
         if not self.connected:
@@ -53,7 +59,7 @@ class Zte(IPModems.IPModems):
             self.log('Modem %s signal status %s\n' % (self.USB, response))
             values = response.read()
             jsonparams = json.loads(values)
-            sspercentage = int(jsonparams['signalbar'])*25 
+            sspercentage = int(jsonparams['signalbar'])*25
             if sspercentage > 100:
                 sspercentage = 100
             self.log('Modem %s signal status json %s\n' % (self.USB, sspercentage))
@@ -75,7 +81,7 @@ class Zte(IPModems.IPModems):
 
         rxvalue = int(os.popen('cat /sys/class/net/%s/statistics/rx_bytes' % self.ifname).read())
         txvalue = int(os.popen('cat /sys/class/net/%s/statistics/tx_bytes' % self.ifname).read())
-        
+
         # Set the values
         self.signal_strength = rssi
         self.signal_percentage = sspercentage
@@ -86,4 +92,3 @@ class Zte(IPModems.IPModems):
         line = line.split('=')[1].replace('\"', '')
         line = line.replace(';', '')
         return line
-

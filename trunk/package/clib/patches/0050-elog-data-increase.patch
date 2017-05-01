@@ -1,0 +1,19 @@
+commit aaf00a6257824ab84bcac94f9b4b1e7ef4744405
+Author: gopakumar <gopa@velocloud.net>
+Date:   Mon May 1 05:31:31 2017 -0700
+
+    elog data to 36 bytes
+
+diff --git a/clib/elog.h b/clib/elog.h
+index 9d691f7..ceef3e6 100644
+--- a/clib/elog.h
++++ b/clib/elog.h
+@@ -75,7 +75,7 @@ typedef struct
+   u16 track;
+ 
+   /** 20-bytes of data follows, pads to 32 bytes. - doesnt pad any more :-| */
+-  u8 data[32];
++  u8 data[36];
+ } elog_event_t;
+ 
+ typedef struct

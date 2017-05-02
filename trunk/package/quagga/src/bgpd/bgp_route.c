@@ -5470,7 +5470,7 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
 
   if (in_aspath && in_aspath->aspath_len) {
       int i;
-      for (i = 0; i < in_aspath->aspath_len; i++) {
+      for (i = in_aspath->aspath_len-1; i>=0; i--) {
           aspath = aspath_dup (attr.aspath);
           aspath = aspath_add_seq (aspath, in_aspath->val[i]);
           aspath_unintern (&attr.aspath);

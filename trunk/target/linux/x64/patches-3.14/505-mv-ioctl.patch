@@ -9,7 +9,7 @@
  # tagging formats
  dsa_core-$(CONFIG_NET_DSA_TAG_DSA) += tag_dsa.o
 --- /dev/null
-+++ b/net/dsa/dsa_mv_ioctl.c
++++ b/net/dsa/dsa_mv_ioctl.c	2017-04-20 11:07:25.732108046 -0700
 @@ -0,0 +1,1058 @@
 +/*
 + * Jegadish D (jegadish@velocloud.net)
@@ -74,7 +74,7 @@
 +	int rc = 0;
 +        struct dsa_slave_priv *p = netdev_priv(dev);
 +        struct dsa_switch* ds = p->parent;
-+	uint8_t port_num = ifr->ifr_name[strlen(ifr->ifr_name) - 1] - '0';
++	uint8_t port_num = p->port;
 +
 +	switch (cmd) {
 +		case SIOCGMVREG:
@@ -1069,7 +1069,6 @@
 +	return(rc);
 +}
 +
---- /dev/null
 +++ b/net/dsa/dsa_mv_ioctl.h
 @@ -0,0 +1,147 @@
 +/*

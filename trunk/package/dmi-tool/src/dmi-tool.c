@@ -115,6 +115,7 @@ int main(int argc, char *argv[]) {
 	unsigned char current_dmi[VC_DMI_TOTAL_SIZE + 1], current_sn[VC_SN_LENGTH], current_uuid[VC_UUID_LENGTH], current_bsn[VC_BSN_LENGTH];
 	int i, ret;
 
+	setlinebuf(stdout);
 
 /* parse command line arguments */
 	while ((option = getopt(argc, argv,"rwhs:u:b:i:v:p:")) != -1) {

@@ -1,0 +1,58 @@
+commit 65f2fdce200b800bd95ac6690e9654afc37897c6
+Author: Antoine Pitrou <solipsis@pitrou.net>
+Date:   Thu Jan 9 19:52:12 2014 +0100
+
+    Issue #20207: Always disable SSLv2 except when PROTOCOL_SSLv2 is explicitly asked for.
+
+diff --git a/Lib/test/test_ssl.py b/Lib/test/test_ssl.py
+index c1c3384..426e261 100644
+--- a/Lib/test/test_ssl.py
++++ b/Lib/test/test_ssl.py
+@@ -1052,7 +1052,7 @@ else:
+             try_protocol_combo(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_SSLv2, True)
+             try_protocol_combo(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_SSLv2, True, ssl.CERT_OPTIONAL)
+             try_protocol_combo(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_SSLv2, True, ssl.CERT_REQUIRED)
+-            try_protocol_combo(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_SSLv23, True)
++            try_protocol_combo(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_SSLv23, False)
+             try_protocol_combo(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_SSLv3, False)
+             try_protocol_combo(ssl.PROTOCOL_SSLv2, ssl.PROTOCOL_TLSv1, False)
+ 
+diff --git a/Misc/NEWS b/Misc/NEWS
+index 91278d9..3d07704 100644
+--- a/Misc/NEWS
++++ b/Misc/NEWS
+@@ -15,6 +15,9 @@ Core and Builtins
+ Library
+ -------
+ 
++- Issue #20207: Always disable SSLv2 except when PROTOCOL_SSLv2 is explicitly
++  asked for.
++
+ - Issue #18709: Fix CVE-2013-4238. The SSL module now handles NULL bytes
+   inside subjectAltName correctly. Formerly the module has used OpenSSL's
+   GENERAL_NAME_print() function to get the string represention of ASN.1
+diff --git a/Modules/_ssl.c b/Modules/_ssl.c
+index ba64555..752b033 100644
+--- a/Modules/_ssl.c
++++ b/Modules/_ssl.c
+@@ -273,6 +273,7 @@ newPySSLObject(PySocketSockObject *Sock, char *key_file, char *cert_file,
+     char *errstr = NULL;
+     int ret;
+     int verification_mode;
++    long options;
+ 
+     self = PyObject_New(PySSLObject, &PySSL_Type); /* Create new object */
+     if (self == NULL)
+@@ -372,8 +373,10 @@ newPySSLObject(PySocketSockObject *Sock, char *key_file, char *cert_file,
+     }
+ 
+     /* ssl compatibility */
+-    SSL_CTX_set_options(self->ctx,
+-                        SSL_OP_ALL & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
++    options = SSL_OP_ALL & ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
++    if (proto_version != PY_SSL_VERSION_SSL2)
++        options |= SSL_OP_NO_SSLv2;
++    SSL_CTX_set_options(self->ctx, options);
+ 
+     verification_mode = SSL_VERIFY_NONE;
+     if (certreq == PY_SSL_CERT_OPTIONAL)

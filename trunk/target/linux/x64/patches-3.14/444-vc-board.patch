@@ -1,6 +1,6 @@
 diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 --- a/drivers/platform/x86/Kconfig	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/platform/x86/Kconfig	2017-01-03 15:42:20.802069864 -0800
++++ b/drivers/platform/x86/Kconfig	2017-03-08 11:01:28.588988826 -0800
 @@ -827,4 +827,37 @@
  	  Interface. This is a requirement for systems that need to configure
  	  the PUNIT for power management features such as RAPL.
@@ -41,7 +41,7 @@ diff -Naur a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
  endif # X86_PLATFORM_DEVICES
 diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 --- a/drivers/platform/x86/Makefile	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/platform/x86/Makefile	2017-01-03 15:42:20.826067910 -0800
++++ b/drivers/platform/x86/Makefile	2017-03-08 11:01:28.608987710 -0800
 @@ -55,4 +55,8 @@
  obj-$(CONFIG_INTEL_SMARTCONNECT)	+= intel-smartconnect.o
  
@@ -53,8 +53,8 @@ diff -Naur a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
  obj-$(CONFIG_INTEL_BAYTRAIL_MBI)	+= intel_baytrail.o
 diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 --- a/drivers/platform/x86/velocloud.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud.c	2017-01-03 15:42:20.826067910 -0800
-@@ -0,0 +1,201 @@
++++ b/drivers/platform/x86/velocloud.c	2017-03-08 11:01:28.620987170 -0800
+@@ -0,0 +1,223 @@
 +/* velocloud.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
 + *
@@ -90,35 +90,11 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +#define VC_EDGE_ID(x) .driver_data = (void *)(x)
 +
 +static struct dmi_system_id vc_dmi_table[] = {
++	// 5*0 series uses DMI_BOARD_NAME to match
 +	{ .ident = "edge500",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE500"),
 +	  },
 +	  VC_EDGE_ID(VC_EDGE500),
-+	},
-+	{ .ident = "edge-nexcom",
-+	  { DMI_MATCH(DMI_PRODUCT_UUID, "00020003-0004-0005-0006-000700080009"),
-+	  },
-+	  VC_EDGE_ID(VC_EDGE_NEXCOM),
-+	},
-+	{ .ident = "edge1000ifm",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "S1600JP"), // Interface Masters
-+	  },
-+	  VC_EDGE_ID(VC_EDGE1000IFM),
-+	},
-+	{ .ident = "edge1000sm",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "X10SRW-F"), // SuperMicro
-+	  },
-+	  VC_EDGE_ID(VC_EDGE1000SM),
-+	},
-+	{ .ident = "edge840sm",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-F"), // Supermicro 800
-+	  },
-+	  VC_EDGE_ID(VC_EDGE800SM),
-+	},
-+	{ .ident = "edge840sm",
-+	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-TP8F"), // Supermicro 800
-+	  },
-+	  VC_EDGE_ID(VC_EDGE800SM),
 +	},
 +	{ .ident = "edge520b",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "EDGE520"),
@@ -147,11 +123,57 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	  },
 +	  VC_EDGE_ID(VC_EDGE510),
 +	},
-+	// XXX temporary, until we get real DMI entries into Dolphin:
++	// 8x0,1000 series uses DMI_PRODUCT_NAME to match
++	{ .ident = "edge1000sm",
++	  { DMI_MATCH(DMI_PRODUCT_NAME, "EDGE1000"),
++	  },
++	  VC_EDGE_ID(VC_EDGE1000SM),
++	},
++	{ .ident = "edge1000qat",
++	  { DMI_MATCH(DMI_PRODUCT_NAME, "EDGE2000"), // Edge1000+qat
++	  },
++	  VC_EDGE_ID(VC_EDGE1000QAT),
++	},
++	{ .ident = "edge800sm",
++	  { DMI_MATCH(DMI_PRODUCT_NAME, "EDGE840"),
++	  },
++	  VC_EDGE_ID(VC_EDGE800SM),
++	},
++	//
++	// Fallback entries, for pre-production and experimental systems:
++	//
++	// Fallbacks for Supermicro systems:
++	{ .ident = "edge1000sm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "X10SRW-F"), // SuperMicro
++	  },
++	  VC_EDGE_ID(VC_EDGE1000SM),
++	},
++	{ .ident = "edge840sm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-F"), // Supermicro 800
++	  },
++	  VC_EDGE_ID(VC_EDGE800SM),
++	},
++	{ .ident = "edge840sm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "X10SDV-TP8F"), // Supermicro 800
++	  },
++	  VC_EDGE_ID(VC_EDGE800SM),
++	},
++	// Fallback for Dolphin with raw ADI Coreboot:
 +	{ .ident = "edge510",
 +	  { DMI_MATCH(DMI_BOARD_NAME, "RCC-VE"),
 +	  },
 +	  VC_EDGE_ID(VC_EDGE510),
++	},
++	// Entries for obsolete/unused platforms:
++	{ .ident = "edge-nexcom",
++	  { DMI_MATCH(DMI_PRODUCT_UUID, "00020003-0004-0005-0006-000700080009"),
++	  },
++	  VC_EDGE_ID(VC_EDGE_NEXCOM),
++	},
++	{ .ident = "edge1000ifm",
++	  { DMI_MATCH(DMI_BOARD_NAME, "S1600JP"), // Interface Masters
++	  },
++	  VC_EDGE_ID(VC_EDGE1000IFM),
 +	},
 +	{ 0 },
 +};
@@ -202,7 +224,7 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	}
 +	switch (id) {
 +		case VC_EDGE500:
-+		// case VC_EDGE510: // XXX Not until we have the real PIC
++		case VC_EDGE510: // Requires PIC v5
 +		case VC_EDGE520:
 +		case VC_EDGE540:
 +		case VC_EDGE520B:
@@ -258,8 +280,8 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +
 diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/velocloud-nmi.c
 --- a/drivers/platform/x86/velocloud-nmi.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/platform/x86/velocloud-nmi.c	2017-01-03 15:42:20.826067910 -0800
-@@ -0,0 +1,276 @@
++++ b/drivers/platform/x86/velocloud-nmi.c	2017-03-08 13:11:46.810188249 -0800
+@@ -0,0 +1,356 @@
 +#include <linux/module.h>
 +#include <linux/init.h>
 +#include <linux/kernel.h>
@@ -326,11 +348,33 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +static ssize_t show_reset_factory_defaults(struct device *dev,
 +                 struct device_attribute *attr, char *buf)
 +{
-+	return 0;
++        return sprintf(buf, "%c\n", CMOS_READ(0x10));
 +}
 +
++static ssize_t set_reset_factory_defaults(struct device *dev,
++             struct device_attribute *attr, const char *buf, size_t size)
++{
++        s32 err;
++        unsigned long val;
++
++        err = kstrtoul(buf, 10, &val);
++        if (err)
++                return err;
++
++	/* XXX Only allow CMOS clear for now. */
++	if (val == 0) {
++		spin_lock_irq(&rtc_lock);
++		CMOS_WRITE(0, 0x10);
++		spin_unlock_irq(&rtc_lock);
++	} else
++		return -EINVAL;
++
++        return size;
++}
++
++
 +static DEVICE_ATTR(reset_factory_default, S_IRUGO, 
-+		show_reset_factory_defaults, NULL);
++		show_reset_factory_defaults, set_reset_factory_defaults);
 +
 +static void do_vc_dg_task(unsigned long ignored)
 +{
@@ -377,7 +421,9 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +		if (vc_platform_kobj)
 +			sysfs_create_file(vc_platform_kobj, &dev_attr_dg_pwr_loss.attr);
 +
++		spin_lock_irq(&rtc_lock);
 +		CMOS_WRITE(0, 0x12);
++		spin_unlock_irq(&rtc_lock);
 +	}
 +	return 0;
 +}
@@ -442,6 +488,12 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +        .release        = nmi_vc_close,
 +};
 +
++static const struct file_operations edge510_fops = {
++	.owner		= THIS_MODULE,
++	.open		= NULL,
++	.release	= NULL,
++};
++
 +static int __init ipi_init(void)
 +{
 +	int rc;
@@ -452,12 +504,35 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +	
 +	// determine velocloud board;
 +	dmi = vc_dmi;
-+	if(dmi) {
++	if (dmi) {
 +		pr_info("velocloud-nmi %s\n", dmi->ident);
 +		id = (unsigned long)dmi->driver_data;
++	} else {
++		return -EINVAL;
 +	}
-+	
-+	if (id < VC_EDGE520 || id > VC_EDGE540B)
++
++	if (id == VC_EDGE510) {
++
++		if (vc_platform_kobj) {
++
++			if (CMOS_READ(0x10)) {
++
++				spin_lock_irq(&rtc_lock);
++				CMOS_WRITE(0, 0x10);
++				spin_unlock_irq(&rtc_lock);
++
++				sysfs_create_file(vc_platform_kobj, 
++					&dev_attr_reset_factory_default.attr);
++			}
++			if ((nmi_vc_major = register_chrdev (0, "nmi-vc", &edge510_fops)) < 0)
++				printk(KERN_WARNING "nmi_vc: Failed to register character device.");
++
++			return 0;
++		}
++		return -EINVAL;
++	} 
++
++	else if (id < VC_EDGE520 || id > VC_EDGE540B)
 +		return -EINVAL;
 +
 +	rc = register_nmi_handler(NMI_UNKNOWN, nmi_handler, 0, "vc-dg");
@@ -494,13 +569,17 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +		sysfs_create_file(vc_platform_kobj, &dev_attr_nmi_pid.attr);
 +
 +	if (CMOS_READ(0x11)) {
++		spin_lock_irq(&rtc_lock);
 +		CMOS_WRITE(0, 0x11);
++		spin_unlock_irq(&rtc_lock);
 +
 +		sysfs_create_file(vc_platform_kobj, &dev_attr_tco_wdt_timeout.attr);
 +	}
 +
 +	if (CMOS_READ(0x10)) {
++		spin_lock_irq(&rtc_lock);
 +		CMOS_WRITE(0, 0x10);
++		spin_unlock_irq(&rtc_lock);
 +
 +		sysfs_create_file(vc_platform_kobj, &dev_attr_reset_factory_default.attr);
 +	}
@@ -513,6 +592,29 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +
 +static void __exit ipi_exit(void)
 +{
++	struct dmi_system_id *dmi;
++	unsigned long id = VC_NONE;
++
++	// determine velocloud board;
++	dmi = vc_dmi;
++
++	if (dmi)
++		id = (unsigned long)dmi->driver_data;
++	
++	if (id == VC_EDGE510) {
++
++		if (vc_platform_kobj) {
++			sysfs_remove_file(vc_platform_kobj, 
++				&dev_attr_reset_factory_default.attr);
++			if (nmi_vc_major >= 0)
++                		unregister_chrdev(nmi_vc_major, "nmi-vc");
++		}
++		return;
++	} 
++	
++	else if (id < VC_EDGE520 || id > VC_EDGE540B)
++		return;
++
 +	unregister_nmi_handler(NMI_UNKNOWN, "vc-dg"); 
 +
 +	iounmap(ilb_mm);
@@ -537,8 +639,8 @@ diff -Naur a/drivers/platform/x86/velocloud-nmi.c b/drivers/platform/x86/veloclo
 +MODULE_LICENSE("GPL");
 +
 diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/velocloud-vc.c
---- /dev/null	2016-06-08 16:21:10.044842971 -0700
-+++ b/drivers/platform/x86/velocloud-vc.c	2017-01-11 10:50:01.132042861 -0800
+--- a/drivers/platform/x86/velocloud-vc.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/platform/x86/velocloud-vc.c	2017-03-08 11:01:28.628986790 -0800
 @@ -0,0 +1,4729 @@
 +/* velocloud-vc.c
 + * (c) Sandra Berndt (sberndt@velocloud.net)
@@ -5271,8 +5373,8 @@ diff -Naur a/drivers/platform/x86/velocloud-vc.c b/drivers/platform/x86/veloclou
 +module_exit(vc_exit);
 diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
 --- a/include/misc/velocloud.h	1969-12-31 16:00:00.000000000 -0800
-+++ b/include/misc/velocloud.h	2017-01-03 15:42:20.830067531 -0800
-@@ -0,0 +1,42 @@
++++ b/include/misc/velocloud.h	2017-03-08 11:01:28.628986790 -0800
+@@ -0,0 +1,43 @@
 +/*
 + * velocloud.h
 + * Copyright (C) 2015 VeloCloud Inc
@@ -5300,16 +5402,17 @@ diff -Naur a/include/misc/velocloud.h b/include/misc/velocloud.h
 +
 +enum vc_edge_id {
 +	VC_NONE = 0,
-+	VC_EDGE500,
 +	VC_EDGE_NEXCOM,
-+	VC_EDGE1000IFM,
-+	VC_EDGE1000SM,
-+	VC_EDGE800SM,
++	VC_EDGE500,
++	VC_EDGE510,
 +	VC_EDGE520,
 +	VC_EDGE540,
 +	VC_EDGE520B,
 +	VC_EDGE540B,
-+	VC_EDGE510,
++	VC_EDGE800SM,
++	VC_EDGE1000IFM,
++	VC_EDGE1000SM,
++	VC_EDGE1000QAT,
 +	// add new before here,
 +	VC_N_BOARDS,
 +};

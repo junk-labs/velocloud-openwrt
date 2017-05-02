@@ -69,30 +69,57 @@ static void interrupt_routing_config(void)
  */
 void early_mainboard_romstage_entry(void)
 {
-	int i;
+	//int i;
 	struct i2c_gpio_dev bb_i2c1 = {
           .sdl_pin = 11,
           .scl_pin = 12,
 	};
 
+	u8 buf[] = {0xff, 0xff, 0xff};
+	u8 cmd_buf[] = {0, 0};
+
 	console_init();
 
 	vc_register_i2c_gpio(&bb_i2c1);
 
+	cmd_buf[0] = 0x2;
+	cmd_buf[1] = 0x8c;
 	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3,7N high. */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x2, 0x8c);
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
 
+	cmd_buf[0] = 0x4;
+	cmd_buf[1] = 0;	
 	/* SMBUS IO Expander addr=0x74, cmd 0x4 (register 0 no polarity inv). */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x4, 0x0);
-	
-	/* SMBUS IO Expander addr=0x74, cmd 0x6 (register 0 output), bit 2,3,4,5. */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x6, 0x63);
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
 
-	for (i = 0 ; i < 200; i++)
-		vc_early_udelay(100);
+	cmd_buf[0] = 0x6;
+	cmd_buf[1] = 0x43;
+	/* SMBUS IO Expander addr=0x74, cmd 0x6 (register 0 output), bit 2,3,4,5,7. */
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
+
+	vc_early_udelay(10000);
+
+	cmd_buf[0] = 0x2;
+	cmd_buf[1] = 0xc;
+	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3 high. */
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
 	
+	vc_early_udelay(10000);
+
+	cmd_buf[0] = 0x2;
+	cmd_buf[1] = 0x8c;
+	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3,7N high. */
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
+
+	vc_early_udelay(40000);
+
+	cmd_buf[0] = 0x2;
+	cmd_buf[1] = 0xbc;
 	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3,4,5,7N high. */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x74, 0x2, 0xbc);
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
+
+	/* Write PIC for all white LED (RGB: 0xff/0xff/0xff) */
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x20, 3, buf);
 
 	vc_deregister_i2c_gpio(&bb_i2c1);
 
@@ -105,62 +132,50 @@ void early_mainboard_romstage_entry(void)
  */
 void late_mainboard_romstage_entry(void)
 {
-#if 0
-	u8 val, reset_pressed = 0;
+	interrupt_routing_config();
+	u8 cntr_buf[] = {0 , 0};
+	u8 blue_buf[] = {0x0, 0x0, 0xff};
+	u16 cntr_tick1, cntr_tick2;
 
 	struct i2c_gpio_dev bb_i2c1 = {
           .sdl_pin = 11,
           .scl_pin = 12,
 	};
 
-	if (vc_read_reset_button_level() == 0) 
-		reset_pressed = 1;
-
 	vc_register_i2c_gpio(&bb_i2c1);
 
-	/* Mode1 Select register  */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x0, 0x1);
+	(void) vc_i2c_gpio_block_read_data(&bb_i2c1, 0x2a, 2, cntr_buf);
+	cntr_tick1 = (cntr_buf[1] << 8 | cntr_buf[0]);
 
-	/* LED1 OUT (off) */
-	(void) vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xd, 0x0);
+	vc_early_udelay(10000);
 
-	if (reset_pressed || (cmos_read(0x10) & 1)) {
+	cntr_buf[0] = 0;
+	cntr_buf[1] = 0;
+	(void) vc_i2c_gpio_block_read_data(&bb_i2c1, 0x2a, 2, cntr_buf);
+	cntr_tick2 = (cntr_buf[1] << 8 | cntr_buf[0]);
 
-		val = 0x34;
+	if ((cntr_tick2 - cntr_tick1 > 0) || (cmos_read(0x10) & 1)) {
 
-		cmos_write(cmos_read(0x10) | 1, 0x10);
+		if (cntr_tick2 - cntr_tick1 > 0) {
 
-		/* GRPPWM register. */
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xa, 0x3f);
+			vc_early_udelay(3000000);
 
-		/* GRPFREQ register. */	
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xb, 0x1f);
-	
-		/* LED0 OUT */
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xc, 0xff);
+			cntr_buf[0] = 0;
+			cntr_buf[1] = 0;
+			(void) vc_i2c_gpio_block_read_data(&bb_i2c1, 0x2a, 2, cntr_buf);
 
-		/* Red LED only, full on. */	
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x2, 0x0); // red
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x3, 0x0); // green
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x4, 0xff); // blue
+			cntr_tick1 = (cntr_buf[1] << 8 | cntr_buf[0]);
 
-	} else {
-		val = 0x14;
-	
-		/* LED0 OUT */
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0xc, 0xaa);
-
-		/* White LED, full on. */	
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x2, 0xff); // red
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x3, 0xff); // green
-		vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x4, 0xff); // blue
+			if (cntr_tick1 - cntr_tick2 > 0) {
+				(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x20, 3, blue_buf);
+				cmos_write(cmos_read(0x10) | 1, 0x10);
+			}
+		} else {
+			(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x20, 3, blue_buf);
+		}
 	}
-		
-	/* Mode 2 Select register */
-	vc_i2c_gpio_write_byte(&bb_i2c1, 0x54, 0x1, val);
-
 	vc_deregister_i2c_gpio(&bb_i2c1);
-#endif
+
 	interrupt_routing_config();
 }
 

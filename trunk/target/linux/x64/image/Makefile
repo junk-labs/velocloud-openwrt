@@ -296,6 +296,14 @@ ifneq ($(CONFIG_VELOCLOUD_INSTALLER),)
   endef
 endif
 
+ifneq ($(CONFIG_VELOCLOUD_UPDATABLE_IMAGE),)
+  define Image/Build/velocloud-updatable-image
+	echo "Building raw VeloCloud VM Image."
+	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
+	$(call Image/Build/velocloud/updatable-gpt,$(1),$(IMG_PREFIX)-updatable-$(1).img)
+  endef
+endif
+
 ifneq ($(CONFIG_EC2_IMAGES),)
   define Image/Build/vc-ec2
 	# Build AWS (EC2) Image, too
@@ -319,8 +327,6 @@ endif
 ifneq ($(CONFIG_VMDK_IMAGES),)
   define Image/Build/vmdk
 	echo "Building VeloCloud Updatable Virtual Image."
-	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
-	$(call Image/Build/velocloud/updatable-gpt,$(1),$(IMG_PREFIX)-updatable-$(1).img)
 	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vmdk || true
 	qemu-img convert -f raw -O vmdk \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
@@ -340,16 +346,23 @@ ifneq ($(CONFIG_VMDK_IMAGES),)
   endif
 endif
 
-# QCOW2 assumes VMDK images
 ifneq ($(CONFIG_QCOW2_IMAGES),)
   define Image/Build/qcow2
 	echo "Building VeloCloud Updatable Virtual Image."
-	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
-	$(call Image/Build/velocloud/updatable-gpt,$(1),$(IMG_PREFIX)-updatable-$(1).img)
 	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).qcow2 || true
 	qemu-img convert -f raw -O qcow2 \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).qcow2
+  endef
+endif
+
+ifneq ($(CONFIG_VHD_IMAGES),)
+  define Image/Build/vhd
+	echo "Building VeloCloud Updatable Virtual Image."
+	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vhd || true
+	qemu-img convert -f raw -O vpc \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
+		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vhd
   endef
 endif
 
@@ -381,10 +394,12 @@ define Image/Build
     ifeq ($(ENV_CONFIG_NO_COMBINED_IMAGE),)
 	$(call Image/Build/grub2,$(1))
     endif
+	$(call Image/Build/velocloud-updatable-image,$(1))
 	$(call Image/Build/vdi,$(1))
 	$(call Image/Build/vmdk,$(1))
 	$(call Image/Build/ova,$(1))
 	$(call Image/Build/qcow2,$(1))
+	$(call Image/Build/vhd,$(1))
 	$(call Image/Build/vc-ec2,$(1))
 	# not needed any more:
 	rm -f $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img

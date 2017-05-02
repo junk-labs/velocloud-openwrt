@@ -10,6 +10,10 @@ DEFAULT_PACKAGES += \
 	kmod-xen-fs \
 	kmod-xen-evtchn \
 	kmod-xen-netdev \
+	kmod-hyperv-balloon \
+	kmod-hyperv-net-vsc \
+	kmod-hyperv-util \
+	kmod-hyperv-storage \
 	kmod-igbvf \
 	kmod-intel-ixgbevf \
 	kmod-fs-vfat \
@@ -22,6 +26,6 @@ DEFAULT_PACKAGES += \
 
 
 define Target/Description
-	Build firmware images for Xen and AWS/EC2 images.
+	Build firmware images for Xen, AWS/EC2 and Hyper-V images.
 endef
 

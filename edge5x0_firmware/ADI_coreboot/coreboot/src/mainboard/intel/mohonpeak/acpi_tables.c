@@ -71,6 +71,8 @@ static void acpi_create_gnvs(global_nvs_t *gnvs)
 	gnvs->did[3] = 0x80000410;
 	gnvs->did[4] = 0x00000005;
 
+	/* TPM present. */
+	gnvs->tpmp = 1;
 }
 
 unsigned long acpi_fill_madt(unsigned long current)

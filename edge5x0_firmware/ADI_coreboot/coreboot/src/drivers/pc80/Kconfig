@@ -17,7 +17,7 @@ config DRIVERS_PS2_KEYBOARD
 
 config TPM
 	bool
-	default n
+	default y
 	help
 	  Enable this option to enable TPM support in coreboot.
 

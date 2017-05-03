@@ -307,8 +307,17 @@ ifneq ($(CONFIG_VELOCLOUD_UPDATABLE_IMAGE),)
 endif
 
 ifneq ($(CONFIG_EC2_IMAGES),)
+  ifneq ($(CONFIG_VELOCLOUD_UPDATABLE_IMAGE),)
+    define Image/Build/vc-ec2-updatable
+	# Build AWS (EC2) Updatable Image
+	tar -C $(BIN_DIR) \
+		-cvzSf $(BIN_DIR)/$(IMG_PREFIX)-updatable-ec2-$(1).tgz \
+		$(IMG_PREFIX)-updatable-$(1).img
+    endef
+  endif
+
   define Image/Build/vc-ec2
-	# Build AWS (EC2) Image, too
+	# Build single-partition (paravirt) EC2 Image
 	E2SIZE=$(shell echo $$(($(CONFIG_TARGET_ROOTFS_PARTSIZE)*1024)))
 	mkdir -p $(TARGET_DIR)/boot/grub
 	$(CP) $(KDIR)/bzImage $(TARGET_DIR)/boot/vmlinuz
@@ -402,6 +411,7 @@ define Image/Build
 	$(call Image/Build/ova,$(1))
 	$(call Image/Build/qcow2,$(1))
 	$(call Image/Build/vhd,$(1))
+	$(call Image/Build/vc-ec2-updatable,$(1))
 	$(call Image/Build/vc-ec2,$(1))
 	# not needed any more:
 	rm -f $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img

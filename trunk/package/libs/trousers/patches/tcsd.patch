@@ -1,0 +1,42 @@
+diff -Naur a/src/tcs/tcsi_admin.c b/src/tcs/tcsi_admin.c
+--- a/src/tcs/tcsi_admin.c	2017-05-01 13:55:06.595326425 -0700
++++ b/src/tcs/tcsi_admin.c	2017-05-01 13:56:14.160053016 -0700
+@@ -172,13 +172,13 @@
+ 	char runlevel;
+ 
+ 	runlevel = platform_get_runlevel();
+-
++#if 0
+ 	if (runlevel != 's' && runlevel != 'S' && runlevel != '1') {
+ 		LogInfo("Physical Presence command denied: Must be in single"
+ 				" user mode.");
+ 		return TCSERR(TSS_E_NOTIMPL);
+ 	}
+-
++#endif
+ 	if ((result = ctx_verify_context(hContext)))
+ 		return result;
+ 
+diff -Naur a/src/tcsd/svrside.c b/src/tcsd/svrside.c
+--- a/src/tcsd/svrside.c	2017-05-01 13:52:56.517631165 -0700
++++ b/src/tcsd/svrside.c	2017-05-01 13:52:46.926096027 -0700
+@@ -53,6 +53,7 @@
+ };
+ #define MAX_IP_PROTO 2
+ #define INVALID_ADDR_STR "<Invalid client address>"
++#define NOUSERCHECK
+ 
+ static void close_server_socks(struct srv_sock_info *socks_info)
+ {
+diff -Naur a/src/tcsd/tcsd_conf.c b/src/tcsd/tcsd_conf.c
+--- a/src/tcsd/tcsd_conf.c	2017-05-01 13:53:14.304769100 -0700
++++ b/src/tcsd/tcsd_conf.c	2017-05-01 13:52:46.926096027 -0700
+@@ -35,6 +35,8 @@
+ #include "tcsd.h"
+ #include "tcsd_ops.h"
+ 
++#define NOUSERCHECK
++
+ struct tcsd_config_options options_list[] = {
+ 	{"port", opt_port},
+ 	{"num_threads", opt_max_threads},

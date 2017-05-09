@@ -104,6 +104,9 @@ struct zclient
 /* Zebra API message redis flag. */
 #define ZAPI_REDIS_PREF_NON_USER  0x01
 
+/* Maximum as-paths transported over ZAPI */
+#define ZAPI_ASPATH_LEN_MAX  16
+
 /* Zserv protocol message header */
 struct zserv_header
 {
@@ -120,7 +123,7 @@ struct zapi_bgp_attr
 {
   u_int32_t local_pref;
   u_char    aspath_len;
-  u_int32_t aspath_val[10];
+  u_int32_t aspath_val[ZAPI_ASPATH_LEN_MAX + 1];
   u_int32_t community_size;
   u_int32_t *community_val;
 };

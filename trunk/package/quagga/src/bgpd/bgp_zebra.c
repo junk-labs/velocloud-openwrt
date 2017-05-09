@@ -854,6 +854,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
           struct assegment *seg = info->attr->aspath->segments;
           while (seg) {
               int j;
+
+              if (i == ZAPI_ASPATH_LEN_MAX) {
+                 bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                 break;
+              }
               for (j = 0; j < seg->length; j++) {
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }

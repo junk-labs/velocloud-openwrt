@@ -443,6 +443,8 @@ modem_cleanup() {
                 uci delete network.$modem_string$i
         done
         uci commit network
+        ubus call network reload
+
         # Create a fresh file for every reboot
         > $modem_config_path/modems
         # USB modem support End

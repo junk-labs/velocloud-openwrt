@@ -707,9 +707,9 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/in
  		break;
  	case SPEED_1000 + DUPLEX_HALF: /* not supported */
 diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/intel/igb/igb_vc.c
---- a/drivers/net/ethernet/intel/igb/igb_vc.c	1969-12-31 16:00:00.000000000 -0800
-+++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2017-04-20 11:42:22.607293637 -0700
-@@ -0,0 +1,3562 @@
+--- /dev/null
++++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2017-05-12 10:01:19.661338458 -0700
+@@ -0,0 +1,3570 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -4127,10 +4127,14 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +{
 +	struct vc_dsa_priv *priv = bus->priv;
 +	struct e1000_hw *hw = priv->hw;
++	int adreg = (addr << 5) | reg;
 +	u16 data;
 +	int ret;
 +
-+	ret = igb_vc_mdio_read(hw, (addr << 5) | reg, &data);
++	if(addr >= REG_DIRECT)
++		ret = igb_vc_mdio_read(hw, adreg, &data);
++	else
++		ret = igb_vc_smi_mdio_read(hw, adreg, &data);
 +	//printk("%s: %d phy %d reg %d data 0x%x\n", __func__, ret, addr, reg, data);
 +	return(ret? ret : data);
 +}
@@ -4142,9 +4146,13 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +{
 +	struct vc_dsa_priv *priv = bus->priv;
 +	struct e1000_hw *hw = priv->hw;
++	int adreg = (addr << 5) | reg;
 +	int ret;
 +
-+	ret = igb_vc_mdio_write(hw, (addr << 5) | reg, val);
++	if(addr >= REG_DIRECT)
++		ret = igb_vc_mdio_write(hw, adreg, val);
++	else
++		ret = igb_vc_smi_mdio_write(hw, adreg, val);
 +	//printk("%s: %d phy %d reg %d data 0x%x\n", __func__, ret, addr, reg, val);
 +	return(ret);
 +}

@@ -9,8 +9,8 @@
  # tagging formats
  dsa_core-$(CONFIG_NET_DSA_TAG_DSA) += tag_dsa.o
 --- /dev/null
-+++ b/net/dsa/dsa_mv_ioctl.c	2017-04-20 11:07:25.732108046 -0700
-@@ -0,0 +1,1058 @@
++++ b/net/dsa/dsa_mv_ioctl.c	2017-05-12 10:29:15.904102713 -0700
+@@ -0,0 +1,1073 @@
 +/*
 + * Jegadish D (jegadish@velocloud.net)
 + * Copyright (C) 2013, Velocloud Inc.
@@ -28,10 +28,9 @@
 +/* 802.1X - ATU Operations */
 +uint8_t eap_mcast_addr[] = {0x01, 0x80, 0xC2, 0x00, 0x00, 0x03};
 +
-+static int dsa_slave_mv_reg_read(struct mii_bus* bus, struct dsa_mv_reg* msg,
-+	       	uint16_t port_num);
-+static int dsa_slave_mv_reg_write(struct mii_bus* bus, struct dsa_mv_reg* msg,
-+	       	uint16_t port_num);
++static int dsa_slave_mv_reg_read(struct mii_bus* bus, struct dsa_mv_reg* msg, uint8_t port);
++static int dsa_slave_mv_reg_write(struct mii_bus* bus, struct dsa_mv_reg* msg, uint8_t port);
++
 +static int dsa_slave_mv_mac_read(struct mii_bus* bus, 
 +		struct dsa_mv_atu_opdesc* in_msg);
 +static int dsa_slave_mv_mac_write(struct mii_bus* bus, 
@@ -43,7 +42,6 @@
 +static int dsa_slave_mv_1x_setup(struct mii_bus* bus, 
 +		struct dsa_mv_atu_opdesc* msg, int32_t port_num);
 +static int32_t dsa_slave_mv_opwait(struct mii_bus* bus, uint16_t reg);
-+static uint16_t dsa_slave_mv_reg_addr(uint16_t reg_type);
 +static int dsa_slave_mv_mac_load(struct mii_bus* bus, uint8_t* in_mac_addr);
 +static int dsa_slave_mv_mac_lcopy(struct mii_bus* bus, uint8_t* mac_addr);
 +
@@ -139,33 +137,64 @@
 +	return rc;
 +}
 +
-+static int dsa_slave_mv_reg_read(struct mii_bus* bus, struct dsa_mv_reg* msg,
-+	       	uint16_t port_num)
++static int
++dsa_slave_mv_reg_addr(struct dsa_mv_reg *msg, uint32_t *regp, uint8_t port)
 +{
-+	int ret = 0;
-+	uint16_t addr = dsa_slave_mv_reg_addr(msg->reg_type);
-+	if (msg->reg_type == MV_REG_PORT)
-+		addr += port_num;
-+	else if (msg->reg_type == MV_REG_XPORT)
-+		addr += msg->reg_port;
-+	ret = mdiobus_read(bus, addr, msg->reg_num);
-+	if (ret >= 0)
-+		msg->reg_value = ret;
-+	return 0;
++	int type = msg->reg_type;
++	int addr = -EINVAL;
++	uint32_t reg;
++
++	reg = msg->reg_num;
++
++	switch(type) {
++	case MV_REG_XPORT:
++		port = msg->reg_port;
++	case MV_REG_PORT:
++		addr = MV_REG_PORT_ADDR + port;
++		break;
++	case MV_REG_GLOBAL:
++		addr = MV_REG_GLOBAL_ADDR;
++		break;
++	case MV_REG_GLOBAL2:
++		addr = MV_REG_GLOBAL2_ADDR;
++		break;
++	case MV_REG_SERDES:
++		port = 0xf;
++	case MV_REG_PHY:
++		addr = port;
++		reg |= (msg->reg_port << 16);
++		break;
++	}
++	*regp = reg;
++	return(addr);
 +}
 +
-+static int dsa_slave_mv_reg_write(struct mii_bus* bus, struct dsa_mv_reg* msg, uint16_t port_num)
++static int
++dsa_slave_mv_reg_read(struct mii_bus *bus, struct dsa_mv_reg *msg, uint8_t port_num)
 +{
-+	int ret = 0;
-+	uint16_t addr = dsa_slave_mv_reg_addr(msg->reg_type);
-+	if (msg->reg_type == MV_REG_PORT)
-+		addr += port_num;
-+	else if (msg->reg_type == MV_REG_XPORT)
-+		addr += msg->reg_port;
-+	ret = mdiobus_write(bus, addr, msg->reg_num, msg->reg_value);
-+	return 0;
++	int addr, reg, ret;
++
++	addr = dsa_slave_mv_reg_addr(msg, &reg, port_num);
++	if(addr < 0)
++		return(addr);
++	ret = mdiobus_read(bus, addr, reg);
++	if(ret < 0)
++		return(ret);
++	msg->reg_value = ret;
++	return(0);
 +}
 +
++static int
++dsa_slave_mv_reg_write(struct mii_bus *bus, struct dsa_mv_reg *msg, uint8_t port_num)
++{
++	int addr, reg, ret;
++
++	addr = dsa_slave_mv_reg_addr(msg, &reg, port_num);
++	if(addr < 0)
++		return(addr);
++	ret = mdiobus_write(bus, addr, reg, msg->reg_value);
++	return(ret);
++}
 +
 +static int dsa_slave_mv_mac_read(struct mii_bus* bus, 
 +		struct dsa_mv_atu_opdesc* in_msg)
@@ -491,20 +520,6 @@
 +		reg_val = rc;
 +	} while (reg_val & 0x8000);
 +	return rc;
-+}
-+
-+static uint16_t dsa_slave_mv_reg_addr(uint16_t reg_type)
-+{
-+	if (reg_type == MV_REG_PORT)
-+		return MV_REG_PORT_ADDR;
-+	else if (reg_type == MV_REG_GLOBAL)	
-+		return MV_REG_GLOBAL_ADDR;
-+	else if (reg_type == MV_REG_GLOBAL2)
-+		return MV_REG_GLOBAL2_ADDR;
-+	else if (reg_type == MV_REG_XPORT)
-+		return MV_REG_PORT_ADDR;
-+	else
-+		return reg_type;
 +}
 +
 +static int dsa_slave_mv_mac_load(struct mii_bus* bus, uint8_t* in_mac_addr)
@@ -1069,8 +1084,9 @@
 +	return(rc);
 +}
 +
-+++ b/net/dsa/dsa_mv_ioctl.h
-@@ -0,0 +1,147 @@
+--- /dev/null
++++ b/net/dsa/dsa_mv_ioctl.h	2017-05-12 10:28:37.973940043 -0700
+@@ -0,0 +1,149 @@
 +/*
 + * Jegadish D (jegadish@velocloud.net)
 + * Copyright (C) 2013, Velocloud Inc.
@@ -1108,6 +1124,8 @@
 +#define MV_REG_GLOBAL	1
 +#define MV_REG_GLOBAL2	2
 +#define MV_REG_XPORT	3
++#define MV_REG_PHY	4
++#define MV_REG_SERDES	5
 +
 +/* Marvell DSA register addr */
 +#define MV_REG_PORT_ADDR	0x10

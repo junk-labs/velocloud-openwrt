@@ -418,10 +418,28 @@ bgp_scan (afi_t afi, safi_t safi)
   struct bgp_info *next;
   struct peer *peer;
   struct listnode *node, *nnode;
+  struct listnode *bnode, *bnnode;
   int valid;
   int current;
   int changed;
   int metricchanged;
+
+  /* Reevaluate default-originate route-maps and announce/withdraw
+   * default route if neccesary. */
+  for (ALL_LIST_ELEMENTS (bm->bgp, bnode, bnnode, bgp))
+  {
+      for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
+      {
+          if (peer->status == Established
+                  && CHECK_FLAG(peer->af_flags[afi][safi], PEER_FLAG_DEFAULT_ORIGINATE)
+                  && peer->default_rmap[afi][safi].name)
+              bgp_default_originate (peer, afi, safi, 0);
+      }
+   }
+
+   /* For now not interested in the following checks because we are dealing with only
+      connected route based next-hop resolution */
+   return;
 
   /* Change cache. */
   if (bgp_nexthop_cache_table[afi] == cache1_table[afi])
@@ -515,15 +533,6 @@ bgp_scan (afi_t afi, safi_t safi)
 	zlog_debug ("scanning IPv6 Unicast routing tables");
     }
 
-  /* Reevaluate default-originate route-maps and announce/withdraw
-   * default route if neccesary. */
-  for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
-    {
-      if (peer->status == Established
-	  && CHECK_FLAG(peer->af_flags[afi][safi], PEER_FLAG_DEFAULT_ORIGINATE)
-	  && peer->default_rmap[afi][safi].name)
-	bgp_default_originate (peer, afi, safi, 0);
-    }
 }
 
 /* BGP scan thread.  This thread check nexthop reachability. */
@@ -533,8 +542,9 @@ bgp_scan_timer (struct thread *t)
   bgp_scan_thread =
     thread_add_timer (master, bgp_scan_timer, NULL, bgp_scan_interval);
 
-  if (BGP_DEBUG (events, EVENTS))
-    zlog_debug ("Performing BGP general scanning");
+// Avoiding continuous log entries
+//if (BGP_DEBUG (events, EVENTS))
+//    zlog_debug ("Performing BGP general scanning");
 
   bgp_scan (AFI_IP, SAFI_UNICAST);
 
@@ -692,8 +702,11 @@ bgp_connected_add (struct connected *ifc)
 
           for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
           {
-              BGP_EVENT_ADD (peer, BGP_Stop);
-              BGP_EVENT_ADD (peer, BGP_Start);
+              if (ifp == if_lookup_by_ipv4 (&peer->su.sin.sin_addr))
+              {
+                  BGP_EVENT_ADD (peer, BGP_Stop);
+                  BGP_EVENT_ADD (peer, BGP_Start);
+              }
           }
       }
     }
@@ -1510,7 +1523,9 @@ bgp_scan_init (void)
   bgp_scan_thread = thread_add_timer (master, bgp_scan_timer, 
                                       NULL, bgp_scan_interval);
   /* Make BGP import there. */
+  /*For now not interested in BGP import check 
   bgp_import_thread = thread_add_timer (master, bgp_import, NULL, 0);
+  */
 
   install_element (BGP_NODE, &bgp_scan_time_cmd);
   install_element (BGP_NODE, &no_bgp_scan_time_cmd);

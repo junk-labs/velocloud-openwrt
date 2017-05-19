@@ -562,8 +562,6 @@ struct bgp_addr
   int refcnt;
 };
 
-static struct hash *bgp_address_hash;
-
 static void *
 bgp_address_hash_alloc (void *p)
 {
@@ -595,33 +593,33 @@ bgp_address_hash_cmp (const void *p1, const void *p2)
 }
 
 void
-bgp_address_init (void)
+bgp_address_init (struct bgp *bgp)
 {
-  bgp_address_hash = hash_create (bgp_address_hash_key_make,
+  bgp->bgp_address_hash = hash_create (bgp_address_hash_key_make,
                                   bgp_address_hash_cmp);
 }
 
 static void
-bgp_address_add (struct prefix *p)
+bgp_address_add (struct bgp *bgp, struct prefix *p)
 {
   struct bgp_addr tmp;
   struct bgp_addr *addr;
 
   tmp.addr = p->u.prefix4;
 
-  addr = hash_get (bgp_address_hash, &tmp, bgp_address_hash_alloc);
+  addr = hash_get (bgp->bgp_address_hash, &tmp, bgp_address_hash_alloc);
   addr->refcnt++;
 }
 
 static void
-bgp_address_del (struct prefix *p)
+bgp_address_del (struct bgp *bgp, struct prefix *p)
 {
   struct bgp_addr tmp;
   struct bgp_addr *addr;
 
   tmp.addr = p->u.prefix4;
 
-  addr = hash_lookup (bgp_address_hash, &tmp);
+  addr = hash_lookup (bgp->bgp_address_hash, &tmp);
   /* may have been deleted earlier by bgp_interface_down() */
   if (addr == NULL)
     return;
@@ -630,7 +628,7 @@ bgp_address_del (struct prefix *p)
 
   if (addr->refcnt == 0)
     {
-      hash_release (bgp_address_hash, addr);
+      hash_release (bgp->bgp_address_hash, addr);
       XFREE (MTYPE_BGP_ADDR, addr);
     }
 }
@@ -681,7 +679,7 @@ bgp_connected_add (struct connected *ifc)
       if (prefix_ipv4_any ((struct prefix_ipv4 *) &p))
 	return;
 
-      bgp_address_add (addr);
+      bgp_address_add (bgp, addr);
 
       rn = bgp_node_get (bgp->bgp_connected_table[AFI_IP], (struct prefix *) &p);
       if (rn->info)
@@ -771,7 +769,7 @@ bgp_connected_delete (struct connected *ifc)
       if (prefix_ipv4_any ((struct prefix_ipv4 *) &p))
 	return;
 
-      bgp_address_del (addr);
+      bgp_address_del (bgp, addr);
 
       rn = bgp_node_lookup (bgp->bgp_connected_table[AFI_IP], &p);
       if (! rn)
@@ -817,13 +815,13 @@ bgp_connected_delete (struct connected *ifc)
 }
 
 int
-bgp_nexthop_self (struct attr *attr)
+bgp_nexthop_self (struct bgp *bgp, struct attr *attr)
 {
   struct bgp_addr tmp, *addr;
 
   tmp.addr = attr->nexthop;
 
-  addr = hash_lookup (bgp_address_hash, &tmp);
+  addr = hash_lookup (bgp->bgp_address_hash, &tmp);
   if (addr)
     return 1;
 

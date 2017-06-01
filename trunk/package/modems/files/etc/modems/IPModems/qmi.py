@@ -215,11 +215,15 @@ class Qmi(IPModems.IPModems):
 			logging.warning("[dev=%s]: not registered in network: %s", self.USB, self.registration_status)
 			wwan_down = True
 
-		# Check if we're connected
+		# Check if we're connected, and detect if we got automatically connected
+		old_connection_status = self.connection_status
 		self.reload_connection_status()
 		if self.connection_status == 'disconnected':
 			logging.warning("[dev=%s]: not connected in network", self.USB)
 			wwan_down = True
+		if self.connection_status == 'connected' and old_connection_status != self.connection_status:
+			logging.debug("[dev=%s]: autoconnection detected", self.USB)
+			self.reconnected()
 
 		# If we're connected, we'll do an IP check
 		if self.connection_status == 'connected':

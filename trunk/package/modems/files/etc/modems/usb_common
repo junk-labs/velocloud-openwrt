@@ -290,18 +290,18 @@ get_modem_type()
 	if [ "$interface" == "ttyUSB" ]; then
 		modemtype="serial"
 		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
+
 		#log "get_modem_type: hybridtype=$hybridtype"
 		if [ "$hybridtype" = "ignore" ]; then
 			echo "ignore"
 			return
 		fi
-		if [ ! -z "$hybridtype" ] && [ "$hybridtype" != "serial" ]; then
+
+		if [ -n "$hybridtype" ] && [ "$hybridtype" != "serial" ]; then
 			modemtype="None" # cdcether or qmiwwan
-		fi
-		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
+		elif [ "$hybridtype" = "qmihybrid" ]; then
 			modemtype="qmihybrid"
-		fi
-		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "sierranet" ]; then
+		elif [ "$hybridtype" = "sierranet" ]; then
 			modemtype="sierranet"
 		fi
 	fi
@@ -339,13 +339,11 @@ get_modem_type()
 		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
 		if [ "$found" -eq 1 ]; then
 			modemtype=$type
-			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "serial" ]; then
+			if [ "$hybridtype" = "serial" ]; then
 				modemtype="None" # cdcether or qmiwwan
-			fi
-			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
+			elif [ "$hybridtype" = "qmihybrid" ]; then
 				modemtype="qmihybrid"
-			fi
-			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "sierranet" ]; then
+			elif [ "$hybridtype" = "sierranet" ]; then
 				modemtype="sierranet"
 			fi
 		fi

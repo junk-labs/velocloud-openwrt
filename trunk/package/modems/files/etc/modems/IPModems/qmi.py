@@ -22,7 +22,7 @@ class Qmi(IPModems.IPModems):
 		self.expected_ip = ''
 
 		# Maximum number of attemps to set LLP via WDA Set Data Format
-		self.llp_update_max_attempts = 18
+		self.llp_update_max_attempts = 50
 		# Time to sleep between attempts
 		self.llp_update_sleep_interval = 10
 

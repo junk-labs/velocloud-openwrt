@@ -24,6 +24,13 @@
 1199:9051               qmiwwan
 # AT&T sierra 341U
 1199:9055               qmiwwan
+
+# AT&T sierra 341U (v2)
+# Note: this modem exposes both usb0 (rndis_host) and wwan0 (qmi_wwan) interfaces
+# We explicitly say that this modem is qmiwwan so that we can flag usb0 as ignored
+# later on
+1199:9057               qmiwwan
+
 # AT&T sierra 313U
 0f3d:68aa               sierranet
 # Novatel 551L

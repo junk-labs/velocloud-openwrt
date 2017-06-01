@@ -279,7 +279,8 @@ get_modem_type()
 	local product=$2
 	local hymodemsfile=$modem_script_path/hybridmodems.list
 	local modemtype=""
-	local hybridtype
+	local hybridtype=""
+	local driver=""
 
 	#log "get_modem_type: ifname=$ifname interface=$interface product=$product"
 	if [ -z "$product" ]; then
@@ -345,6 +346,13 @@ get_modem_type()
 				modemtype="qmihybrid"
 			elif [ "$hybridtype" = "sierranet" ]; then
 				modemtype="sierranet"
+			fi
+
+			# If we're told it's a QMI modem but the driver isn't QMI, then maybe
+			# this is a non-QMI network interface also exposed by the modem, so just
+			# ignore it
+			if [ "$hybridtype" = "qmiwwan" ] && [ "$driver" != "qmi_wwan" ]; then
+				modemtype="None"
 			fi
 		fi
 	fi

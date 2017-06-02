@@ -519,9 +519,9 @@ bgp_info_cmp (struct bgp *bgp, struct bgp_info *new, struct bgp_info *exist,
       && new_sort == BGP_PEER_EBGP
       && exist_sort == BGP_PEER_EBGP)
     {
-      if (CHECK_FLAG (new->flags, BGP_INFO_SELECTED))
+      if (CHECK_FLAG (new->flags, BGP_INFO_SELECTED_NORMAL))
 	return 1;
-      if (CHECK_FLAG (exist->flags, BGP_INFO_SELECTED))
+      if (CHECK_FLAG (exist->flags, BGP_INFO_SELECTED_NORMAL))
 	return 0;
     }
 
@@ -1426,36 +1426,36 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
       bgp_info_unset_flag (rn, ri, BGP_INFO_DMED_CHECK);
       bgp_info_unset_flag (rn, ri, BGP_INFO_DMED_SELECTED);
 
-      if (ri->sub_type == BGP_ROUTE_NORMAL &&
-          bgp_info_cmp (bgp, ri, new_select_normal, &paths_eq)) {
-	     new_select_normal = ri;
+      if (ri->sub_type == BGP_ROUTE_NORMAL) {
+          if (bgp_info_cmp (bgp, ri, new_select_normal, &paths_eq)) {
+              if (do_mpath && bgp_flag_check (bgp, BGP_FLAG_DETERMINISTIC_MED))
+                  bgp_mp_dmed_deselect (new_select_normal);
+
+              new_select_normal = ri;
+
+              if (do_mpath && !paths_eq)
+              {
+                  bgp_mp_list_clear (&mp_list);
+                  bgp_mp_list_add (&mp_list, ri);
+              }
+          }
+          else if (do_mpath && bgp_flag_check (bgp, BGP_FLAG_DETERMINISTIC_MED))
+              bgp_mp_dmed_deselect (ri);
+
+          if (do_mpath && paths_eq)
+              bgp_mp_list_add (&mp_list, ri);
       }
 
       if (bgp_info_cmp (bgp, ri, new_select, &paths_eq))
-	{
-	  if (do_mpath && bgp_flag_check (bgp, BGP_FLAG_DETERMINISTIC_MED))
-	    bgp_mp_dmed_deselect (new_select);
-
-	  new_select = ri;
-
-	  if (do_mpath && !paths_eq)
-	    {
-	      bgp_mp_list_clear (&mp_list);
-	      bgp_mp_list_add (&mp_list, ri);
-	    }
-	}
-      else if (do_mpath && bgp_flag_check (bgp, BGP_FLAG_DETERMINISTIC_MED))
-	bgp_mp_dmed_deselect (ri);
-
-      if (do_mpath && paths_eq)
-	bgp_mp_list_add (&mp_list, ri);
+      {
+          new_select = ri;
+      }
     }
     
-
   if (!bgp_flag_check (bgp, BGP_FLAG_DETERMINISTIC_MED))
-    bgp_info_mpath_update (rn, new_select, old_select, &mp_list, mpath_cfg);
+    bgp_info_mpath_update (rn, new_select_normal, old_select_normal, &mp_list, mpath_cfg);
 
-  bgp_info_mpath_aggregate_update (new_select, old_select);
+  bgp_info_mpath_aggregate_update (new_select_normal, old_select_normal);
   bgp_mp_list_clear (&mp_list);
 
   result->old = old_select;
@@ -1655,6 +1655,11 @@ bgp_process_main (struct work_queue *wq, void *data)
   old_select = old_and_new.old;
   new_select = old_and_new.new;
 
+  if (old_select_normal && (old_select_normal != new_select_normal) &&
+      old_select && (old_select != old_select_normal) &&
+      CHECK_FLAG (old_select_normal->flags, BGP_INFO_REMOVED))
+    bgp_info_reap (rn, old_select_normal);
+
   if (old_select && old_select == new_select)
     {
       if (! CHECK_FLAG (old_select->flags, BGP_INFO_ATTR_CHANGED))
@@ -1683,9 +1688,6 @@ bgp_process_main (struct work_queue *wq, void *data)
   /* Reap old select bgp_info, it it has been removed */
   if (old_select && CHECK_FLAG (old_select->flags, BGP_INFO_REMOVED))
     bgp_info_reap (rn, old_select);
-  if (old_select_normal && (old_select_normal != old_select) &&
-      CHECK_FLAG (old_select_normal->flags, BGP_INFO_REMOVED))
-    bgp_info_reap (rn, old_select_normal);
   
   UNSET_FLAG (rn->flags, BGP_NODE_PROCESS_SCHEDULED);
   return WQ_SUCCESS;
@@ -2226,7 +2228,7 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	 must not be my own address.  */
       if (new_attr.nexthop.s_addr == 0
 	  || IPV4_CLASS_DE (ntohl (new_attr.nexthop.s_addr))
-	  || bgp_nexthop_self (&new_attr))
+	  || bgp_nexthop_self (peer->bgp, &new_attr))
 	{
 	  reason = "martian next-hop;";
 	  bgp_attr_flush (&new_attr);

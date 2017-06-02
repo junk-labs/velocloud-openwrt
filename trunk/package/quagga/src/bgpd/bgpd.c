@@ -1990,6 +1990,7 @@ bgp_create (as_t *as, const char *name)
   THREAD_TIMER_ON (master, bgp->t_startup, bgp_startup_timer_expire,
                    bgp, bgp->restart_time);
 
+  bgp_address_init (bgp);
   bgp->bgp_connected_table[AFI_IP] = bgp_table_init (AFI_IP, SAFI_UNICAST);
   bgp->bgp_connected_table[AFI_IP6] = bgp_table_init (AFI_IP6, SAFI_UNICAST);
 
@@ -5477,7 +5478,6 @@ bgp_init (void)
   bgp_dump_init ();
   bgp_route_init ();
   bgp_route_map_init ();
-  bgp_address_init ();
   bgp_scan_init ();
   bgp_mplsvpn_init ();
 

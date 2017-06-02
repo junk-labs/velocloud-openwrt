@@ -201,6 +201,7 @@ menu "Target Images"
 		bool "Use Console Terminal (in addition to Serial)"
 		depends on GRUB_IMAGES
 		default n if (TARGET_x86_generic_Soekris45xx || TARGET_x86_generic_Soekris48xx || TARGET_x86_net5501 || TARGET_x86_geos || TARGET_x86_alix2)
+		default n if TARGET_x64_edge5x0
 		default y
 
 	config GRUB_SERIAL

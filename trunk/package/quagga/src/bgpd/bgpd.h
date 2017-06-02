@@ -153,6 +153,8 @@ struct bgp
   /* BGP routing information base.  */
   struct bgp_table *rib[AFI_MAX][SAFI_MAX];
 
+  struct hash *bgp_address_hash;
+
   /* Route table for connected route. */
   struct bgp_table *bgp_connected_table[AFI_MAX];
 

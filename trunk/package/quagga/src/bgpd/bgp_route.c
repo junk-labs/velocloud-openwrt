@@ -37,12 +37,12 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
 #include "bgpd/bgpd.h"
 #include "bgpd/bgp_table.h"
+#include "bgpd/bgp_community.h"
 #include "bgpd/bgp_route.h"
 #include "bgpd/bgp_attr.h"
 #include "bgpd/bgp_debug.h"
 #include "bgpd/bgp_aspath.h"
 #include "bgpd/bgp_regex.h"
-#include "bgpd/bgp_community.h"
 #include "bgpd/bgp_ecommunity.h"
 #include "bgpd/bgp_clist.h"
 #include "bgpd/bgp_packet.h"
@@ -1311,38 +1311,10 @@ struct bgp_info_pair
   struct bgp_info *new;
 };
 
-
-static void
-bgp_zebra_check_and_announce(struct prefix *p, struct bgp_info *bi, struct bgp *bgp, safi_t safi)
-{
-    if (bi && (ZEBRA_ROUTE_BGP == bi->type) && (BGP_ROUTE_NORMAL == bi->sub_type)) {
-        if (CHECK_FLAG(bi->flags, BGP_INFO_ATTR_CHANGED) || !CHECK_FLAG(bi->flags,
-                    BGP_INFO_ANNOUNCED)) {
-            SET_FLAG (bi->flags, BGP_INFO_ANNOUNCED);
-            UNSET_FLAG (bi->flags, BGP_INFO_ATTR_CHANGED);
-            bgp_zebra_announce (p, bi, bgp, safi);
-        }
-    }
-
-    return;
-}
-
-static void
-bgp_zebra_check_and_withdraw(struct prefix *p, struct bgp_info *bi, safi_t safi)
-{
-    if (bi && (ZEBRA_ROUTE_BGP == bi->type) && (BGP_ROUTE_NORMAL == bi->sub_type)) {
-        bgp_zebra_withdraw (p, bi, safi);
-        UNSET_FLAG (bi->flags, BGP_INFO_ANNOUNCED);
-    }
-
-    return;
-}
-
 static void
 bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
 		    struct bgp_maxpaths_cfg *mpath_cfg,
-		    struct bgp_info_pair *result,
-            safi_t safi, int announce_or_withdraw)
+		    struct bgp_info_pair *result)
 {
   struct bgp_info *new_select;
   struct bgp_info *old_select;
@@ -1350,7 +1322,6 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
   struct bgp_info *ri1;
   struct bgp_info *ri2;
   struct bgp_info *nextri = NULL;
-  struct prefix *p = &rn->p;
   int paths_eq, do_mpath;
   struct list mp_list;
 
@@ -1423,13 +1394,9 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
           /* reap REMOVED routes, if needs be 
            * selected route must stay for a while longer though
            */
-            if (CHECK_FLAG (ri->flags, BGP_INFO_REMOVED)
-                    && (ri != old_select)) {
-                if (announce_or_withdraw) {
-                    bgp_zebra_check_and_withdraw(p, ri, safi);
-                }
-                bgp_info_reap (rn, ri);
-            }
+          if (CHECK_FLAG (ri->flags, BGP_INFO_REMOVED)
+              && (ri != old_select))
+              bgp_info_reap (rn, ri);
           
           continue;
         }
@@ -1461,10 +1428,6 @@ bgp_best_selection (struct bgp *bgp, struct bgp_node *rn,
 
       if (do_mpath && paths_eq)
 	bgp_mp_list_add (&mp_list, ri);
-      
-      if (announce_or_withdraw) {
-          bgp_zebra_check_and_announce(p, ri, bgp, safi);
-      }
     }
     
 
@@ -1553,7 +1516,7 @@ bgp_process_rsclient (struct work_queue *wq, void *data)
   struct peer *rsclient = bgp_node_table (rn)->owner;
   
   /* Best path selection. */
-  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new, safi, 0);
+  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new);
   new_select = old_and_new.new;
   old_select = old_and_new.old;
 
@@ -1616,7 +1579,7 @@ bgp_process_main (struct work_queue *wq, void *data)
   struct peer *peer;
   
   /* Best path selection. */
-  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new, safi, 1);
+  bgp_best_selection (bgp, rn, &bgp->maxpaths[afi][safi], &old_and_new);
   old_select = old_and_new.old;
   new_select = old_and_new.new;
 
@@ -1635,10 +1598,8 @@ bgp_process_main (struct work_queue *wq, void *data)
         }
     }
 
-  if (old_select) {
+  if (old_select)
     bgp_info_unset_flag (rn, old_select, BGP_INFO_SELECTED);
-  }
-
   if (new_select)
     {
       bgp_info_set_flag (rn, new_select, BGP_INFO_SELECTED);
@@ -1655,27 +1616,24 @@ bgp_process_main (struct work_queue *wq, void *data)
 
   /* FIB update. */ /*Updating for view too */
   if (safi == SAFI_UNICAST || safi == SAFI_MULTICAST)
-  {
+    {
       if (new_select 
-              && new_select->type == ZEBRA_ROUTE_BGP 
-              && new_select->sub_type == BGP_ROUTE_NORMAL) {
-          bgp_zebra_check_and_announce(p, new_select, bgp, safi);
-    }  else
+	  && new_select->type == ZEBRA_ROUTE_BGP 
+	  && new_select->sub_type == BGP_ROUTE_NORMAL)
+	bgp_zebra_announce (p, new_select, bgp, safi);
+      else
 	{
 	  /* Withdraw the route from the kernel. */
 	  if (old_select 
 	      && old_select->type == ZEBRA_ROUTE_BGP
-	      && old_select->sub_type == BGP_ROUTE_NORMAL) {
-	    // bgp_zebra_withdraw (p, old_select, safi);
-      }
+	      && old_select->sub_type == BGP_ROUTE_NORMAL)
+	    bgp_zebra_withdraw (p, old_select, safi);
 	}
     }
     
   /* Reap old select bgp_info, it it has been removed */
-  if (old_select && CHECK_FLAG (old_select->flags, BGP_INFO_REMOVED)) {
-      bgp_zebra_check_and_withdraw(p, old_select, safi);
+  if (old_select && CHECK_FLAG (old_select->flags, BGP_INFO_REMOVED))
     bgp_info_reap (rn, old_select);
-  }
   
   UNSET_FLAG (rn->flags, BGP_NODE_PROCESS_SCHEDULED);
   return WQ_SUCCESS;
@@ -5421,7 +5379,10 @@ void
 bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
                       const struct in_addr *nexthop,
 		              const struct in6_addr *nexthop6,
-		              u_int32_t metric, u_char type, u_short tag, u_int32_t user_no_pref)
+		              u_int32_t metric, u_char type, u_short tag, 
+                      struct redist_aspath *in_aspath,
+                      struct community *in_community,
+                      u_int32_t user_no_pref)
 {
   struct bgp_info *new;
   struct bgp_info *bi;
@@ -5429,6 +5390,7 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
   struct bgp_node *bn;
   struct attr attr;
   struct attr *new_attr;
+  struct aspath *aspath;
   afi_t afi;
   int ret;
 
@@ -5452,6 +5414,20 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
           
   if ((type == ZEBRA_ROUTE_USER) && user_no_pref) {
       attr.extra->weight = 0;
+  }
+
+  if (in_aspath && in_aspath->aspath_len) {
+      int i;
+      for (i = in_aspath->aspath_len-1; i>=0; i--) {
+          aspath = aspath_dup (attr.aspath);
+          aspath = aspath_add_seq (aspath, in_aspath->val[i]);
+          aspath_unintern (&attr.aspath);
+          attr.aspath = aspath_intern (aspath);
+      }
+  }
+  if (in_community && in_community->size > 0) {
+      attr.community = community_uniq_sort(in_community); 
+      attr.flag |= ATTR_FLAG_BIT (BGP_ATTR_COMMUNITIES);
   }
 
       afi = family2afi (p->family);

@@ -105,7 +105,7 @@ struct zclient
 #define ZAPI_REDIS_PREF_NON_USER  0x01
 
 /* Maximum as-paths transported over ZAPI */
-#define ZAPI_ASPATH_LEN_MAX  16
+#define ZAPI_ASPATH_LEN_MAX  24
 
 /* Zserv protocol message header */
 struct zserv_header

@@ -1,23 +1,70 @@
 --- a/tcpdump.c
 +++ b/tcpdump.c
-@@ -1095,20 +1095,6 @@ main(int argc, char **argv)
- 				error("invalid data link type %s", gndo->ndo_dltname);
+@@ -244,42 +244,6 @@
+ #endif
+ };
+ 
+-#if defined(HAVE_PCAP_SET_PARSER_DEBUG)
+-/*
+- * We have pcap_set_parser_debug() in libpcap; declare it (it's not declared
+- * by any libpcap header, because it's a special hack, only available if
+- * libpcap was configured to include it, and only intended for use by
+- * libpcap developers trying to debug the parser for filter expressions).
+- */
+-#ifdef _WIN32
+-__declspec(dllimport)
+-#else /* _WIN32 */
+-extern
+-#endif /* _WIN32 */
+-void pcap_set_parser_debug(int);
+-#elif defined(HAVE_PCAP_DEBUG) || defined(HAVE_YYDEBUG)
+-/*
+- * We don't have pcap_set_parser_debug() in libpcap, but we do have
+- * pcap_debug or yydebug.  Make a local version of pcap_set_parser_debug()
+- * to set the flag, and define HAVE_PCAP_SET_PARSER_DEBUG.
+- */
+-static void
+-pcap_set_parser_debug(int value)
+-{
+-#ifdef HAVE_PCAP_DEBUG
+-	extern int pcap_debug;
+-
+-	pcap_debug = value;
+-#else /* HAVE_PCAP_DEBUG */
+-	extern int yydebug;
+-
+-	yydebug = value;
+-#endif /* HAVE_PCAP_DEBUG */
+-}
+-
+-#define HAVE_PCAP_SET_PARSER_DEBUG
+-#endif
+-
+ #if defined(HAVE_PCAP_SET_OPTIMIZER_DEBUG)
+ /*
+  * We have pcap_set_optimizer_debug() in libpcap; declare it (it's not declared
+@@ -582,9 +546,6 @@
+ #ifdef HAVE_PCAP_SET_IMMEDIATE_MODE
+ 	{ "immediate-mode", no_argument, NULL, OPTION_IMMEDIATE_MODE },
+ #endif
+-#ifdef HAVE_PCAP_SET_PARSER_DEBUG
+-	{ "debug-filter-parser", no_argument, NULL, 'Y' },
+-#endif
+ 	{ "relinquish-privileges", required_argument, NULL, 'Z' },
+ 	{ "number", no_argument, NULL, '#' },
+ 	{ "version", no_argument, NULL, OPTION_VERSION },
+@@ -1476,14 +1437,6 @@
+ 				error("invalid data link type %s", yflag_dlt_name);
  			break;
  
--#if defined(HAVE_PCAP_DEBUG) || defined(HAVE_YYDEBUG)
+-#ifdef HAVE_PCAP_SET_PARSER_DEBUG
 -		case 'Y':
 -			{
 -			/* Undocumented flag */
--#ifdef HAVE_PCAP_DEBUG
--			extern int pcap_debug;
--			pcap_debug = 1;
--#else
--			extern int yydebug;
--			yydebug = 1;
--#endif
+-			pcap_set_parser_debug(1);
 -			}
 -			break;
 -#endif
  		case 'z':
- 			if (optarg) {
- 				zflag = strdup(optarg);
+ 			zflag = optarg;
+ 			break;

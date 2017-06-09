@@ -6,6 +6,11 @@
 # will be logged whenever the events for the device are ignored.
 #
 
+# AC340U
+# Temporarily added to this blacklist because ModemManager wants to make it work
+# in raw-ip mode, but looks like no data is correctly received in the WWAN
+1199:9051 forced in 802.3 mode
+
 # Franklin Wireless
 1fac:0232 rndis (e.g. U770)
 

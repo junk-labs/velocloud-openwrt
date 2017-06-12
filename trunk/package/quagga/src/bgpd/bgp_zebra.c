@@ -853,11 +853,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
           while (seg) {
               int j;
 
-              if (i == ZAPI_ASPATH_LEN_MAX) {
-                 bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
-                 break;
-              }
               for (j = 0; j < seg->length; j++) {
+                  if (i >= ZAPI_ASPATH_LEN_MAX) {
+                      bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                      break;
+                  }
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }
               seg = seg->next;
@@ -968,6 +968,10 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
           while (seg) {
               int j;
               for (j = 0; j < seg->length; j++) {
+                  if (i >= ZAPI_ASPATH_LEN_MAX) {
+                      bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                      break;
+                  }
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }
               seg = seg->next;
@@ -1063,6 +1067,10 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
           while (seg) {
               int j;
               for (j = 0; j < seg->length; j++) {
+                  if (i >= ZAPI_ASPATH_LEN_MAX) {
+                      bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                      break;
+                  }
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }
               seg = seg->next;
@@ -1159,6 +1167,10 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
           while (seg) {
               int j;
               for (j = 0; j < seg->length; j++) {
+                  if (i >= ZAPI_ASPATH_LEN_MAX) {
+                      bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                      break;
+                  }
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }
               seg = seg->next;

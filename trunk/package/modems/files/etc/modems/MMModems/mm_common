@@ -416,7 +416,7 @@ modem_connected()
             local ADDRESS=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "address")
             local PREFIX=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "prefix")
             local GATEWAY=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "gateway")
-            local MTU=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "mtu")
+            local MTU=$(helper_get_field "${BEARER_STATUS}" "IPv4 configuration" "MTU")
             setup_network_interface_static "${IFACE}" "${ADDRESS}" "${PREFIX}" "${GATEWAY}" "${MTU}"
             ;;
         "ppp")

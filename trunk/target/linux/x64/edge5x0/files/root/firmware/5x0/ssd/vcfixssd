@@ -1,0 +1,25 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+# Init script for flashing InnoDisk SSD on Edge 540s
+
+# To activate this, a symlink must be manually created with
+# the name /etc/rc.d/S06vcfixssd, pointing to this file. This
+# needs to be done via a loop mount on a raw openwrt installer
+# USB image, before flashing it.
+
+START=06
+
+# turn all RGB LEDs off;
+echo 0xff0088 > /sys/devices/platform/vc/leds/logo
+
+if /root/firmware/5x0/ssd/flash.sh ; then
+    echo "0x00ff00" > /sys/devices/platform/vc/leds/logo
+    sleep 5
+    echo "Shutting down" > /dev/kmsg
+    poweroff
+else
+    echo "0x0000ff" > /sys/devices/platform/vc/leds/logo
+    echo "Failed" > /dev/kmsg
+    sleep 1000000
+fi

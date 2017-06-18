@@ -1995,7 +1995,7 @@ bgp_create (as_t *as, const char *name)
 
   if (bgp->name)
     {
-      strcpy(namespace, "/run/netns/");
+      strcpy(namespace, "/var/run/netns/");
       strcat(namespace, bgp->name);
 
       zlog_info ("BGP instance name %s", bgp->name);

@@ -43,6 +43,9 @@ mm_check_modemmanager_blacklist() {
 
 	local vid
 	local pid
+	local conf
+	local full_entry
+	local other_entries
 	local reason
 	local physdev_sysfs_path
 
@@ -54,19 +57,37 @@ mm_check_modemmanager_blacklist() {
 
 	vid=$(cat ${physdev_sysfs_path}/idVendor)
 	pid=$(cat ${physdev_sysfs_path}/idProduct)
-
 	[ -z "${vid}" ] || [ -z "${pid}" ] && {
 		echo "couldn't get physical device vid:pid"
 		return
 	}
 
-	# First, check whether it's in the list
-	reason=$(awk -v prod="$vid:$pid" '!/^#/ && $0 ~ prod { print "1" }' $MODEMMANAGER_BLACKLIST)
+	conf=$(cat ${physdev_sysfs_path}/bConfigurationValue)
+	[ -z "${conf}" ] && {
+		echo "couldn't get physical device usb configuration"
+		return
+	}
+
+	# Check if the vid:pid:conf entry is in the blacklist"
+	full_entry=$(awk -v prod="$vid:$pid:$conf" '!/^#/ && $0 ~ prod { print $0 }' $MODEMMANAGER_BLACKLIST)
+	[ -z "$full_entry" ] && {
+		# If the match with usb configuration isn't in the blacklist, check if
+		# there is some other entry in the list with some other configuration
+		# value blacklisted
+		other_entries=$(awk -v prod="$vid:$pid:" '!/^#/ && $0 ~ prod { print $0 }' $MODEMMANAGER_BLACKLIST)
+
+		# Some other usb configuration is blacklisted, not the one we have
+		[ -n "$other_entries" ] && return
+
+		# Look for a match without explicit usb configuration
+		full_entry=$(awk -v prod="$vid:$pid" '!/^#/ && $0 ~ prod { print $0 }' $MODEMMANAGER_BLACKLIST)
+	}
+
 	# Not blacklisted?
-	[ -z "$reason" ] && return
+	[ -z "$full_entry" ] && return
 
 	# If it is, get the reason for the blacklisting
-	reason=$(awk -v prod="$vid:$pid" '!/^#/ && $0 ~ prod { $1=""; print $0 }' $MODEMMANAGER_BLACKLIST)
+	reason=$(echo $full_entry | awk '{ $1=""; print $0 }')
 	[ -n "$reason" ] && {
 		echo "$reason"
 		return

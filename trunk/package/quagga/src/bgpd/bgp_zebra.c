@@ -315,10 +315,8 @@ zebra_read_ipv4 (int command, struct zclient *zclient, zebra_size_t length)
     if (CHECK_FLAG (api.message, ZAPI_MESSAGE_ASPATH)) {
         redist_aspath.aspath_len = stream_getl (s);
         zlog_debug("Zebra rcvd: redist_aspath.aspath_len %d", redist_aspath.aspath_len);
-        if (redist_aspath.aspath_len > 0 && redist_aspath.aspath_len < 10) { 
         redist_aspath.val = (u_int32_t *)stream_pnt(s);
         stream_forward_getp(s, (redist_aspath.aspath_len * sizeof(u_int32_t)));
-        }
     }
 
     memset(&community, 0, sizeof(struct community));
@@ -855,11 +853,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
           while (seg) {
               int j;
 
-              if (i == ZAPI_ASPATH_LEN_MAX) {
-                 bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
-                 break;
-              }
               for (j = 0; j < seg->length; j++) {
+                  if (i >= ZAPI_ASPATH_LEN_MAX) {
+                      bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                      break;
+                  }
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }
               seg = seg->next;
@@ -970,6 +968,10 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
           while (seg) {
               int j;
               for (j = 0; j < seg->length; j++) {
+                  if (i >= ZAPI_ASPATH_LEN_MAX) {
+                      bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                      break;
+                  }
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }
               seg = seg->next;
@@ -1065,6 +1067,10 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
           while (seg) {
               int j;
               for (j = 0; j < seg->length; j++) {
+                  if (i >= ZAPI_ASPATH_LEN_MAX) {
+                      bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                      break;
+                  }
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }
               seg = seg->next;
@@ -1161,6 +1167,10 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
           while (seg) {
               int j;
               for (j = 0; j < seg->length; j++) {
+                  if (i >= ZAPI_ASPATH_LEN_MAX) {
+                      bgp_attr_buf.aspath_len = ZAPI_ASPATH_LEN_MAX;
+                      break;
+                  }
                   bgp_attr_buf.aspath_val[i++] = seg->as[j];
               }
               seg = seg->next;

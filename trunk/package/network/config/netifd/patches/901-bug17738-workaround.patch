@@ -1,0 +1,19 @@
+Workaround for VeloCloud bug 17738: sometimes, the ifindex change
+when DPDK loads the unloads the drivers, is "lost". netifd either
+does not receive the change, or system_if_resolve may have returned
+the wrong ifindex (like maybe -1).
+
+This workaround forces the device to be re-resolved each time
+device_refresh_present() is called. Seems like a heavy hammer..
+
+--- a/device.c	2015-10-25 18:29:11.000000000 -0700
++++ b/device.c	2017-06-12 13:05:57.496279612 -0700
+@@ -509,6 +509,8 @@
+ 	if (dev->disabled || dev->deferred)
+ 		state = false;
+ 
++	// Workaround for lost ifindex updates - bug 17738
++	device_set_ifindex(dev, system_if_resolve(dev));
+ 	__device_set_present(dev, state);
+ }
+ 

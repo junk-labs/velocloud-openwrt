@@ -27,7 +27,7 @@
 +// bit[1] all cpu ports;
 +// bit[2] all dsa ports;
 +
-+static int port_ifs = 0x1;
++static int port_ifs = 0x7;  // all ports by default
 +module_param(port_ifs,int,S_IRUGO);
 +MODULE_PARM_DESC(port_ifs, "create net interfaces per port");
  

@@ -299,8 +299,11 @@ get_modem_type()
 		fi
 
 		if [ -n "$hybridtype" ] && [ "$hybridtype" != "serial" ]; then
-			modemtype="None" # cdcether or qmiwwan
-		elif [ "$hybridtype" = "qmihybrid" ]; then
+			modemtype="None" # cdcether, qmiwwan, qmihybrid, sierranet...
+		fi
+
+		# For qmihybrid and sierranet override the 'None' type
+		if [ "$hybridtype" = "qmihybrid" ]; then
 			modemtype="qmihybrid"
 		elif [ "$hybridtype" = "sierranet" ]; then
 			modemtype="sierranet"

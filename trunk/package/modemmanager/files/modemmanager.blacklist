@@ -6,6 +6,12 @@
 # will be logged whenever the events for the device are ignored.
 #
 
+# AC340U QMI mode (USB configuration #1)
+# Temporarily added to this blacklist because ModemManager wants to make it work
+# in raw-ip mode, but looks like no data is correctly received in the WWAN
+# We do NOT blacklist MBIM mode (USB configuration #2)
+1199:9051:1 wwan interface needs to be forced in 802.3 mode
+
 # Franklin Wireless
 1fac:0232 rndis (e.g. U770)
 

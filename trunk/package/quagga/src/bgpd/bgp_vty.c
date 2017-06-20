@@ -4851,8 +4851,13 @@ DEFUN (clear_ip_bgp_peer_soft_out,
        "Soft reconfig\n"
        "Soft reconfig outbound update\n")
 {
-  return bgp_clear_vty (vty, NULL, AFI_IP, SAFI_UNICAST, clear_peer,
-			BGP_CLEAR_SOFT_OUT, argv[0]);
+    if (argc == 2) {
+        return bgp_clear_vty (vty, argv[0], AFI_IP, SAFI_UNICAST, clear_peer,
+                BGP_CLEAR_SOFT_OUT, argv[1]);
+    } else {
+        return bgp_clear_vty (vty, NULL, AFI_IP, SAFI_UNICAST, clear_peer,
+                BGP_CLEAR_SOFT_OUT, argv[0]);
+    }
 }
 
 ALIAS (clear_ip_bgp_peer_soft_out,
@@ -4862,6 +4867,29 @@ ALIAS (clear_ip_bgp_peer_soft_out,
        IP_STR
        BGP_STR
        "BGP neighbor address to clear\n"
+       "Soft reconfig outbound update\n")
+
+ALIAS (clear_ip_bgp_peer_soft_out,
+       clear_ip_bgp_instance_peer_out_cmd,
+       "clear ip bgp view WORD A.B.C.D out",
+       CLEAR_STR
+       IP_STR
+       BGP_STR
+       "BGP view\n"
+       "view name\n"
+       "BGP neighbor address to clear\n"
+       "Soft reconfig outbound update\n")
+
+ALIAS (clear_ip_bgp_peer_soft_out,
+       clear_ip_bgp_instance_peer_soft_out_cmd,
+       "clear ip bgp view WORD A.B.C.D soft out",
+       CLEAR_STR
+       IP_STR
+       BGP_STR
+       "BGP view\n"
+       "view name\n"
+       "BGP neighbor address to clear\n"
+       "Soft reconfig\n"
        "Soft reconfig outbound update\n")
 
 DEFUN (clear_ip_bgp_peer_ipv4_soft_out,
@@ -5575,8 +5603,13 @@ DEFUN (clear_ip_bgp_peer_soft_in,
        "Soft reconfig\n"
        "Soft reconfig inbound update\n")
 {
-  return bgp_clear_vty (vty, NULL, AFI_IP, SAFI_UNICAST, clear_peer,
-			BGP_CLEAR_SOFT_IN, argv[0]);
+    if (argc == 2) {
+        return bgp_clear_vty (vty, argv[0], AFI_IP, SAFI_UNICAST, clear_peer,
+                BGP_CLEAR_SOFT_IN, argv[1]);
+    } else {
+        return bgp_clear_vty (vty, NULL, AFI_IP, SAFI_UNICAST, clear_peer,
+                BGP_CLEAR_SOFT_IN, argv[0]);
+    }
 }
 
 ALIAS (clear_ip_bgp_peer_soft_in,
@@ -5586,6 +5619,29 @@ ALIAS (clear_ip_bgp_peer_soft_in,
        IP_STR
        BGP_STR
        "BGP neighbor address to clear\n"
+       "Soft reconfig inbound update\n")
+       
+ALIAS (clear_ip_bgp_peer_soft_in,
+       clear_ip_bgp_instance_peer_in_cmd,
+       "clear ip bgp view WORD A.B.C.D in",
+       CLEAR_STR
+       IP_STR
+       BGP_STR
+       "BGP view\n"
+       "view name\n"
+       "BGP neighbor address to clear\n"
+       "Soft reconfig inbound update\n")
+       
+ALIAS (clear_ip_bgp_peer_soft_in,
+       clear_ip_bgp_instance_peer_soft_in_cmd,
+       "clear ip bgp view WORD A.B.C.D soft in",
+       CLEAR_STR
+       IP_STR
+       BGP_STR
+       "BGP view\n"
+       "view name\n"
+       "BGP neighbor address to clear\n"
+       "Soft reconfig\n"
        "Soft reconfig inbound update\n")
        
 DEFUN (clear_ip_bgp_peer_in_prefix_filter,
@@ -9902,7 +9958,9 @@ bgp_vty_init (void)
   install_element (ENABLE_NODE, &clear_ip_bgp_all_in_prefix_filter_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_instance_all_in_prefix_filter_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_soft_in_cmd);
+  install_element (ENABLE_NODE, &clear_ip_bgp_instance_peer_soft_in_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_in_cmd);
+  install_element (ENABLE_NODE, &clear_ip_bgp_instance_peer_in_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_in_prefix_filter_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_group_soft_in_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_group_in_cmd);
@@ -9975,7 +10033,9 @@ bgp_vty_init (void)
   install_element (ENABLE_NODE, &clear_ip_bgp_instance_all_soft_out_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_all_out_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_soft_out_cmd);
+  install_element (ENABLE_NODE, &clear_ip_bgp_instance_peer_soft_out_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_out_cmd);
+  install_element (ENABLE_NODE, &clear_ip_bgp_instance_peer_out_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_group_soft_out_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_peer_group_out_cmd);
   install_element (ENABLE_NODE, &clear_ip_bgp_external_soft_out_cmd);

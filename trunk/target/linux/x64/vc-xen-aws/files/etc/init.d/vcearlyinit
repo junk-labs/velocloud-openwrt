@@ -8,6 +8,15 @@ START=05
 # turn all RGB LEDs off;
 #echo 0 > /sys/devices/platform/vc/leds/off
 
+# On Hyper-V, make sure that the Hyper-V drivers are loaded
+PRODUCT_NAME=`cat /sys/class/dmi/id/product_name`
+SYS_VENDOR=`cat /sys/class/dmi/id/sys_vendor`
+if [ "$SYS_VENDOR" = "Microsoft Corporation" -a "$PRODUCT_NAME" = "Virtual Machine" ]; then
+    modprobe hv_balloon
+    modprobe hv_netvsc
+    modprobe hv_utils
+fi
+
 VC_PART=`block info | fgrep 'LABEL="user"' | sed -e 's/:.*$//'`
 if [ -b "$VC_PART" ]; then
     echo "" > /dev/kmsg

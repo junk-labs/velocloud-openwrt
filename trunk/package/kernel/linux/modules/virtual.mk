@@ -243,7 +243,7 @@ define KernelPackage/hyperv-balloon
     CONFIG_PARAVIRT=n \
     CONFIG_HYPERV=y
   FILES:=$(LINUX_DIR)/drivers/hv/hv_balloon.ko
-  AUTOLOAD:=$(call AutoLoad,06,hv_balloon)
+  #AUTOLOAD:=$(call AutoLoad,06,hv_balloon)
 endef
 
 define KernelPackage/hyperv-balloon/description
@@ -262,7 +262,7 @@ define KernelPackage/hyperv-net-vsc
     CONFIG_PARAVIRT=n \
     CONFIG_HYPERV=y
   FILES:=$(LINUX_DIR)/drivers/net/hyperv/hv_netvsc.ko
-  AUTOLOAD:=$(call AutoLoad,35,hv_netvsc)
+  #AUTOLOAD:=$(call AutoLoad,35,hv_netvsc)
 endef
 
 define KernelPackage/hyperv-net-vsc/description
@@ -281,7 +281,7 @@ define KernelPackage/hyperv-util
     CONFIG_PARAVIRT=n \
     CONFIG_HYPERV=y
   FILES:=$(LINUX_DIR)/drivers/hv/hv_utils.ko
-  AUTOLOAD:=$(call AutoLoad,10,hv_utils)
+  #AUTOLOAD:=$(call AutoLoad,10,hv_utils)
 endef
 
 define KernelPackage/hyperv-util/description
@@ -303,7 +303,7 @@ define KernelPackage/hyperv-storage
     CONFIG_PARAVIRT=n \
     CONFIG_HYPERV=y
   FILES:=$(LINUX_DIR)/drivers/scsi/hv_storvsc.ko
-  AUTOLOAD:=$(call AutoLoad,40,hv_storvsc)
+  #AUTOLOAD:=$(call AutoLoad,40,hv_storvsc)
 endef
 
 define KernelPackage/hyperv-storage/description

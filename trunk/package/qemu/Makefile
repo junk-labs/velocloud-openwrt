@@ -68,10 +68,10 @@ CONFIGURE_ARGS = \
 	--disable-brlapi \
 	--disable-sdl \
 	--disable-xen \
-	--disable-vnc \
-	--disable-user \
+	--enable-vnc    \
+	--disable-user  \
 	--disable-bzip2 \
-	--disable-lzo \
+	--disable-lzo   \
 	--disable-gnutls \
 	--disable-nettle \
 	--enable-system \

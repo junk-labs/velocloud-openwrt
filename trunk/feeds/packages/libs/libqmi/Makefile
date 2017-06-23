@@ -1,14 +1,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libqmi
-PKG_VERSION:=1.16.2
+PKG_VERSION:=1.18.0
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=git://anongit.freedesktop.org/libqmi
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=f114f4ebe66c538cbb28b05eb0b065fe08c6f9fa
+PKG_SOURCE_VERSION:=76f2030b6e66d0ceeab30e57f5200708649f7905
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+
+PKG_MAINTAINER:=Aleksander Morgado <aleksander@aleksander.es>
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -19,7 +21,7 @@ include $(INCLUDE_DIR)/nls.mk
 define Package/libqmi
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=+glib2 +zlib +kmod-usb-net-qmi-wwan +libmbim
+  DEPENDS:=+glib2 +libmbim +kmod-usb-net +kmod-usb-net-qmi-wwan +kmod-usb-wdm
   TITLE:=Helper library and utils to talk to QMI enabled modems
   URL:=http://www.freedesktop.org/wiki/Software/libqmi
 endef
@@ -27,6 +29,14 @@ endef
 define Package/libqmi/description
   Helper library and utils to talk to QMI enabled modems
 endef
+
+CONFIGURE_ARGS += \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --enable-mbim-qmux \
+        --enable-firmware-update \
+        --without-udev
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
@@ -55,6 +65,7 @@ define Package/libqmi/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/qmicli $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/qmi-network $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/qmi-firmware-update $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,libqmi))

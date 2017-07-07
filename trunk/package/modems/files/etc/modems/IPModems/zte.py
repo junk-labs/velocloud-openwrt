@@ -6,6 +6,7 @@ import json
 import re
 import IPModems
 import time
+import logging
 
 class Zte(IPModems.IPModems):
 

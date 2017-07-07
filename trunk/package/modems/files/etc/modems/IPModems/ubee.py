@@ -6,6 +6,7 @@ import urllib2
 import json
 import re
 import IPModems
+import logging
 
 class Ubee(IPModems.IPModems):
 

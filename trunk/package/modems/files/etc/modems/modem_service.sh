@@ -180,6 +180,13 @@ load_modem_status()
 	#   STOPPED
 	#   UNKNOWN
 
+	# Don't go on if type is empty (i.e. no config for USB#)
+	TYPE=$(get_usb_type $USB)
+	if [ -z "$TYPE" ]; then
+		logerr "$USB: Unknown modem type, cannot run modem service operation"
+		exit 1
+	fi
+
 	# For ModemManager managed modems, we don't check ifname, as ifname is only
 	# set once the modem has been connected.
 	if [ "$TYPE" != "modemmanager" ]; then
@@ -347,13 +354,6 @@ modem_status()
 			;;
 	esac
 }
-
-# Don't go on if type is empty (i.e. no config for USB#)
-TYPE=$(get_usb_type $USB)
-if [ -z "$TYPE" ]; then
-	logerr "$USB: Unknown modem type, cannot run modem service operation"
-	exit 1
-fi
 
 case "$trigger" in
 	'start')

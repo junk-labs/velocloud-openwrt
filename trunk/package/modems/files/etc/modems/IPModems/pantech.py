@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import urllib2
 import subprocess
 import time
+import logging
 
 import IPModems
 

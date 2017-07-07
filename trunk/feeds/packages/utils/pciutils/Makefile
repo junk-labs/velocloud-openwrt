@@ -34,10 +34,16 @@ endef
 
 define Package/pciutils/postinst
 #!/bin/sh
-[ -z "$${IPKG_INSTROOT}" ] || \
-(cd $${PKG_ROOT}/usr/share; $${PKG_ROOT}/usr/sbin/update-pciids; rm pci.ids.gz.old)
-exit 0
+#[ -z "$${IPKG_INSTROOT}" ] || \
+#(cd $${PKG_ROOT}/usr/share; $${PKG_ROOT}/usr/sbin/update-pciids; rm pci.ids.gz.old)
+#exit 0
 endef
+
+define copy_latest_pciids
+	rm -rf $(PKG_BUILD_DIR)/pci.ids
+	$(CP) ./files/pci.ids $(PKG_BUILD_DIR)/pci.ids
+endef
+Hooks/Prepare/Post += copy_latest_pciids
 
 MAKE_FLAGS += \
 	CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include" \

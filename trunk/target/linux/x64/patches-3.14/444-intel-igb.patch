@@ -708,8 +708,8 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/in
  	case SPEED_1000 + DUPLEX_HALF: /* not supported */
 diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/intel/igb/igb_vc.c
 --- /dev/null
-+++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2017-05-12 10:01:19.661338458 -0700
-@@ -0,0 +1,3570 @@
++++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2017-05-16 14:20:17.262708424 -0700
+@@ -0,0 +1,3576 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -805,6 +805,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +
 +// MDIO timeout;
 +
++#define IGB_VC_MDIO_READY_TO 20		// ready timeout in 1msec steps;
 +#define IGB_VC_MDIO_TIMEOUT 100		// in 10us steps;
 +#define IGB_VC_SMI_MDIO_RETRIES 50	// # of smi mdio retries;
 +
@@ -1670,15 +1671,20 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +static int
 +igb_vc_m88sw_id(struct e1000_hw *hw)
 +{
-+	int ret;
++	int i, ret;
++	u32 addr = M88_SW_PORT_REG(hw->phy.ports[e1000_port_cpu], M88_SW_PORT_PROD_ID);
 +	u16 prod_id;
 +
++	// flush garbage on mdio bus via read;
 +	// read product ID from port;
 +	// make up marvell PHY ID;
 +
-+	ret = igb_vc_mdio_read(hw,
-+		M88_SW_PORT_REG(hw->phy.ports[e1000_port_cpu], M88_SW_PORT_PROD_ID),
-+		&prod_id);
++	for(i = 0; i < IGB_VC_MDIO_READY_TO; i++) {
++		ret = igb_vc_mdio_read(hw, addr, &prod_id);
++		if(ret >= 0)
++			break;
++		udelay(1000);
++	}
 +	vcdbg("prod id  %d 0x%x\n", ret, prod_id);
 +	if(ret == 0) {
 +		hw->phy.id = (M88_VENDOR << 16) | (prod_id & PHY_REVISION_MASK);

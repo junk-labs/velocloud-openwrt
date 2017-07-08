@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dmidecode
-PKG_VERSION:=2.12
+PKG_VERSION:=3.1
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://download.savannah.gnu.org/releases/dmidecode
-PKG_MD5SUM:=a406f3cbb27736491698697beeddb781
+PKG_MD5SUM:=679c2c015c515aa6ca5f229aee49c102
 
 PKG_INSTALL:=1
 

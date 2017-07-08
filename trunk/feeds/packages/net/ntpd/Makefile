@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ntp
-PKG_VERSION:=4.2.6p5
-PKG_RELEASE:=2
+PKG_VERSION:=4.2.8p10
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/
-PKG_MD5SUM:=00df80a84ec9528fcfb09498075525bc
+PKG_MD5SUM:=745384ed0dedb3f66b33fe84d66466f9
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
 
@@ -127,6 +127,7 @@ CONFIGURE_ARGS += \
 	--disable-parse-clocks \
 	--without-ntpsnmpd \
 	--without-lineeditlibs \
+	--with-yielding-select=yes \
 	--enable-NMEA \
 	--enable-LOCAL-CLOCK \
 	--enable-SHM \
@@ -137,6 +138,9 @@ ifeq ($(BUILD_VARIANT),ssl)
 	--with-crypto \
 	--with-openssl-incdir="$(STAGING_DIR)/usr/include" \
 	--with-openssl-libdir="$(STAGING_DIR)/usr/lib"
+else
+  CONFIGURE_ARGS += \
+	--with-crypto=no
 endif
 
 define Package/ntpd/install

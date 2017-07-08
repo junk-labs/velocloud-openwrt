@@ -134,7 +134,7 @@ diff -Naur a/drivers/platform/x86/velocloud.c b/drivers/platform/x86/velocloud.c
 +	  },
 +	  VC_EDGE_ID(VC_EDGE1000QAT),
 +	},
-+	{ .ident = "edge800sm",
++	{ .ident = "edge840sm",
 +	  { DMI_MATCH(DMI_PRODUCT_NAME, "EDGE840"),
 +	  },
 +	  VC_EDGE_ID(VC_EDGE800SM),

@@ -34,7 +34,7 @@ define Build/Configure
 	cd $(PKG_BUILD_DIR); \
 		LINUX_CLIB="-DGLIBCV=2" \
 		LSOF_CC="$(TARGET_CC)" \
-		LSOF_INCLUDE="-I$(STAGING_DIR)/usr/include" \
+		LSOF_INCLUDE="$(STAGING_DIR)/usr/include" \
 		LSOF_VSTR="$(LINUX_VERSION)" \
 		LSOF_CFGF="$(TARGET_CFLAGS)" \
 		LSOF_CFGL="$(TARGET_LDFLAGS)" \

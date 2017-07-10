@@ -156,7 +156,7 @@ class Qmi(IPModems.IPModems):
 
 	def get_static_values(self):
 		# Reset to defaults before reloading
-		self.linkid = 'unknown'
+		self.linkid = '' # Empty linkid so that we fallback to the default VID:PID based one
 		self.modem_name = 'unknown'
 		self.modem_version = 'unknown'
 		self.isp_name = 'unknown'

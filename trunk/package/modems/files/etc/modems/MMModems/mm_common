@@ -482,6 +482,9 @@ process_initial_state()
     log_debug "modem equipment id: ${EQUIPMENT_ID}"
     if [ -n "${EQUIPMENT_ID}" ]; then
         uci -c ${modem_config_path} set modems.${USB}.linkid=''"${EQUIPMENT_ID}"''
+    else
+        local MODEM_INDEX=$(basename ${DBUSPATH})
+        uci -c ${modem_config_path} set modems.${USB}.linkid=''"modem${MODEM_INDEX}-${USB}"''
     fi
 
     # 3gpp imei

@@ -30,9 +30,10 @@ def supported_modems():
 USB = sys.argv[1]
 
 # Debugging: DEBUG, INFO, WARNING, ERROR, CRITICAL
-debugflag = logging.WARNING #logging.DEBUG
-debugfile = '/tmp/USB/'+USB+'_ipmodem_info_collector.log'
-logging.basicConfig(filename=debugfile, level=debugflag)
+LOGLEVEL = logging.WARNING #logging.DEBUG
+LOGFILE = '/tmp/USB/'+USB+'_ipmodem_info_collector.log'
+LOGFORMAT = '%(asctime)-15s %(message)s'
+logging.basicConfig(filename=LOGFILE, level=LOGLEVEL, format=LOGFORMAT)
 
 # This is a VID/PID based list
 supported_vidpid_list = {

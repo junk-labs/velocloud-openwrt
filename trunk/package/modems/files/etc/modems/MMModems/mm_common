@@ -37,7 +37,7 @@ log_debug()
     fi
 
     if [ -n "${LOG_TMP}" ]; then
-        echo "${LOG_TAG} debug: $@" >> ${LOG_TMP_PATH}
+        echo "$(/bin/date +"%Y-%m-%d %H:%M:%S") ${LOG_TAG} debug: $@" >> ${LOG_TMP_PATH}
     fi
 }
 
@@ -52,7 +52,7 @@ log_info()
     fi
 
     if [ -n "${LOG_TMP}" ]; then
-        echo "${LOG_TAG} info: $@" >> ${LOG_TMP_PATH}
+        echo "$(/bin/date +"%Y-%m-%d %H:%M:%S") ${LOG_TAG} info: $@" >> ${LOG_TMP_PATH}
     fi
 }
 
@@ -67,7 +67,7 @@ log_error()
     fi
 
     if [ -n "${LOG_TMP}" ]; then
-        echo "${LOG_TAG} error: $@" >> ${LOG_TMP_PATH}
+        echo "$(/bin/date +"%Y-%m-%d %H:%M:%S") ${LOG_TAG} error: $@" >> ${LOG_TMP_PATH}
     fi
 }
 

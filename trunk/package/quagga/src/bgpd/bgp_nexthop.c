@@ -418,10 +418,28 @@ bgp_scan (afi_t afi, safi_t safi)
   struct bgp_info *next;
   struct peer *peer;
   struct listnode *node, *nnode;
+  struct listnode *bnode, *bnnode;
   int valid;
   int current;
   int changed;
   int metricchanged;
+
+  /* Reevaluate default-originate route-maps and announce/withdraw
+   * default route if neccesary. */
+  for (ALL_LIST_ELEMENTS (bm->bgp, bnode, bnnode, bgp))
+  {
+      for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
+      {
+          if (peer->status == Established
+                  && CHECK_FLAG(peer->af_flags[afi][safi], PEER_FLAG_DEFAULT_ORIGINATE)
+                  && peer->default_rmap[afi][safi].name)
+              bgp_default_originate (peer, afi, safi, 0);
+      }
+   }
+
+   /* For now not interested in the following checks because we are dealing with only
+      connected route based next-hop resolution */
+   return;
 
   /* Change cache. */
   if (bgp_nexthop_cache_table[afi] == cache1_table[afi])
@@ -515,15 +533,6 @@ bgp_scan (afi_t afi, safi_t safi)
 	zlog_debug ("scanning IPv6 Unicast routing tables");
     }
 
-  /* Reevaluate default-originate route-maps and announce/withdraw
-   * default route if neccesary. */
-  for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
-    {
-      if (peer->status == Established
-	  && CHECK_FLAG(peer->af_flags[afi][safi], PEER_FLAG_DEFAULT_ORIGINATE)
-	  && peer->default_rmap[afi][safi].name)
-	bgp_default_originate (peer, afi, safi, 0);
-    }
 }
 
 /* BGP scan thread.  This thread check nexthop reachability. */
@@ -533,8 +542,9 @@ bgp_scan_timer (struct thread *t)
   bgp_scan_thread =
     thread_add_timer (master, bgp_scan_timer, NULL, bgp_scan_interval);
 
-  if (BGP_DEBUG (events, EVENTS))
-    zlog_debug ("Performing BGP general scanning");
+// Avoiding continuous log entries
+//if (BGP_DEBUG (events, EVENTS))
+//    zlog_debug ("Performing BGP general scanning");
 
   bgp_scan (AFI_IP, SAFI_UNICAST);
 
@@ -551,8 +561,6 @@ struct bgp_addr
   struct in_addr addr;
   int refcnt;
 };
-
-static struct hash *bgp_address_hash;
 
 static void *
 bgp_address_hash_alloc (void *p)
@@ -585,33 +593,33 @@ bgp_address_hash_cmp (const void *p1, const void *p2)
 }
 
 void
-bgp_address_init (void)
+bgp_address_init (struct bgp *bgp)
 {
-  bgp_address_hash = hash_create (bgp_address_hash_key_make,
+  bgp->bgp_address_hash = hash_create (bgp_address_hash_key_make,
                                   bgp_address_hash_cmp);
 }
 
 static void
-bgp_address_add (struct prefix *p)
+bgp_address_add (struct bgp *bgp, struct prefix *p)
 {
   struct bgp_addr tmp;
   struct bgp_addr *addr;
 
   tmp.addr = p->u.prefix4;
 
-  addr = hash_get (bgp_address_hash, &tmp, bgp_address_hash_alloc);
+  addr = hash_get (bgp->bgp_address_hash, &tmp, bgp_address_hash_alloc);
   addr->refcnt++;
 }
 
 static void
-bgp_address_del (struct prefix *p)
+bgp_address_del (struct bgp *bgp, struct prefix *p)
 {
   struct bgp_addr tmp;
   struct bgp_addr *addr;
 
   tmp.addr = p->u.prefix4;
 
-  addr = hash_lookup (bgp_address_hash, &tmp);
+  addr = hash_lookup (bgp->bgp_address_hash, &tmp);
   /* may have been deleted earlier by bgp_interface_down() */
   if (addr == NULL)
     return;
@@ -620,7 +628,7 @@ bgp_address_del (struct prefix *p)
 
   if (addr->refcnt == 0)
     {
-      hash_release (bgp_address_hash, addr);
+      hash_release (bgp->bgp_address_hash, addr);
       XFREE (MTYPE_BGP_ADDR, addr);
     }
 }
@@ -671,7 +679,7 @@ bgp_connected_add (struct connected *ifc)
       if (prefix_ipv4_any ((struct prefix_ipv4 *) &p))
 	return;
 
-      bgp_address_add (addr);
+      bgp_address_add (bgp, addr);
 
       rn = bgp_node_get (bgp->bgp_connected_table[AFI_IP], (struct prefix *) &p);
       if (rn->info)
@@ -692,8 +700,11 @@ bgp_connected_add (struct connected *ifc)
 
           for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
           {
-              BGP_EVENT_ADD (peer, BGP_Stop);
-              BGP_EVENT_ADD (peer, BGP_Start);
+              if (ifp == if_lookup_by_ipv4 (&peer->su.sin.sin_addr))
+              {
+                  BGP_EVENT_ADD (peer, BGP_Stop);
+                  BGP_EVENT_ADD (peer, BGP_Start);
+              }
           }
       }
     }
@@ -758,7 +769,7 @@ bgp_connected_delete (struct connected *ifc)
       if (prefix_ipv4_any ((struct prefix_ipv4 *) &p))
 	return;
 
-      bgp_address_del (addr);
+      bgp_address_del (bgp, addr);
 
       rn = bgp_node_lookup (bgp->bgp_connected_table[AFI_IP], &p);
       if (! rn)
@@ -804,13 +815,13 @@ bgp_connected_delete (struct connected *ifc)
 }
 
 int
-bgp_nexthop_self (struct attr *attr)
+bgp_nexthop_self (struct bgp *bgp, struct attr *attr)
 {
   struct bgp_addr tmp, *addr;
 
   tmp.addr = attr->nexthop;
 
-  addr = hash_lookup (bgp_address_hash, &tmp);
+  addr = hash_lookup (bgp->bgp_address_hash, &tmp);
   if (addr)
     return 1;
 
@@ -1510,7 +1521,9 @@ bgp_scan_init (void)
   bgp_scan_thread = thread_add_timer (master, bgp_scan_timer, 
                                       NULL, bgp_scan_interval);
   /* Make BGP import there. */
+  /*For now not interested in BGP import check 
   bgp_import_thread = thread_add_timer (master, bgp_import, NULL, 0);
+  */
 
   install_element (BGP_NODE, &bgp_scan_time_cmd);
   install_element (BGP_NODE, &no_bgp_scan_time_cmd);

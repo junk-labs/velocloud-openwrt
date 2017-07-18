@@ -55,7 +55,7 @@ extern void bgp_connected_delete (struct connected *c);
 extern int bgp_multiaccess_check_v4 (struct bgp *, struct in_addr, char *);
 extern int bgp_config_write_scan_time (struct vty *);
 extern int bgp_nexthop_onlink (struct bgp *, afi_t, struct attr *);
-extern int bgp_nexthop_self (struct attr *);
-extern void bgp_address_init (void);
+extern int bgp_nexthop_self (struct bgp *, struct attr *);
+extern void bgp_address_init (struct bgp *);
 
 #endif /* _QUAGGA_BGP_NEXTHOP_H */

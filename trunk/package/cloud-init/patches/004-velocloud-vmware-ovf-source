@@ -148,7 +148,7 @@ diff -ruN cloud-init-0.7.9.orig//cloudinit/sources/DataSourceVCOVF.py cloud-init
 +        self.seed = ",".join(found)
 +        self.metadata = md
 +        self.userdata_raw = ud
-+	self._network_config = md['network-config']
++        self._network_config = md.get('network-config')
 +        self.cfg = cfg
 +        return True
 +

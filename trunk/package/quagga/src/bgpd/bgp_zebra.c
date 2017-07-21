@@ -756,6 +756,7 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
   struct bgp_info *mpinfo;
   size_t oldsize, newsize;
   u_short tag;
+  size_t namelen;
 
   if (zclient->sock < 0)
     return;
@@ -812,8 +813,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 	  stream_put (bgp_nexthop_buf, &nexthop, sizeof (struct in_addr *));
 	}
 
-      if (peer->bgp->name)
-         strncpy (api.iname, peer->bgp->name, strnlen(peer->bgp->name, INSTANCE_NAMSIZ));
+      if (peer->bgp->name) {
+         namelen = strnlen(peer->bgp->name, INSTANCE_NAMSIZ);
+         strncpy (api.iname, peer->bgp->name, namelen);
+         api.iname[namelen] = '\0';
+      }
       else
          api.iname[0] = '\0';
       api.type = ZEBRA_ROUTE_BGP;
@@ -932,8 +936,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 	}
 
       /* Make Zebra API structure. */
-      if (peer->bgp->name)
-         strncpy (api.iname, peer->bgp->name, strnlen(peer->bgp->name, INSTANCE_NAMSIZ));
+      if (peer->bgp->name) {
+         namelen = strnlen(peer->bgp->name, INSTANCE_NAMSIZ);
+         strncpy (api.iname, peer->bgp->name, namelen);
+         api.iname[namelen] = '\0';
+      }
       else
          api.iname[0] = '\0';
       api.flags = flags;
@@ -1006,6 +1013,7 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
 {
   int flags;
   struct peer *peer;
+  size_t namelen;
 
   if (zclient->sock < 0)
     return;
@@ -1034,8 +1042,11 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
       api.flags = flags;
       nexthop = &info->attr->nexthop;
 
-      if (peer->bgp->name)
-         strncpy (api.iname, peer->bgp->name, strnlen(peer->bgp->name, INSTANCE_NAMSIZ));
+      if (peer->bgp->name) {
+         namelen = strnlen(peer->bgp->name, INSTANCE_NAMSIZ);
+         strncpy (api.iname, peer->bgp->name, namelen);
+         api.iname[namelen] = '\0';
+      }
       else
          api.iname[0] = '\0';
       api.type = ZEBRA_ROUTE_BGP;
@@ -1131,8 +1142,11 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
 	if (info->peer->ifname)
 	  ifindex = if_nametoindex (info->peer->ifname);
 
-      if (peer->bgp->name)
-         strncpy (api.iname, peer->bgp->name, strnlen(peer->bgp->name, INSTANCE_NAMSIZ));
+      if (peer->bgp->name) {
+         namelen = strnlen(peer->bgp->name, INSTANCE_NAMSIZ);
+         strncpy (api.iname, peer->bgp->name, namelen);
+         api.iname[namelen] = '\0';
+      }
       else
          api.iname[0] = '\0';
       api.flags = flags;

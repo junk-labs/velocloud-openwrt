@@ -3,16 +3,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cloud-init
-PKG_VERSION:=0.7.2
+PKG_VERSION:=0.7.9
 PKG_RELEASE:=1
 
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://launchpad.net/$(PKG_NAME)/trunk/$(PKG_VERSION)/+download/
-PKG_MD5SUM:=53ee21e7b7b3f42ce50d1303a484fe28
+PKG_MD5SUM:=0a83072b25a0f96c539fa6cd45c05347
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_DEPENDS:=python
-
 
 
 include $(INCLUDE_DIR)/package.mk
@@ -24,7 +23,7 @@ define Package/cloud-init
   CATEGORY:=Languages
   TITLE:=cloud-init
   URL:=http://pypi.python.org/pypi/cloud-init/
-  DEPENDS:=+python +boto +Cheetah +configobj +pyyaml +prettytable
+  DEPENDS:=+python +boto +Cheetah +configobj +pyyaml +prettytable +python-jinja2 +requests +python-six +python-jsonpatch +python-oauthlib
 endef
 
 define Package/cloud-init/description
@@ -32,8 +31,8 @@ define Package/cloud-init/description
 endef
 
 define Build/Compile
-	$(call Build/Compile/PyMod,, install --prefix="$(PKG_INSTALL_DIR)/usr" \
-					     --install-data="$(PKG_INSTALL_DIR)")
+       $(call Build/Compile/PyMod,, install --prefix="$(PKG_INSTALL_DIR)/usr" \
+                                            --install-data="$(PKG_INSTALL_DIR)")
 endef
 
 
@@ -66,7 +65,10 @@ define Package/cloud-init/install
 	$(CP) \
 		$(PKG_INSTALL_DIR)/usr \
 		$(1)
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/etc/init.d/cloud-init-local $(1)/etc/init.d/cloud-init-local
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/etc/init.d/cloud-init $(1)/etc/init.d/cloud-init
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/etc/init.d/cloud-config $(1)/etc/init.d/cloud-config
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/etc/init.d/cloud-final $(1)/etc/init.d/cloud-final
 	$(INSTALL_DATA) ./files/cloud.cfg $(1)/etc/cloud/cloud.cfg
 endef
 

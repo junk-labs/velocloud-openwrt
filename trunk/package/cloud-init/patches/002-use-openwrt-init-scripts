@@ -1,0 +1,124 @@
+diff -ruN cloud-init-0.7.9.orig//sysvinit/openwrt/cloud-config cloud-init-0.7.9/sysvinit/openwrt/cloud-config
+new file mode 100755
+--- cloud-init-0.7.9.orig//sysvinit/openwrt/cloud-config	1970-01-01 00:00:00.000000000 +0000
++++ cloud-init-0.7.9/sysvinit/openwrt/cloud-config	2017-07-12 23:51:35.000000000 +0000
+@@ -0,0 +1,26 @@
++#!/bin/sh /etc/rc.common
++
++# Copyright (C) 2008-2011 OpenWrt.org
++# Copyright (C) 2013 Velocloud Inc.
++
++START=23
++
++RETVAL=0
++
++prog="cloud-init"
++cloud_init="/usr/bin/cloud-init"
++conf="/etc/cloud/cloud.cfg"
++
++# If there exist sysconfig/default variable override files use it...
++[ -f /etc/config/cloud-init ] && . /etc/config/cloud-init
++
++start() {
++    [ -x $cloud_init ] || return 5
++    [ -f $conf ] || return 6
++
++    service_start $cloud_init $CLOUDINITARGS modules --mode config
++}
++
++stop() {
++    return $RETVAL
++}
+diff -ruN cloud-init-0.7.9.orig//sysvinit/openwrt/cloud-final cloud-init-0.7.9/sysvinit/openwrt/cloud-final
+new file mode 100755
+--- cloud-init-0.7.9.orig//sysvinit/openwrt/cloud-final	1970-01-01 00:00:00.000000000 +0000
++++ cloud-init-0.7.9/sysvinit/openwrt/cloud-final	2017-07-12 23:51:35.000000000 +0000
+@@ -0,0 +1,26 @@
++#!/bin/sh /etc/rc.common
++
++# Copyright (C) 2008-2011 OpenWrt.org
++# Copyright (C) 2013 Velocloud Inc.
++
++START=99
++
++RETVAL=0
++
++prog="cloud-init"
++cloud_init="/usr/bin/cloud-init"
++conf="/etc/cloud/cloud.cfg"
++
++# If there exist sysconfig/default variable override files use it...
++[ -f /etc/config/cloud-init ] && . /etc/config/cloud-init
++
++start() {
++    [ -x $cloud_init ] || return 5
++    [ -f $conf ] || return 6
++
++    service_start $cloud_init $CLOUDINITARGS modules --mode final
++}
++
++stop() {
++    return $RETVAL
++}
+diff -ruN cloud-init-0.7.9.orig//sysvinit/openwrt/cloud-init cloud-init-0.7.9/sysvinit/openwrt/cloud-init
+new file mode 100755
+--- cloud-init-0.7.9.orig//sysvinit/openwrt/cloud-init	1970-01-01 00:00:00.000000000 +0000
++++ cloud-init-0.7.9/sysvinit/openwrt/cloud-init	2017-07-12 23:51:35.000000000 +0000
+@@ -0,0 +1,26 @@
++#!/bin/sh /etc/rc.common
++
++# Copyright (C) 2008-2011 OpenWrt.org
++# Copyright (C) 2013 Velocloud Inc.
++
++START=22
++
++RETVAL=0
++
++prog="cloud-init"
++cloud_init="/usr/bin/cloud-init"
++conf="/etc/cloud/cloud.cfg"
++
++# If there exist sysconfig/default variable override files use it...
++[ -f /etc/config/cloud-init ] && . /etc/config/cloud-init
++
++start() {
++    [ -x $cloud_init ] || return 5
++    [ -f $conf ] || return 6
++
++    service_start $cloud_init $CLOUDINITARGS init
++}
++
++stop() {
++    return $RETVAL
++}
+diff -ruN cloud-init-0.7.9.orig//sysvinit/openwrt/cloud-init-local cloud-init-0.7.9/sysvinit/openwrt/cloud-init-local
+new file mode 100755
+--- cloud-init-0.7.9.orig//sysvinit/openwrt/cloud-init-local	1970-01-01 00:00:00.000000000 +0000
++++ cloud-init-0.7.9/sysvinit/openwrt/cloud-init-local	2017-07-12 23:51:35.000000000 +0000
+@@ -0,0 +1,26 @@
++#!/bin/sh /etc/rc.common
++
++# Copyright (C) 2008-2011 OpenWrt.org
++# Copyright (C) 2013 Velocloud Inc.
++
++START=21
++
++RETVAL=0
++
++prog="cloud-init"
++cloud_init="/usr/bin/cloud-init"
++conf="/etc/cloud/cloud.cfg"
++
++# If there exist sysconfig/default variable override files use it...
++[ -f /etc/config/cloud-init ] && . /etc/config/cloud-init
++
++start() {
++    [ -x $cloud_init ] || return 5
++    [ -f $conf ] || return 6
++
++    service_start $cloud_init $CLOUDINITARGS init --local
++}
++
++stop() {
++    return $RETVAL
++}

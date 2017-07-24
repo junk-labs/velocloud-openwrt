@@ -156,6 +156,12 @@ struct zapi_ipv4
   void *proto_data;
 };
 
+struct zapi_redis
+{
+  char iname[INSTANCE_NAMSIZ];
+  int type;
+};
+
 /* Prototypes of zebra client service functions. */
 extern struct zclient *zclient_new (void);
 extern void zclient_init (struct zclient *, int);
@@ -170,7 +176,7 @@ extern void zclient_serv_path_set  (char *path);
 extern const char *const zclient_serv_path_get (void);
 
 /* Send redistribute command to zebra daemon. Do not update zclient state. */
-extern int zebra_redistribute_send (int command, struct zclient *, int type);
+extern int zebra_redistribute_send (int command, struct zclient *, int type, struct zapi_redis *api);
 
 /* If state has changed, update state and call zebra_redistribute_send. */
 extern void zclient_redistribute (int command, struct zclient *, int type);

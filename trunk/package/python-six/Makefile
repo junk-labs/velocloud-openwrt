@@ -28,6 +28,9 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk
 $(call include_mk, python-package.mk)
 
+PKG_UNPACK:=$(HOST_TAR) -C $(PKG_BUILD_DIR) --strip-components=1 -xzf $(DL_DIR)/$(PKG_SOURCE)
+HOST_UNPACK:=$(HOST_TAR) -C $(HOST_BUILD_DIR) --strip-components=1 -xzf $(DL_DIR)/$(PKG_SOURCE)
+
 define Package/python-six
 	SECTION:=lang
 	CATEGORY:=Languages
@@ -48,13 +51,19 @@ define Build/Compile
 	$(call Build/Compile/PyMod,,install --prefix=/usr --root=$(PKG_INSTALL_DIR))
 endef
 
+define Package/python-six/install
+	$(INSTALL_DIR) $(1)$(PYTHON_PKG_DIR)
+	$(CP) \
+            $(PKG_INSTALL_DIR)$(PYTHON_PKG_DIR)/* \
+            $(1)$(PYTHON_PKG_DIR)
+endef
+
 define Host/Compile
-        $(call HostPython, cd $(HOST_BUILD_DIR)/../six-$(PKG_VERSION); , ./setup.py install --prefix="" --root=$(STAGING_DIR_HOST))
+        $(call HostPython, cd $(HOST_BUILD_DIR); ./setup.py install --prefix="" --root=$(STAGING_DIR_HOST))
 endef
 
 define Host/Install
 endef
 
 $(eval $(call HostBuild))
-$(eval $(call PyPackage,python-six))
 $(eval $(call BuildPackage,python-six))

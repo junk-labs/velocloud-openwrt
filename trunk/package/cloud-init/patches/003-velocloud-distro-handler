@@ -1,7 +1,7 @@
-diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cloudinit/distros/openwrt.py
---- cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py	1970-01-01 05:30:00.000000000 +0530
-+++ cloud-init-0.7.2/cloudinit/distros/openwrt.py	2016-06-13 20:33:06.211274974 +0530
-@@ -0,0 +1,148 @@
+diff -ruN cloud-init-0.7.9.orig//cloudinit/distros/velocloud.py cloud-init-0.7.9/cloudinit/distros/velocloud.py
+--- cloud-init-0.7.9.orig//cloudinit/distros/velocloud.py	1970-01-01 00:00:00.000000000 +0000
++++ cloud-init-0.7.9/cloudinit/distros/velocloud.py	2017-07-17 20:17:38.000000000 +0000
+@@ -0,0 +1,158 @@
 +# vi: ts=4 expandtab
 +#
 +#    Copyright (C) 2012 Canonical Ltd.
@@ -30,44 +30,30 @@ diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cl
 +from cloudinit import helpers
 +from cloudinit import log as logging
 +from cloudinit import util
++from cloudinit.net.network_state import parse_net_config_data
 +
 +from cloudinit.distros.parsers.hostname import HostnameConf
 +
 +from cloudinit.settings import PER_INSTANCE
 +
 +LOG = logging.getLogger(__name__)
++VCCONF = "/opt/vc/.edge.info"
 +
-+# meta-data
-+#
-+# network-interfaces:
-+#   GE4:
-+#      type: dhcp
-+#
-+# or
-+#
-+# network-interfaces:
-+#   GE4:
-+#      type: static
-+#      ipaddr: 192.168.150.5
-+#      netmask: 255.255.255.0
-+#      gateway: 192.168.150.1
-+#
-+# or
-+#
-+# network-interfaces:
-+#   GE4:
-+#      type: pppoe
-+#      username: user
-+#      passwd: pass
-+#
++# network config is conforming to "Networking Config Version 1" 
 +
 +
 +class Distro(distros.Distro):
 +
++    init_cmd = []
++
 +    def __init__(self, name, cfg, paths):
 +        distros.Distro.__init__(self, name, cfg, paths)
 +        self._runner = helpers.Runners(paths)
-+        self.osfamily = 'openwrt'
++        self.osfamily = 'velocloud'
++	cfg['ssh_svcname'] = '/etc/init.d/sshd'
++
++    def _is_vc_activated(self):
++        return os.path.exists(VCCONF)
 +
 +    def apply_locale(self, locale, out_fn=None):
 +        raise NotImplementedError()
@@ -78,22 +64,43 @@ diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cl
 +    def update_package_sources(self):
 +        raise NotImplementedError()
 +
++    def _write_network_config(self, netconfig):
++        # do not modify network config on activated edge
++        if self._is_vc_activated():
++            return []
++
++        ns = parse_net_config_data(netconfig)
++	for iface in ns.iter_interfaces():
++            iface_name = iface['name']
++            iface_type = iface['type']
++            if iface_type != 'physical':
++                LOG.warn("Unupported interface type '%s' for '%s'. Skipping" % (iface_type, iface_name))
++                continue
++            if not iface_name.startswith('GE'):
++                LOG.warn("Only GE interfaces are supported (got '%s'). Skipping" % (iface_name))
++                continue
++
++            iface_subnets = iface.get("subnets", [])
++            for subnet in iface_subnets:
++                cmd_wan_config = ["/opt/vc/bin/set_wan_config.sh", iface_name]
++                subnet_type = subnet.get('type')
++                if subnet_type in ['dhcp4', 'dhcp']:
++                    cmd_wan_config.append("DHCP")
++                elif subnet_type == 'static':
++                    ipaddr = subnet.get('address', '')
++                    netmask = subnet.get('netmask', '')
++                    gateway = subnet.get('gateway', '-')
++                    cmd_wan_config.extend(("STATIC", ipaddr, netmask, gateway))
++                else:
++                    err = "Unupported subnet type '%s' for '%s'" % (subnet_type, iface_name)
++                    LOG.error(err)
++                    raise ValueError(err)
++                util.subp(cmd_wan_config)
++
++        return []
++
 +    def _write_network(self, settings):
-+        # util.write_file(self.network_conf_fn, settings)
-+        for (intf, intf_conf) in settings.items():
-+            cmd_wan_config = ["/opt/vc/bin/set_wan_config.sh", intf]
-+            type = intf_conf["type"]
-+            # [DHCP | STATIC ipaddr netmask gateway | PPPOE username passwd]
-+            if type == "dhcp":
-+                cmd_wan_config.append("DHCP")
-+            elif type == "static":
-+                cmd_wan_config.extend(("STATIC", intf_conf["ipaddr"], intf_conf["netmask"], intf_conf["gateway"]))
-+	    elif type == "pppoe":
-+	        cmd_wan_config.extend(("PPPOE", intf_conf["username"], intf_conf["passwd"]))
-+            else:
-+	        raise ValueError("invalid interface type: %s" % type)
-+	    util.subp(cmd_wan_config)
-+        return settings.keys()
++        raise NotImplementedError()
 +
 +    def _select_hostname(self, hostname, fqdn):
 +        if not hostname:
@@ -144,9 +151,12 @@ diff -ruN cloud-init-0.7.2.orig/cloudinit/distros/openwrt.py cloud-init-0.7.2/cl
 +        return "127.0.0.1"
 +
 +    def set_timezone(self, tz):
-+        raise NotImplementedError()
++	raise NotImplementedError()
 +
 +    def package_command(self, command, args=None, pkgs=None):
 +        raise NotImplementedError()
++
++    def generate_fallback_config(self):
++        return None
 +
 +

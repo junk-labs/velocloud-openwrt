@@ -1,0 +1,12 @@
+diff -ruN cloud-init-0.7.9.orig//cloudinit/stages.py cloud-init-0.7.9/cloudinit/stages.py
+--- cloud-init-0.7.9.orig//cloudinit/stages.py	2016-12-23 16:37:45.000000000 +0000
++++ cloud-init-0.7.9/cloudinit/stages.py	2017-07-14 23:43:15.000000000 +0000
+@@ -616,7 +616,7 @@
+                 return (None, loc)
+             if ncfg:
+                 return (ncfg, loc)
+-        return (net.generate_fallback_config(), "fallback")
++        return (self.distro.generate_fallback_config(), "fallback")
+ 
+     def apply_network_config(self, bring_up):
+         netcfg, src = self._find_networking_config()

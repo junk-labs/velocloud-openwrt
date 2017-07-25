@@ -24,6 +24,6 @@ unsigned microcode[] = {
 		#include <M01406D000E.h>
 #elif IS_ENABLED(CONFIG_FSP_MODEL_406DX_B0)
 		/* Size is 0x14800 */
-		#include <M01406D8125.h>
+		#include <M01406D8128.h>
 #endif
 };

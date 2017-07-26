@@ -1225,9 +1225,12 @@ bgp_redistribute_set (struct bgp *bgp, afi_t afi, int type)
   /* Set flag to BGP instance. */
   bgp->redist[afi][type] = 1;
 
-  /* Return if already redistribute flag is set. */
-  if (zclient->redist[type])
-    return CMD_WARNING;
+  /* Ignoring this check to allow multiple BGP views
+   * apply their redistribute flag settings.
+   * Return if already redistribute flag is set.
+   * if (zclient->redist[type])
+   *  return CMD_WARNING;
+   */
 
   zclient->redist[type] = 1;
 
@@ -1236,7 +1239,8 @@ bgp_redistribute_set (struct bgp *bgp, afi_t afi, int type)
     return CMD_WARNING;
 
   if (BGP_DEBUG(zebra, ZEBRA))
-    zlog_debug("Zebra send: redistribute add %s", zebra_route_string(type));
+    zlog_debug("Zebra send: redistribute add %s instance %s",
+                zebra_route_string(type), (bgp->name) ? bgp->name : "");
 
   if (bgp->name) {
     len = strnlen(bgp->name, INSTANCE_NAMSIZ - 1);

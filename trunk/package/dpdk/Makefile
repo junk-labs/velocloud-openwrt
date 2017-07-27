@@ -94,14 +94,15 @@ define Download/default
 endef
 
 define Build/Prepare/Default
-	$(call LinkDir,$(PKG_BUILD_DIR))
+	mkdir -p $(PKG_BUILD_DIR)
 endef
 
 TARCH=$(patsubst i386,i686,$(ARCH))
 T=$(TARCH)-openwrt-linuxapp-gcc
 DPDK_DEBUG=-g
 
-MAKE_FLAGS = install \
+MAKE_FLAGS = -C $(PKG_GIT_DIR) install \
+		RTE_OUTPUT=$(PKG_BUILD_DIR) \
 		T=$(T) V=$(V) \
 		CONFIG_RTE_BUILD_COMBINE_LIBS=y \
 		CROSS="$(TARGET_CROSS)" \

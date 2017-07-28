@@ -349,7 +349,7 @@ int
 zclient_start (struct zclient *zclient)
 {
   int i;
-
+  struct zapi_redis api;
   if (zclient_debug)
     zlog_debug ("zclient_start is called");
 
@@ -394,9 +394,13 @@ zclient_start (struct zclient *zclient)
   zebra_message_send (zclient, ZEBRA_INTERFACE_ADD);
 
   /* Flush all redistribute request. */
-  for (i = 0; i < ZEBRA_ROUTE_MAX; i++)
-    if (i != zclient->redist_default && zclient->redist[i])
-      zebra_redistribute_send (ZEBRA_REDISTRIBUTE_ADD, zclient, i);
+  for (i = 0; i < ZEBRA_ROUTE_MAX; i++) {
+    if (i != zclient->redist_default && zclient->redist[i]) {
+      memset(&api, 0, sizeof(struct zapi_redis));
+      api.type = i;
+      zebra_redistribute_send (ZEBRA_REDISTRIBUTE_ADD, zclient, i, &api);
+    }
+  }
 
   /* If default information is needed. */
   if (zclient->default_information)
@@ -626,7 +630,7 @@ zapi_ipv6_route (u_char cmd, struct zclient *zclient, struct prefix_ipv6 *p,
  * sending client
  */
 int
-zebra_redistribute_send (int command, struct zclient *zclient, int type)
+zebra_redistribute_send (int command, struct zclient *zclient, int type, struct zapi_redis *api)
 {
   struct stream *s;
 
@@ -634,6 +638,10 @@ zebra_redistribute_send (int command, struct zclient *zclient, int type)
   stream_reset(s);
   
   zclient_create_header (s, command);
+
+  if (api)
+    stream_put (s, api->iname, INSTANCE_NAMSIZ);
+
   stream_putc (s, type);
   
   stream_putw_at (s, 0, stream_get_endp (s));
@@ -1056,7 +1064,7 @@ zclient_read (struct thread *thread)
 void
 zclient_redistribute (int command, struct zclient *zclient, int type)
 {
-
+  struct zapi_redis api;
   if (command == ZEBRA_REDISTRIBUTE_ADD) 
     {
       if (zclient->redist[type])
@@ -1069,9 +1077,12 @@ zclient_redistribute (int command, struct zclient *zclient, int type)
          return;
       zclient->redist[type] = 0;
     }
+  if (zclient->sock > 0) {
+    memset(&api, 0, sizeof(struct zapi_redis));
+    api.type = type;
 
-  if (zclient->sock > 0)
-    zebra_redistribute_send (command, zclient, type);
+    zebra_redistribute_send (command, zclient, type, &api);
+  }
 }
 
 

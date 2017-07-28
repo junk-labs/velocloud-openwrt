@@ -1220,12 +1220,17 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
 int
 bgp_redistribute_set (struct bgp *bgp, afi_t afi, int type)
 {
+  struct zapi_redis api;
+  int len = 0;
   /* Set flag to BGP instance. */
   bgp->redist[afi][type] = 1;
 
-  /* Return if already redistribute flag is set. */
-  if (zclient->redist[type])
-    return CMD_WARNING;
+  /* Ignoring this check to allow multiple BGP views
+   * apply their redistribute flag settings.
+   * Return if already redistribute flag is set.
+   * if (zclient->redist[type])
+   *  return CMD_WARNING;
+   */
 
   zclient->redist[type] = 1;
 
@@ -1234,10 +1239,19 @@ bgp_redistribute_set (struct bgp *bgp, afi_t afi, int type)
     return CMD_WARNING;
 
   if (BGP_DEBUG(zebra, ZEBRA))
-    zlog_debug("Zebra send: redistribute add %s", zebra_route_string(type));
-    
+    zlog_debug("Zebra send: redistribute add %s instance %s",
+                zebra_route_string(type), (bgp->name) ? bgp->name : "");
+
+  if (bgp->name) {
+    len = strnlen(bgp->name, INSTANCE_NAMSIZ - 1);
+    strncpy (api.iname, bgp->name, len);
+    api.iname[len]='\0';
+  } else {
+    api.iname[0] = '\0';
+  }
+  api.type = type;
   /* Send distribute add message to zebra. */
-  zebra_redistribute_send (ZEBRA_REDISTRIBUTE_ADD, zclient, type);
+  zebra_redistribute_send (ZEBRA_REDISTRIBUTE_ADD, zclient, type, &api);
 
   return CMD_SUCCESS;
 }
@@ -1278,6 +1292,8 @@ bgp_redistribute_metric_set (struct bgp *bgp, afi_t afi, int type,
 int
 bgp_redistribute_unset (struct bgp *bgp, afi_t afi, int type)
 {
+  struct zapi_redis api;
+  int len = 0;
   /* Unset flag from BGP instance. */
   bgp->redist[afi][type] = 0;
 
@@ -1300,11 +1316,20 @@ bgp_redistribute_unset (struct bgp *bgp, afi_t afi, int type)
       && bgp->redist[AFI_IP6][type] == 0 
       && zclient->sock >= 0)
     {
-      /* Send distribute delete message to zebra. */
+      memset(&api, 0, sizeof(struct zapi_redis));
+      if (bgp->name) {
+        len = strnlen(bgp->name, INSTANCE_NAMSIZ - 1);
+        strncpy (api.iname, bgp->name, len);
+         api.iname[len] = '\0';
+      } else {
+        api.iname[0] = '\0';
+      }
+      api.type = type;
+     /* Send distribute delete message to zebra. */
       if (BGP_DEBUG(zebra, ZEBRA))
 	zlog_debug("Zebra send: redistribute delete %s",
 		   zebra_route_string(type));
-      zebra_redistribute_send (ZEBRA_REDISTRIBUTE_DELETE, zclient, type);
+      zebra_redistribute_send (ZEBRA_REDISTRIBUTE_DELETE, zclient, type, &api);
     }
   
   /* Withdraw redistributed routes from current BGP's routing table. */

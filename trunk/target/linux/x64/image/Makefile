@@ -371,7 +371,7 @@ ifneq ($(CONFIG_VHD_IMAGES),)
   define Image/Build/vhd
 	echo "Building VeloCloud Updatable Virtual Image."
 	rm $(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vhd || true
-	$(QEMU_IMG) convert -f raw -O vpc \
+	$(QEMU_IMG) convert -f raw -O vpc -o subformat=fixed,force_size \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).img \
 		$(BIN_DIR)/$(IMG_PREFIX)-updatable-$(1).vhd
   endef

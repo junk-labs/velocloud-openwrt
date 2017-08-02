@@ -5251,7 +5251,7 @@ diff -Naur /dev/null b/drivers/platform/x86/velocloud-vc.c
 +		if(err < 0)
 +			pr_err("vc: couldn't request reset gpio\n");
 +		else
-+			reset = 1;
++			reset = !err;
 +	} else if(hw->caps & VC_CAP_I2C_PIC) {
 +		pr_info("vc: PIC via i2c\n");
 +	} else {

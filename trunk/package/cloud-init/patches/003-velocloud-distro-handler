@@ -1,7 +1,7 @@
 diff -ruN cloud-init-0.7.9.orig//cloudinit/distros/velocloud.py cloud-init-0.7.9/cloudinit/distros/velocloud.py
 --- cloud-init-0.7.9.orig//cloudinit/distros/velocloud.py	1970-01-01 00:00:00.000000000 +0000
 +++ cloud-init-0.7.9/cloudinit/distros/velocloud.py	2017-07-17 20:17:38.000000000 +0000
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,193 @@
 +# vi: ts=4 expandtab
 +#
 +#    Copyright (C) 2012 Canonical Ltd.
@@ -50,7 +50,7 @@ diff -ruN cloud-init-0.7.9.orig//cloudinit/distros/velocloud.py cloud-init-0.7.9
 +        distros.Distro.__init__(self, name, cfg, paths)
 +        self._runner = helpers.Runners(paths)
 +        self.osfamily = 'velocloud'
-+	cfg['ssh_svcname'] = '/etc/init.d/sshd'
++        cfg['ssh_svcname'] = '/etc/init.d/sshd'
 +
 +    def _is_vc_activated(self):
 +        return os.path.exists(VCCONF)
@@ -64,17 +64,52 @@ diff -ruN cloud-init-0.7.9.orig//cloudinit/distros/velocloud.py cloud-init-0.7.9
 +    def update_package_sources(self):
 +        raise NotImplementedError()
 +
++    def convert_eni_data(self, network_eni):
++        # do not modify network config on activated edge
++        if self._is_vc_activated():
++            return None
++        if type(network_eni) in (str, unicode):
++            return eni.convert_eni_data(network_eni)
++        if type(network_eni) != dict:
++            # ??
++            LOG.warn("Unknown type of data (%s) passed to convert_eni_data", str(type(network_eni)))
++            return None
++        configs = []
++        for iface_name, iface_conf in network_eni.iteritems():
++            if not iface_name.startswith('GE'):
++                LOG.warn("Only GE interfaces are supported (got '%s'). Skipping" % (iface_name))
++                continue
++            #subnet = copy.deepcopy(iface_conf)
++            subnettype = iface_conf.get('type')
++            if subnettype == 'dhcp':
++                subnet = {'type': 'dhcp'}
++            elif subnettype == 'static':
++                subnet = {'type': 'static',
++                          'address': iface_conf.get('ipaddr',''),
++                          'netmask': iface_conf.get('netmask',''),
++                          'gateway': iface_conf.get('gateway','-')}
++            else:
++                LOG.warn("Invalid addressing type for %s: %s. Skipping", iface_name, subnettype)
++                continue
++            config = {'type': 'physical',
++                      'name': iface_name,
++                      'subnets': [subnet]}
++            configs.append(config)
++        if configs:
++            return {'version': 1, 'config': configs}
++        return None
++
 +    def _write_network_config(self, netconfig):
 +        # do not modify network config on activated edge
 +        if self._is_vc_activated():
 +            return []
 +
 +        ns = parse_net_config_data(netconfig)
-+	for iface in ns.iter_interfaces():
++        for iface in ns.iter_interfaces():
 +            iface_name = iface['name']
 +            iface_type = iface['type']
 +            if iface_type != 'physical':
-+                LOG.warn("Unupported interface type '%s' for '%s'. Skipping" % (iface_type, iface_name))
++                LOG.warn("Unsupported interface type '%s' for '%s'. Skipping" % (iface_type, iface_name))
 +                continue
 +            if not iface_name.startswith('GE'):
 +                LOG.warn("Only GE interfaces are supported (got '%s'). Skipping" % (iface_name))
@@ -151,7 +186,7 @@ diff -ruN cloud-init-0.7.9.orig//cloudinit/distros/velocloud.py cloud-init-0.7.9
 +        return "127.0.0.1"
 +
 +    def set_timezone(self, tz):
-+	raise NotImplementedError()
++        raise NotImplementedError()
 +
 +    def package_command(self, command, args=None, pkgs=None):
 +        raise NotImplementedError()

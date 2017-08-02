@@ -16,20 +16,15 @@ PKG_SOURCE_URL:=https://pypi.python.org/packages/source/s/six
 PKG_MD5SUM:=34eed507548117b2ab523ab14b2f8b55
 
 PKG_BUILD_DEPENDS:=python python-setuptools
-HOST_BUILD_DEPENDS:=python/host python-setuptools/host
-#PKG_BUILD_DIR:=$(BUILD_DIR)/six-$(PKG_VERSION)
-#HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/six-$(PKG_VERSION)
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/host-build.mk
 $(call include_mk, python-package.mk)
 
 PKG_UNPACK:=$(HOST_TAR) -C $(PKG_BUILD_DIR) --strip-components=1 -xzf $(DL_DIR)/$(PKG_SOURCE)
-HOST_UNPACK:=$(HOST_TAR) -C $(HOST_BUILD_DIR) --strip-components=1 -xzf $(DL_DIR)/$(PKG_SOURCE)
 
 define Package/python-six
 	SECTION:=lang
@@ -51,19 +46,5 @@ define Build/Compile
 	$(call Build/Compile/PyMod,,install --prefix=/usr --root=$(PKG_INSTALL_DIR))
 endef
 
-define Package/python-six/install
-	$(INSTALL_DIR) $(1)$(PYTHON_PKG_DIR)
-	$(CP) \
-            $(PKG_INSTALL_DIR)$(PYTHON_PKG_DIR)/* \
-            $(1)$(PYTHON_PKG_DIR)
-endef
-
-define Host/Compile
-        $(call HostPython, cd $(HOST_BUILD_DIR); , ./setup.py install --prefix="" --root=$(STAGING_DIR_HOST))
-endef
-
-define Host/Install
-endef
-
-$(eval $(call HostBuild))
+$(eval $(call PyPackage,python-six))
 $(eval $(call BuildPackage,python-six))

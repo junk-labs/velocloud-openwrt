@@ -17,7 +17,7 @@ PKG_VERSION:=2.6.1
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://openvswitch.org/releases/
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_BUILD_DEPENDS:=python/host python-six/host
+PKG_BUILD_DEPENDS:=python/host
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -111,7 +111,7 @@ define Build/Configure
 endef
 
 define Build/Compile
-	-cp ./files/six.py $(PKG_BUILD_DIR)/python
+	$(CP) ./files/six.py $(PKG_BUILD_DIR)/python
 	$(MAKE) -C $(PKG_BUILD_DIR) \
 		$(TARGET_CONFIGURE_OPTS) \
 		CFLAGS="-I$(PKG_BUILD_DIR)/lib $(TARGET_CFLAGS) -std=gnu99" \

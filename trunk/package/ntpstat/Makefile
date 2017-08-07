@@ -12,7 +12,7 @@ PKG_VERSION:=0.0.1
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://anonscm.debian.org/git/openstack/ntpstat.git
+PKG_SOURCE_URL:=https://anonscm.debian.org/git/openstack/third-party/ntpstat.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_SOURCE_VERSION:=4793c66f6111057c99f1f45fada65b753cf97e83

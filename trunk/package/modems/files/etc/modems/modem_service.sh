@@ -16,7 +16,7 @@ logerr() {
 
 get_bridge_interface() {
 	echo $(uci -X show network | \
-		      awk -F '=|\.' '/network.network[0-9]*=interface/ { print "br-"$2}')
+		      awk -F '[=|.]' '/network.network[0-9]*=interface/ { print "br-"$2}')
 }
 
 get_usb_ifname()
@@ -36,7 +36,7 @@ get_usb_type()
 get_all_available_usb()
 {
 	echo $(uci -c $modem_config_path show modems 2>/dev/null | \
-		awk -F'=|\.' '/modems.*=interface/ {print $2}')
+		awk -F'[=|.]' '/modems.*=interface/ {print $2}')
 }
 
 get_edge_activatedstate()
@@ -65,7 +65,7 @@ modems_postrouting_rule()
 {
 	local outInterface=$1
 	local action=$2
-	#iptables -tnat -$action POSTROUTING -o $outInterface -j MASQUERADE
+	iptables -tnat -$action POSTROUTING -o $outInterface -j MASQUERADE
 }
 
 modems_fwd_bridge_usblist()

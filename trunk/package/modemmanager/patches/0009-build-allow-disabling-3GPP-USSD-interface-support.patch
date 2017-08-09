@@ -1,11 +1,12 @@
-From 103af2acc9e168034d91322268e984c86c981ece Mon Sep 17 00:00:00 2001
+From 8208e2a510278adb09c0788758bde884b950151f Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Mon, 25 Jul 2016 18:42:17 +0200
-Subject: [PATCH 08/12] build: allow disabling 3GPP USSD interface support
+Subject: [PATCH 09/12] build: allow disabling 3GPP USSD interface support
 
 ---
  cli/mmcli-modem-3gpp.c                         | 47 ++++++++++++++++++++----
  configure.ac                                   | 15 ++++++++
+ docs/reference/api/ModemManager-sections.txt   |  1 +
  include/Makefile.am                            |  4 ++
  include/ModemManager-enums-3gpp-ussd.h         | 49 +++++++++++++++++++++++++
  include/ModemManager-enums.h                   | 16 --------
@@ -22,11 +23,11 @@ Subject: [PATCH 08/12] build: allow disabling 3GPP USSD interface support
  src/Makefile.am                                |  9 ++++-
  src/mm-broadband-modem-qmi.c                   | 15 +++++++-
  src/mm-broadband-modem.c                       | 51 +++++++++++++++++++++++++-
- 18 files changed, 280 insertions(+), 44 deletions(-)
+ 19 files changed, 281 insertions(+), 44 deletions(-)
  create mode 100644 include/ModemManager-enums-3gpp-ussd.h
 
 diff --git a/cli/mmcli-modem-3gpp.c b/cli/mmcli-modem-3gpp.c
-index a785d02..d73563d 100644
+index a785d025..d73563d9 100644
 --- a/cli/mmcli-modem-3gpp.c
 +++ b/cli/mmcli-modem-3gpp.c
 @@ -41,7 +41,9 @@ typedef struct {
@@ -235,10 +236,10 @@ index a785d02..d73563d 100644
      g_warn_if_reached ();
  }
 diff --git a/configure.ac b/configure.ac
-index cc58539..3f86308 100644
+index 3c96d23f..14a69bcf 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -337,6 +337,20 @@ case $with_qmi in
+@@ -364,6 +364,20 @@ case $with_qmi in
  esac
  
  dnl-----------------------------------------------------------------------------
@@ -259,19 +260,31 @@ index cc58539..3f86308 100644
  dnl Location interface
  dnl
  
-@@ -528,6 +542,7 @@ echo "
-       suspend/resume support:  ${with_suspend_resume}
+@@ -556,6 +570,7 @@ echo "
+       systemd journal:         ${with_systemd_journal}
  
      Optional interfaces:
 +      3GPP ussd:               ${with_interface_3gpp_ussd}
        location:                ${with_interface_location}
        messaging:               ${with_interface_messaging}
        time:                    ${with_interface_time}
+diff --git a/docs/reference/api/ModemManager-sections.txt b/docs/reference/api/ModemManager-sections.txt
+index 96a924a5..c6d443cd 100644
+--- a/docs/reference/api/ModemManager-sections.txt
++++ b/docs/reference/api/ModemManager-sections.txt
+@@ -12,6 +12,7 @@ MM_INTERFACE_VOICE_SUPPORTED
+ MM_INTERFACE_SIGNAL_SUPPORTED
+ MM_INTERFACE_OMA_SUPPORTED
+ MM_INTERFACE_FIRMWARE_SUPPORTED
++MM_INTERFACE_3GPP_USSD_SUPPORTED
+ </SECTION>
+ 
+ <SECTION>
 diff --git a/include/Makefile.am b/include/Makefile.am
-index bfde1b8..8e339f9 100644
+index 1246fff9..37e07dec 100644
 --- a/include/Makefile.am
 +++ b/include/Makefile.am
-@@ -11,6 +11,10 @@ include_HEADERS = \
+@@ -12,6 +12,10 @@ include_HEADERS = \
  	ModemManager-version.h \
  	ModemManager.h
  
@@ -284,7 +297,7 @@ index bfde1b8..8e339f9 100644
  endif
 diff --git a/include/ModemManager-enums-3gpp-ussd.h b/include/ModemManager-enums-3gpp-ussd.h
 new file mode 100644
-index 0000000..d6f83ed
+index 00000000..d6f83ed9
 --- /dev/null
 +++ b/include/ModemManager-enums-3gpp-ussd.h
 @@ -0,0 +1,49 @@
@@ -338,7 +351,7 @@ index 0000000..d6f83ed
 +
 +#endif /*  _MODEMMANAGER_ENUMS_3GPP_USSD_H_ */
 diff --git a/include/ModemManager-enums.h b/include/ModemManager-enums.h
-index 1b99a57..db94608 100644
+index 7079a94f..e676d2dc 100644
 --- a/include/ModemManager-enums.h
 +++ b/include/ModemManager-enums.h
 @@ -647,20 +647,4 @@ typedef enum { /*< underscore_name=mm_modem_3gpp_subscription_state >*/
@@ -363,10 +376,10 @@ index 1b99a57..db94608 100644
 -
  #endif /*  _MODEMMANAGER_ENUMS_H_ */
 diff --git a/include/ModemManager-version.h.in b/include/ModemManager-version.h.in
-index fad35f7..c831e18 100644
+index 6fc16112..e0e68322 100644
 --- a/include/ModemManager-version.h.in
 +++ b/include/ModemManager-version.h.in
-@@ -67,6 +67,21 @@
+@@ -68,6 +68,21 @@
       (MM_MAJOR_VERSION == (major) && MM_MINOR_VERSION == (minor) && MM_MICRO_VERSION >= (micro)))
  
  /**
@@ -389,7 +402,7 @@ index fad35f7..c831e18 100644
   *
   * Symbol to expose whether Location interface is supported. The symbol is always
 diff --git a/include/ModemManager.h b/include/ModemManager.h
-index 9c4c0f3..7e54fa2 100644
+index d0e1311b..f94fee5a 100644
 --- a/include/ModemManager.h
 +++ b/include/ModemManager.h
 @@ -37,6 +37,9 @@
@@ -403,7 +416,7 @@ index 9c4c0f3..7e54fa2 100644
  # include <ModemManager-enums-location.h>
  #endif
 diff --git a/libmm-glib/Makefile.am b/libmm-glib/Makefile.am
-index bc7c9c6..bcefc0a 100644
+index 258da9a8..6907f05a 100644
 --- a/libmm-glib/Makefile.am
 +++ b/libmm-glib/Makefile.am
 @@ -18,8 +18,6 @@ libmm_glib_la_SOURCES = \
@@ -450,7 +463,7 @@ index bc7c9c6..bcefc0a 100644
  if WITH_INTERFACE_LOCATION
  include_HEADERS += \
  	mm-modem-location.h \
-@@ -257,6 +267,10 @@ PUBLIC_H = \
+@@ -258,6 +268,10 @@ PUBLIC_H = \
  	ModemManager.h \
  	$(NULL)
  
@@ -462,7 +475,7 @@ index bc7c9c6..bcefc0a 100644
  PUBLIC_H += ModemManager-enums-location.h
  endif
 diff --git a/libmm-glib/generated/Makefile.am b/libmm-glib/generated/Makefile.am
-index b05a4b2..88c435a 100644
+index b05a4b27..88c435ad 100644
 --- a/libmm-glib/generated/Makefile.am
 +++ b/libmm-glib/generated/Makefile.am
 @@ -32,10 +32,13 @@ GENERATED_DOC = \
@@ -534,7 +547,7 @@ index b05a4b2..88c435a 100644
  		$(NULL)
  $(filter-out mm-gdbus-modem.c, $(mm_gdbus_modem_generated)): $(mm_gdbus_modem_deps) mm-gdbus-modem.c
 diff --git a/libmm-glib/libmm-glib.h b/libmm-glib/libmm-glib.h
-index 7d17790..079cea7 100644
+index 7d17790f..079cea76 100644
 --- a/libmm-glib/libmm-glib.h
 +++ b/libmm-glib/libmm-glib.h
 @@ -36,7 +36,9 @@
@@ -549,7 +562,7 @@ index 7d17790..079cea7 100644
  # include <mm-modem-simple.h>
  # if MM_INTERFACE_LOCATION_SUPPORTED
 diff --git a/libmm-glib/mm-manager.c b/libmm-glib/mm-manager.c
-index 3603c9e..8b90b4a 100644
+index 5d35a4e9..8d92173c 100644
 --- a/libmm-glib/mm-manager.c
 +++ b/libmm-glib/mm-manager.c
 @@ -90,7 +90,9 @@ get_proxy_type (GDBusObjectManagerClient *manager,
@@ -563,7 +576,7 @@ index 3603c9e..8b90b4a 100644
          /* g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Contacts",    GSIZE_TO_POINTER (MM_GDBUS_TYPE_MODEM_CONTACTS_PROXY)); */
          g_once_init_leave (&once_init_value, 1);
 diff --git a/libmm-glib/mm-object.c b/libmm-glib/mm-object.c
-index f70e3a6..7d390ea 100644
+index f70e3a65..7d390ea8 100644
 --- a/libmm-glib/mm-object.c
 +++ b/libmm-glib/mm-object.c
 @@ -158,6 +158,8 @@ mm_object_peek_modem_3gpp (MMObject *self)
@@ -585,7 +598,7 @@ index f70e3a6..7d390ea 100644
  
  /**
 diff --git a/libmm-glib/mm-object.h b/libmm-glib/mm-object.h
-index 136ae2b..0553324 100644
+index 136ae2be..0553324f 100644
 --- a/libmm-glib/mm-object.h
 +++ b/libmm-glib/mm-object.h
 @@ -33,7 +33,9 @@
@@ -622,7 +635,7 @@ index 136ae2b..0553324 100644
  MMModemLocation  *mm_object_get_modem_location   (MMObject *self);
  MMModemLocation  *mm_object_peek_modem_location  (MMObject *self);
 diff --git a/plugins/altair/mm-broadband-modem-altair-lte.c b/plugins/altair/mm-broadband-modem-altair-lte.c
-index d2fd60c..cde16fd 100644
+index 2ce53ecb..0b910dce 100644
 --- a/plugins/altair/mm-broadband-modem-altair-lte.c
 +++ b/plugins/altair/mm-broadband-modem-altair-lte.c
 @@ -33,7 +33,9 @@
@@ -657,7 +670,7 @@ index d2fd60c..cde16fd 100644
  #if MM_INTERFACE_MESSAGING_SUPPORTED
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_MESSAGING, iface_modem_messaging_init)
  #endif
-@@ -1436,6 +1443,8 @@ iface_modem_init (MMIfaceModem *iface)
+@@ -1371,6 +1378,8 @@ iface_modem_init (MMIfaceModem *iface)
      iface->setup_flow_control_finish = NULL;
  }
  
@@ -666,7 +679,7 @@ index d2fd60c..cde16fd 100644
  static void
  iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
  {
-@@ -1444,6 +1453,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+@@ -1379,6 +1388,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
      iface->check_support_finish = NULL;
  }
  
@@ -676,7 +689,7 @@ index d2fd60c..cde16fd 100644
  iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
  {
 diff --git a/plugins/huawei/mm-broadband-modem-huawei.c b/plugins/huawei/mm-broadband-modem-huawei.c
-index 3a230db..bb41f48 100644
+index 588d9420..24f4b4e0 100644
 --- a/plugins/huawei/mm-broadband-modem-huawei.c
 +++ b/plugins/huawei/mm-broadband-modem-huawei.c
 @@ -38,7 +38,6 @@
@@ -728,7 +741,7 @@ index 3a230db..bb41f48 100644
  #if MM_INTERFACE_LOCATION_SUPPORTED
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_LOCATION, iface_modem_location_init)
  #endif
-@@ -2471,6 +2479,8 @@ huawei_modem_create_bearer (MMIfaceModem *self,
+@@ -2422,6 +2430,8 @@ huawei_modem_create_bearer (MMIfaceModem *self,
                               ctx);
  }
  
@@ -737,7 +750,7 @@ index 3a230db..bb41f48 100644
  /*****************************************************************************/
  /* USSD encode/decode (3GPP-USSD interface) */
  
-@@ -2526,6 +2536,8 @@ decode (MMIfaceModem3gppUssd *self,
+@@ -2477,6 +2487,8 @@ decode (MMIfaceModem3gppUssd *self,
      return utf8;
  }
  
@@ -746,8 +759,8 @@ index 3a230db..bb41f48 100644
  /*****************************************************************************/
  
  static void
-@@ -4675,6 +4687,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
-     iface->load_operator_name_finish = modem_3gpp_load_operator_name_finish;
+@@ -4643,6 +4655,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+     iface->disable_unsolicited_events_finish = modem_3gpp_disable_unsolicited_events_finish;
  }
  
 +#if MM_INTERFACE_3GPP_USSD_SUPPORTED
@@ -755,7 +768,7 @@ index 3a230db..bb41f48 100644
  static void
  iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
  {
-@@ -4682,6 +4696,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+@@ -4650,6 +4664,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
      iface->decode = decode;
  }
  
@@ -765,10 +778,10 @@ index 3a230db..bb41f48 100644
  iface_modem_cdma_init (MMIfaceModemCdma *iface)
  {
 diff --git a/src/Makefile.am b/src/Makefile.am
-index a0bdad0..9c16ef6 100644
+index a05b7168..c93c2f96 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -281,8 +281,6 @@ ModemManager_SOURCES = \
+@@ -313,8 +313,6 @@ ModemManager_SOURCES = \
  	mm-iface-modem.c \
  	mm-iface-modem-3gpp.h \
  	mm-iface-modem-3gpp.c \
@@ -777,7 +790,7 @@ index a0bdad0..9c16ef6 100644
  	mm-iface-modem-cdma.h \
  	mm-iface-modem-cdma.c \
  	mm-iface-modem-simple.h \
-@@ -297,6 +295,13 @@ ModemManager_SOURCES = \
+@@ -329,6 +327,13 @@ ModemManager_SOURCES = \
  	mm-plugin.h \
  	$(NULL)
  
@@ -792,7 +805,7 @@ index a0bdad0..9c16ef6 100644
  ModemManager_SOURCES += \
  	mm-iface-modem-location.h \
 diff --git a/src/mm-broadband-modem-qmi.c b/src/mm-broadband-modem-qmi.c
-index caa46bf..56119a3 100644
+index 683de2fd..7f13cfb6 100644
 --- a/src/mm-broadband-modem-qmi.c
 +++ b/src/mm-broadband-modem-qmi.c
 @@ -32,7 +32,9 @@
@@ -830,7 +843,7 @@ index caa46bf..56119a3 100644
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_CDMA, iface_modem_cdma_init)
  #if MM_INTERFACE_MESSAGING_SUPPORTED
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_MESSAGING, iface_modem_messaging_init)
-@@ -11580,6 +11587,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+@@ -11611,6 +11618,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
      iface->load_operator_name_finish = modem_3gpp_load_operator_name_finish;
  }
  
@@ -839,7 +852,7 @@ index caa46bf..56119a3 100644
  static void
  iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
  {
-@@ -11588,6 +11597,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+@@ -11619,6 +11628,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
      iface->check_support_finish = NULL;
  }
  
@@ -849,7 +862,7 @@ index caa46bf..56119a3 100644
  iface_modem_cdma_init (MMIfaceModemCdma *iface)
  {
 diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
-index f7fb1c5..61fde38 100644
+index e6e8b79d..b55b4b8e 100644
 --- a/src/mm-broadband-modem.c
 +++ b/src/mm-broadband-modem.c
 @@ -31,7 +31,9 @@
@@ -863,7 +876,7 @@ index f7fb1c5..61fde38 100644
  #include "mm-iface-modem-cdma.h"
  #include "mm-iface-modem-simple.h"
  #if MM_INTERFACE_LOCATION_SUPPORTED
-@@ -72,9 +74,12 @@
+@@ -73,9 +75,12 @@
  
  static void iface_modem_init (MMIfaceModem *iface);
  static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
@@ -877,7 +890,7 @@ index f7fb1c5..61fde38 100644
  #if MM_INTERFACE_LOCATION_SUPPORTED
  static void iface_modem_location_init (MMIfaceModemLocation *iface);
  #endif
-@@ -100,7 +105,9 @@ static void iface_modem_firmware_init (MMIfaceModemFirmware *iface);
+@@ -101,7 +106,9 @@ static void iface_modem_firmware_init (MMIfaceModemFirmware *iface);
  G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM, 0,
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
@@ -887,7 +900,7 @@ index f7fb1c5..61fde38 100644
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_CDMA, iface_modem_cdma_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIMPLE, iface_modem_simple_init)
  #if MM_INTERFACE_LOCATION_SUPPORTED
-@@ -130,7 +137,9 @@ enum {
+@@ -131,7 +138,9 @@ enum {
      PROP_0,
      PROP_MODEM_DBUS_SKELETON,
      PROP_MODEM_3GPP_DBUS_SKELETON,
@@ -897,7 +910,7 @@ index f7fb1c5..61fde38 100644
      PROP_MODEM_CDMA_DBUS_SKELETON,
      PROP_MODEM_SIMPLE_DBUS_SKELETON,
  #if MM_INTERFACE_LOCATION_SUPPORTED
-@@ -219,12 +228,14 @@ struct _MMBroadbandModemPrivate {
+@@ -229,12 +238,14 @@ struct _MMBroadbandModemPrivate {
      GPtrArray *modem_3gpp_registration_regex;
      MMModem3gppFacility modem_3gpp_ignored_facility_locks;
  
@@ -912,8 +925,8 @@ index f7fb1c5..61fde38 100644
  
      /*<--- Modem CDMA interface --->*/
      /* Properties */
-@@ -4512,6 +4523,8 @@ modem_3gpp_enable_unsolicited_registration_events (MMIfaceModem3gpp *self,
-                                                      user_data));
+@@ -4629,6 +4640,8 @@ modem_3gpp_enable_unsolicited_registration_events (MMIfaceModem3gpp *self,
+                                                   user_data));
  }
  
 +#if MM_INTERFACE_3GPP_USSD_SUPPORTED
@@ -921,8 +934,8 @@ index f7fb1c5..61fde38 100644
  /*****************************************************************************/
  /* Cancel USSD (3GPP/USSD interface) */
  
-@@ -5204,6 +5217,8 @@ modem_3gpp_ussd_check_support (MMIfaceModem3gppUssd *self,
-                               result);
+@@ -5300,6 +5313,8 @@ modem_3gpp_ussd_check_support (MMIfaceModem3gppUssd *self,
+                               task);
  }
  
 +#endif /* MM_INTERFACE_3GPP_USSD_SUPPORTED */
@@ -930,7 +943,7 @@ index f7fb1c5..61fde38 100644
  #if MM_INTERFACE_MESSAGING_SUPPORTED
  
  /*****************************************************************************/
-@@ -9024,7 +9039,9 @@ typedef enum {
+@@ -9071,7 +9086,9 @@ typedef enum {
  #endif
      DISABLING_STEP_IFACE_CONTACTS,
      DISABLING_STEP_IFACE_CDMA,
@@ -940,7 +953,7 @@ index f7fb1c5..61fde38 100644
      DISABLING_STEP_IFACE_3GPP,
      DISABLING_STEP_IFACE_MODEM,
      DISABLING_STEP_LAST,
-@@ -9125,7 +9142,9 @@ disable_finish (MMBaseModem *self,
+@@ -9153,7 +9170,9 @@ disable_finish (MMBaseModem *self,
  
  INTERFACE_DISABLE_READY_FN (iface_modem,           MM_IFACE_MODEM,           TRUE)
  INTERFACE_DISABLE_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
@@ -950,7 +963,7 @@ index f7fb1c5..61fde38 100644
  INTERFACE_DISABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
  #if MM_INTERFACE_LOCATION_SUPPORTED
  INTERFACE_DISABLE_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
-@@ -9344,6 +9363,7 @@ disabling_step (DisablingContext *ctx)
+@@ -9382,6 +9401,7 @@ disabling_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -958,7 +971,7 @@ index f7fb1c5..61fde38 100644
      case DISABLING_STEP_IFACE_3GPP_USSD:
          if (ctx->self->priv->modem_3gpp_ussd_dbus_skeleton) {
              mm_dbg ("Modem has 3GPP/USSD capabilities, disabling the Modem 3GPP/USSD interface...");
-@@ -9355,6 +9375,7 @@ disabling_step (DisablingContext *ctx)
+@@ -9393,6 +9413,7 @@ disabling_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -966,7 +979,7 @@ index f7fb1c5..61fde38 100644
  
      case DISABLING_STEP_IFACE_3GPP:
          if (ctx->self->priv->modem_3gpp_dbus_skeleton) {
-@@ -9417,7 +9438,9 @@ typedef enum {
+@@ -9457,7 +9478,9 @@ typedef enum {
      ENABLING_STEP_STARTED,
      ENABLING_STEP_IFACE_MODEM,
      ENABLING_STEP_IFACE_3GPP,
@@ -976,7 +989,7 @@ index f7fb1c5..61fde38 100644
      ENABLING_STEP_IFACE_CDMA,
      ENABLING_STEP_IFACE_CONTACTS,
  #if MM_INTERFACE_LOCATION_SUPPORTED
-@@ -9533,7 +9556,9 @@ enable_finish (MMBaseModem *self,
+@@ -9552,7 +9575,9 @@ enable_finish (MMBaseModem *self,
  
  INTERFACE_ENABLE_READY_FN (iface_modem,           MM_IFACE_MODEM,           TRUE)
  INTERFACE_ENABLE_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
@@ -986,7 +999,7 @@ index f7fb1c5..61fde38 100644
  INTERFACE_ENABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
  #if MM_INTERFACE_LOCATION_SUPPORTED
  INTERFACE_ENABLE_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
-@@ -9655,6 +9680,7 @@ enabling_step (EnablingContext *ctx)
+@@ -9685,6 +9710,7 @@ enabling_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -994,7 +1007,7 @@ index f7fb1c5..61fde38 100644
      case ENABLING_STEP_IFACE_3GPP_USSD:
          if (ctx->self->priv->modem_3gpp_ussd_dbus_skeleton) {
              mm_dbg ("Modem has 3GPP/USSD capabilities, enabling the Modem 3GPP/USSD interface...");
-@@ -9665,6 +9691,7 @@ enabling_step (EnablingContext *ctx)
+@@ -9695,6 +9721,7 @@ enabling_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -1002,7 +1015,7 @@ index f7fb1c5..61fde38 100644
  
      case ENABLING_STEP_IFACE_CDMA:
          if (ctx->self->priv->modem_cdma_dbus_skeleton) {
-@@ -9889,7 +9916,9 @@ typedef enum {
+@@ -9919,7 +9946,9 @@ typedef enum {
      INITIALIZE_STEP_SETUP_SIMPLE_STATUS,
      INITIALIZE_STEP_IFACE_MODEM,
      INITIALIZE_STEP_IFACE_3GPP,
@@ -1012,7 +1025,7 @@ index f7fb1c5..61fde38 100644
      INITIALIZE_STEP_IFACE_CDMA,
      INITIALIZE_STEP_IFACE_CONTACTS,
  #if MM_INTERFACE_LOCATION_SUPPORTED
-@@ -10111,7 +10140,9 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
+@@ -10127,7 +10156,9 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
      }
  
  INTERFACE_INIT_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
@@ -1022,7 +1035,7 @@ index f7fb1c5..61fde38 100644
  INTERFACE_INIT_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
  #if MM_INTERFACE_LOCATION_SUPPORTED
  INTERFACE_INIT_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
-@@ -10194,6 +10225,7 @@ initialize_step (InitializeContext *ctx)
+@@ -10216,6 +10247,7 @@ initialize_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -1030,7 +1043,7 @@ index f7fb1c5..61fde38 100644
      case INITIALIZE_STEP_IFACE_3GPP_USSD:
          if (mm_iface_modem_is_3gpp (MM_IFACE_MODEM (ctx->self))) {
              /* Initialize the 3GPP/USSD interface */
-@@ -10204,6 +10236,7 @@ initialize_step (InitializeContext *ctx)
+@@ -10226,6 +10258,7 @@ initialize_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -1038,7 +1051,7 @@ index f7fb1c5..61fde38 100644
  
      case INITIALIZE_STEP_IFACE_CDMA:
          if (mm_iface_modem_is_cdma (MM_IFACE_MODEM (ctx->self))) {
-@@ -10374,7 +10407,9 @@ initialize_step (InitializeContext *ctx)
+@@ -10412,7 +10445,9 @@ sim_hot_swap_enabled:
                   * a firmware update, switch, or provisioning could fix.
                   */
                  mm_iface_modem_3gpp_shutdown (MM_IFACE_MODEM_3GPP (ctx->self));
@@ -1048,7 +1061,7 @@ index f7fb1c5..61fde38 100644
                  mm_iface_modem_cdma_shutdown (MM_IFACE_MODEM_CDMA (ctx->self));
  #if MM_INTERFACE_LOCATION_SUPPORTED
                  mm_iface_modem_location_shutdown (MM_IFACE_MODEM_LOCATION (ctx->self));
-@@ -10606,10 +10641,12 @@ set_property (GObject *object,
+@@ -10645,10 +10680,12 @@ set_property (GObject *object,
          g_clear_object (&self->priv->modem_3gpp_dbus_skeleton);
          self->priv->modem_3gpp_dbus_skeleton = g_value_dup_object (value);
          break;
@@ -1061,7 +1074,7 @@ index f7fb1c5..61fde38 100644
      case PROP_MODEM_CDMA_DBUS_SKELETON:
          g_clear_object (&self->priv->modem_cdma_dbus_skeleton);
          self->priv->modem_cdma_dbus_skeleton = g_value_dup_object (value);
-@@ -10744,9 +10781,11 @@ get_property (GObject *object,
+@@ -10786,9 +10823,11 @@ get_property (GObject *object,
      case PROP_MODEM_3GPP_DBUS_SKELETON:
          g_value_set_object (value, self->priv->modem_3gpp_dbus_skeleton);
          break;
@@ -1073,7 +1086,7 @@ index f7fb1c5..61fde38 100644
      case PROP_MODEM_CDMA_DBUS_SKELETON:
          g_value_set_object (value, self->priv->modem_cdma_dbus_skeleton);
          break;
-@@ -10910,10 +10949,12 @@ dispose (GObject *object)
+@@ -10962,10 +11001,12 @@ dispose (GObject *object)
          g_clear_object (&self->priv->modem_3gpp_dbus_skeleton);
      }
  
@@ -1086,7 +1099,7 @@ index f7fb1c5..61fde38 100644
  
      if (self->priv->modem_cdma_dbus_skeleton) {
          mm_iface_modem_cdma_shutdown (MM_IFACE_MODEM_CDMA (object));
-@@ -11057,6 +11098,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+@@ -11109,6 +11150,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
      iface->scan_networks_finish = modem_3gpp_scan_networks_finish;
  }
  
@@ -1095,7 +1108,7 @@ index f7fb1c5..61fde38 100644
  static void
  iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
  {
-@@ -11085,6 +11128,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+@@ -11137,6 +11180,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
      iface->cancel_finish = modem_3gpp_ussd_cancel_finish;
  }
  
@@ -1104,7 +1117,7 @@ index f7fb1c5..61fde38 100644
  static void
  iface_modem_cdma_init (MMIfaceModemCdma *iface)
  {
-@@ -11266,9 +11311,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+@@ -11318,9 +11363,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
                                        PROP_MODEM_3GPP_DBUS_SKELETON,
                                        MM_IFACE_MODEM_3GPP_DBUS_SKELETON);
  
@@ -1117,5 +1130,5 @@ index f7fb1c5..61fde38 100644
      g_object_class_override_property (object_class,
                                        PROP_MODEM_CDMA_DBUS_SKELETON,
 -- 
-2.10.2
+2.13.1
 

@@ -1,33 +1,34 @@
-From e3028cf0167dd4d7a5926172e98fe12c2e124789 Mon Sep 17 00:00:00 2001
+From 9bec377c7b24dec3d3948f7880dbdb46b9e713b0 Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Mon, 25 Jul 2016 14:02:27 +0200
-Subject: [PATCH 05/12] build: allow disabling signal interface support
+Subject: [PATCH 06/12] build: allow disabling signal interface support
 
 ---
- cli/Makefile.am                            |  5 +++-
- cli/mmcli.c                                |  6 ++++
- cli/mmcli.h                                |  2 ++
- configure.ac                               | 15 ++++++++++
- include/ModemManager-version.h.in          | 15 ++++++++++
- introspection/Makefile.am                  |  5 ++++
- libmm-glib/Makefile.am                     | 22 ++++++++++----
- libmm-glib/generated/Makefile.am           | 15 ++++++++--
- libmm-glib/libmm-glib.h                    |  8 +++--
- libmm-glib/mm-manager.c                    |  2 ++
- libmm-glib/mm-object.c                     |  4 +++
- libmm-glib/mm-object.h                     | 11 +++++--
- plugins/huawei/mm-broadband-modem-huawei.c | 35 ++++++++++++++++++++--
- src/Makefile.am                            |  9 ++++--
- src/mm-broadband-modem-mbim.c              | 16 ++++++++--
- src/mm-broadband-modem-qmi.c               | 19 ++++++++++--
- src/mm-broadband-modem.c                   | 47 +++++++++++++++++++++++++++++-
- src/mm-modem-helpers.c                     |  4 +++
- src/mm-modem-helpers.h                     | 40 +++++++++++++++----------
- src/tests/test-modem-helpers.c             |  6 ++++
- 20 files changed, 245 insertions(+), 41 deletions(-)
+ cli/Makefile.am                              |  5 ++-
+ cli/mmcli.c                                  |  6 ++++
+ cli/mmcli.h                                  |  2 ++
+ configure.ac                                 | 15 +++++++++
+ docs/reference/api/ModemManager-sections.txt |  1 +
+ include/ModemManager-version.h.in            | 15 +++++++++
+ introspection/Makefile.am                    |  5 ++-
+ libmm-glib/Makefile.am                       | 22 +++++++++----
+ libmm-glib/generated/Makefile.am             | 15 +++++++--
+ libmm-glib/libmm-glib.h                      |  8 +++--
+ libmm-glib/mm-manager.c                      |  2 ++
+ libmm-glib/mm-object.c                       |  4 +++
+ libmm-glib/mm-object.h                       | 11 +++++--
+ plugins/huawei/mm-broadband-modem-huawei.c   | 35 +++++++++++++++++++--
+ src/Makefile.am                              |  9 ++++--
+ src/mm-broadband-modem-mbim.c                | 16 ++++++++--
+ src/mm-broadband-modem-qmi.c                 | 19 +++++++++--
+ src/mm-broadband-modem.c                     | 47 +++++++++++++++++++++++++++-
+ src/mm-modem-helpers.c                       |  4 +++
+ src/mm-modem-helpers.h                       | 40 +++++++++++++----------
+ src/tests/test-modem-helpers.c               |  6 ++++
+ 21 files changed, 245 insertions(+), 42 deletions(-)
 
 diff --git a/cli/Makefile.am b/cli/Makefile.am
-index 60f3d29..4bae814 100644
+index 60f3d293..4bae8144 100644
 --- a/cli/Makefile.am
 +++ b/cli/Makefile.am
 @@ -21,7 +21,6 @@ mmcli_SOURCES = \
@@ -50,10 +51,10 @@ index 60f3d29..4bae814 100644
  	$(MMCLI_LIBS) \
  	$(top_builddir)/libmm-glib/libmm-glib.la \
 diff --git a/cli/mmcli.c b/cli/mmcli.c
-index 1d44d09..b0bf269 100644
+index a4973e91..a4628367 100644
 --- a/cli/mmcli.c
 +++ b/cli/mmcli.c
-@@ -218,8 +218,10 @@ main (gint argc, gchar **argv)
+@@ -216,8 +216,10 @@ main (gint argc, gchar **argv)
  #endif
      g_option_context_add_group (context,
                                  mmcli_modem_firmware_get_option_group ());
@@ -64,7 +65,7 @@ index 1d44d09..b0bf269 100644
      g_option_context_add_group (context,
                                  mmcli_modem_oma_get_option_group ());
      g_option_context_add_group (context,
-@@ -371,6 +373,7 @@ main (gint argc, gchar **argv)
+@@ -369,6 +371,7 @@ main (gint argc, gchar **argv)
          else
              mmcli_modem_firmware_run_synchronous (connection);
      }
@@ -72,7 +73,7 @@ index 1d44d09..b0bf269 100644
      /* Modem Signal options? */
      else if (mmcli_modem_signal_options_enabled ()) {
          if (async_flag)
-@@ -378,6 +381,7 @@ main (gint argc, gchar **argv)
+@@ -376,6 +379,7 @@ main (gint argc, gchar **argv)
          else
              mmcli_modem_signal_run_synchronous (connection);
      }
@@ -80,7 +81,7 @@ index 1d44d09..b0bf269 100644
      /* Modem Oma options? */
      else if (mmcli_modem_oma_options_enabled ()) {
          if (async_flag)
-@@ -431,8 +435,10 @@ main (gint argc, gchar **argv)
+@@ -429,8 +433,10 @@ main (gint argc, gchar **argv)
  #endif
      } else if (mmcli_modem_firmware_options_enabled ()) {
          mmcli_modem_firmware_shutdown ();
@@ -92,7 +93,7 @@ index 1d44d09..b0bf269 100644
          mmcli_modem_oma_shutdown ();
      }  else if (mmcli_sim_options_enabled ()) {
 diff --git a/cli/mmcli.h b/cli/mmcli.h
-index b13dd2d..517a9ab 100644
+index b13dd2d0..517a9aba 100644
 --- a/cli/mmcli.h
 +++ b/cli/mmcli.h
 @@ -117,6 +117,7 @@ void          mmcli_modem_firmware_run_asynchronous   (GDBusConnection *connecti
@@ -112,10 +113,10 @@ index b13dd2d..517a9ab 100644
  /* Oma group */
  GOptionGroup *mmcli_modem_oma_get_option_group   (void);
 diff --git a/configure.ac b/configure.ac
-index 45823c3..c814d20 100644
+index 439f6f30..a83db5ad 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -393,6 +393,20 @@ fi
+@@ -420,6 +420,20 @@ fi
  AC_SUBST(MM_INTERFACE_VOICE_SUPPORTED)
  
  dnl-----------------------------------------------------------------------------
@@ -136,7 +137,7 @@ index 45823c3..c814d20 100644
  dnl Compiler warnings
  dnl
  
-@@ -490,6 +504,7 @@ echo "
+@@ -518,6 +532,7 @@ echo "
        messaging:               ${with_interface_messaging}
        time:                    ${with_interface_time}
        voice:                   ${with_interface_voice}
@@ -144,11 +145,23 @@ index 45823c3..c814d20 100644
  
      Miscellaneous:
        gobject introspection:   ${found_introspection}
+diff --git a/docs/reference/api/ModemManager-sections.txt b/docs/reference/api/ModemManager-sections.txt
+index e38470cc..be4fa271 100644
+--- a/docs/reference/api/ModemManager-sections.txt
++++ b/docs/reference/api/ModemManager-sections.txt
+@@ -9,6 +9,7 @@ MM_INTERFACE_LOCATION_SUPPORTED
+ MM_INTERFACE_MESSAGING_SUPPORTED
+ MM_INTERFACE_TIME_SUPPORTED
+ MM_INTERFACE_VOICE_SUPPORTED
++MM_INTERFACE_SIGNAL_SUPPORTED
+ </SECTION>
+ 
+ <SECTION>
 diff --git a/include/ModemManager-version.h.in b/include/ModemManager-version.h.in
-index a099825..11d0fc1 100644
+index 19abfe83..34f28ad1 100644
 --- a/include/ModemManager-version.h.in
 +++ b/include/ModemManager-version.h.in
-@@ -126,4 +126,19 @@
+@@ -127,4 +127,19 @@
   */
  #define MM_INTERFACE_VOICE_SUPPORTED @MM_INTERFACE_VOICE_SUPPORTED@
  
@@ -169,19 +182,19 @@ index a099825..11d0fc1 100644
 +
  #endif /* _MM_VERSION_H_ */
 diff --git a/introspection/Makefile.am b/introspection/Makefile.am
-index 1a27e3d..d6b60ae 100644
+index 54b5d0ae..12c2e5cf 100644
 --- a/introspection/Makefile.am
 +++ b/introspection/Makefile.am
-@@ -10,6 +10,7 @@ XMLS_FILTERED_OUT = \
- 	org.freedesktop.ModemManager1.Modem.Messaging.xml \
- 	org.freedesktop.ModemManager1.Modem.Time.xml \
- 	org.freedesktop.ModemManager1.Modem.Voice.xml \
-+	org.freedesktop.ModemManager1.Modem.Signal.xml \
+@@ -15,7 +15,6 @@ xml_DATA = \
+ 	org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml \
+ 	org.freedesktop.ModemManager1.Modem.Firmware.xml \
+ 	org.freedesktop.ModemManager1.Modem.Oma.xml \
+-	org.freedesktop.ModemManager1.Modem.Signal.xml \
  	$(NULL)
- xmldir = $(datadir)/dbus-1/interfaces
- xml_DATA = $(filter-out $(XMLS_FILTERED_OUT), $(XMLS))
-@@ -30,6 +31,10 @@ if WITH_INTERFACE_VOICE
- xml_DATA += org.freedesktop.ModemManager1.Modem.Voice.xml
+ 
+ if WITH_INTERFACE_LOCATION
+@@ -37,6 +36,10 @@ xml_DATA += \
+ 	$(NULL)
  endif
  
 +if WITH_INTERFACE_SIGNAL
@@ -192,7 +205,7 @@ index 1a27e3d..d6b60ae 100644
  	$(AM_V_GEN)	\
  		rm -f $@; \
 diff --git a/libmm-glib/Makefile.am b/libmm-glib/Makefile.am
-index d4c4254..e0296de 100644
+index 0bdf3d74..9a12b969 100644
 --- a/libmm-glib/Makefile.am
 +++ b/libmm-glib/Makefile.am
 @@ -26,8 +26,6 @@ libmm_glib_la_SOURCES = \
@@ -260,7 +273,7 @@ index d4c4254..e0296de 100644
  
  # Introspection
 diff --git a/libmm-glib/generated/Makefile.am b/libmm-glib/generated/Makefile.am
-index 227d3c1..2d2208a 100644
+index 227d3c1c..2d2208ae 100644
 --- a/libmm-glib/generated/Makefile.am
 +++ b/libmm-glib/generated/Makefile.am
 @@ -36,7 +36,6 @@ GENERATED_DOC = \
@@ -321,7 +334,7 @@ index 227d3c1..2d2208a 100644
  	$(AM_V_GEN) $(GDBUS_CODEGEN) \
  		--interface-prefix org.freedesktop.ModemManager1. \
 diff --git a/libmm-glib/libmm-glib.h b/libmm-glib/libmm-glib.h
-index 2330ee1..693d51e 100644
+index 2330ee15..693d51e9 100644
 --- a/libmm-glib/libmm-glib.h
 +++ b/libmm-glib/libmm-glib.h
 @@ -52,7 +52,9 @@
@@ -347,7 +360,7 @@ index 2330ee1..693d51e 100644
  
  /* generated */
 diff --git a/libmm-glib/mm-manager.c b/libmm-glib/mm-manager.c
-index 50081a7..535ea28 100644
+index aaf15c43..86fd427f 100644
 --- a/libmm-glib/mm-manager.c
 +++ b/libmm-glib/mm-manager.c
 @@ -79,7 +79,9 @@ get_proxy_type (GDBusObjectManagerClient *manager,
@@ -361,7 +374,7 @@ index 50081a7..535ea28 100644
          g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Oma",            GSIZE_TO_POINTER (MM_TYPE_MODEM_OMA));
          g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.ModemCdma",      GSIZE_TO_POINTER (MM_TYPE_MODEM_CDMA));
 diff --git a/libmm-glib/mm-object.c b/libmm-glib/mm-object.c
-index 7943d1c..c6a424f 100644
+index 7943d1cd..c6a424fc 100644
 --- a/libmm-glib/mm-object.c
 +++ b/libmm-glib/mm-object.c
 @@ -461,6 +461,8 @@ mm_object_peek_modem_firmware (MMObject *self)
@@ -383,7 +396,7 @@ index 7943d1c..c6a424f 100644
  
  /**
 diff --git a/libmm-glib/mm-object.h b/libmm-glib/mm-object.h
-index 14d299e..57060ee 100644
+index 14d299e5..57060ee5 100644
 --- a/libmm-glib/mm-object.h
 +++ b/libmm-glib/mm-object.h
 @@ -49,7 +49,9 @@
@@ -426,7 +439,7 @@ index 14d299e..57060ee 100644
  
  #endif /* _MM_OBJECT_H_ */
 diff --git a/plugins/huawei/mm-broadband-modem-huawei.c b/plugins/huawei/mm-broadband-modem-huawei.c
-index 946490e..3a230db 100644
+index ac1205e2..588d9420 100644
 --- a/plugins/huawei/mm-broadband-modem-huawei.c
 +++ b/plugins/huawei/mm-broadband-modem-huawei.c
 @@ -40,7 +40,6 @@
@@ -492,7 +505,7 @@ index 946490e..3a230db 100644
  struct _MMBroadbandModemHuaweiPrivate {
      /* Regex for signal quality related notifications */
      GRegex *rssi_regex;
-@@ -177,7 +189,9 @@ struct _MMBroadbandModemHuaweiPrivate {
+@@ -178,7 +190,9 @@ struct _MMBroadbandModemHuaweiPrivate {
      GArray *syscfgex_supported_modes;
      GArray *prefmode_supported_modes;
  
@@ -502,7 +515,7 @@ index 946490e..3a230db 100644
  };
  
  /*****************************************************************************/
-@@ -1783,6 +1797,8 @@ huawei_ndisstat_changed (MMPortSerialAt *port,
+@@ -1784,6 +1798,8 @@ huawei_ndisstat_changed (MMPortSerialAt *port,
      g_object_unref (list);
  }
  
@@ -511,7 +524,7 @@ index 946490e..3a230db 100644
  static void
  detailed_signal_clear (DetailedSignal *signal)
  {
-@@ -1913,6 +1929,8 @@ huawei_hcsq_changed (MMPortSerialAt *port,
+@@ -1914,6 +1930,8 @@ huawei_hcsq_changed (MMPortSerialAt *port,
      }
  }
  
@@ -520,7 +533,7 @@ index 946490e..3a230db 100644
  static void
  set_3gpp_unsolicited_events_handlers (MMBroadbandModemHuawei *self,
                                        gboolean enable)
-@@ -1956,12 +1974,14 @@ set_3gpp_unsolicited_events_handlers (MMBroadbandModemHuawei *self,
+@@ -1957,12 +1975,14 @@ set_3gpp_unsolicited_events_handlers (MMBroadbandModemHuawei *self,
              enable ? self : NULL,
              NULL);
  
@@ -534,8 +547,8 @@ index 946490e..3a230db 100644
 +#endif
      }
  
-     g_list_free_full (ports, (GDestroyNotify)g_object_unref);
-@@ -4151,6 +4171,8 @@ modem_time_check_support (MMIfaceModemTime *self,
+     g_list_free_full (ports, g_object_unref);
+@@ -4113,6 +4133,8 @@ modem_time_check_support (MMIfaceModemTime *self,
  
  #endif /* MM_INTERFACE_TIME_SUPPORTED */
  
@@ -544,7 +557,7 @@ index 946490e..3a230db 100644
  /*****************************************************************************/
  /* Check support (Signal interface) */
  
-@@ -4287,6 +4309,8 @@ signal_load_values (MMIfaceModemSignal *_self,
+@@ -4249,6 +4271,8 @@ signal_load_values (MMIfaceModemSignal *_self,
                                task);
  }
  
@@ -553,7 +566,7 @@ index 946490e..3a230db 100644
  /*****************************************************************************/
  /* Setup ports (Broadband modem class) */
  
-@@ -4541,10 +4565,11 @@ mm_broadband_modem_huawei_init (MMBroadbandModemHuawei *self)
+@@ -4510,10 +4534,11 @@ mm_broadband_modem_huawei_init (MMBroadbandModemHuawei *self)
  static void
  dispose (GObject *object)
  {
@@ -566,7 +579,7 @@ index 946490e..3a230db 100644
      G_OBJECT_CLASS (mm_broadband_modem_huawei_parent_class)->dispose (object);
  }
  
-@@ -4725,6 +4750,8 @@ iface_modem_voice_init (MMIfaceModemVoice *iface)
+@@ -4693,6 +4718,8 @@ iface_modem_voice_init (MMIfaceModemVoice *iface)
  
  #endif
  
@@ -575,7 +588,7 @@ index 946490e..3a230db 100644
  static void
  iface_modem_signal_init (MMIfaceModemSignal *iface)
  {
-@@ -4734,6 +4761,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
+@@ -4702,6 +4729,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
      iface->load_values_finish = signal_load_values_finish;
  }
  
@@ -585,10 +598,10 @@ index 946490e..3a230db 100644
  mm_broadband_modem_huawei_class_init (MMBroadbandModemHuaweiClass *klass)
  {
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 1c31fb0..e568e82 100644
+index 38406baa..e18c43a7 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -289,8 +289,6 @@ ModemManager_SOURCES = \
+@@ -321,8 +321,6 @@ ModemManager_SOURCES = \
  	mm-iface-modem-simple.c \
  	mm-iface-modem-firmware.h \
  	mm-iface-modem-firmware.c \
@@ -597,7 +610,7 @@ index 1c31fb0..e568e82 100644
  	mm-iface-modem-oma.h \
  	mm-iface-modem-oma.c \
  	mm-broadband-modem.h \
-@@ -339,6 +337,13 @@ ModemManager_SOURCES += \
+@@ -371,6 +369,13 @@ ModemManager_SOURCES += \
  	$(NULL)
  endif
  
@@ -612,7 +625,7 @@ index 1c31fb0..e568e82 100644
  
  # Additional Polkit support
 diff --git a/src/mm-broadband-modem-mbim.c b/src/mm-broadband-modem-mbim.c
-index a123341..a185e7f 100644
+index 0e054d60..ff659642 100644
 --- a/src/mm-broadband-modem-mbim.c
 +++ b/src/mm-broadband-modem-mbim.c
 @@ -34,7 +34,6 @@
@@ -621,9 +634,9 @@ index a123341..a185e7f 100644
  #include "mm-iface-modem-3gpp.h"
 -#include "mm-iface-modem-signal.h"
  
- #if MM_INTERFACE_MESSAGING_SUPPORTED
- # include "mm-sms-mbim.h"
-@@ -42,25 +41,34 @@
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ # include "mm-iface-modem-location.h"
+@@ -46,13 +45,16 @@
  # include "mm-sms-part-3gpp.h"
  #endif
  
@@ -639,7 +652,9 @@ index a123341..a185e7f 100644
  static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
 -static void iface_modem_signal_init    (MMIfaceModemSignal    *iface);
  
- #if MM_INTERFACE_MESSAGING_SUPPORTED
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ static void iface_modem_location_init  (MMIfaceModemLocation  *iface);
+@@ -62,6 +64,10 @@ static void iface_modem_location_init  (MMIfaceModemLocation  *iface);
  static void iface_modem_messaging_init (MMIfaceModemMessaging *iface);
  #endif
  
@@ -650,6 +665,7 @@ index a123341..a185e7f 100644
  G_DEFINE_TYPE_EXTENDED (MMBroadbandModemMbim, mm_broadband_modem_mbim, MM_TYPE_BROADBAND_MODEM, 0,
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
+@@ -71,7 +77,9 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModemMbim, mm_broadband_modem_mbim, MM_TYPE_B
  #if MM_INTERFACE_MESSAGING_SUPPORTED
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_MESSAGING, iface_modem_messaging_init)
  #endif
@@ -659,7 +675,7 @@ index a123341..a185e7f 100644
                          )
  
  typedef enum {
-@@ -3336,6 +3344,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+@@ -3360,6 +3368,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  
  #endif
  
@@ -668,7 +684,7 @@ index a123341..a185e7f 100644
  static void
  iface_modem_signal_init (MMIfaceModemSignal *iface)
  {
-@@ -3345,6 +3355,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
+@@ -3369,6 +3379,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
      iface->load_values_finish = NULL;
  }
  
@@ -678,7 +694,7 @@ index a123341..a185e7f 100644
  mm_broadband_modem_mbim_class_init (MMBroadbandModemMbimClass *klass)
  {
 diff --git a/src/mm-broadband-modem-qmi.c b/src/mm-broadband-modem-qmi.c
-index b3eeeff..d690afd 100644
+index ff31fa2e..add874f8 100644
 --- a/src/mm-broadband-modem-qmi.c
 +++ b/src/mm-broadband-modem-qmi.c
 @@ -44,7 +44,9 @@
@@ -721,7 +737,7 @@ index b3eeeff..d690afd 100644
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_OMA, iface_modem_oma_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_FIRMWARE, iface_modem_firmware_init))
  
-@@ -10625,6 +10632,8 @@ firmware_change_current (MMIfaceModemFirmware *self,
+@@ -10656,6 +10663,8 @@ firmware_change_current (MMIfaceModemFirmware *self,
      qmi_message_dms_set_firmware_preference_input_unref (input);
  }
  
@@ -730,7 +746,7 @@ index b3eeeff..d690afd 100644
  /*****************************************************************************/
  /* Check support (Signal interface) */
  
-@@ -11100,6 +11109,8 @@ signal_load_values (MMIfaceModemSignal *self,
+@@ -11131,6 +11140,8 @@ signal_load_values (MMIfaceModemSignal *self,
      signal_load_values_context_step (ctx);
  }
  
@@ -739,7 +755,7 @@ index b3eeeff..d690afd 100644
  /*****************************************************************************/
  /* First enabling step */
  
-@@ -11629,6 +11640,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+@@ -11660,6 +11671,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
  
  #endif /* MM_INTERFACE_LOCATION_SUPPORTED */
  
@@ -748,7 +764,7 @@ index b3eeeff..d690afd 100644
  static void
  iface_modem_signal_init (MMIfaceModemSignal *iface)
  {
-@@ -11638,6 +11651,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
+@@ -11669,6 +11682,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
      iface->load_values_finish = signal_load_values_finish;
  }
  
@@ -758,7 +774,7 @@ index b3eeeff..d690afd 100644
  iface_modem_oma_init (MMIfaceModemOma *iface)
  {
 diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
-index eae301b..89a32f1 100644
+index 6fd904ba..a782be78 100644
 --- a/src/mm-broadband-modem.c
 +++ b/src/mm-broadband-modem.c
 @@ -50,7 +50,9 @@
@@ -772,7 +788,7 @@ index eae301b..89a32f1 100644
  #include "mm-iface-modem-oma.h"
  #include "mm-broadband-bearer.h"
  #include "mm-bearer-list.h"
-@@ -81,7 +83,9 @@ static void iface_modem_voice_init (MMIfaceModemVoice *iface);
+@@ -82,7 +84,9 @@ static void iface_modem_voice_init (MMIfaceModemVoice *iface);
  #if MM_INTERFACE_TIME_SUPPORTED
  static void iface_modem_time_init (MMIfaceModemTime *iface);
  #endif
@@ -782,7 +798,7 @@ index eae301b..89a32f1 100644
  static void iface_modem_oma_init (MMIfaceModemOma *iface);
  static void iface_modem_firmware_init (MMIfaceModemFirmware *iface);
  
-@@ -103,7 +107,9 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM
+@@ -104,7 +108,9 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM
  #if MM_INTERFACE_TIME_SUPPORTED
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_TIME, iface_modem_time_init)
  #endif
@@ -792,7 +808,7 @@ index eae301b..89a32f1 100644
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_OMA, iface_modem_oma_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_FIRMWARE, iface_modem_firmware_init))
  
-@@ -126,7 +132,9 @@ enum {
+@@ -127,7 +133,9 @@ enum {
  #if MM_INTERFACE_TIME_SUPPORTED
      PROP_MODEM_TIME_DBUS_SKELETON,
  #endif
@@ -802,7 +818,7 @@ index eae301b..89a32f1 100644
      PROP_MODEM_OMA_DBUS_SKELETON,
      PROP_MODEM_FIRMWARE_DBUS_SKELETON,
      PROP_MODEM_SIM,
-@@ -254,9 +262,11 @@ struct _MMBroadbandModemPrivate {
+@@ -264,9 +272,11 @@ struct _MMBroadbandModemPrivate {
      GObject *modem_time_dbus_skeleton;
  #endif
  
@@ -814,7 +830,7 @@ index eae301b..89a32f1 100644
  
      /*<--- Modem OMA interface --->*/
      /* Properties */
-@@ -8325,6 +8335,8 @@ modem_time_check_support (MMIfaceModemTime *self,
+@@ -8394,6 +8404,8 @@ modem_time_check_support (MMIfaceModemTime *self,
  
  #endif /* MM_INTERFACE_TIME_SUPPORTED */
  
@@ -823,7 +839,7 @@ index eae301b..89a32f1 100644
  /*****************************************************************************/
  /* Check support (Signal interface) */
  
-@@ -8390,6 +8402,8 @@ modem_signal_load_values (MMIfaceModemSignal  *self,
+@@ -8459,6 +8471,8 @@ modem_signal_load_values (MMIfaceModemSignal  *self,
                                user_data);
  }
  
@@ -832,7 +848,7 @@ index eae301b..89a32f1 100644
  /*****************************************************************************/
  
  static const gchar *primary_init_sequence[] = {
-@@ -8967,7 +8981,9 @@ typedef enum {
+@@ -9014,7 +9028,9 @@ typedef enum {
      DISABLING_STEP_DISCONNECT_BEARERS,
      DISABLING_STEP_IFACE_SIMPLE,
      DISABLING_STEP_IFACE_FIRMWARE,
@@ -842,7 +858,7 @@ index eae301b..89a32f1 100644
      DISABLING_STEP_IFACE_OMA,
  #if MM_INTERFACE_TIME_SUPPORTED
      DISABLING_STEP_IFACE_TIME,
-@@ -9095,7 +9111,9 @@ INTERFACE_DISABLE_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FAL
+@@ -9123,7 +9139,9 @@ INTERFACE_DISABLE_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FAL
  #if MM_INTERFACE_VOICE_SUPPORTED
  INTERFACE_DISABLE_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  #endif
@@ -852,7 +868,7 @@ index eae301b..89a32f1 100644
  #if MM_INTERFACE_TIME_SUPPORTED
  INTERFACE_DISABLE_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
  #endif
-@@ -9197,6 +9215,7 @@ disabling_step (DisablingContext *ctx)
+@@ -9235,6 +9253,7 @@ disabling_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -860,7 +876,7 @@ index eae301b..89a32f1 100644
      case DISABLING_STEP_IFACE_SIGNAL:
          if (ctx->self->priv->modem_signal_dbus_skeleton) {
              mm_dbg ("Modem has extended signal reporting capabilities, disabling the Signal interface...");
-@@ -9208,6 +9227,7 @@ disabling_step (DisablingContext *ctx)
+@@ -9246,6 +9265,7 @@ disabling_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -868,7 +884,7 @@ index eae301b..89a32f1 100644
  
      case DISABLING_STEP_IFACE_OMA:
          if (ctx->self->priv->modem_oma_dbus_skeleton) {
-@@ -9381,7 +9401,9 @@ typedef enum {
+@@ -9421,7 +9441,9 @@ typedef enum {
  #if MM_INTERFACE_TIME_SUPPORTED
      ENABLING_STEP_IFACE_TIME,
  #endif
@@ -878,7 +894,7 @@ index eae301b..89a32f1 100644
      ENABLING_STEP_IFACE_OMA,
      ENABLING_STEP_IFACE_FIRMWARE,
      ENABLING_STEP_IFACE_SIMPLE,
-@@ -9487,7 +9509,9 @@ INTERFACE_ENABLE_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FALS
+@@ -9506,7 +9528,9 @@ INTERFACE_ENABLE_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FALS
  #if MM_INTERFACE_VOICE_SUPPORTED
  INTERFACE_ENABLE_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  #endif
@@ -888,7 +904,7 @@ index eae301b..89a32f1 100644
  #if MM_INTERFACE_TIME_SUPPORTED
  INTERFACE_ENABLE_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
  #endif
-@@ -9682,6 +9706,7 @@ enabling_step (EnablingContext *ctx)
+@@ -9712,6 +9736,7 @@ enabling_step (GTask *task)
          ctx->step++;
  #endif
  
@@ -896,7 +912,7 @@ index eae301b..89a32f1 100644
      case ENABLING_STEP_IFACE_SIGNAL:
          if (ctx->self->priv->modem_signal_dbus_skeleton) {
              mm_dbg ("Modem has extended signal reporting capabilities, enabling the Signal interface...");
-@@ -9694,6 +9719,7 @@ enabling_step (EnablingContext *ctx)
+@@ -9724,6 +9749,7 @@ enabling_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -904,7 +920,7 @@ index eae301b..89a32f1 100644
  
      case ENABLING_STEP_IFACE_OMA:
          if (ctx->self->priv->modem_oma_dbus_skeleton) {
-@@ -9837,7 +9863,9 @@ typedef enum {
+@@ -9867,7 +9893,9 @@ typedef enum {
  #if MM_INTERFACE_TIME_SUPPORTED
      INITIALIZE_STEP_IFACE_TIME,
  #endif
@@ -914,7 +930,7 @@ index eae301b..89a32f1 100644
      INITIALIZE_STEP_IFACE_OMA,
      INITIALIZE_STEP_IFACE_FIRMWARE,
      INITIALIZE_STEP_SIM_HOT_SWAP,
-@@ -10044,7 +10072,9 @@ INTERFACE_INIT_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
+@@ -10060,7 +10088,9 @@ INTERFACE_INIT_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  #if MM_INTERFACE_TIME_SUPPORTED
  INTERFACE_INIT_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
  #endif
@@ -924,7 +940,7 @@ index eae301b..89a32f1 100644
  INTERFACE_INIT_READY_FN (iface_modem_oma,       MM_IFACE_MODEM_OMA,       FALSE)
  INTERFACE_INIT_READY_FN (iface_modem_firmware,  MM_IFACE_MODEM_FIRMWARE,  FALSE)
  
-@@ -10174,6 +10204,7 @@ initialize_step (InitializeContext *ctx)
+@@ -10196,6 +10226,7 @@ initialize_step (GTask *task)
          return;
  #endif
  
@@ -932,15 +948,15 @@ index eae301b..89a32f1 100644
      case INITIALIZE_STEP_IFACE_SIGNAL:
          /* Initialize the Signal interface */
          mm_iface_modem_signal_initialize (MM_IFACE_MODEM_SIGNAL (ctx->self),
-@@ -10181,6 +10212,7 @@ initialize_step (InitializeContext *ctx)
+@@ -10203,6 +10234,7 @@ initialize_step (GTask *task)
                                            (GAsyncReadyCallback)iface_modem_signal_initialize_ready,
-                                           ctx);
+                                           task);
          return;
 +#endif
  
      case INITIALIZE_STEP_IFACE_OMA:
          /* Initialize the Oma interface */
-@@ -10295,6 +10327,9 @@ initialize_step (InitializeContext *ctx)
+@@ -10333,6 +10365,9 @@ sim_hot_swap_enabled:
  #if MM_INTERFACE_TIME_SUPPORTED
                  mm_iface_modem_time_shutdown (MM_IFACE_MODEM_TIME (ctx->self));
  #endif
@@ -949,8 +965,8 @@ index eae301b..89a32f1 100644
 +#endif
                  mm_iface_modem_simple_shutdown (MM_IFACE_MODEM_SIMPLE (ctx->self));
              }
-             initialize_context_complete_and_free (ctx);
-@@ -10546,10 +10581,12 @@ set_property (GObject *object,
+ 
+@@ -10585,10 +10620,12 @@ set_property (GObject *object,
          self->priv->modem_time_dbus_skeleton = g_value_dup_object (value);
          break;
  #endif
@@ -963,7 +979,7 @@ index eae301b..89a32f1 100644
      case PROP_MODEM_OMA_DBUS_SKELETON:
          g_clear_object (&self->priv->modem_oma_dbus_skeleton);
          self->priv->modem_oma_dbus_skeleton = g_value_dup_object (value);
-@@ -10671,9 +10708,11 @@ get_property (GObject *object,
+@@ -10713,9 +10750,11 @@ get_property (GObject *object,
          g_value_set_object (value, self->priv->modem_time_dbus_skeleton);
          break;
  #endif
@@ -975,7 +991,7 @@ index eae301b..89a32f1 100644
      case PROP_MODEM_OMA_DBUS_SKELETON:
          g_value_set_object (value, self->priv->modem_oma_dbus_skeleton);
          break;
-@@ -11088,6 +11127,8 @@ iface_modem_time_init (MMIfaceModemTime *iface)
+@@ -11140,6 +11179,8 @@ iface_modem_time_init (MMIfaceModemTime *iface)
  
  #endif
  
@@ -984,7 +1000,7 @@ index eae301b..89a32f1 100644
  static void
  iface_modem_signal_init (MMIfaceModemSignal *iface)
  {
-@@ -11097,6 +11138,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
+@@ -11149,6 +11190,8 @@ iface_modem_signal_init (MMIfaceModemSignal *iface)
      iface->load_values_finish   = modem_signal_load_values_finish;
  }
  
@@ -993,7 +1009,7 @@ index eae301b..89a32f1 100644
  static void
  iface_modem_oma_init (MMIfaceModemOma *iface)
  {
-@@ -11182,9 +11225,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+@@ -11234,9 +11277,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
                                        MM_IFACE_MODEM_TIME_DBUS_SKELETON);
  #endif
  
@@ -1006,32 +1022,32 @@ index eae301b..89a32f1 100644
      g_object_class_override_property (object_class,
                                        PROP_MODEM_OMA_DBUS_SKELETON,
 diff --git a/src/mm-modem-helpers.c b/src/mm-modem-helpers.c
-index 79c8bf6..9c7b775 100644
+index e2bf2c03..27657f69 100644
 --- a/src/mm-modem-helpers.c
 +++ b/src/mm-modem-helpers.c
-@@ -1826,6 +1826,8 @@ out:
+@@ -2091,6 +2091,8 @@ out:
      return TRUE;
  }
  
-+#if MM_INTERFACE_MESSAGING_SUPPORTED
++#if MM_INTERFACE_SIGNAL_SUPPORTED
 +
  /*****************************************************************************/
  /* +CESQ response parser */
  
-@@ -2067,6 +2069,8 @@ mm_3gpp_cesq_response_to_signal_info (const gchar  *response,
+@@ -2332,6 +2334,8 @@ mm_3gpp_cesq_response_to_signal_info (const gchar  *response,
      return TRUE;
  }
  
-+#endif /* MM_INTERFACE_MESSAGING_SUPPORTED */
++#endif /* MM_INTERFACE_SIGNAL_SUPPORTED */
 +
  gboolean
  mm_3gpp_parse_cfun_query_generic_response (const gchar        *response,
                                             MMModemPowerState  *out_state,
 diff --git a/src/mm-modem-helpers.h b/src/mm-modem-helpers.h
-index b26ecc0..b85ace9 100644
+index e0a21a05..18cd9b43 100644
 --- a/src/mm-modem-helpers.h
 +++ b/src/mm-modem-helpers.h
-@@ -229,22 +229,6 @@ gboolean mm_3gpp_parse_cfun_query_generic_response (const gchar        *response
+@@ -273,22 +273,6 @@ gboolean mm_3gpp_parse_cfun_query_generic_response (const gchar        *response
                                                      MMModemPowerState  *out_state,
                                                      GError            **error);
  
@@ -1054,10 +1070,13 @@ index b26ecc0..b85ace9 100644
  /* Additional 3GPP-specific helpers */
  
  MMModem3gppFacility mm_3gpp_acronym_to_facility (const gchar *str);
-@@ -268,6 +252,30 @@ char *mm_3gpp_parse_iccid (const char *raw_iccid, GError **error);
- #if MM_INTERFACE_MESSAGING_SUPPORTED
+@@ -309,6 +293,30 @@ MMBearerIpFamily  mm_3gpp_get_ip_family_from_pdp_type (const gchar *pdp_type);
  
- /*****************************************************************************/
+ char *mm_3gpp_parse_iccid (const char *raw_iccid, GError **error);
+ 
++#if MM_INTERFACE_SIGNAL_SUPPORTED
++
++/*****************************************************************************/
 +/* Signal specific helpers and utilities */
 +/*****************************************************************************/
 +
@@ -1077,19 +1096,16 @@ index b26ecc0..b85ace9 100644
 +                                               MMSignal    **out_lte,
 +                                               GError      **error);
 +
-+#endif /* MM_INTERFACE_MESSAGING_SUPPORTED */
++#endif /* MM_INTERFACE_SIGNAL_SUPPORTED */
 +
-+#if MM_INTERFACE_MESSAGING_SUPPORTED
-+
-+/*****************************************************************************/
- /* Messaging specific helpers and utilities */
- /*****************************************************************************/
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
  
+ /*****************************************************************************/
 diff --git a/src/tests/test-modem-helpers.c b/src/tests/test-modem-helpers.c
-index cf587ae..8717c16 100644
+index af2199c5..4225f8a0 100644
 --- a/src/tests/test-modem-helpers.c
 +++ b/src/tests/test-modem-helpers.c
-@@ -3167,6 +3167,8 @@ test_cfun_response (void)
+@@ -3507,6 +3507,8 @@ test_cfun_response (void)
      }
  }
  
@@ -1098,7 +1114,7 @@ index cf587ae..8717c16 100644
  /*****************************************************************************/
  /* Test +CESQ responses */
  
-@@ -3287,6 +3289,8 @@ test_cesq_response_to_signal (void)
+@@ -3627,6 +3629,8 @@ test_cesq_response_to_signal (void)
      }
  }
  
@@ -1107,7 +1123,7 @@ index cf587ae..8717c16 100644
  typedef struct {
      const gchar       *str;
      MMModemPowerState  state;
-@@ -3561,8 +3565,10 @@ int main (int argc, char **argv)
+@@ -3929,8 +3933,10 @@ int main (int argc, char **argv)
      g_test_suite_add (suite, TESTCASE (test_cfun_response, NULL));
      g_test_suite_add (suite, TESTCASE (test_cfun_generic_response, NULL));
  
@@ -1119,5 +1135,5 @@ index cf587ae..8717c16 100644
      g_test_suite_add (suite, TESTCASE (test_parse_uint_list, NULL));
  
 -- 
-2.10.2
+2.13.1
 

@@ -1,7 +1,7 @@
-From 54e48afaa2541580cc793c7764081753a1e8e48f Mon Sep 17 00:00:00 2001
+From 05fc09d8a254dc9030e0f77153cb182611ab4429 Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Wed, 20 Jul 2016 21:43:59 +0200
-Subject: [PATCH 02/12] build: allow disabling messaging interface support
+Subject: [PATCH 03/12] build: allow disabling messaging interface support
 
 ---
  cli/Makefile.am                                    |    9 +-
@@ -10,12 +10,13 @@ Subject: [PATCH 02/12] build: allow disabling messaging interface support
  cli/mmcli.c                                        |   12 +
  cli/mmcli.h                                        |    2 +
  configure.ac                                       |   15 +
+ docs/reference/api/ModemManager-sections.txt       |    1 +
  include/Makefile.am                                |    4 +
  include/ModemManager-enums-messaging.h             |  426 +++++++++
  include/ModemManager-enums.h                       |  393 --------
  include/ModemManager-version.h.in                  |   15 +
  include/ModemManager.h                             |    3 +
- introspection/Makefile.am                          |    5 +
+ introspection/Makefile.am                          |    5 +-
  libmm-glib/Makefile.am                             |   36 +-
  libmm-glib/generated/Makefile.am                   |   31 +-
  libmm-glib/libmm-glib.h                            |   12 +-
@@ -38,7 +39,7 @@ Subject: [PATCH 02/12] build: allow disabling messaging interface support
  src/Makefile.am                                    |   43 +-
  src/mm-broadband-modem-mbim.c                      |   41 +-
  src/mm-broadband-modem-qmi.c                       |   30 +-
- src/mm-broadband-modem.c                           |   90 +-
+ src/mm-broadband-modem.c                           |   94 +-
  src/mm-broadband-modem.h                           |    7 +-
  src/mm-call-list.c                                 |    1 -
  src/mm-modem-helpers-mbim.c                        |    4 +
@@ -49,11 +50,11 @@ Subject: [PATCH 02/12] build: allow disabling messaging interface support
  src/mm-modem-helpers.h                             |   85 +-
  src/tests/Makefile.am                              |    5 +
  src/tests/test-modem-helpers.c                     |   15 +-
- 45 files changed, 1683 insertions(+), 1228 deletions(-)
+ 46 files changed, 1685 insertions(+), 1231 deletions(-)
  create mode 100644 include/ModemManager-enums-messaging.h
 
 diff --git a/cli/Makefile.am b/cli/Makefile.am
-index c7da7f1..6005f06 100644
+index c7da7f17..6005f061 100644
 --- a/cli/Makefile.am
 +++ b/cli/Makefile.am
 @@ -20,7 +20,6 @@ mmcli_SOURCES = \
@@ -87,7 +88,7 @@ index c7da7f1..6005f06 100644
  	$(MMCLI_LIBS) \
  	$(top_builddir)/libmm-glib/libmm-glib.la \
 diff --git a/cli/mmcli-common.c b/cli/mmcli-common.c
-index f48dd9c..4c03bfd 100644
+index 327031c2..0e2941b9 100644
 --- a/cli/mmcli-common.c
 +++ b/cli/mmcli-common.c
 @@ -825,6 +825,8 @@ mmcli_get_sim_sync (GDBusConnection *connection,
@@ -146,7 +147,7 @@ index f48dd9c..4c03bfd 100644
  const gchar *
  mmcli_get_common_call_string (void)
 diff --git a/cli/mmcli-common.h b/cli/mmcli-common.h
-index f38429b..376f6cd 100644
+index f38429b7..376f6cdd 100644
 --- a/cli/mmcli-common.h
 +++ b/cli/mmcli-common.h
 @@ -71,6 +71,8 @@ MMSim *mmcli_get_sim_sync   (GDBusConnection *connection,
@@ -178,10 +179,10 @@ index f38429b..376f6cd 100644
  
  gchar *mmcli_prefix_newlines (const gchar *prefix,
 diff --git a/cli/mmcli.c b/cli/mmcli.c
-index 02362f8..039100c 100644
+index 58bb4d8d..0b070513 100644
 --- a/cli/mmcli.c
 +++ b/cli/mmcli.c
-@@ -204,8 +204,10 @@ main (gint argc, gchar **argv)
+@@ -202,8 +202,10 @@ main (gint argc, gchar **argv)
      g_option_context_add_group (context,
                                  mmcli_modem_location_get_option_group ());
  #endif
@@ -192,7 +193,7 @@ index 02362f8..039100c 100644
      g_option_context_add_group (context,
                                  mmcli_modem_voice_get_option_group ());
      g_option_context_add_group (context,
-@@ -220,8 +222,10 @@ main (gint argc, gchar **argv)
+@@ -218,8 +220,10 @@ main (gint argc, gchar **argv)
                                  mmcli_sim_get_option_group ());
      g_option_context_add_group (context,
                                  mmcli_bearer_get_option_group ());
@@ -203,7 +204,7 @@ index 02362f8..039100c 100644
      g_option_context_add_group (context,
                                  mmcli_call_get_option_group ());
      g_option_context_add_main_entries (context, main_entries, NULL);
-@@ -279,6 +283,7 @@ main (gint argc, gchar **argv)
+@@ -277,6 +281,7 @@ main (gint argc, gchar **argv)
          else
              mmcli_bearer_run_synchronous (connection);
      }
@@ -211,7 +212,7 @@ index 02362f8..039100c 100644
      /* Sms options? */
      else if (mmcli_sms_options_enabled ()) {
          if (async_flag)
-@@ -286,6 +291,7 @@ main (gint argc, gchar **argv)
+@@ -284,6 +289,7 @@ main (gint argc, gchar **argv)
          else
              mmcli_sms_run_synchronous (connection);
      }
@@ -219,7 +220,7 @@ index 02362f8..039100c 100644
      /* Call options? */
      else if (mmcli_call_options_enabled ()) {
          if (async_flag)
-@@ -323,6 +329,7 @@ main (gint argc, gchar **argv)
+@@ -321,6 +327,7 @@ main (gint argc, gchar **argv)
              mmcli_modem_location_run_synchronous (connection);
      }
  #endif
@@ -227,7 +228,7 @@ index 02362f8..039100c 100644
      /* Modem Messaging options? */
      else if (mmcli_modem_messaging_options_enabled ()) {
          if (async_flag)
-@@ -330,6 +337,7 @@ main (gint argc, gchar **argv)
+@@ -328,6 +335,7 @@ main (gint argc, gchar **argv)
          else
              mmcli_modem_messaging_run_synchronous (connection);
      }
@@ -235,7 +236,7 @@ index 02362f8..039100c 100644
      /* Voice options? */
      else if (mmcli_modem_voice_options_enabled ()) {
          if (async_flag)
-@@ -397,8 +405,10 @@ main (gint argc, gchar **argv)
+@@ -395,8 +403,10 @@ main (gint argc, gchar **argv)
      } else if (mmcli_modem_location_options_enabled ()) {
          mmcli_modem_location_shutdown ();
  #endif
@@ -244,9 +245,9 @@ index 02362f8..039100c 100644
          mmcli_modem_messaging_shutdown ();
 +#endif
      } else if (mmcli_modem_voice_options_enabled ()) {
-            mmcli_modem_voice_shutdown ();
+         mmcli_modem_voice_shutdown ();
      } else if (mmcli_modem_time_options_enabled ()) {
-@@ -413,8 +423,10 @@ main (gint argc, gchar **argv)
+@@ -411,8 +421,10 @@ main (gint argc, gchar **argv)
          mmcli_sim_shutdown ();
      } else if (mmcli_bearer_options_enabled ()) {
          mmcli_bearer_shutdown ();
@@ -258,7 +259,7 @@ index 02362f8..039100c 100644
          mmcli_call_shutdown ();
      } else if (mmcli_modem_options_enabled ()) {
 diff --git a/cli/mmcli.h b/cli/mmcli.h
-index 9574ffb..c47588c 100644
+index 9574ffb6..c47588c3 100644
 --- a/cli/mmcli.h
 +++ b/cli/mmcli.h
 @@ -79,6 +79,7 @@ void          mmcli_modem_location_run_synchronous    (GDBusConnection *connecti
@@ -278,10 +279,10 @@ index 9574ffb..c47588c 100644
  /* Voice group */
  GOptionGroup *mmcli_modem_voice_get_option_group   (void);
 diff --git a/configure.ac b/configure.ac
-index 9b57960..f27b33f 100644
+index 0408173d..665c36a9 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -351,6 +351,20 @@ fi
+@@ -378,6 +378,20 @@ fi
  AC_SUBST(MM_INTERFACE_LOCATION_SUPPORTED)
  
  dnl-----------------------------------------------------------------------------
@@ -302,7 +303,7 @@ index 9b57960..f27b33f 100644
  dnl Compiler warnings
  dnl
  
-@@ -445,6 +459,7 @@ echo "
+@@ -473,6 +487,7 @@ echo "
  
      Optional interfaces:
        location:                ${with_interface_location}
@@ -310,11 +311,23 @@ index 9b57960..f27b33f 100644
  
      Miscellaneous:
        gobject introspection:   ${found_introspection}
+diff --git a/docs/reference/api/ModemManager-sections.txt b/docs/reference/api/ModemManager-sections.txt
+index cdefe687..4a5938e0 100644
+--- a/docs/reference/api/ModemManager-sections.txt
++++ b/docs/reference/api/ModemManager-sections.txt
+@@ -6,6 +6,7 @@ MM_MINOR_VERSION
+ MM_MICRO_VERSION
+ MM_CHECK_VERSION
+ MM_INTERFACE_LOCATION_SUPPORTED
++MM_INTERFACE_MESSAGING_SUPPORTED
+ </SECTION>
+ 
+ <SECTION>
 diff --git a/include/Makefile.am b/include/Makefile.am
-index b022ecb..2dbbb0a 100644
+index 6d7a250b..efa9ef25 100644
 --- a/include/Makefile.am
 +++ b/include/Makefile.am
-@@ -15,6 +15,10 @@ if WITH_INTERFACE_LOCATION
+@@ -16,6 +16,10 @@ if WITH_INTERFACE_LOCATION
  include_HEADERS += ModemManager-enums-location.h
  endif
  
@@ -327,7 +340,7 @@ index b022ecb..2dbbb0a 100644
  
 diff --git a/include/ModemManager-enums-messaging.h b/include/ModemManager-enums-messaging.h
 new file mode 100644
-index 0000000..775a36e
+index 00000000..775a36e2
 --- /dev/null
 +++ b/include/ModemManager-enums-messaging.h
 @@ -0,0 +1,426 @@
@@ -758,7 +771,7 @@ index 0000000..775a36e
 +
 +#endif /*  _MODEMMANAGER_ENUMS_MESSAGING_H_ */
 diff --git a/include/ModemManager-enums.h b/include/ModemManager-enums.h
-index 79f349d..d0eabe9 100644
+index 16481a38..a9c599fc 100644
 --- a/include/ModemManager-enums.h
 +++ b/include/ModemManager-enums.h
 @@ -419,399 +419,6 @@ typedef enum { /*< underscore_name=mm_modem_port_type >*/
@@ -1162,10 +1175,10 @@ index 79f349d..d0eabe9 100644
   * @MM_MODEM_CONTACTS_STORAGE_UNKNOWN: Unknown location.
   * @MM_MODEM_CONTACTS_STORAGE_ME: Device's local memory.
 diff --git a/include/ModemManager-version.h.in b/include/ModemManager-version.h.in
-index cf05f5d..8a9f915 100644
+index 4865e93a..3d9f2f40 100644
 --- a/include/ModemManager-version.h.in
 +++ b/include/ModemManager-version.h.in
-@@ -81,4 +81,19 @@
+@@ -82,4 +82,19 @@
   */
  #define MM_INTERFACE_LOCATION_SUPPORTED @MM_INTERFACE_LOCATION_SUPPORTED@
  
@@ -1186,7 +1199,7 @@ index cf05f5d..8a9f915 100644
 +
  #endif /* _MM_VERSION_H_ */
 diff --git a/include/ModemManager.h b/include/ModemManager.h
-index dbdb0ab..8482093 100644
+index c609830e..d231c39f 100644
 --- a/include/ModemManager.h
 +++ b/include/ModemManager.h
 @@ -40,6 +40,9 @@
@@ -1200,18 +1213,18 @@ index dbdb0ab..8482093 100644
  /* Public header with errors */
  #include <ModemManager-errors.h>
 diff --git a/introspection/Makefile.am b/introspection/Makefile.am
-index 1f0a648..587736b 100644
+index ebed9bb3..e6c483ed 100644
 --- a/introspection/Makefile.am
 +++ b/introspection/Makefile.am
-@@ -7,6 +7,7 @@ XMLS_FILTERED_OUT = \
- 	all.xml \
- 	wip-org.freedesktop.ModemManager1.Modem.Contacts.xml \
- 	org.freedesktop.ModemManager1.Modem.Location.xml \
-+	org.freedesktop.ModemManager1.Modem.Messaging.xml \
- 	$(NULL)
- xmldir = $(datadir)/dbus-1/interfaces
- xml_DATA = $(filter-out $(XMLS_FILTERED_OUT), $(XMLS))
-@@ -15,6 +16,10 @@ if WITH_INTERFACE_LOCATION
+@@ -11,7 +11,6 @@ xml_DATA = \
+ 	org.freedesktop.ModemManager1.Modem.Simple.xml \
+ 	org.freedesktop.ModemManager1.Sim.xml \
+ 	org.freedesktop.ModemManager1.Bearer.xml \
+-	org.freedesktop.ModemManager1.Modem.Messaging.xml \
+ 	org.freedesktop.ModemManager1.Sms.xml \
+ 	org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml \
+ 	org.freedesktop.ModemManager1.Modem.Firmware.xml \
+@@ -26,6 +25,10 @@ if WITH_INTERFACE_LOCATION
  xml_DATA += org.freedesktop.ModemManager1.Modem.Location.xml
  endif
  
@@ -1223,7 +1236,7 @@ index 1f0a648..587736b 100644
  	$(AM_V_GEN)	\
  		rm -f $@; \
 diff --git a/libmm-glib/Makefile.am b/libmm-glib/Makefile.am
-index b7e98d1..7ffce06 100644
+index a3c3b093..fdabc335 100644
 --- a/libmm-glib/Makefile.am
 +++ b/libmm-glib/Makefile.am
 @@ -34,10 +34,6 @@ libmm_glib_la_SOURCES = \
@@ -1317,7 +1330,7 @@ index b7e98d1..7ffce06 100644
  	mm-gdbus-bearer.c \
  	mm-gdbus-modem.c \
  	$(NULL)
-@@ -203,6 +211,12 @@ if WITH_INTERFACE_LOCATION
+@@ -204,6 +212,12 @@ if WITH_INTERFACE_LOCATION
  PUBLIC_H += ModemManager-enums-location.h
  endif
  
@@ -1331,7 +1344,7 @@ index b7e98d1..7ffce06 100644
  INTROSPECTION_SCANNER_ARGS = --warn-all
  INTROSPECTION_COMPILER_ARGS =
 diff --git a/libmm-glib/generated/Makefile.am b/libmm-glib/generated/Makefile.am
-index 4b4bac2..068f0a4 100644
+index 4b4bac29..068f0a4a 100644
 --- a/libmm-glib/generated/Makefile.am
 +++ b/libmm-glib/generated/Makefile.am
 @@ -11,7 +11,6 @@ GENERATED_H = \
@@ -1441,7 +1454,7 @@ index 4b4bac2..068f0a4 100644
  mm_gdbus_call_generated = \
  	mm-gdbus-call.h \
 diff --git a/libmm-glib/libmm-glib.h b/libmm-glib/libmm-glib.h
-index d9ca2a6..8c7e643 100644
+index d9ca2a68..8c7e6430 100644
 --- a/libmm-glib/libmm-glib.h
 +++ b/libmm-glib/libmm-glib.h
 @@ -42,7 +42,9 @@
@@ -1478,7 +1491,7 @@ index d9ca2a6..8c7e643 100644
  
  #endif /* _LIBMM_GLIB_H_ */
 diff --git a/libmm-glib/mm-common-helpers.c b/libmm-glib/mm-common-helpers.c
-index 7bd845b..ec07971 100644
+index f99e58d8..18bd63bc 100644
 --- a/libmm-glib/mm-common-helpers.c
 +++ b/libmm-glib/mm-common-helpers.c
 @@ -103,30 +103,6 @@ mm_common_build_ports_string (const MMModemPortInfo *ports,
@@ -1512,10 +1525,11 @@ index 7bd845b..ec07971 100644
  mm_common_build_mode_combinations_string (const MMModemModeCombination *modes,
                                            guint n_modes)
  {
-@@ -159,67 +135,6 @@ mm_common_build_mode_combinations_string (const MMModemModeCombination *modes,
+@@ -158,67 +134,6 @@ mm_common_build_mode_combinations_string (const MMModemModeCombination *modes,
+     return g_string_free (str, FALSE);
  }
  
- GArray *
+-GArray *
 -mm_common_sms_storages_variant_to_garray (GVariant *variant)
 -{
 -    GArray *array = NULL;
@@ -1576,11 +1590,10 @@ index 7bd845b..ec07971 100644
 -    return mm_common_sms_storages_array_to_variant (NULL, 0);
 -}
 -
--GArray *
- mm_common_ports_variant_to_garray (GVariant *variant)
+ static void
+ clear_modem_port_info (MMModemPortInfo *info)
  {
-     GArray *array = NULL;
-@@ -942,72 +857,6 @@ mm_common_get_allowed_auth_from_string (const gchar *str,
+@@ -949,72 +864,6 @@ mm_common_get_allowed_auth_from_string (const gchar *str,
      return allowed_auth;
  }
  
@@ -1653,7 +1666,7 @@ index 7bd845b..ec07971 100644
  MMCallDirection
  mm_common_get_call_direction_from_string (const gchar *str,
                                            GError **error)
-@@ -1529,50 +1378,6 @@ mm_get_string_unquoted_from_match_info (GMatchInfo *match_info,
+@@ -1536,50 +1385,6 @@ mm_get_string_unquoted_from_match_info (GMatchInfo *match_info,
  
  /*****************************************************************************/
  
@@ -1704,7 +1717,7 @@ index 7bd845b..ec07971 100644
  /* From hostap, Copyright (c) 2002-2005, Jouni Malinen <jkmaline@cc.hut.fi> */
  
  static gint
-@@ -1688,3 +1493,201 @@ mm_utils_check_for_single_value (guint32 value)
+@@ -1695,3 +1500,201 @@ mm_utils_check_for_single_value (guint32 value)
  
      return TRUE;
  }
@@ -1907,7 +1920,7 @@ index 7bd845b..ec07971 100644
 +
 +#endif /* MM_INTERFACE_MESSAGING_SUPPORTED */
 diff --git a/libmm-glib/mm-common-helpers.h b/libmm-glib/mm-common-helpers.h
-index 772068e..33bb1cd 100644
+index 772068e9..33bb1cd8 100644
 --- a/libmm-glib/mm-common-helpers.h
 +++ b/libmm-glib/mm-common-helpers.h
 @@ -35,9 +35,6 @@ gchar *mm_common_build_bands_string (const MMModemBand *bands,
@@ -1981,7 +1994,7 @@ index 772068e..33bb1cd 100644
 +
  #endif /* MM_COMMON_HELPERS_H */
 diff --git a/libmm-glib/mm-manager.c b/libmm-glib/mm-manager.c
-index 042f470..ae14450 100644
+index 99804bd4..7c6bdfbd 100644
 --- a/libmm-glib/mm-manager.c
 +++ b/libmm-glib/mm-manager.c
 @@ -67,7 +67,9 @@ get_proxy_type (GDBusObjectManagerClient *manager,
@@ -1995,7 +2008,7 @@ index 042f470..ae14450 100644
  #if MM_INTERFACE_LOCATION_SUPPORTED
          g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Location",       GSIZE_TO_POINTER (MM_TYPE_MODEM_LOCATION));
 diff --git a/libmm-glib/mm-object.c b/libmm-glib/mm-object.c
-index 05e81ac..44bfb98 100644
+index 05e81ac4..44bfb983 100644
 --- a/libmm-glib/mm-object.c
 +++ b/libmm-glib/mm-object.c
 @@ -307,6 +307,8 @@ mm_object_peek_modem_location (MMObject *self)
@@ -2017,7 +2030,7 @@ index 05e81ac..44bfb98 100644
  
  /**
 diff --git a/libmm-glib/mm-object.h b/libmm-glib/mm-object.h
-index 3d67e20..6a44c3c 100644
+index 3d67e20c..6a44c3c2 100644
 --- a/libmm-glib/mm-object.h
 +++ b/libmm-glib/mm-object.h
 @@ -39,7 +39,9 @@
@@ -2060,7 +2073,7 @@ index 3d67e20..6a44c3c 100644
  
  #endif /* _MM_OBJECT_H_ */
 diff --git a/plugins/altair/mm-broadband-modem-altair-lte.c b/plugins/altair/mm-broadband-modem-altair-lte.c
-index 1155a7a..d2fd60c 100644
+index 9252f3b8..2ce53ecb 100644
 --- a/plugins/altair/mm-broadband-modem-altair-lte.c
 +++ b/plugins/altair/mm-broadband-modem-altair-lte.c
 @@ -34,7 +34,9 @@
@@ -2095,7 +2108,7 @@ index 1155a7a..d2fd60c 100644
  
  struct _MMBroadbandModemAltairLtePrivate {
      /* Regex for SIM refresh notifications */
-@@ -1468,6 +1476,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+@@ -1403,6 +1411,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
      iface->load_subscription_state_finish = modem_3gpp_load_subscription_state_finish;
  }
  
@@ -2104,7 +2117,7 @@ index 1155a7a..d2fd60c 100644
  static void
  iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  {
-@@ -1476,6 +1486,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+@@ -1411,6 +1421,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
      iface->check_support_finish = NULL;
  }
  
@@ -2114,10 +2127,10 @@ index 1155a7a..d2fd60c 100644
  mm_broadband_modem_altair_lte_class_init (MMBroadbandModemAltairLteClass *klass)
  {
 diff --git a/plugins/cinterion/mm-broadband-modem-cinterion.c b/plugins/cinterion/mm-broadband-modem-cinterion.c
-index 3eaccf7..1c883e4 100644
+index aaf0c2a0..ac2b8a7c 100644
 --- a/plugins/cinterion/mm-broadband-modem-cinterion.c
 +++ b/plugins/cinterion/mm-broadband-modem-cinterion.c
-@@ -30,7 +30,9 @@
+@@ -32,7 +32,9 @@
  #include "mm-errors-types.h"
  #include "mm-iface-modem.h"
  #include "mm-iface-modem-3gpp.h"
@@ -2128,7 +2141,7 @@ index 3eaccf7..1c883e4 100644
  #if MM_INTERFACE_LOCATION_SUPPORTED
  # include "mm-iface-modem-location.h"
  #endif
-@@ -41,7 +43,10 @@
+@@ -44,7 +46,10 @@
  
  static void iface_modem_init      (MMIfaceModem *iface);
  static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
@@ -2139,7 +2152,7 @@ index 3eaccf7..1c883e4 100644
  
  #if MM_INTERFACE_LOCATION_SUPPORTED
  static void iface_modem_location_init (MMIfaceModemLocation *iface);
-@@ -52,7 +57,9 @@ static MMIfaceModem *iface_modem_parent;
+@@ -56,7 +61,9 @@ static MMIfaceModem3gpp *iface_modem_3gpp_parent;
  G_DEFINE_TYPE_EXTENDED (MMBroadbandModemCinterion, mm_broadband_modem_cinterion, MM_TYPE_BROADBAND_MODEM, 0,
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
@@ -2149,16 +2162,16 @@ index 3eaccf7..1c883e4 100644
  #if MM_INTERFACE_LOCATION_SUPPORTED
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_LOCATION, iface_modem_location_init)
  #endif
-@@ -107,6 +114,8 @@ enable_unsolicited_events (MMIfaceModem3gpp *self,
-                               user_data);
- }
+@@ -93,6 +100,8 @@ struct _MMBroadbandModemCinterionPrivate {
+     FeatureSupport sind_psinfo_support;
+ };
  
 +#if MM_INTERFACE_MESSAGING_SUPPORTED
 +
  /*****************************************************************************/
  /* Enable unsolicited events (SMS indications) (Messaging interface) */
  
-@@ -321,6 +330,8 @@ messaging_check_support (MMIfaceModemMessaging *self,
+@@ -307,6 +316,8 @@ messaging_check_support (MMIfaceModemMessaging *self,
                                result);
  }
  
@@ -2167,7 +2180,7 @@ index 3eaccf7..1c883e4 100644
  /*****************************************************************************/
  /* MODEM POWER DOWN */
  
-@@ -1747,6 +1758,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+@@ -1986,6 +1997,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
      iface->register_in_network_finish = register_in_network_finish;
  }
  
@@ -2176,7 +2189,7 @@ index 3eaccf7..1c883e4 100644
  static void
  iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  {
-@@ -1756,6 +1769,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+@@ -1995,6 +2008,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
      iface->enable_unsolicited_events_finish = messaging_enable_unsolicited_events_finish;
  }
  
@@ -2186,7 +2199,7 @@ index 3eaccf7..1c883e4 100644
  
  static void
 diff --git a/plugins/iridium/mm-broadband-modem-iridium.c b/plugins/iridium/mm-broadband-modem-iridium.c
-index c64e8d2..bb6231e 100644
+index 0e2d670e..fd36bf79 100644
 --- a/plugins/iridium/mm-broadband-modem-iridium.c
 +++ b/plugins/iridium/mm-broadband-modem-iridium.c
 @@ -28,7 +28,9 @@
@@ -2257,7 +2270,7 @@ index c64e8d2..bb6231e 100644
  mm_broadband_modem_iridium_class_init (MMBroadbandModemIridiumClass *klass)
  {
 diff --git a/plugins/nokia/mm-broadband-modem-nokia.c b/plugins/nokia/mm-broadband-modem-nokia.c
-index 7b1438c..cbb315a 100644
+index 7b1438c0..cbb315ac 100644
 --- a/plugins/nokia/mm-broadband-modem-nokia.c
 +++ b/plugins/nokia/mm-broadband-modem-nokia.c
 @@ -28,7 +28,9 @@
@@ -2311,7 +2324,7 @@ index 7b1438c..cbb315a 100644
  iface_modem_init (MMIfaceModem *iface)
  {
 diff --git a/plugins/novatel/mm-broadband-modem-novatel-lte.c b/plugins/novatel/mm-broadband-modem-novatel-lte.c
-index e5be522..67d5d95 100644
+index f968885a..ec3d53ee 100644
 --- a/plugins/novatel/mm-broadband-modem-novatel-lte.c
 +++ b/plugins/novatel/mm-broadband-modem-novatel-lte.c
 @@ -30,7 +30,6 @@
@@ -2323,7 +2336,7 @@ index e5be522..67d5d95 100644
  #include "mm-modem-helpers.h"
  #include "mm-serial-parsers.h"
 diff --git a/plugins/novatel/mm-broadband-modem-novatel.c b/plugins/novatel/mm-broadband-modem-novatel.c
-index 9fd14e2..17a2630 100644
+index 9c251573..1e376c2f 100644
 --- a/plugins/novatel/mm-broadband-modem-novatel.c
 +++ b/plugins/novatel/mm-broadband-modem-novatel.c
 @@ -29,7 +29,9 @@
@@ -2359,7 +2372,7 @@ index 9fd14e2..17a2630 100644
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_CDMA, iface_modem_cdma_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_TIME, iface_modem_time_init))
  
-@@ -865,6 +872,8 @@ modem_load_signal_quality (MMIfaceModem *self,
+@@ -868,6 +875,8 @@ modem_load_signal_quality (MMIfaceModem *self,
          result);
  }
  
@@ -2368,7 +2381,7 @@ index 9fd14e2..17a2630 100644
  /*****************************************************************************/
  /* Enable unsolicited events (SMS indications) (Messaging interface) */
  
-@@ -890,6 +899,8 @@ messaging_enable_unsolicited_events (MMIfaceModemMessaging *self,
+@@ -893,6 +902,8 @@ messaging_enable_unsolicited_events (MMIfaceModemMessaging *self,
                                user_data);
  }
  
@@ -2377,7 +2390,7 @@ index 9fd14e2..17a2630 100644
  /*****************************************************************************/
  /* Detailed registration state (CDMA interface) */
  
-@@ -1288,6 +1299,8 @@ iface_modem_init (MMIfaceModem *iface)
+@@ -1312,6 +1323,8 @@ iface_modem_init (MMIfaceModem *iface)
      iface->load_signal_quality_finish = modem_load_signal_quality_finish;
  }
  
@@ -2386,7 +2399,7 @@ index 9fd14e2..17a2630 100644
  static void
  iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  {
-@@ -1295,6 +1308,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+@@ -1319,6 +1332,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
      iface->enable_unsolicited_events_finish = messaging_enable_unsolicited_events_finish;
  }
  
@@ -2396,7 +2409,7 @@ index 9fd14e2..17a2630 100644
  iface_modem_cdma_init (MMIfaceModemCdma *iface)
  {
 diff --git a/plugins/pantech/mm-broadband-modem-pantech.c b/plugins/pantech/mm-broadband-modem-pantech.c
-index 878806d..c2f0dff 100644
+index 878806d7..c2f0dff0 100644
 --- a/plugins/pantech/mm-broadband-modem-pantech.c
 +++ b/plugins/pantech/mm-broadband-modem-pantech.c
 @@ -23,20 +23,29 @@
@@ -2460,7 +2473,7 @@ index 878806d..c2f0dff 100644
  mm_broadband_modem_pantech_class_init (MMBroadbandModemPantechClass *klass)
  {
 diff --git a/plugins/thuraya/mm-broadband-modem-thuraya.c b/plugins/thuraya/mm-broadband-modem-thuraya.c
-index 3fc77f2..aa542c1 100644
+index 3fc77f28..aa542c1a 100644
 --- a/plugins/thuraya/mm-broadband-modem-thuraya.c
 +++ b/plugins/thuraya/mm-broadband-modem-thuraya.c
 @@ -29,7 +29,9 @@
@@ -2531,7 +2544,7 @@ index 3fc77f2..aa542c1 100644
  mm_broadband_modem_thuraya_class_init (MMBroadbandModemThurayaClass *klass)
  {
 diff --git a/plugins/thuraya/mm-modem-helpers-thuraya.c b/plugins/thuraya/mm-modem-helpers-thuraya.c
-index b940e63..78db188 100644
+index b940e631..78db188c 100644
 --- a/plugins/thuraya/mm-modem-helpers-thuraya.c
 +++ b/plugins/thuraya/mm-modem-helpers-thuraya.c
 @@ -26,6 +26,8 @@
@@ -2550,7 +2563,7 @@ index b940e63..78db188 100644
 -/*****************************************************************************/
 +#endif
 diff --git a/plugins/thuraya/mm-modem-helpers-thuraya.h b/plugins/thuraya/mm-modem-helpers-thuraya.h
-index 454baf4..aad76ca 100644
+index 454baf47..aad76ca5 100644
 --- a/plugins/thuraya/mm-modem-helpers-thuraya.h
 +++ b/plugins/thuraya/mm-modem-helpers-thuraya.h
 @@ -18,10 +18,14 @@
@@ -2569,7 +2582,7 @@ index 454baf4..aad76ca 100644
 +
  #endif  /* MM_MODEM_HELPERS_THURAYA_H */
 diff --git a/plugins/thuraya/tests/test-mm-modem-helpers-thuraya.c b/plugins/thuraya/tests/test-mm-modem-helpers-thuraya.c
-index f3a7ea4..dbd330a 100644
+index bc05b7c2..ca5d511a 100644
 --- a/plugins/thuraya/tests/test-mm-modem-helpers-thuraya.c
 +++ b/plugins/thuraya/tests/test-mm-modem-helpers-thuraya.c
 @@ -32,6 +32,8 @@
@@ -2590,7 +2603,7 @@ index f3a7ea4..dbd330a 100644
  /*****************************************************************************/
  
  void
-@@ -123,7 +127,9 @@ int main (int argc, char **argv)
+@@ -122,7 +126,9 @@ int main (int argc, char **argv)
  
      suite = g_test_get_root ();
  
@@ -2602,10 +2615,10 @@ index f3a7ea4..dbd330a 100644
      result = g_test_run ();
  
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 9099c97..0bd4b7e 100644
+index d6c547ab..cc3b6f31 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -74,6 +74,10 @@ libhelpers_la_SOURCES = \
+@@ -100,6 +100,10 @@ libhelpers_la_SOURCES = \
  	mm-modem-helpers.h \
  	mm-charsets.c \
  	mm-charsets.h \
@@ -2616,15 +2629,15 @@ index 9099c97..0bd4b7e 100644
  	mm-sms-part.h \
  	mm-sms-part.c \
  	mm-sms-part-3gpp.h \
-@@ -81,6 +85,7 @@ libhelpers_la_SOURCES = \
+@@ -107,6 +111,7 @@ libhelpers_la_SOURCES = \
  	mm-sms-part-cdma.h \
  	mm-sms-part-cdma.c \
  	$(NULL)
 +endif
  
- if WITH_QMI
- libhelpers_la_SOURCES += \
-@@ -272,12 +277,8 @@ ModemManager_SOURCES = \
+ nodist_libhelpers_la_SOURCES = $(HELPER_ENUMS_GENERATED)
+ 
+@@ -304,12 +309,8 @@ ModemManager_SOURCES = \
  	mm-base-modem-at.c \
  	mm-base-modem.h \
  	mm-base-modem.c \
@@ -2637,7 +2650,7 @@ index 9099c97..0bd4b7e 100644
  	mm-call-list.h \
  	mm-call-list.c \
  	mm-iface-modem.h \
-@@ -290,8 +291,6 @@ ModemManager_SOURCES = \
+@@ -322,8 +323,6 @@ ModemManager_SOURCES = \
  	mm-iface-modem-cdma.c \
  	mm-iface-modem-simple.h \
  	mm-iface-modem-simple.c \
@@ -2646,7 +2659,7 @@ index 9099c97..0bd4b7e 100644
  	mm-iface-modem-voice.h \
  	mm-iface-modem-voice.c \
  	mm-iface-modem-time.h \
-@@ -319,6 +318,18 @@ ModemManager_SOURCES += \
+@@ -351,6 +350,18 @@ ModemManager_SOURCES += \
  	$(NULL)
  endif
  
@@ -2665,7 +2678,7 @@ index 9099c97..0bd4b7e 100644
  nodist_ModemManager_SOURCES = $(DAEMON_ENUMS_GENERATED)
  
  # Additional Polkit support
-@@ -334,8 +345,6 @@ endif
+@@ -366,8 +377,6 @@ endif
  # Additional QMI support in ModemManager
  if WITH_QMI
  ModemManager_SOURCES += \
@@ -2674,7 +2687,7 @@ index 9099c97..0bd4b7e 100644
  	mm-sim-qmi.h \
  	mm-sim-qmi.c \
  	mm-bearer-qmi.h \
-@@ -343,13 +352,19 @@ ModemManager_SOURCES += \
+@@ -375,13 +384,19 @@ ModemManager_SOURCES += \
  	mm-broadband-modem-qmi.h \
  	mm-broadband-modem-qmi.c \
  	$(NULL)
@@ -2696,7 +2709,7 @@ index 9099c97..0bd4b7e 100644
  	mm-sim-mbim.h \
  	mm-sim-mbim.c \
  	mm-bearer-mbim.h \
-@@ -357,4 +372,12 @@ ModemManager_SOURCES += \
+@@ -389,4 +404,12 @@ ModemManager_SOURCES += \
  	mm-broadband-modem-mbim.h \
  	mm-broadband-modem-mbim.c \
  	$(NULL)
@@ -2710,7 +2723,7 @@ index 9099c97..0bd4b7e 100644
 +
  endif
 diff --git a/src/mm-broadband-modem-mbim.c b/src/mm-broadband-modem-mbim.c
-index 4e63b19..a123341 100644
+index 941a288b..0e054d60 100644
 --- a/src/mm-broadband-modem-mbim.c
 +++ b/src/mm-broadband-modem-mbim.c
 @@ -25,7 +25,6 @@
@@ -2721,20 +2734,24 @@ index 4e63b19..a123341 100644
  
  #include "ModemManager.h"
  #include "mm-log.h"
-@@ -35,24 +34,34 @@
+@@ -35,35 +34,45 @@
  #include "mm-bearer-list.h"
  #include "mm-iface-modem.h"
  #include "mm-iface-modem-3gpp.h"
 -#include "mm-iface-modem-messaging.h"
  #include "mm-iface-modem-signal.h"
 -#include "mm-sms-part-3gpp.h"
-+
+ 
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ # include "mm-iface-modem-location.h"
+ #endif
+ 
 +#if MM_INTERFACE_MESSAGING_SUPPORTED
 +# include "mm-sms-mbim.h"
 +# include "mm-iface-modem-messaging.h"
 +# include "mm-sms-part-3gpp.h"
 +#endif
- 
++
  #if defined WITH_QMI
  # include <libqmi-glib.h>
  #endif
@@ -2746,6 +2763,10 @@ index 4e63b19..a123341 100644
 +static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
  static void iface_modem_signal_init    (MMIfaceModemSignal    *iface);
  
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ static void iface_modem_location_init  (MMIfaceModemLocation  *iface);
+ #endif
+ 
 +#if MM_INTERFACE_MESSAGING_SUPPORTED
 +static void iface_modem_messaging_init (MMIfaceModemMessaging *iface);
 +#endif
@@ -2753,6 +2774,9 @@ index 4e63b19..a123341 100644
  G_DEFINE_TYPE_EXTENDED (MMBroadbandModemMbim, mm_broadband_modem_mbim, MM_TYPE_BROADBAND_MODEM, 0,
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_LOCATION, iface_modem_location_init)
+ #endif
 +#if MM_INTERFACE_MESSAGING_SUPPORTED
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_MESSAGING, iface_modem_messaging_init)
 -                        G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIGNAL, iface_modem_signal_init))
@@ -2762,7 +2786,7 @@ index 4e63b19..a123341 100644
  
  typedef enum {
      PROCESS_NOTIFICATION_FLAG_NONE                 = 0,
-@@ -2076,6 +2085,8 @@ basic_connect_notification_packet_service (MMBroadbandModemMbim *self,
+@@ -2035,6 +2044,8 @@ basic_connect_notification_packet_service (MMBroadbandModemMbim *self,
      update_access_technologies (self);
  }
  
@@ -2771,7 +2795,7 @@ index 4e63b19..a123341 100644
  static void add_sms_part (MMBroadbandModemMbim *self,
                            const MbimSmsPduReadRecord *pdu);
  
-@@ -2106,6 +2117,8 @@ sms_notification_read_sms (MMBroadbandModemMbim *self,
+@@ -2065,6 +2076,8 @@ sms_notification_read_sms (MMBroadbandModemMbim *self,
      mbim_sms_pdu_read_record_array_free (pdu_messages);
  }
  
@@ -2780,7 +2804,7 @@ index 4e63b19..a123341 100644
  static void
  basic_connect_notification (MMBroadbandModemMbim *self,
                              MbimMessage *notification)
-@@ -2137,6 +2150,8 @@ basic_connect_notification (MMBroadbandModemMbim *self,
+@@ -2096,6 +2109,8 @@ basic_connect_notification (MMBroadbandModemMbim *self,
      }
  }
  
@@ -2789,7 +2813,7 @@ index 4e63b19..a123341 100644
  static void
  alert_sms_read_query_ready (MbimDevice *device,
                              GAsyncResult *res,
-@@ -2238,6 +2253,8 @@ sms_notification (MMBroadbandModemMbim *self,
+@@ -2197,6 +2212,8 @@ sms_notification (MMBroadbandModemMbim *self,
      }
  }
  
@@ -2798,7 +2822,7 @@ index 4e63b19..a123341 100644
  static void
  device_notification_cb (MbimDevice *device,
                          MbimMessage *notification,
-@@ -2255,9 +2272,11 @@ device_notification_cb (MbimDevice *device,
+@@ -2214,9 +2231,11 @@ device_notification_cb (MbimDevice *device,
      case MBIM_SERVICE_BASIC_CONNECT:
          basic_connect_notification (self, notification);
          break;
@@ -2810,7 +2834,7 @@ index 4e63b19..a123341 100644
      default:
          /* Ignore */
          break;
-@@ -2883,6 +2902,8 @@ modem_3gpp_scan_networks (MMIfaceModem3gpp *self,
+@@ -2903,6 +2922,8 @@ modem_3gpp_scan_networks (MMIfaceModem3gpp *self,
      mbim_message_unref (message);
  }
  
@@ -2819,7 +2843,7 @@ index 4e63b19..a123341 100644
  /*****************************************************************************/
  /* Check support (Messaging interface) */
  
-@@ -3147,6 +3168,8 @@ messaging_create_sms (MMIfaceModemMessaging *self)
+@@ -3150,6 +3171,8 @@ messaging_create_sms (MMIfaceModemMessaging *self)
      return mm_sms_mbim_new (MM_BASE_MODEM (self));
  }
  
@@ -2828,16 +2852,16 @@ index 4e63b19..a123341 100644
  /*****************************************************************************/
  
  MMBroadbandModemMbim *
-@@ -3285,6 +3308,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
-     iface->scan_networks_finish = modem_3gpp_scan_networks_finish;
- }
+@@ -3309,6 +3332,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+ 
+ #endif
  
 +#if MM_INTERFACE_MESSAGING_SUPPORTED
 +
  static void
  iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  {
-@@ -3309,6 +3334,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+@@ -3333,6 +3358,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
      iface->create_sms = messaging_create_sms;
  }
  
@@ -2847,7 +2871,7 @@ index 4e63b19..a123341 100644
  iface_modem_signal_init (MMIfaceModemSignal *iface)
  {
 diff --git a/src/mm-broadband-modem-qmi.c b/src/mm-broadband-modem-qmi.c
-index 5b90da4..b3eeeff 100644
+index 59473029..ff31fa2e 100644
 --- a/src/mm-broadband-modem-qmi.c
 +++ b/src/mm-broadband-modem-qmi.c
 @@ -34,7 +34,12 @@
@@ -2912,7 +2936,7 @@ index 5b90da4..b3eeeff 100644
  
  #if MM_INTERFACE_LOCATION_SUPPORTED
      /* Location helpers */
-@@ -7236,6 +7244,8 @@ modem_cdma_setup_unsolicited_events (MMIfaceModemCdma *self,
+@@ -7246,6 +7254,8 @@ modem_cdma_setup_unsolicited_events (MMIfaceModemCdma *self,
                                               user_data);
  }
  
@@ -2921,7 +2945,7 @@ index 5b90da4..b3eeeff 100644
  /*****************************************************************************/
  /* Check support (Messaging interface) */
  
-@@ -8328,6 +8338,8 @@ messaging_create_sms (MMIfaceModemMessaging *_self)
+@@ -8338,6 +8348,8 @@ messaging_create_sms (MMIfaceModemMessaging *_self)
      return mm_sms_qmi_new (MM_BASE_MODEM (self));
  }
  
@@ -2930,7 +2954,7 @@ index 5b90da4..b3eeeff 100644
  #if MM_INTERFACE_LOCATION_SUPPORTED
  
  /*****************************************************************************/
-@@ -11324,9 +11336,11 @@ initialization_started (MMBroadbandModem *self,
+@@ -11355,9 +11367,11 @@ initialization_started (MMBroadbandModem *self,
      i = 0;
      ctx->services[i++] = QMI_SERVICE_DMS;
      ctx->services[i++] = QMI_SERVICE_NAS;
@@ -2943,7 +2967,7 @@ index 5b90da4..b3eeeff 100644
  #if MM_INTERFACE_LOCATION_SUPPORTED
      ctx->services[i++] = QMI_SERVICE_PDS;
  #endif
-@@ -11564,6 +11578,8 @@ iface_modem_cdma_init (MMIfaceModemCdma *iface)
+@@ -11595,6 +11609,8 @@ iface_modem_cdma_init (MMIfaceModemCdma *iface)
      iface->activate_manual_finish = modem_cdma_activate_manual_finish;
  }
  
@@ -2952,7 +2976,7 @@ index 5b90da4..b3eeeff 100644
  static void
  iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  {
-@@ -11590,6 +11606,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+@@ -11621,6 +11637,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
      iface->create_sms = messaging_create_sms;
  }
  
@@ -2962,7 +2986,7 @@ index 5b90da4..b3eeeff 100644
  
  static void
 diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
-index 66abda9..91eda2b 100644
+index 9a99daff..b89c9b00 100644
 --- a/src/mm-broadband-modem.c
 +++ b/src/mm-broadband-modem.c
 @@ -37,7 +37,11 @@
@@ -2987,7 +3011,7 @@ index 66abda9..91eda2b 100644
  #include "mm-call-list.h"
  #include "mm-base-sim.h"
  #include "mm-log.h"
-@@ -66,7 +68,9 @@ static void iface_modem_simple_init (MMIfaceModemSimple *iface);
+@@ -67,7 +69,9 @@ static void iface_modem_simple_init (MMIfaceModemSimple *iface);
  #if MM_INTERFACE_LOCATION_SUPPORTED
  static void iface_modem_location_init (MMIfaceModemLocation *iface);
  #endif
@@ -2997,7 +3021,7 @@ index 66abda9..91eda2b 100644
  static void iface_modem_voice_init (MMIfaceModemVoice *iface);
  static void iface_modem_time_init (MMIfaceModemTime *iface);
  static void iface_modem_signal_init (MMIfaceModemSignal *iface);
-@@ -82,7 +86,9 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM
+@@ -83,7 +87,9 @@ G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM
  #if MM_INTERFACE_LOCATION_SUPPORTED
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_LOCATION, iface_modem_location_init)
  #endif
@@ -3007,7 +3031,7 @@ index 66abda9..91eda2b 100644
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_VOICE, iface_modem_voice_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_TIME, iface_modem_time_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIGNAL, iface_modem_signal_init)
-@@ -99,7 +105,9 @@ enum {
+@@ -100,7 +106,9 @@ enum {
  #if MM_INTERFACE_LOCATION_SUPPORTED
      PROP_MODEM_LOCATION_DBUS_SKELETON,
  #endif
@@ -3017,7 +3041,7 @@ index 66abda9..91eda2b 100644
      PROP_MODEM_VOICE_DBUS_SKELETON,
      PROP_MODEM_TIME_DBUS_SKELETON,
      PROP_MODEM_SIGNAL_DBUS_SKELETON,
-@@ -117,9 +125,11 @@ enum {
+@@ -118,9 +126,11 @@ enum {
      PROP_MODEM_CDMA_EVDO_REGISTRATION_STATE,
      PROP_MODEM_CDMA_CDMA1X_NETWORK_SUPPORTED,
      PROP_MODEM_CDMA_EVDO_NETWORK_SUPPORTED,
@@ -3029,7 +3053,7 @@ index 66abda9..91eda2b 100644
      PROP_MODEM_VOICE_CALL_LIST,
      PROP_MODEM_SIMPLE_STATUS,
      PROP_MODEM_SIM_HOT_SWAP_SUPPORTED,
-@@ -198,6 +208,7 @@ struct _MMBroadbandModemPrivate {
+@@ -208,6 +218,7 @@ struct _MMBroadbandModemPrivate {
      GObject *modem_location_dbus_skeleton;
  #endif
  
@@ -3037,7 +3061,7 @@ index 66abda9..91eda2b 100644
      /*<--- Modem Messaging interface --->*/
      /* Properties */
      GObject *modem_messaging_dbus_skeleton;
-@@ -210,6 +221,7 @@ struct _MMBroadbandModemPrivate {
+@@ -220,6 +231,7 @@ struct _MMBroadbandModemPrivate {
      MMSmsStorage current_sms_mem1_storage;
      gboolean mem2_storage_locked;
      MMSmsStorage current_sms_mem2_storage;
@@ -3045,8 +3069,8 @@ index 66abda9..91eda2b 100644
  
      /*<--- Modem Voice interface --->*/
      /* Properties */
-@@ -5139,6 +5151,8 @@ modem_3gpp_ussd_check_support (MMIfaceModem3gppUssd *self,
-                               result);
+@@ -5235,6 +5247,8 @@ modem_3gpp_ussd_check_support (MMIfaceModem3gppUssd *self,
+                               task);
  }
  
 +#if MM_INTERFACE_MESSAGING_SUPPORTED
@@ -3054,7 +3078,7 @@ index 66abda9..91eda2b 100644
  /*****************************************************************************/
  /* Check if Messaging supported (Messaging interface) */
  
-@@ -6441,6 +6455,8 @@ modem_messaging_create_sms (MMIfaceModemMessaging *self)
+@@ -6509,6 +6523,8 @@ modem_messaging_create_sms (MMIfaceModemMessaging *self)
      return mm_base_sms_new (MM_BASE_MODEM (self));
  }
  
@@ -3063,7 +3087,7 @@ index 66abda9..91eda2b 100644
  /*****************************************************************************/
  /* Check if Voice supported (Voice interface) */
  
-@@ -8924,7 +8940,9 @@ typedef enum {
+@@ -8971,7 +8987,9 @@ typedef enum {
      DISABLING_STEP_IFACE_SIGNAL,
      DISABLING_STEP_IFACE_OMA,
      DISABLING_STEP_IFACE_TIME,
@@ -3073,7 +3097,7 @@ index 66abda9..91eda2b 100644
      DISABLING_STEP_IFACE_VOICE,
  #if MM_INTERFACE_LOCATION_SUPPORTED
      DISABLING_STEP_IFACE_LOCATION,
-@@ -9037,7 +9055,9 @@ INTERFACE_DISABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRU
+@@ -9065,7 +9083,9 @@ INTERFACE_DISABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRU
  #if MM_INTERFACE_LOCATION_SUPPORTED
  INTERFACE_DISABLE_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
  #endif
@@ -3083,7 +3107,7 @@ index 66abda9..91eda2b 100644
  INTERFACE_DISABLE_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  INTERFACE_DISABLE_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
  INTERFACE_DISABLE_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
-@@ -9175,6 +9195,7 @@ disabling_step (DisablingContext *ctx)
+@@ -9213,6 +9233,7 @@ disabling_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -3091,7 +3115,7 @@ index 66abda9..91eda2b 100644
      case DISABLING_STEP_IFACE_MESSAGING:
          if (ctx->self->priv->modem_messaging_dbus_skeleton) {
              mm_dbg ("Modem has messaging capabilities, disabling the Messaging interface...");
-@@ -9186,6 +9207,7 @@ disabling_step (DisablingContext *ctx)
+@@ -9224,6 +9245,7 @@ disabling_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -3099,7 +3123,7 @@ index 66abda9..91eda2b 100644
  
      case DISABLING_STEP_IFACE_VOICE:
          if (ctx->self->priv->modem_voice_dbus_skeleton) {
-@@ -9308,7 +9330,9 @@ typedef enum {
+@@ -9348,7 +9370,9 @@ typedef enum {
  #if MM_INTERFACE_LOCATION_SUPPORTED
      ENABLING_STEP_IFACE_LOCATION,
  #endif
@@ -3109,7 +3133,7 @@ index 66abda9..91eda2b 100644
      ENABLING_STEP_IFACE_VOICE,
      ENABLING_STEP_IFACE_TIME,
      ENABLING_STEP_IFACE_SIGNAL,
-@@ -9411,7 +9435,9 @@ INTERFACE_ENABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE
+@@ -9430,7 +9454,9 @@ INTERFACE_ENABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE
  #if MM_INTERFACE_LOCATION_SUPPORTED
  INTERFACE_ENABLE_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
  #endif
@@ -3119,7 +3143,7 @@ index 66abda9..91eda2b 100644
  INTERFACE_ENABLE_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  INTERFACE_ENABLE_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
  INTERFACE_ENABLE_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
-@@ -9561,6 +9587,7 @@ enabling_step (EnablingContext *ctx)
+@@ -9591,6 +9617,7 @@ enabling_step (GTask *task)
          ctx->step++;
  #endif
  
@@ -3127,7 +3151,7 @@ index 66abda9..91eda2b 100644
      case ENABLING_STEP_IFACE_MESSAGING:
          if (ctx->self->priv->modem_messaging_dbus_skeleton) {
              mm_dbg ("Modem has messaging capabilities, enabling the Messaging interface...");
-@@ -9573,6 +9600,7 @@ enabling_step (EnablingContext *ctx)
+@@ -9603,6 +9630,7 @@ enabling_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -3135,7 +3159,7 @@ index 66abda9..91eda2b 100644
  
      case ENABLING_STEP_IFACE_VOICE:
          if (ctx->self->priv->modem_voice_dbus_skeleton) {
-@@ -9746,7 +9774,9 @@ typedef enum {
+@@ -9776,7 +9804,9 @@ typedef enum {
  #if MM_INTERFACE_LOCATION_SUPPORTED
      INITIALIZE_STEP_IFACE_LOCATION,
  #endif
@@ -3145,7 +3169,7 @@ index 66abda9..91eda2b 100644
      INITIALIZE_STEP_IFACE_VOICE,
      INITIALIZE_STEP_IFACE_TIME,
      INITIALIZE_STEP_IFACE_SIGNAL,
-@@ -9947,7 +9977,9 @@ INTERFACE_INIT_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
+@@ -9963,7 +9993,9 @@ INTERFACE_INIT_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
  #if MM_INTERFACE_LOCATION_SUPPORTED
  INTERFACE_INIT_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
  #endif
@@ -3155,7 +3179,7 @@ index 66abda9..91eda2b 100644
  INTERFACE_INIT_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  INTERFACE_INIT_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
  INTERFACE_INIT_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
-@@ -10050,6 +10082,7 @@ initialize_step (InitializeContext *ctx)
+@@ -10072,6 +10104,7 @@ initialize_step (GTask *task)
          return;
  #endif
  
@@ -3163,15 +3187,15 @@ index 66abda9..91eda2b 100644
      case INITIALIZE_STEP_IFACE_MESSAGING:
          /* Initialize the Messaging interface */
          mm_iface_modem_messaging_initialize (MM_IFACE_MODEM_MESSAGING (ctx->self),
-@@ -10057,6 +10090,7 @@ initialize_step (InitializeContext *ctx)
+@@ -10079,6 +10112,7 @@ initialize_step (GTask *task)
                                               (GAsyncReadyCallback)iface_modem_messaging_initialize_ready,
-                                              ctx);
+                                              task);
          return;
 +#endif
  
      case INITIALIZE_STEP_IFACE_VOICE:
          /* Initialize the Voice interface */
-@@ -10186,7 +10220,9 @@ initialize_step (InitializeContext *ctx)
+@@ -10224,7 +10258,9 @@ sim_hot_swap_enabled:
  #if MM_INTERFACE_LOCATION_SUPPORTED
                  mm_iface_modem_location_shutdown (MM_IFACE_MODEM_LOCATION (ctx->self));
  #endif
@@ -3181,7 +3205,7 @@ index 66abda9..91eda2b 100644
                  mm_iface_modem_voice_shutdown (MM_IFACE_MODEM_VOICE (ctx->self));
                  mm_iface_modem_time_shutdown (MM_IFACE_MODEM_TIME (ctx->self));
                  mm_iface_modem_simple_shutdown (MM_IFACE_MODEM_SIMPLE (ctx->self));
-@@ -10422,10 +10458,12 @@ set_property (GObject *object,
+@@ -10461,10 +10497,12 @@ set_property (GObject *object,
          self->priv->modem_location_dbus_skeleton = g_value_dup_object (value);
          break;
  #endif
@@ -3194,7 +3218,7 @@ index 66abda9..91eda2b 100644
      case PROP_MODEM_VOICE_DBUS_SKELETON:
          g_clear_object (&self->priv->modem_voice_dbus_skeleton);
          self->priv->modem_voice_dbus_skeleton = g_value_dup_object (value);
-@@ -10484,20 +10522,22 @@ set_property (GObject *object,
+@@ -10523,20 +10561,22 @@ set_property (GObject *object,
      case PROP_MODEM_CDMA_EVDO_NETWORK_SUPPORTED:
          self->priv->modem_cdma_evdo_network_supported = g_value_get_boolean (value);
          break;
@@ -3221,7 +3245,7 @@ index 66abda9..91eda2b 100644
      case PROP_MODEM_SIMPLE_STATUS:
          g_clear_object (&self->priv->modem_simple_status);
          self->priv->modem_simple_status = g_value_dup_object (value);
-@@ -10540,9 +10580,11 @@ get_property (GObject *object,
+@@ -10582,9 +10622,11 @@ get_property (GObject *object,
          g_value_set_object (value, self->priv->modem_location_dbus_skeleton);
          break;
  #endif
@@ -3233,7 +3257,7 @@ index 66abda9..91eda2b 100644
      case PROP_MODEM_VOICE_DBUS_SKELETON:
          g_value_set_object (value, self->priv->modem_voice_dbus_skeleton);
          break;
-@@ -10594,18 +10636,20 @@ get_property (GObject *object,
+@@ -10636,18 +10678,20 @@ get_property (GObject *object,
      case PROP_MODEM_CDMA_EVDO_NETWORK_SUPPORTED:
          g_value_set_boolean (value, self->priv->modem_cdma_evdo_network_supported);
          break;
@@ -3257,23 +3281,29 @@ index 66abda9..91eda2b 100644
      case PROP_MODEM_SIMPLE_STATUS:
          g_value_set_object (value, self->priv->modem_simple_status);
          break;
-@@ -10637,10 +10681,14 @@ mm_broadband_modem_init (MMBroadbandModem *self)
+@@ -10685,14 +10729,18 @@ mm_broadband_modem_init (MMBroadbandModem *self)
      self->priv->modem_cdma_evdo_registration_state = MM_MODEM_CDMA_REGISTRATION_STATE_UNKNOWN;
      self->priv->modem_cdma_cdma1x_network_supported = TRUE;
      self->priv->modem_cdma_evdo_network_supported = TRUE;
+-    self->priv->modem_messaging_sms_default_storage = MM_SMS_STORAGE_UNKNOWN;
+-    self->priv->current_sms_mem1_storage = MM_SMS_STORAGE_UNKNOWN;
+-    self->priv->current_sms_mem2_storage = MM_SMS_STORAGE_UNKNOWN;
 +
-+    self->priv->sim_hot_swap_supported = FALSE;
+     self->priv->sim_hot_swap_supported = FALSE;
+     self->priv->modem_cmer_enable_mode = MM_3GPP_CMER_MODE_NONE;
+     self->priv->modem_cmer_disable_mode = MM_3GPP_CMER_MODE_NONE;
+     self->priv->modem_cmer_ind = MM_3GPP_CMER_IND_NONE;
+     self->priv->flow_control = MM_FLOW_CONTROL_NONE;
 +
 +#if MM_INTERFACE_MESSAGING_SUPPORTED
-     self->priv->modem_messaging_sms_default_storage = MM_SMS_STORAGE_UNKNOWN;
-     self->priv->current_sms_mem1_storage = MM_SMS_STORAGE_UNKNOWN;
-     self->priv->current_sms_mem2_storage = MM_SMS_STORAGE_UNKNOWN;
--    self->priv->sim_hot_swap_supported = FALSE;
++    self->priv->modem_messaging_sms_default_storage = MM_SMS_STORAGE_UNKNOWN;
++    self->priv->current_sms_mem1_storage = MM_SMS_STORAGE_UNKNOWN;
++    self->priv->current_sms_mem2_storage = MM_SMS_STORAGE_UNKNOWN;
 +#endif
  }
  
  static void
-@@ -10689,10 +10737,13 @@ dispose (GObject *object)
+@@ -10741,10 +10789,13 @@ dispose (GObject *object)
      }
  #endif
  
@@ -3287,7 +3317,7 @@ index 66abda9..91eda2b 100644
  
      if (self->priv->modem_voice_dbus_skeleton) {
          mm_iface_modem_voice_shutdown (MM_IFACE_MODEM_VOICE (object));
-@@ -10711,7 +10762,6 @@ dispose (GObject *object)
+@@ -10763,7 +10814,6 @@ dispose (GObject *object)
  
      g_clear_object (&self->priv->modem_sim);
      g_clear_object (&self->priv->modem_bearer_list);
@@ -3295,7 +3325,7 @@ index 66abda9..91eda2b 100644
      g_clear_object (&self->priv->modem_voice_call_list);
      g_clear_object (&self->priv->modem_simple_status);
  
-@@ -10891,6 +10941,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+@@ -10943,6 +10993,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
  
  #endif
  
@@ -3304,7 +3334,7 @@ index 66abda9..91eda2b 100644
  static void
  iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  {
-@@ -10915,6 +10967,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+@@ -10967,6 +11019,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
      iface->init_current_storages_finish = modem_messaging_init_current_storages_finish;
  }
  
@@ -3313,7 +3343,7 @@ index 66abda9..91eda2b 100644
  static void
  iface_modem_voice_init (MMIfaceModemVoice *iface)
  {
-@@ -11016,9 +11070,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+@@ -11068,9 +11122,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
                                        MM_IFACE_MODEM_LOCATION_DBUS_SKELETON);
  #endif
  
@@ -3325,7 +3355,7 @@ index 66abda9..91eda2b 100644
  
      g_object_class_override_property (object_class,
                                        PROP_MODEM_VOICE_DBUS_SKELETON,
-@@ -11088,21 +11144,23 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+@@ -11140,21 +11196,23 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
                                        PROP_MODEM_CDMA_EVDO_NETWORK_SUPPORTED,
                                        MM_IFACE_MODEM_CDMA_EVDO_NETWORK_SUPPORTED);
  
@@ -3354,10 +3384,10 @@ index 66abda9..91eda2b 100644
      g_object_class_override_property (object_class,
                                        PROP_MODEM_SIMPLE_STATUS,
 diff --git a/src/mm-broadband-modem.h b/src/mm-broadband-modem.h
-index d6b55d9..dc2d6bd 100644
+index 4625b22a..a18ca08e 100644
 --- a/src/mm-broadband-modem.h
 +++ b/src/mm-broadband-modem.h
-@@ -114,6 +114,10 @@ MMModemCharset mm_broadband_modem_get_current_charset (MMBroadbandModem *self);
+@@ -117,6 +117,10 @@ MMModemCharset mm_broadband_modem_get_current_charset (MMBroadbandModem *self);
  gchar *mm_broadband_modem_create_device_identifier (MMBroadbandModem *self,
                                                      const gchar *ati,
                                                      const gchar *ati1);
@@ -3368,7 +3398,7 @@ index d6b55d9..dc2d6bd 100644
  
  /* Locking/unlocking SMS storages */
  void     mm_broadband_modem_lock_sms_storages        (MMBroadbandModem *self,
-@@ -127,7 +131,6 @@ gboolean mm_broadband_modem_lock_sms_storages_finish (MMBroadbandModem *self,
+@@ -130,7 +134,6 @@ gboolean mm_broadband_modem_lock_sms_storages_finish (MMBroadbandModem *self,
  void     mm_broadband_modem_unlock_sms_storages      (MMBroadbandModem *self,
                                                        gboolean mem1,
                                                        gboolean mem2);
@@ -3378,7 +3408,7 @@ index d6b55d9..dc2d6bd 100644
  
  #endif /* MM_BROADBAND_MODEM_H */
 diff --git a/src/mm-call-list.c b/src/mm-call-list.c
-index 056e293..ee0cf59 100644
+index 3ca46bcc..706b6212 100644
 --- a/src/mm-call-list.c
 +++ b/src/mm-call-list.c
 @@ -24,7 +24,6 @@
@@ -3390,7 +3420,7 @@ index 056e293..ee0cf59 100644
  #include "mm-base-call.h"
  #include "mm-log.h"
 diff --git a/src/mm-modem-helpers-mbim.c b/src/mm-modem-helpers-mbim.c
-index 36d5502..081c9e8 100644
+index 36d55023..081c9e89 100644
 --- a/src/mm-modem-helpers-mbim.c
 +++ b/src/mm-modem-helpers-mbim.c
 @@ -263,6 +263,8 @@ mm_mobile_equipment_error_from_mbim_nw_error (MbimNwError nw_error)
@@ -3409,7 +3439,7 @@ index 36d5502..081c9e8 100644
 +
 +#endif
 diff --git a/src/mm-modem-helpers-mbim.h b/src/mm-modem-helpers-mbim.h
-index 67b6b57..bda62db 100644
+index 67b6b57f..bda62dbf 100644
 --- a/src/mm-modem-helpers-mbim.h
 +++ b/src/mm-modem-helpers-mbim.h
 @@ -36,9 +36,13 @@ GList *mm_3gpp_network_info_list_from_mbim_providers (const MbimProvider *const
@@ -3427,10 +3457,10 @@ index 67b6b57..bda62db 100644
 +
  #endif  /* MM_MODEM_HELPERS_MBIM_H */
 diff --git a/src/mm-modem-helpers-qmi.c b/src/mm-modem-helpers-qmi.c
-index 778ce9e..2d1b981 100644
+index de5b730b..58eaf4f4 100644
 --- a/src/mm-modem-helpers-qmi.c
 +++ b/src/mm-modem-helpers-qmi.c
-@@ -1179,6 +1179,8 @@ mm_modem_cdma_activation_state_from_qmi_activation_state (QmiDmsActivationState
+@@ -1178,6 +1178,8 @@ mm_modem_cdma_activation_state_from_qmi_activation_state (QmiDmsActivationState
      }
  }
  
@@ -3439,7 +3469,7 @@ index 778ce9e..2d1b981 100644
  /*****************************************************************************/
  
  QmiWmsStorageType
-@@ -1225,6 +1227,8 @@ mm_sms_state_from_qmi_message_tag (QmiWmsMessageTagType tag)
+@@ -1224,6 +1226,8 @@ mm_sms_state_from_qmi_message_tag (QmiWmsMessageTagType tag)
      }
  }
  
@@ -3449,7 +3479,7 @@ index 778ce9e..2d1b981 100644
  
  QmiWdsAuthentication
 diff --git a/src/mm-modem-helpers-qmi.h b/src/mm-modem-helpers-qmi.h
-index a19851f..1b11d16 100644
+index a19851fd..1b11d162 100644
 --- a/src/mm-modem-helpers-qmi.h
 +++ b/src/mm-modem-helpers-qmi.h
 @@ -82,6 +82,8 @@ MMModemCdmaRegistrationState mm_modem_cdma_registration_state_from_qmi_registrat
@@ -3471,7 +3501,7 @@ index a19851f..1b11d16 100644
  /* QMI/WDS to MM translations */
  
 diff --git a/src/mm-modem-helpers.c b/src/mm-modem-helpers.c
-index d51f778..1acc2cf 100644
+index 83a48648..b306c909 100644
 --- a/src/mm-modem-helpers.c
 +++ b/src/mm-modem-helpers.c
 @@ -28,7 +28,9 @@
@@ -3485,7 +3515,7 @@ index d51f778..1acc2cf 100644
  #include "mm-modem-helpers.h"
  #include "mm-log.h"
  
-@@ -1524,134 +1526,6 @@ mm_3gpp_parse_creg_response (GMatchInfo *info,
+@@ -1789,134 +1791,6 @@ mm_3gpp_parse_creg_response (GMatchInfo *info,
      return TRUE;
  }
  
@@ -3620,7 +3650,7 @@ index d51f778..1acc2cf 100644
  /*****************************************************************************/
  /* AT+CRSM response parser */
  
-@@ -2222,280 +2096,89 @@ mm_3gpp_parse_cfun_query_generic_response (const gchar        *response,
+@@ -2487,280 +2361,89 @@ mm_3gpp_parse_cfun_query_generic_response (const gchar        *response,
  
  /*************************************************************************/
  
@@ -3810,7 +3840,7 @@ index d51f778..1acc2cf 100644
 -
 -    r = g_regex_new (CPMS_QUERY_REGEX, G_REGEX_RAW, 0, NULL);
 -
--    g_assert(r);
+-    g_assert (r);
 -
 -    if (!g_regex_match (r, reply, 0, &match_info)) {
 -        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
@@ -3818,7 +3848,7 @@ index d51f778..1acc2cf 100644
 -        goto end;
 -    }
 -
--    if (!g_match_info_matches(match_info)) {
+-    if (!g_match_info_matches (match_info)) {
 -        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
 -                     "Could not find matches in CPMS query reply '%s'", reply);
 -        goto end;
@@ -3853,7 +3883,7 @@ index d51f778..1acc2cf 100644
 -    gboolean ret = TRUE;
 -    gchar *str = NULL;
 -
--    str = g_match_info_fetch_named(match_info, match_name);
+-    str = g_match_info_fetch_named (match_info, match_name);
 -    if (str == NULL || str[0] == '\0') {
 -        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
 -                     "Could not find '%s' from CPMS reply", match_name);
@@ -3968,7 +3998,7 @@ index d51f778..1acc2cf 100644
              }
  
              g_match_info_next (match_info, NULL);
-@@ -2800,124 +2483,58 @@ done:
+@@ -3177,124 +2860,58 @@ done:
  
  /*************************************************************************/
  
@@ -4138,7 +4168,7 @@ index d51f778..1acc2cf 100644
  
      g_return_val_if_fail (string != NULL, MM_MODEM_ACCESS_TECHNOLOGY_UNKNOWN);
  
-@@ -3828,3 +3445,396 @@ mm_parse_cclk_response (const char *response,
+@@ -4235,3 +3852,396 @@ mm_parse_cclk_response (const char *response,
  
      return ret;
  }
@@ -4419,7 +4449,7 @@ index d51f778..1acc2cf 100644
 +        goto end;
 +    }
 +
-+    if (!g_match_info_matches(match_info)) {
++    if (!g_match_info_matches (match_info)) {
 +        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
 +                     "Could not find matches in CPMS query reply '%s'", reply);
 +        goto end;
@@ -4454,7 +4484,7 @@ index d51f778..1acc2cf 100644
 +    gboolean ret = TRUE;
 +    gchar *str = NULL;
 +
-+    str = g_match_info_fetch_named(match_info, match_name);
++    str = g_match_info_fetch_named (match_info, match_name);
 +    if (str == NULL || str[0] == '\0') {
 +        g_set_error (error, MM_CORE_ERROR, MM_CORE_ERROR_FAILED,
 +                     "Could not find '%s' from CPMS reply", match_name);
@@ -4536,10 +4566,10 @@ index d51f778..1acc2cf 100644
 +
 +#endif /* MM_INTERFACE_MESSAGING_SUPPORTED */
 diff --git a/src/mm-modem-helpers.h b/src/mm-modem-helpers.h
-index fb7982f..f47e2cd 100644
+index 524f05ae..9dcc980b 100644
 --- a/src/mm-modem-helpers.h
 +++ b/src/mm-modem-helpers.h
-@@ -170,28 +170,6 @@ gboolean mm_3gpp_parse_creg_response (GMatchInfo *info,
+@@ -191,28 +191,6 @@ gboolean mm_3gpp_parse_creg_response (GMatchInfo *info,
                                        gboolean *out_cereg,
                                        GError **error);
  
@@ -4568,7 +4598,7 @@ index fb7982f..f47e2cd 100644
  /* AT+CSCS=? (Supported charsets) response parser */
  gboolean mm_3gpp_parse_cscs_test_response (const gchar *reply,
                                             MMModemCharset *out_charsets);
-@@ -221,23 +199,6 @@ gint         mm_3gpp_cind_response_get_max       (MM3gppCindResponse *r);
+@@ -265,23 +243,6 @@ gint         mm_3gpp_cind_response_get_max       (MM3gppCindResponse *r);
  GByteArray *mm_3gpp_parse_cind_read_response (const gchar *reply,
                                                GError **error);
  
@@ -4592,7 +4622,7 @@ index fb7982f..f47e2cd 100644
  /* AT+CRSM response parser */
  gboolean mm_3gpp_parse_crsm_response (const gchar *reply,
                                        guint *sw1,
-@@ -304,6 +265,52 @@ MMBearerIpFamily  mm_3gpp_get_ip_family_from_pdp_type (const gchar *pdp_type);
+@@ -348,6 +309,52 @@ MMBearerIpFamily  mm_3gpp_get_ip_family_from_pdp_type (const gchar *pdp_type);
  
  char *mm_3gpp_parse_iccid (const char *raw_iccid, GError **error);
  
@@ -4646,7 +4676,7 @@ index fb7982f..f47e2cd 100644
  /* CDMA specific helpers and utilities */
  /*****************************************************************************/
 diff --git a/src/tests/Makefile.am b/src/tests/Makefile.am
-index c5bb61d..ea814b1 100644
+index c5bb61d8..ea814b1f 100644
 --- a/src/tests/Makefile.am
 +++ b/src/tests/Makefile.am
 @@ -49,10 +49,15 @@ noinst_PROGRAMS = \
@@ -4666,10 +4696,10 @@ index c5bb61d..ea814b1 100644
  if WITH_QMI
  noinst_PROGRAMS += test-modem-helpers-qmi
 diff --git a/src/tests/test-modem-helpers.c b/src/tests/test-modem-helpers.c
-index 0afa22f..757a108 100644
+index ca3202ab..061fdaf4 100644
 --- a/src/tests/test-modem-helpers.c
 +++ b/src/tests/test-modem-helpers.c
-@@ -29,9 +29,12 @@
+@@ -29,6 +29,7 @@
  #define trace(...)
  #endif
  
@@ -4677,12 +4707,16 @@ index 0afa22f..757a108 100644
  #define g_assert_cmpfloat_tolerance(val1, val2, tolerance)  \
      g_assert_cmpfloat (fabs (val1 - val2), <, tolerance)
  
+@@ -245,6 +246,8 @@ test_ws46_response_range_2 (void)
+     test_ws46_response (str, expected, G_N_ELEMENTS (expected));
+ }
+ 
 +#if MM_INTERFACE_MESSAGING_SUPPORTED
 +
  /*****************************************************************************/
  /* Test CMGL responses */
  
-@@ -262,6 +265,8 @@ test_cmgr_response_telit (void *f, gpointer d)
+@@ -475,6 +478,8 @@ test_cmgr_response_telit (void *f, gpointer d)
      test_cmgr_response (str, &expected);
  }
  
@@ -4691,7 +4725,7 @@ index 0afa22f..757a108 100644
  /*****************************************************************************/
  /* Test COPS responses */
  
-@@ -2057,7 +2062,7 @@ test_cgdcont_read_response_samsung (void *f, gpointer d)
+@@ -2392,7 +2397,7 @@ test_cgdcont_read_response_samsung (void *f, gpointer d)
  }
  
  /*****************************************************************************/
@@ -4700,7 +4734,7 @@ index 0afa22f..757a108 100644
  
  static void
  test_cgact_read_results (const gchar *desc,
-@@ -2143,6 +2148,8 @@ test_cgact_read_response_multiple (void)
+@@ -2478,6 +2483,8 @@ test_cgact_read_response_multiple (void)
      test_cgact_read_results ("multiple", reply, &expected[0], G_N_ELEMENTS (expected));
  }
  
@@ -4709,7 +4743,7 @@ index 0afa22f..757a108 100644
  /*****************************************************************************/
  /* Test CPMS responses */
  
-@@ -2346,6 +2353,8 @@ test_cpms_query_response (void *f, gpointer d) {
+@@ -2681,6 +2688,8 @@ test_cpms_query_response (void *f, gpointer d) {
      }
  }
  
@@ -4718,7 +4752,7 @@ index 0afa22f..757a108 100644
  /*****************************************************************************/
  /* Test CNUM responses */
  
-@@ -3485,6 +3494,7 @@ int main (int argc, char **argv)
+@@ -3853,6 +3862,7 @@ int main (int argc, char **argv)
          item++;
      }
  
@@ -4726,7 +4760,7 @@ index 0afa22f..757a108 100644
      g_test_suite_add (suite, TESTCASE (test_cpms_response_cinterion,    NULL));
      g_test_suite_add (suite, TESTCASE (test_cpms_response_huawei_mu609, NULL));
      g_test_suite_add (suite, TESTCASE (test_cpms_response_nokia_c6,     NULL));
-@@ -3492,6 +3502,7 @@ int main (int argc, char **argv)
+@@ -3860,6 +3870,7 @@ int main (int argc, char **argv)
      g_test_suite_add (suite, TESTCASE (test_cpms_response_mixed_spaces, NULL));
      g_test_suite_add (suite, TESTCASE (test_cpms_response_empty_fields, NULL));
      g_test_suite_add (suite, TESTCASE (test_cpms_query_response,        NULL));
@@ -4734,7 +4768,7 @@ index 0afa22f..757a108 100644
  
      g_test_suite_add (suite, TESTCASE (test_cmp_apn_name, NULL));
  
-@@ -3522,6 +3533,7 @@ int main (int argc, char **argv)
+@@ -3890,6 +3901,7 @@ int main (int argc, char **argv)
  
      g_test_suite_add (suite, TESTCASE (test_cdma_parse_gsn, NULL));
  
@@ -4742,7 +4776,7 @@ index 0afa22f..757a108 100644
      g_test_suite_add (suite, TESTCASE (test_cmgl_response_generic, NULL));
      g_test_suite_add (suite, TESTCASE (test_cmgl_response_generic_multiple, NULL));
      g_test_suite_add (suite, TESTCASE (test_cmgl_response_pantech, NULL));
-@@ -3529,6 +3541,7 @@ int main (int argc, char **argv)
+@@ -3897,6 +3909,7 @@ int main (int argc, char **argv)
  
      g_test_suite_add (suite, TESTCASE (test_cmgr_response_generic, NULL));
      g_test_suite_add (suite, TESTCASE (test_cmgr_response_telit, NULL));
@@ -4751,5 +4785,5 @@ index 0afa22f..757a108 100644
      g_test_suite_add (suite, TESTCASE (test_supported_mode_filter, NULL));
  
 -- 
-2.10.2
+2.13.1
 

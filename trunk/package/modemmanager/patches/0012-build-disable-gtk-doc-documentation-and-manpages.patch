@@ -1,4 +1,4 @@
-From cd87d9c812eeda65f4c4708d319c0a5cdd084147 Mon Sep 17 00:00:00 2001
+From b7ccea094f4435c90e45603d11a30bf28b5c3271 Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Fri, 1 Apr 2016 09:57:58 +0200
 Subject: [PATCH 12/12] build: disable gtk-doc documentation and manpages
@@ -10,7 +10,7 @@ Subject: [PATCH 12/12] build: disable gtk-doc documentation and manpages
  3 files changed, 17 deletions(-)
 
 diff --git a/Makefile.am b/Makefile.am
-index c3612b7..5a4363d 100644
+index c3612b74..5a4363d8 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -16,13 +16,11 @@ SUBDIRS = \
@@ -28,7 +28,7 @@ index c3612b7..5a4363d 100644
  
  INTLTOOL_FILES = \
 diff --git a/autogen.sh b/autogen.sh
-index 230a721..83419bf 100755
+index 230a7218..83419bf4 100755
 --- a/autogen.sh
 +++ b/autogen.sh
 @@ -14,7 +14,6 @@ PKG_NAME=ModemManager
@@ -40,10 +40,10 @@ index 230a721..83419bf 100755
      AUTOPOINT='intltoolize --automake --copy' autoreconf --force --install --verbose
  )
 diff --git a/configure.ac b/configure.ac
-index 8e6e804..c4b90a6 100644
+index cd302216..aa0eb99f 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -72,12 +72,6 @@ AC_SUBST(MM_GLIB_LT_REVISION)
+@@ -73,12 +73,6 @@ AC_SUBST(MM_GLIB_LT_REVISION)
  AC_SUBST(MM_GLIB_LT_AGE)
  
  dnl-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ index 8e6e804..c4b90a6 100644
  dnl i18n
  dnl
  
-@@ -525,13 +519,6 @@ test/Makefile
+@@ -552,13 +546,6 @@ test/Makefile
  introspection/Makefile
  introspection/tests/Makefile
  po/Makefile.in
@@ -70,7 +70,7 @@ index 8e6e804..c4b90a6 100644
  libmm-glib/Makefile
  libmm-glib/generated/Makefile
  libmm-glib/generated/tests/Makefile
-@@ -581,7 +568,6 @@ echo "
+@@ -609,7 +596,6 @@ echo "
      Miscellaneous:
        gobject introspection:   ${found_introspection}
        vala bindings:           ${enable_vala}
@@ -79,5 +79,5 @@ index 8e6e804..c4b90a6 100644
  if test "x${CODE_COVERAGE_ENABLED}" = "xyes"; then
     echo "      code coverage cflags:    ${CODE_COVERAGE_CFLAGS}"
 -- 
-2.10.2
+2.13.1
 

@@ -1,7 +1,7 @@
-From 0cae8e34ca6d3a57b416be1e12be16e4f160d83f Mon Sep 17 00:00:00 2001
+From 07c6663913533e15acf1d93acaf01ac1e438885b Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Mon, 25 Jul 2016 18:11:10 +0200
-Subject: [PATCH 09/12] include: ModemManager-version.h and
+Subject: [PATCH 10/12] include: ModemManager-version.h and
  ModemManager-names.h not distributed
 
 These files now depend on different configure options (e.g. if optional
@@ -12,10 +12,10 @@ interfaces are enabled or not), so we shouldn't be distributing them.
  2 files changed, 10 insertions(+), 3 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index 3f86308..990a276 100644
+index 14a69bcf..e9ed2bd2 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -94,6 +94,9 @@ dnl-----------------------------------------------------------------------------
+@@ -95,6 +95,9 @@ dnl-----------------------------------------------------------------------------
  dnl Build dependencies
  dnl
  
@@ -26,16 +26,17 @@ index 3f86308..990a276 100644
  GLIB_BUILD_SYMBOLS="-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_36 -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_36 -DGLIB_DISABLE_DEPRECATION_WARNINGS"
  
 diff --git a/include/Makefile.am b/include/Makefile.am
-index 8e339f9..ce6a402 100644
+index 37e07dec..3025b53f 100644
 --- a/include/Makefile.am
 +++ b/include/Makefile.am
-@@ -5,11 +5,15 @@ XMLS = $(wildcard $(top_srcdir)/introspection/*.xml)
+@@ -5,12 +5,16 @@ XMLS = $(wildcard $(top_srcdir)/introspection/*.xml)
  includedir = @includedir@/ModemManager
  
  include_HEADERS = \
 -	ModemManager-names.h \
  	ModemManager-enums.h \
  	ModemManager-errors.h \
+ 	ModemManager-compat.h \
 +	ModemManager.h \
 +	$(NULL)
 +
@@ -47,7 +48,7 @@ index 8e339f9..ce6a402 100644
  
  if WITH_INTERFACE_3GPP_USSD
  include_HEADERS += ModemManager-enums-3gpp-ussd.h
-@@ -36,7 +40,7 @@ include_HEADERS += ModemManager-enums-firmware.h
+@@ -37,7 +41,7 @@ include_HEADERS += ModemManager-enums-firmware.h
  endif
  
  ModemManager-names.h: $(XMLS) $(top_srcdir)/build-aux/header-generator.xsl
@@ -57,5 +58,5 @@ index 8e339f9..ce6a402 100644
  CLEANFILES = \
  	ModemManager-names.h
 -- 
-2.10.2
+2.13.1
 

@@ -25,8 +25,8 @@ I2C_PST_GET
 get reset/power cause
 	0x43 PST
 	PST: 1=warm reset, 2=cold reset, 3=power off, 4=power-cycle,
-	     5=swdt, 6=button push, 7=therm trip, 8=pwrgd, 9=PMU_SLP,
-	     10=pwr cycle on cold reset, 11=unknown
+	     5=swdt (cold reset), 6=button push, 7=therm trip, 8=pwrgd, 9=PMU_SLP,
+	     10=pwr cycle on cold reset, 11=swdt (power cycle), 12=unknown
 	     else previous write;
 	i2cget -y 1 0x21
 
@@ -136,16 +136,23 @@ pic reset cause
 		[5]= stack over/underflow
 	i2cget -y 1 0x29
 
-I2C_RBPT
-reset button push timer
+I2C_RBPT_GET
+get reset button push timer
 	reset button is debounce, all <200ms are ignored;
 	pushing reset button turns on system if it was off;
 	pushing reset button resets system if it was on;
-	a button push timer start at push event, increments to max;
+	button push timer starts at push event, increments to max;
 	this comamnd reads that timer, which could still be ticking, if button is still pushed;
-	timer in 10msec ticks
+	timer in 100msec ticks
 	0x55 LSB MSB
 	i2cget -y 1 0x2a 0 w
+
+I2C_RBPT_SET
+set reset button push timer;
+	system software needs to clear the button timer after if completed the action
+	otherwise, the timer will still be set after a reset or reboot;
+	0x54 LSB MSB
+	i2cset -y 1 0x2a 0 0
 
 EEPROM bytes:
 

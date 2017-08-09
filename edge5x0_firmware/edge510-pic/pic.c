@@ -1,4 +1,4 @@
-// main.c v5 Sandra Berndt
+// main.c v7 Sandra Berndt
 // velocloud dolphin pic code;
 
 #undef PIC_BOARD_V1
@@ -244,7 +244,7 @@ enum pstate_times {
 	PSTATE_COREPWR_DELAY = 150,	// delay CLKPWRGD -> COREPWR rising;
 	PSTATE_RESET_DELAY = 100,	// delay COREPWR -> RESET deassertion;
 	PSTATE_RSMRST_ASSERT = 100,	// RSMRST assertion duration for cold reset;
-	PSTATE_SLP_CR_DELAY = 6000,	// cold reset reassert delay;
+	PSTATE_SLP_CR_DELAY = 10000,	// cold reset reassert delay;
 };
 
 // ble reset state;
@@ -326,8 +326,8 @@ enum i2c_cmds {
 	I2C_VERSION,		// get pic code version;
 	I2C_RNOP,
 	I2C_RESET,		// get pic reset cause;
-	I2C_PNOP,
-	I2C_RBPT,		// get reset button push time;
+	I2C_RBPT_SET,		// set (clear) reset button push time;
+	I2C_RBPT_GET,		// get reset button push time;
 };
 
 // i2c byte for I2C_PST command;
@@ -344,6 +344,7 @@ enum i2c_reset {
 	POWER_GOOD,		// power switchers not good;
 	PMU_SLP,		// PMU_SLP did not assert;
 	POWER_CYCLE_CR,		// power cycle on cold reset;
+	POWER_CYCLE_SWDT,	// power cycle swdt;
 	PST_UNKNOWN,		// unknown case;
 };
 
@@ -386,6 +387,7 @@ union swdt {
 	u16 v;		// value;
 };
 swdt_t swdt;		// system watchdog timer;
+u8 swdt_cnt;		// swdt triger count;
 
 // interrupt enable/disable;
 
@@ -495,20 +497,34 @@ swdt_init(void)
 }
 
 // handle system watchdog;
+// issue cold-reset on first trigger;
+// issue power-cycle on further triggers;
 
 static inline void
 swdt_fsm(void)
 {
+	u8 trig;
+
+	IntrOff();
 	if(swdt.v) {
 		if(TMR4IF) {
 			TMR4IF = 0;
 			swdt.v--;
 		}
 		if(swdt.v == 0) {
-			pstate = PST_COLD_RESET;
-			rstate = RESET_SWDT;
+			if(swdt_cnt) {
+				pstate = PST_TURN_OFF;
+				pcycle = PC_NOW;
+				rstate = POWER_CYCLE_SWDT;
+			} else {
+				pstate = PST_COLD_RESET;
+				rstate = RESET_SWDT;
+			}
+			if(swdt_cnt != 0xff)
+				swdt_cnt++;
 		}
 	}
+	IntrOn();
 }
 
 // start new i2c transaction;
@@ -602,7 +618,7 @@ i2c_start(void)
 
 	case I2C_VERSION:
 		i2c_buf[0] = 'v';
-		i2c_buf[1] = '5';
+		i2c_buf[1] = '7';
 		i2c_buf[2] = 0;
 		i2c_buf[3] = 0;
 	case I2C_VNOP:
@@ -618,10 +634,10 @@ i2c_start(void)
 		break;
 
 	// reset button push time;
-	case I2C_RBPT:
+	case I2C_RBPT_GET:
 		i2c_buf[0] = rstcnt.b[0];
 		i2c_buf[1] = rstcnt.b[1];
-	case I2C_PNOP:
+	case I2C_RBPT_SET:
 		i2c_nb = 2;
 		break;
 
@@ -671,6 +687,7 @@ i2c_exec(void)
 	case I2C_SWDT_SET:
 		swdt.b[0] = i2c_buf[0];
 		swdt.b[1] = i2c_buf[1];
+		swdt_cnt = 0;
 		break;
 
 	// BLE reset handling;
@@ -699,10 +716,15 @@ i2c_exec(void)
 		mptr.p++;
 		break;
 
+	// set reset button push timer;
+	case I2C_RBPT_SET:
+		rstcnt.b[0] = i2c_buf[0];
+		rstcnt.b[1] = i2c_buf[1];
+		break;
+
 	// write nops;
 	case I2C_VNOP:
 	case I2C_RNOP:
-	case I2C_PNOP:
 		break;
 
 	// default, NACK;
@@ -970,10 +992,12 @@ power_fsm(void)
 	// running state;
 	// PWRGD and PMU_SLP are monitored below;
 	// cold reset system if SWDT triggers;
+	// there seems to be an issue with warm reset while in FSP,
+	// so use cold reset for button pushes;
 	case PST_RUNNING:
 		if(rstbtn.b.push) {
 			rstbtn.b.push = 0;
-			pstate = PST_RESET_ASSERT;
+			pstate = PST_COLD_RESET;
 			rstate = RESET_BUTTON;
 		}
 		swdt_fsm();
@@ -993,20 +1017,18 @@ power_fsm(void)
 	// PMU_SLP cold reset / power off delay;
 	// optionally, do power cycle on cold reset;
 	case PST_SLP_CR_DELAY:
-		if(pst_expired()) {
-			if(PMU_SLP_PORT) {
-				if(pcycle == PC_CR) {
-					pstate = PST_TURN_OFF;
-					rstate = POWER_CYCLE_CR;
-					pcycle = PC_NOW;
-				} else {
-					pstate = PST_COLD_RESET;
-					rstate = RESET_COLD;
-				}
-			} else {
+		if(PMU_SLP_PORT) {
+			if(pcycle == PC_CR) {
 				pstate = PST_TURN_OFF;
-				rstate = POWER_OFF;
+				rstate = POWER_CYCLE_CR;
+				pcycle = PC_NOW;
+			} else {
+				pstate = PST_COLD_RESET;
+				rstate = RESET_COLD;
 			}
+		} else if(pst_expired()) {
+			pstate = PST_TURN_OFF;
+			rstate = POWER_OFF;
 		}
 		break;
 
@@ -1036,7 +1058,7 @@ power_fsm(void)
 	}
 
 	// cpu signals cold reset or power off via PMU_SLP;
-	// if it reasserts within 5secs, then cold reset, else power off;
+	// if it reasserts within PST_SLP_CR_DELAY, then cold reset, else power off;
 	// if >= PST_CLKPWRGD_DELAY and PMU_SLP goes 0, then power off;
 
 	if((pstate >= PST_CLKPWRGD_DELAY) && (pstate != PST_SLP_CR_DELAY) && !PMU_SLP_PORT) {
@@ -1060,7 +1082,7 @@ fail_pst:
 void
 rstbtn_fsm(void)
 {
-	// wait for TMR4 to tick;
+	// wait for TMR6 to tick;
 
 	if( !TMR6IF)
 		return;
@@ -1301,6 +1323,7 @@ main(void)
 	nstate = PST_OK;
 	rstate = POWER_OFF;
 	pcycle = PC_NOT;
+	swdt_cnt = 0;
 	thmtrip = 0;
 
 	// reduce watchdog to 256ms;

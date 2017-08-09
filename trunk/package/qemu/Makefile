@@ -6,12 +6,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qemu
-PKG_VERSION:=2.7.1
+PKG_VERSION:=2.9.0
 PKG_RELEASE:=1
 
 PKG_SOURCE_URL:=http://wiki.qemu-project.org/download/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_MD5SUM:=a315bc51ed443a08d2cf1416d76b9ab4
+PKG_MD5SUM:=02781eb15b364aedef79da7a5113f5b7
 
 include $(INCLUDE_DIR)/uclibc++.mk
 include $(INCLUDE_DIR)/package.mk
@@ -106,15 +106,33 @@ endef
 
 define Package/qemu/install-bios
 	$(INSTALL_DIR) $(1)
+	$(INSTALL_DIR) $(1)/keymaps
 	$(INSTALL_BIN) \
 		$(PKG_BUILD_DIR)/pc-bios/*.bin \
+		$(PKG_BUILD_DIR)/pc-bios/*.rom \
 		$(1)
+endef
+
+define Package/qemu/install-bios-slim
+	$(INSTALL_DIR) $(1)
+	$(INSTALL_DIR) $(1)/keymaps
+	$(INSTALL_DATA) \
+		$(PKG_BUILD_DIR)/pc-bios/bios-256k.bin \
+		$(PKG_BUILD_DIR)/pc-bios/vgabios-cirrus.bin \
+		$(PKG_BUILD_DIR)/pc-bios/efi-virtio.rom \
+		$(PKG_BUILD_DIR)/pc-bios/kvmvapic.bin \
+		$(1)
+	$(INSTALL_DATA) \
+		$(PKG_BUILD_DIR)/pc-bios/keymaps/en-us \
+		$(PKG_BUILD_DIR)/pc-bios/keymaps/common \
+		$(PKG_BUILD_DIR)/pc-bios/keymaps/modifiers \
+		$(1)/keymaps
 endef
 
 define Package/qemu/install
 	$(call Package/qemu/install-bins, $(1)/usr/bin)
 	$(call Package/qemu/install-target, $(1)/usr/bin,x86_64-softmmu,qemu-system-x86_64)
-	$(call Package/qemu/install-bios, $(1)/usr/share/qemu)
+	$(call Package/qemu/install-bios-slim, $(1)/usr/share/qemu)
 endef
 
 $(eval $(call HostBuild))

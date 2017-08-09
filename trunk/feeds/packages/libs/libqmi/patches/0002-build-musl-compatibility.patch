@@ -1,4 +1,4 @@
-From 0ce859577da4eccc86acdf94fbc4d7417da259ab Mon Sep 17 00:00:00 2001
+From a29f1645e166d1295b1ce0c4092ea5cdda1cf0ae Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Thu, 23 Feb 2017 10:53:38 +0100
 Subject: [PATCH 2/2] build: musl compatibility

@@ -1,0 +1,9 @@
+Combined Patch Release Notes
+Product			Microcode Patch
+Avoton B0 Stepping	M01406D8128
+
+patch	change description
+128	Fixed issue with platform reset during I2C activity
+	Fixed c-state issue when shutting platform down
+	Increased timeout between patch and BIOS_RST_DONE to 3 seconds
+

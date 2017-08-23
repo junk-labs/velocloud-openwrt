@@ -222,11 +222,9 @@ Device (LPCB)
 
 	#include "acpi/superio.asl"
 
-#ifdef ENABLE_TPM
 	Device (TPM)		// Trusted Platform Module
 	{
 		Name(_HID, EISAID("IFX0102"))
-		Name(_CID, 0x310cd041)
 		Name(_UID, 1)
 
 		Method(_STA, 0)
@@ -238,11 +236,7 @@ Device (LPCB)
 		}
 
 		Name(_CRS, ResourceTemplate() {
-			IO (Decode16, 0x2e, 0x2e, 0x01, 0x02)
-			IO (Decode16, 0x6f0, 0x6f0, 0x01, 0x10)
 			Memory32Fixed (ReadWrite, 0xfed40000, 0x5000)
-			IRQ (Edge, Activehigh, Exclusive) { 6 }
 		})
 	}
-#endif
 }

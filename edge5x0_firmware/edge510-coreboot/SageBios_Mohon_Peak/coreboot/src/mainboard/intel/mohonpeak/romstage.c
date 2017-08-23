@@ -39,6 +39,7 @@
 #include <cpu/x86/msr.h>
 #include <reset.h>
 #include <delay.h>
+#include <tpm.h>
 #include "gpio.h"
 
 static void interrupt_routing_config(void)
@@ -177,6 +178,8 @@ void late_mainboard_romstage_entry(void)
 	vc_deregister_i2c_gpio(&bb_i2c1);
 
 	interrupt_routing_config();
+
+        init_tpm(0);
 }
 
 /**

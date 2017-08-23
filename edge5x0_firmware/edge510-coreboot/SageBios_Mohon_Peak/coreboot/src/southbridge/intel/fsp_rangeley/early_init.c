@@ -76,6 +76,33 @@ static void limit_sata_speed(uint32_t sata_dev, uint32_t sata_base, uint8_t gen)
 	pci_write_config16(sata_dev, SATA_MAP, original_map_value);
 }
 
+static void rangeley_print_stepping(void)
+{
+	char const *stepping_str;
+
+	u8 soc_stepping = pci_read_config8(SOC_BDF, PCI_REVISION_ID);
+
+	switch (soc_stepping) {
+
+	case 0:
+		stepping_str = "A0";
+		break;
+	case 1:
+		stepping_str = "A1";
+		break;
+	case 2:
+		stepping_str = "B0";
+		break;
+	case 3:
+		stepping_str = "C0";
+		break;
+	default:
+		stepping_str = "unknown";
+	}
+
+	printk(BIOS_INFO, "Detected %s stepping SOC\n", stepping_str);
+}
+
 static void rangeley_setup_bars(void)
 {
 	ROMSTAGE_CONST struct device *dev;
@@ -83,7 +110,10 @@ static void rangeley_setup_bars(void)
 	dev = dev_find_slot(0, SATA2_DEV_FUNC);
 	config = dev->chip_info;
 
+	rangeley_print_stepping();
 	/* Setting up Southbridge. */
+
+
 	printk(BIOS_DEBUG, "Setting up static southbridge registers...");
 	pci_write_config32(LPC_BDF, RCBA, DEFAULT_RCBA | RCBA_ENABLE);
 	pci_write_config32(LPC_BDF, ABASE, DEFAULT_ABASE | SET_BAR_ENABLE);

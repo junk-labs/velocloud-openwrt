@@ -29,8 +29,9 @@
 /* Host Bridge */
 #define SOC_DEV 0x0
 #define SOC_FUNC 0
-# define SOC_DEVID 0x1f08
-# define SOC_DEV_FUNC DEV_FUNC(SOC_DEV,SOC_FUNC)
+#define SOC_DEVID 0x1f08
+#define SOC_DEV_FUNC DEV_FUNC(SOC_DEV,SOC_FUNC)
+#define SOC_BDF PCI_DEV(BUS0, SOC_DEV, SOC_FUNC)
 
 /* PCIE Port 1 */
 #define PCIE_PORT1_DEV 0x1

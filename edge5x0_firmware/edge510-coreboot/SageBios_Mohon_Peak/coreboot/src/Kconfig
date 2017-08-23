@@ -864,7 +864,7 @@ config X86EMU_DEBUG_TIMINGS
 
 config DEBUG_TPM
 	bool "Output verbose TPM debug messages"
-	default n
+	default y
 	depends on TPM
 	help
 	  This option enables additional TPM related debug messages.

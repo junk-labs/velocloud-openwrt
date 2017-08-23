@@ -1,16 +1,22 @@
 #!/bin/sh /etc/rc.common
-# Copyright (C) 2016 Velocloud, Inc.
+# Copyright (C) 2016 Aleksander Morgado <aleksander@aleksander.es>
+# Copyright (C) 2016-2017 Velocloud, Inc.
 
+USE_PROCD=1
 START=70
 STOP=30
-SERVICE_DAEMONIZE=1
-SERVICE_WRITE_PID=1
-SERVICE_QUIET=1
 
-start() {
-	service_start /usr/sbin/ModemManager --initial-kernel-events=/tmp/ModemManager.events
-}
+start_service() {
+	# Load common utils
+	. /etc/modemmanager/25-modemmanager-common
 
-stop() {
-	service_stop /usr/sbin/ModemManager
+	# Always make sure the rundir exists
+	mkdir -m 0755 -p "${MODEMMANAGER_RUNDIR}"
+
+	# Setup ModemManager service
+	procd_open_instance
+	procd_set_param command /usr/sbin/ModemManager --initial-kernel-events="${MODEMMANAGER_EVENTS_CACHE}"
+	procd_set_param respawn ${respawn_threshold:-3600} ${respawn_timeout:-5} ${respawn_retry:-5}
+	procd_set_param pidfile "${MODEMMANAGER_PID_FILE}"
+	procd_close_instance
 }

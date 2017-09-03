@@ -37,6 +37,10 @@
 1410:b001 qmiwwan
 # Novatel U620L
 1410:9022 qmihybrid
+
+# PIX-MT100 (Gemtek 4G modem)
+15a9:002d cdcether
+
 #
 # Modem type list
 # Expecting the type list to help in auto initialization of modems

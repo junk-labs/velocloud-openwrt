@@ -1,9 +1,11 @@
 #!/bin/sh
 # Copyright (C) 2016 Velocloud Inc
 
+MODEMMANAGER_RUNDIR="/var/run/modemmanager"
+MODEMMANAGER_PID_FILE="${MODEMMANAGER_RUNDIR}/modemmanager.pid"
+MODEMMANAGER_CDCWDM_CACHE="${MODEMMANAGER_RUNDIR}/cdcwdm.cache"
+MODEMMANAGER_EVENTS_CACHE="${MODEMMANAGER_RUNDIR}/events.cache"
 MODEMMANAGER_BLACKLIST=/etc/modemmanager/modemmanager.blacklist
-MODEMMANAGER_EVENTS_CACHE=/tmp/ModemManager.events
-MODEMMANAGER_CDCWDM_CACHE=/tmp/ModemManager.cdcwdm
 
 ################################################################################
 # Common logging

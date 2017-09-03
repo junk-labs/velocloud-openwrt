@@ -1,0 +1,107 @@
+From 1401cb4c72cfa7ee8db2e7e7dcf9c2aec5dc6db4 Mon Sep 17 00:00:00 2001
+From: Aleksander Morgado <aleksander@aleksander.es>
+Date: Tue, 22 Nov 2016 21:48:53 +0100
+Subject: [PATCH 01/12] introspection: generate 'all.xml' during build
+
+This file will contain the list of introspection files only for the
+interfaces that are enabled in the build; for now all.
+---
+ .gitignore                |  2 ++
+ Makefile.am               |  2 +-
+ introspection/Makefile.am | 15 ++++++++++++++-
+ introspection/all.xml     | 24 ------------------------
+ 4 files changed, 17 insertions(+), 26 deletions(-)
+ delete mode 100644 introspection/all.xml
+
+diff --git a/.gitignore b/.gitignore
+index 685ff84f..174a7ca9 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -30,6 +30,8 @@ Makefile.in
+ /TAGS
+ /ABOUT-NLS
+ 
++/introspection/all.xml
++
+ /include/ModemManager-version.h
+ /include/ModemManager-names.h
+ 
+diff --git a/Makefile.am b/Makefile.am
+index e0c14b02..c3612b74 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1,6 +1,7 @@
+ 
+ SUBDIRS = \
+ 	. \
++	introspection \
+ 	build-aux \
+ 	data \
+ 	include \
+@@ -11,7 +12,6 @@ SUBDIRS = \
+ 	plugins \
+ 	cli \
+ 	vapi \
+-	introspection \
+ 	uml290 \
+ 	po \
+ 	test \
+diff --git a/introspection/Makefile.am b/introspection/Makefile.am
+index 2fb82d6d..5af28d89 100644
+--- a/introspection/Makefile.am
++++ b/introspection/Makefile.am
+@@ -23,7 +23,20 @@ xml_DATA = \
+ 	org.freedesktop.ModemManager1.Call.xml \
+ 	$(NULL)
+ 
++all.xml: $(xml_DATA) Makefile
++	$(AM_V_GEN)	\
++		rm -f $@; \
++		echo "<tp:spec" >> $@; \
++		echo "   xmlns:tp=\"http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0\"" >> $@; \
++		echo "   xmlns:xi=\"http://www.w3.org/2001/XInclude\">" >> $@; \
++		for single in $(xml_DATA); do \
++			echo "   <xi:include href=\"$$single\"/>" >> $@; \
++		done; \
++		echo "</tp:spec>" >> $@
++
++BUILT_SOURCES = all.xml
++CLEANFILES = all.xml
++
+ EXTRA_DIST = \
+ 	$(xml_DATA) \
+-	all.xml \
+ 	$(NULL)
+diff --git a/introspection/all.xml b/introspection/all.xml
+deleted file mode 100644
+index 57c28d05..00000000
+--- a/introspection/all.xml
++++ /dev/null
+@@ -1,24 +0,0 @@
+-<tp:spec
+-   xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+-   xmlns:xi="http://www.w3.org/2001/XInclude">
+-
+-  <xi:include href="org.freedesktop.ModemManager1.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Sim.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Bearer.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Sms.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Call.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Voice.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Modem3gpp.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.ModemCdma.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Messaging.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Location.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Time.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Firmware.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Signal.xml"/>
+-  <xi:include href="org.freedesktop.ModemManager1.Modem.Oma.xml"/>
+-
+-  <!--xi:include href="wip-org.freedesktop.ModemManager1.Modem.Contacts.xml"/-->
+-
+-</tp:spec>
+-- 
+2.13.1
+

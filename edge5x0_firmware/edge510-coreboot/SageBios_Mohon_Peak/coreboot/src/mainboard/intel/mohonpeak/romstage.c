@@ -119,6 +119,16 @@ void early_mainboard_romstage_entry(void)
 	/* SMBUS IO Expander addr=0x74, cmd 0x2 (register 0 output bits), bit 2,3,4,5,7N high. */
 	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
 
+	cmd_buf[0] = 0x3;
+	cmd_buf[1] = 0x00;
+	/* SMBUS IO Expander addr=0x74, cmd 0x3 (output port 1), bits 0-7 low. */
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
+
+	cmd_buf[0] = 0x7;
+	cmd_buf[1] = 0x60;
+	/* SMBUS IO Expander addr=0x74, cmd 0x7 (configuration port 1) bits 13, 14 input */
+	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x74, 2, cmd_buf);
+
 	/* Write PIC for all white LED (RGB: 0xff/0xff/0xff) */
 	(void) vc_i2c_gpio_block_write_data(&bb_i2c1, 0x20, 3, buf);
 

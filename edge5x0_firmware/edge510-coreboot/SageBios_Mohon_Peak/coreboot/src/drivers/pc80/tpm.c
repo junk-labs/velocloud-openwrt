@@ -132,6 +132,7 @@ static const struct device_name atmel_devices[] = {
 
 static const struct device_name infineon_devices[] = {
 	{0x000b, "SLB9635 TT 1.2"},
+	{0x001a, "SLB966x TT 1.2/2.0"},
 	{0xffff}
 };
 
@@ -156,7 +157,9 @@ static const struct vendor_name vendor_names[] = {
  * Cached vendor/device ID pair to indicate that the device has been already
  * discovered
  */
+#if 0
 static u32 vendor_dev_id CAR_GLOBAL;
+#endif
 
 static inline u8 tpm_read_status(int locality)
 {
@@ -359,23 +362,24 @@ static int tis_command_ready(u8 locality)
  */
 static u32 tis_probe(void)
 {
-	const char *device_name = "unknown";
+	const char *device_name = NULL;
 	const char *vendor_name = device_name;
 	const struct device_name *dev;
 	u32 didvid;
 	u16 vid, did;
 	int i;
-
+#if 0
 	if (car_get_var(vendor_dev_id))
 		return 0;  /* Already probed. */
-
+#endif
 	didvid = tpm_read_did_vid(0);
 	if (!didvid || (didvid == 0xffffffff)) {
-		printf("%s: No TPM device found\n", __FUNCTION__);
+		printk(BIOS_DEBUG, "%s: No TPM device found\n", __FUNCTION__);
 		return TPM_DRIVER_ERR;
 	}
-
+#if 0
 	car_set_var(vendor_dev_id, didvid);
+#endif
 
 	vid = didvid & 0xffff;
 	did = (didvid >> 16) & 0xffff;
@@ -394,11 +398,18 @@ static u32 tis_probe(void)
 				break;
 			}
 			j++;
+		        dev = &vendor_names[i].dev_names[j];
 		}
 		break;
 	}
+
+	if (device_name == NULL) {
+		printk(BIOS_DEBUG, "%s: No valid TPM device found\n", __FUNCTION__);
+		return TPM_DRIVER_ERR;
+	}
+
 	/* this will have to be converted into debug printout */
-	printf("Found TPM %s by %s\n", device_name, vendor_name);
+	printk(BIOS_DEBUG, "Found TPM %s by %s\n", device_name, vendor_name);
 	return 0;
 }
 

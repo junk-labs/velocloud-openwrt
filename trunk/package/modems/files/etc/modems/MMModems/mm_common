@@ -22,6 +22,11 @@ BEARER_STATUS=""
 LOG_TAG="MMModem ${USB}"
 LOG_TMP_PATH=${tmpdir}/${USB}.log
 
+VC_FUNCTIONS=/lib/netifd/vc-functions.sh
+if [ -r "$VC_FUNCTIONS" ]; then
+    . "$VC_FUNCTIONS"
+fi
+
 log_debug()
 {
     if [ -z "${LOG_DEBUG}" ]; then
@@ -361,7 +366,10 @@ setup_network_interface_static()
     if [ -n "${MTU}" ]; then
         uci -c /etc/config set network.${USB}.mtu=''"${MTU}"'' >/dev/null 2>&1
     fi
-    uci -c /etc/config set network.${USB}.hostname=''"vc-${USB}"'' >/dev/null 2>&1
+    if [ -r "$VC_FUNCTIONS" ]; then
+        METRIC=`get_route_metric $USB`
+        uci -c /etc/config set network.${USB}.metric=$METRIC >/dev/null 2>&1
+    fi
     uci -c /etc/config commit network >/dev/null 2>&1
 }
 

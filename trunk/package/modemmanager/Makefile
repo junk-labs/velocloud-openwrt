@@ -68,11 +68,8 @@ CONFIGURE_ARGS += \
 	--without-suspend-resume \
 	--with-systemdsystemunitdir=no \
 	--without-interface-3gpp-ussd \
-	--without-interface-location \
 	--without-interface-messaging \
-	--without-interface-time \
 	--without-interface-voice \
-	--without-interface-signal \
 	--without-interface-oma \
 	--without-interface-firmware
 

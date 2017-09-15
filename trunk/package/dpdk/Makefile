@@ -40,7 +40,8 @@ endef
 define Host/Prepare/Default
 	mkdir -p $(dir $(PKG_GIT_DIR))
 	[ -d $(PKG_GIT_DIR)/.git ] || git clone $(PKG_GIT_URL) $(PKG_GIT_DIR)
-	(cd $(PKG_GIT_DIR) && git fetch --all && git checkout $(PKG_GIT_COMMIT))
+	(cd $(PKG_GIT_DIR) && (git rev-parse --quiet --verify $(PKG_GIT_COMMIT)^{commit} || git fetch --all))
+	(cd $(PKG_GIT_DIR) && git checkout $(PKG_GIT_COMMIT))
 endef
 
 define Host/Configure
@@ -101,7 +102,7 @@ TARCH=$(patsubst i386,i686,$(ARCH))
 T=$(TARCH)-openwrt-linuxapp-gcc
 DPDK_DEBUG=-g
 
-MAKE_FLAGS = -C $(PKG_GIT_DIR) install \
+MAKE_FLAGS = -C $(PKG_GIT_DIR) \
 		RTE_OUTPUT=$(PKG_BUILD_DIR) \
 		T=$(T) V=$(V) \
 		CONFIG_RTE_BUILD_COMBINE_LIBS=y \
@@ -111,6 +112,12 @@ MAKE_FLAGS = -C $(PKG_GIT_DIR) install \
 		OPENWRT_LDLIBS="$(TARGET_LDLIBS)" \
 		RTE_KERNELDIR="$(LINUX_DIR)" \
 		DESTDIR="$(PKG_INSTALL_DIR)"
+
+define Build/Compile
+	$(MAKE) $(PKG_JOBS) $(MAKE_FLAGS) config
+	$(MAKE) $(PKG_JOBS) $(MAKE_FLAGS) depdirs
+	$(MAKE) $(PKG_JOBS) $(MAKE_FLAGS) install
+endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) \

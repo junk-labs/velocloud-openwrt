@@ -370,6 +370,7 @@ setup_network_interface_static()
         METRIC=`get_route_metric $USB`
         uci -c /etc/config set network.${USB}.metric=$METRIC >/dev/null 2>&1
     fi
+    uci -c /etc/config delete network.${USB}.hostname >/dev/null 2>&1
     uci -c /etc/config commit network >/dev/null 2>&1
 }
 

@@ -239,3 +239,12 @@ clobber:
 distclean:
 	make -C $(OPENWRT_ROOT) $@
 
+SYM_TARGET=target-x86_64_eglibc-2.15
+
+symlinks: $(OPENWRT_TSYS:%=ib-%)
+	rm -fr sdk
+	ln -sf $(CURDIR)/trunk sdk
+
+$(OPENWRT_TSYS:%=ib-%):
+	rm -fr $@
+	ln -sf $(CURDIR)/trunk/build_dir/$(SYM_TARGET)/OpenWrt-ImageBuilder-x64_$(@:ib-%=%)-for-linux-x86_64 $@

@@ -6,6 +6,9 @@
 # will be logged whenever the events for the device are ignored.
 #
 
+# GH-UDG-MCLTEC
+1ecb:02f1 rndis
+
 # PIX-MT100 (Gemtek 4G modem)
 15a9:002d ecm
 

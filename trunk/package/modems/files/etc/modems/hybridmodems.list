@@ -41,6 +41,9 @@
 # PIX-MT100 (Gemtek 4G modem)
 15a9:002d cdcether
 
+# GH-UDG-MCLTEC
+1ecb:02f1 rndis
+
 #
 # Modem type list
 # Expecting the type list to help in auto initialization of modems

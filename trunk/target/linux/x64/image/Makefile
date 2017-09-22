@@ -244,6 +244,10 @@ define Image/Build/velocloud/gpt
 		$(GRUB2_MODULES)
 	$(CP) $(STAGING_DIR_HOST)/lib/grub/i386-pc/*.img $(KDIR)/grub2/
 	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
+	$(INSTALL_DIR) $(KDIR)/firmware
+	if [ -d $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/firmware ]; then \
+		$(CP) -HL $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/firmware $(KDIR)/ ; \
+	fi
 	chmod u+x ./gen_image_velocloud.sh
 	GRUB2_MODULES="$(GRUB2_MODULES)" \
 	PATH="$(TARGET_PATH)" \
@@ -255,7 +259,8 @@ define Image/Build/velocloud/gpt
 		$(CONFIG_TARGET_ROOTFS_INSTSIZE) \
 		$(TARGET_DIR) \
 		$(KDIR)/root.grub \
-		$(KDIR)/inst.grub
+		$(KDIR)/inst.grub \
+		$(KDIR)/firmware
 	echo '(hd0) $(BIN_DIR)/$(2)' > $(KDIR)/grub2/device.map
 	grub-bios-setup \
 		--device-map="$(KDIR)/grub2/device.map" \

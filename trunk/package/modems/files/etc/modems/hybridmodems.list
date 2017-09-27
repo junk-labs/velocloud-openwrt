@@ -37,6 +37,8 @@
 1410:b001 qmiwwan
 # Novatel U620L
 1410:9022 qmihybrid
+# Novatel U730L (ECM or RNDIS)
+1410:9030 cdcether
 
 # PIX-MT100 (Gemtek 4G modem)
 15a9:002d cdcether

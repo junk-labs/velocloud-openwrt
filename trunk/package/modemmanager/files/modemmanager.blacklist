@@ -6,6 +6,9 @@
 # will be logged whenever the events for the device are ignored.
 #
 
+# Netgear Verizon Jetpack 791L
+0846:68e1 rndis
+
 # GH-UDG-MCLTEC
 1ecb:02f1 rndis
 

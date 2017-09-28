@@ -46,6 +46,9 @@
 # GH-UDG-MCLTEC
 1ecb:02f1 rndis
 
+# Netgear Verizon Jetpack 791L
+0846:68e1 rndis
+
 #
 # Modem type list
 # Expecting the type list to help in auto initialization of modems

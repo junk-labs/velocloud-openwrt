@@ -18,7 +18,6 @@ PKG_MD5SUM:=745384ed0dedb3f66b33fe84d66466f9
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
 
 PKG_BUILD_DEPENDS:=libelf1
-PKG_BUILD_PARALLEL:=0
 PKG_FIXUP:=autoreconf
 PKG_LIBTOOL_PATHS:=. sntp
 
@@ -93,6 +92,7 @@ define Package/ntp-keygen
 $(call Package/ntpd/Default)
   TITLE+=keygen
   VARIANT:=nossl
+  DEPENDS+= +libevent2
 endef
 
 define Package/ntp-keygen/description

@@ -15,7 +15,7 @@
    enable = emu;
 --- /dev/null
 +++ b/grub-core/commands/vc.c
-@@ -0,0 +1,1075 @@
+@@ -0,0 +1,1076 @@
 +// vc.c
 +// velocloud specific commands;
 +
@@ -949,6 +949,7 @@
 +
 +static struct vc_brd vc_brds[] = {
 +	{ "EDGE500", grub_vc500_init, grub_vc500_logo, grub_vc500_rb, grub_vc500_wdt, 3*60, },
++	{ "EDGE510", NULL, NULL, grub_vc5x0_rb, NULL, 3*60, },
 +	{ "EDGE520", NULL, NULL, grub_vc5x0_rb, NULL, 3*60, },
 +	{ "EDGE540", NULL, NULL, grub_vc5x0_rb, NULL, 3*60, },
 +	{ NULL, NULL, NULL, NULL, NULL, 0, },
@@ -966,7 +967,7 @@
 +		return NULL;
 +
 +	for(brd = vc_brds; (name = brd->board); brd++) {
-+		if( !grub_strcmp(board, name))
++		if( !grub_strncmp(board, name, grub_strlen(name)))
 +			return brd;
 +	}
 +	return(NULL);

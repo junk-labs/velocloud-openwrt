@@ -20,9 +20,9 @@ diff -r -u a/src/lease.c b/src/lease.c
 +  int c;
 +  char req_options[1024];
 +  int req_options_len;
-   FILE *leasestream;
-   
-   leases_left = daemon->dhcp_max;
+   int items;
+   char *domain = NULL;
+ 
 @@ -130,6 +133,12 @@
  	else
  	  break;

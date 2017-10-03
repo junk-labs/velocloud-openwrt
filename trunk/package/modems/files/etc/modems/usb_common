@@ -242,6 +242,7 @@ remove_device_config()
 	network_type=$(uci -c /etc/config get network.$usbifname.type 2>/dev/null)
 	if [ "$network_type" == "wwan" ]; then
 		uci -c $network_config delete network.$usbifname
+		uci -c $network_config delete network.$usbifname"_DEFAULT_ROUTE"
 		uci -c $network_config commit network
 		ubus call network reload
 		log "Removed network config: $usbifname"
@@ -450,6 +451,15 @@ modem_cleanup() {
         # Remove USB1 to USB4 if exists in /etc/config/network
         for i in 1 2 3 4; do
                 uci delete network.$modem_string$i
+                uci delete network.$modem_string$i"_DEFAULT_ROUTE"
+        done
+        for i in 1 2; do
+                uci delete network.CELL$i
+                uci delete network.CELL$i"_DEFAULT_ROUTE"
+        done
+        for i in 1 8; do
+                uci delete network.MODEM$i
+                uci delete network.MODEM$i"_DEFAULT_ROUTE"
         done
         uci commit network
         ubus call network reload

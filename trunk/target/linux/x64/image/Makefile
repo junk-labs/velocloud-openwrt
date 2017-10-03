@@ -246,7 +246,7 @@ define Image/Build/velocloud/gpt
 	$(call Image/Build/velocloud/grubcfg,inst.grub,grub-velocloud.cfg,grub-velocloud.cfg)
 	$(INSTALL_DIR) $(KDIR)/firmware
 	if [ -d $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/firmware ]; then \
-		$(CP) -HL $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/firmware $(KDIR)/ ; \
+		$(CP) -HL $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/firmware $(KDIR)/ || true; \
 	fi
 	chmod u+x ./gen_image_velocloud.sh
 	GRUB2_MODULES="$(GRUB2_MODULES)" \

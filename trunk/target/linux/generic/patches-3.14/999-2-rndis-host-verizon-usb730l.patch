@@ -1,0 +1,90 @@
+From 366d3901a7cd7932359ab4386d60e3eb8084ca98 Mon Sep 17 00:00:00 2001
+From: Aleksander Morgado <aleksander@aleksander.es>
+Date: Wed, 27 Sep 2017 23:31:03 +0200
+Subject: [PATCH] rndis_host: support Novatel Verizon USB730L
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Treat the ef/04/01 interface class/subclass/protocol combination used
+by the Novatel Verizon USB730L (1410:9030) as a possible RNDIS
+interface.
+
+ T:  Bus=01 Lev=02 Prnt=02 Port=01 Cnt=02 Dev#= 17 Spd=480 MxCh= 0
+ D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  3
+ P:  Vendor=1410 ProdID=9030 Rev=03.10
+ S:  Manufacturer=Novatel Wireless
+ S:  Product=MiFi USB730L
+ S:  SerialNumber=0123456789ABCDEF
+ C:  #Ifs= 3 Cfg#= 1 Atr=80 MxPwr=500mA
+ I:  If#= 0 Alt= 0 #EPs= 1 Cls=ef(misc ) Sub=04 Prot=01 Driver=rndis_host
+ I:  If#= 1 Alt= 0 #EPs= 2 Cls=0a(data ) Sub=00 Prot=00 Driver=rndis_host
+ I:  If#= 2 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=00 Prot=00 Driver=usbhid
+
+Once the network interface is brought up, the user just needs to run a
+DHCP client to get IP address and routing setup.
+
+As a side note, other Novatel Verizon USB730L models with the same
+vid:pid end up exposing a standard ECM interface which doesn't require
+any other kernel update to make it work.
+
+Signed-off-by: Aleksander Morgado <aleksander@aleksander.es>
+Reviewed-by: Bjørn Mork <bjorn@mork.no>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ drivers/net/usb/cdc_ether.c  | 11 ++++++++++-
+ drivers/net/usb/rndis_host.c |  4 ++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/usb/cdc_ether.c b/drivers/net/usb/cdc_ether.c
+index 9ea4bfe5d318..25c18c187880 100644
+--- a/drivers/net/usb/cdc_ether.c
++++ b/drivers/net/usb/cdc_ether.c
+@@ -54,11 +54,19 @@ static int is_wireless_rndis(struct usb_interface_descriptor *desc)
+ 		desc->bInterfaceProtocol == 3);
+ }
+ 
++static int is_novatel_rndis(struct usb_interface_descriptor *desc)
++{
++	return (desc->bInterfaceClass == USB_CLASS_MISC &&
++		desc->bInterfaceSubClass == 4 &&
++		desc->bInterfaceProtocol == 1);
++}
++
+ #else
+ 
+ #define is_rndis(desc)		0
+ #define is_activesync(desc)	0
+ #define is_wireless_rndis(desc)	0
++#define is_novatel_rndis(desc)	0
+ 
+ #endif
+ 
+@@ -121,7 +129,8 @@ int usbnet_generic_cdc_bind(struct usbnet *dev, struct usb_interface *intf)
+ 	 */
+ 	rndis = (is_rndis(&intf->cur_altsetting->desc) ||
+ 		 is_activesync(&intf->cur_altsetting->desc) ||
+-		 is_wireless_rndis(&intf->cur_altsetting->desc));
++		 is_wireless_rndis(&intf->cur_altsetting->desc) ||
++		 is_novatel_rndis(&intf->cur_altsetting->desc));
+ 
+ 	memset(info, 0, sizeof(*info));
+ 	info->control = intf;
+diff --git a/drivers/net/usb/rndis_host.c b/drivers/net/usb/rndis_host.c
+index 524a47a28120..c48938ec01a5 100644
+--- a/drivers/net/usb/rndis_host.c
++++ b/drivers/net/usb/rndis_host.c
+@@ -627,6 +627,10 @@ static const struct usb_device_id	products [] = {
+ 	/* RNDIS for tethering */
+ 	USB_INTERFACE_INFO(USB_CLASS_WIRELESS_CONTROLLER, 1, 3),
+ 	.driver_info = (unsigned long) &rndis_info,
++}, {
++	/* Novatel Verizon USB730L */
++	USB_INTERFACE_INFO(USB_CLASS_MISC, 4, 1),
++	.driver_info = (unsigned long) &rndis_info,
+ },
+ 	{ },		// END
+ };
+-- 
+2.14.1
+

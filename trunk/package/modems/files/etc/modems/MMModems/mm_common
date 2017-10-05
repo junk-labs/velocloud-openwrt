@@ -22,6 +22,11 @@ BEARER_STATUS=""
 LOG_TAG="MMModem ${USB}"
 LOG_TMP_PATH=${tmpdir}/${USB}.log
 
+VC_FUNCTIONS=/lib/netifd/vc-functions.sh
+if [ -r "$VC_FUNCTIONS" ]; then
+    . "$VC_FUNCTIONS"
+fi
+
 log_debug()
 {
     if [ -z "${LOG_DEBUG}" ]; then
@@ -355,13 +360,25 @@ setup_network_interface_static()
     uci -c /etc/config set network.${USB}.proto='static' >/dev/null 2>&1
     uci -c /etc/config set network.${USB}.ipaddr=''"${ADDRESS}"'' >/dev/null 2>&1
     uci -c /etc/config set network.${USB}.netmask=''"${NETMASK}"'' >/dev/null 2>&1
-    if [ -n "${GATEWAY}" ]; then
-        uci -c /etc/config set network.${USB}.gateway=''"${GATEWAY}"'' >/dev/null 2>&1
-    fi
+    uci -c /etc/config set network.${USB}.ipv6=0 >/dev/null 2>&1
     if [ -n "${MTU}" ]; then
         uci -c /etc/config set network.${USB}.mtu=''"${MTU}"'' >/dev/null 2>&1
     fi
-    uci -c /etc/config set network.${USB}.hostname=''"vc-${USB}"'' >/dev/null 2>&1
+    uci -c /etc/config delete network.${USB}.hostname >/dev/null 2>&1
+
+    if [ -n "${GATEWAY}" ]; then
+        uci -c /etc/config add network route\\\ '"${USB}_DEFAULT_ROUTE"' >/dev/null 2>&1
+        uci -c /etc/config set network.${USB}_DEFAULT_ROUTE=route >/dev/null 2>&1
+        uci -c /etc/config set network.${USB}_DEFAULT_ROUTE.interface=''"${USB}"'' >/dev/null 2>&1
+        uci -c /etc/config set network.${USB}_DEFAULT_ROUTE.target=''0.0.0.0'' >/dev/null 2>&1
+        uci -c /etc/config set network.${USB}_DEFAULT_ROUTE.netmask=''0.0.0.0'' >/dev/null 2>&1
+        uci -c /etc/config set network.${USB}_DEFAULT_ROUTE.gateway=''"${GATEWAY}"'' >/dev/null 2>&1
+        if [ -r "$VC_FUNCTIONS" ]; then
+            METRIC=`get_route_metric $USB`
+            uci -c /etc/config set network.${USB}_DEFAULT_ROUTE.metric=''"${METRIC}"'' >/dev/null 2>&1
+        fi
+    fi
+
     uci -c /etc/config commit network >/dev/null 2>&1
 }
 
@@ -466,8 +483,11 @@ process_initial_state()
     log_debug "modem manufacturer: ${MANUFACTURER}"
     local MODEL=$(helper_get_field "${MODEM_STATUS}" "Hardware" "model")
     log_debug "modem model: ${MODEL}"
-    if [ -n "${MANUFACTURER}" ] && [ -n "${MODEL}" ]; then
-        uci -c ${modem_config_path} set modems.${USB}.modelnumber=''"${MANUFACTURER} ${MODEL}"''
+    if [ -n "${MANUFACTURER}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.manufacturer=''"${MANUFACTURER}"''
+    fi
+    if [ -n "${MODEL}" ]; then
+        uci -c ${modem_config_path} set modems.${USB}.modelnumber=''"${MODEL}"''
     fi
 
     # fw version
@@ -549,6 +569,7 @@ cleanup_modem()
 
         # Remove network configuration
         uci -c /etc/config delete network.${USB} >/dev/null 2>&1
+        uci -c /etc/config delete network.${USB}_DEFAULT_ROUTE >/dev/null 2>&1
         uci -c /etc/config commit network >/dev/null 2>&1
 
         # Remove ifname from modem config

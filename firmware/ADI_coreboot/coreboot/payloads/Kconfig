@@ -1,0 +1,731 @@
+##
+## This file is part of the coreboot project.
+##
+## Copyright (C) 2009-2010 coresystems GmbH
+## Copyright (C) 2013-2014 Sage Electronic Engineering, LLC.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+##
+
+###############################################################################
+# Main Payloads Menu
+###############################################################################
+
+menu "Payloads and Option-ROMs"
+
+config DEFAULT_PAYLOAD_ELF
+	bool
+	default n
+	help
+	  Select the ELF payload by default
+
+config DEFAULT_PAYLOAD_LINUX
+	bool
+	default n
+	help
+	  Select the LINUX payload by default
+
+choice
+	prompt "Add Main payload"
+	default PAYLOAD_ELF if DEFAULT_PAYLOAD_ELF
+	default PAYLOAD_LINUX if DEFAULT_PAYLOAD_LINUX
+	default PAYLOAD_NONE
+
+config PAYLOAD_NONE
+	bool "None"
+	help
+	  Select this option if you want to create an "empty" coreboot
+	  ROM image for a certain mainboard, i.e. a coreboot ROM image
+	  which does not yet contain a payload.
+
+	  For such an image to be useful, you have to use 'cbfstool'
+	  to add a payload to the ROM image later.
+
+config PAYLOAD_ELF
+	bool "An ELF executable payload"
+	help
+	  Select this option if you have a payload image (an ELF file)
+	  which coreboot should run as soon as the basic hardware
+	  initialization is completed.
+
+	  You will be able to specify the location and file name of the
+	  payload image later.
+
+config PAYLOAD_LINUX
+	bool "A Linux payload"
+	help
+	  Select this option if you have a Linux bzImage which coreboot
+	  should run as soon as the basic hardware initialization
+	  is completed.
+
+	  You will be able to specify the location and file name of the
+	  payload image later.
+
+endchoice	# end main payload
+
+config PAYLOAD_FILE
+	string "Payload path and filename"
+	depends on PAYLOAD_ELF
+	default "payloads/seabios/out/bios.bin.elf"
+	help
+	  The path and filename of the ELF executable file to use as payload.
+
+config COMPRESSED_PAYLOAD_LZMA
+	bool "Use LZMA compression for payload"
+	default y
+	depends on PAYLOAD_ELF
+	help
+	  In order to reduce the size payloads take up in the ROM chip
+	  coreboot can compress them using the LZMA algorithm.
+
+config PAYLOAD_BASE
+	hex "Payload base address"
+	default 0
+	help
+	  Select a base address in memory for the payload. A 0 tells
+	  cbfstool to choose the location for you.  This is calculated as
+	  0xFFFFFFFF - rom size + payload location *in the rom* +1.  Note
+	  that the base address is where the payload binary starts.  The
+	  header starts 0x40 bytes lower.
+
+config PAYLOAD_FILE
+	string "Linux path and filename"
+	depends on PAYLOAD_LINUX
+	default "bzImage"
+	help
+	  The path and filename of the bzImage kernel to use as payload.
+
+config PAYLOAD_USE_CONFIG_FILE
+	string "Payload saved configuration path and filename"
+	depends on !PAYLOAD_NONE
+	help
+	  Specify the saved configuration file that is passed to the
+	  the payload makefile for payload projects that use Kconfig.
+	  Example: payloads/seabios/configs/config.default
+
+	  Leave blank if the project does not use Kconfig.
+	  Example: explorer does not use Kconfig
+
+config LINUX_COMMAND_LINE
+	string "Linux command line"
+	depends on PAYLOAD_LINUX
+	default ""
+	help
+	  A command line to add to the Linux kernel.
+
+config LINUX_INITRD
+	string "Linux initrd"
+	depends on PAYLOAD_LINUX
+	default ""
+	help
+	  An initrd image to add to the Linux kernel.
+
+###############################################################################
+# Extra Payloads
+###############################################################################
+config EXTRA_1ST_PAYLOAD
+	bool "Add an additional payload"
+	depends on PAYLOAD_ELF
+	default n
+
+if EXTRA_1ST_PAYLOAD
+menu "Additional Payloads"
+
+config EXTRA_1ST_PAYLOAD_FILE
+	string "Additional payload file name"
+	depends on EXTRA_1ST_PAYLOAD
+	default ""
+
+config EXTRA_1ST_PAYLOAD_CBFS_NAME
+	string "Name of extra payload in CBFS"
+	depends on EXTRA_1ST_PAYLOAD
+	default ""
+
+config EXTRA_1ST_COMPRESSED_PAYLOAD_LZMA
+	bool "Use LZMA compression for extra payload"
+	default y
+	depends on EXTRA_1ST_PAYLOAD
+	help
+	  In order to reduce the size payloads take up in the ROM chip
+	  coreboot can compress them using the LZMA algorithm.
+
+config EXTRA_1ST_PAYLOAD_BASE
+	hex "Extra payload base address"
+	depends on EXTRA_1ST_PAYLOAD
+	default 0
+	help
+	  Select a base address in memory for the payload. A 0 tells
+	  cbfstool to choose the location for you.  This is calculated as
+	  0xFFFFFFFF - rom size + payload location *in the rom* +1.  Note
+	  that the base address is where the payload binary starts.  The
+	  header starts 0x40 bytes lower.
+
+config EXTRA_2ND_PAYLOAD
+	bool "Add an additional payload"
+	depends on EXTRA_1ST_PAYLOAD
+	default n
+
+config EXTRA_2ND_PAYLOAD_FILE
+	string "Additional payload file name"
+	depends on EXTRA_2ND_PAYLOAD
+	default ""
+
+config EXTRA_2ND_PAYLOAD_CBFS_NAME
+	string "Name of extra payload in CBFS"
+	depends on EXTRA_2ND_PAYLOAD
+	default ""
+
+config EXTRA_2ND_COMPRESSED_PAYLOAD_LZMA
+	bool "Use LZMA compression for extra payload"
+	depends on EXTRA_2ND_PAYLOAD
+	default y
+	help
+	  In order to reduce the size payloads take up in the ROM chip
+	  coreboot can compress them using the LZMA algorithm.
+
+config EXTRA_2ND_PAYLOAD_BASE
+	hex "Extra payload base address"
+	depends on EXTRA_2ND_PAYLOAD
+	default 0
+	help
+	  Select a base address in memory for the payload. A 0 tells
+	  cbfstool to choose the location for you.  This is calculated as
+	  0xFFFFFFFF - rom size + payload location *in the rom* +1.  Note
+	  that the base address is where the payload binary starts.  The
+	  header starts 0x40 bytes lower.
+
+config EXTRA_3RD_PAYLOAD
+	bool "Add an additional payload"
+	depends on EXTRA_2ND_PAYLOAD
+	default n
+
+config EXTRA_3RD_PAYLOAD_FILE
+	string "Additional payload file name"
+	depends on EXTRA_3RD_PAYLOAD
+	default ""
+
+config EXTRA_3RD_PAYLOAD_CBFS_NAME
+	string "Name of extra payload in CBFS"
+	depends on EXTRA_3RD_PAYLOAD
+	default ""
+
+config EXTRA_3RD_COMPRESSED_PAYLOAD_LZMA
+	bool "Use LZMA compression for extra payload"
+	depends on EXTRA_3RD_PAYLOAD
+	default y
+	help
+	  In order to reduce the size payloads take up in the ROM chip
+	  coreboot can compress them using the LZMA algorithm.
+
+config EXTRA_3RD_PAYLOAD_BASE
+	hex "Extra payload base address"
+	depends on EXTRA_3RD_PAYLOAD
+	default 0
+	help
+	  Select a base address in memory for the payload. A 0 tells
+	  cbfstool to choose the location for you.  This is calculated as
+	  0xFFFFFFFF - rom size + payload location *in the rom* +1.  Note
+	  that the base address is where the payload binary starts.  The
+	  header starts 0x40 bytes lower.
+
+config EXTRA_4TH_PAYLOAD
+	bool "Add an additional payload"
+	depends on EXTRA_3RD_PAYLOAD
+	default n
+
+config EXTRA_4TH_PAYLOAD_FILE
+	string "Additional payload file name"
+	depends on EXTRA_4TH_PAYLOAD
+	default ""
+
+config EXTRA_4TH_PAYLOAD_CBFS_NAME
+	string "Name of extra payload in CBFS"
+	depends on EXTRA_4TH_PAYLOAD
+	default ""
+
+config EXTRA_4TH_COMPRESSED_PAYLOAD_LZMA
+	bool "Use LZMA compression for extra payload"
+	depends on EXTRA_4TH_PAYLOAD
+	default y
+	help
+	  In order to reduce the size payloads take up in the ROM chip
+	  coreboot can compress them using the LZMA algorithm.
+
+config EXTRA_4TH_PAYLOAD_BASE
+	hex "Extra payload base address"
+	depends on EXTRA_4TH_PAYLOAD
+	default 0
+	help
+	  Select a base address in memory for the payload. A 0 tells
+	  cbfstool to choose the location for you.  This is calculated as
+	  0xFFFFFFFF - rom size + payload location *in the rom* +1.  Note
+	  that the base address is where the payload binary starts.  The
+	  header starts 0x40 bytes lower.
+
+endmenu	# end additional payloads
+endif	# EXTRA_1ST_PAYLOAD
+
+###############################################################################
+# SeaBIOS options
+###############################################################################
+config SEABIOS_ENABLE_OPTIONS
+	bool "Enable SeaBIOS Payload Options"
+	default n
+	depends on PAYLOAD_ELF
+	help
+	  Enables various options to configure SeaBIOS
+
+if SEABIOS_ENABLE_OPTIONS
+menu "SeaBIOS"
+
+config SEABIOS_ADD_BOOTORDER
+	bool "Add a Bootorder file for SeaBIOS to CBFS"
+	default n
+	help
+	  Add a bootorder file to control the boot order in SeaBIOS.
+	  for more information go to
+	  http://www.coreboot.org/SeaBIOS#Configuring_boot_order
+
+config SEABIOS_BOOTORDER_FILE
+	string "bootorder source path and filename"
+	depends on SEABIOS_ADD_BOOTORDER
+	default ""
+	help
+	  Add a bootorder file to control the boot order in SeaBIOS.
+	  for more information go to
+	  http://www.coreboot.org/SeaBIOS#Configuring_boot_order
+
+config SEABIOS_ADD_BOOT_MENU_WAIT
+	bool "Add a BOOT-MENU-WAIT file for SeaBIOS to CBFS"
+	default n
+	help
+	  This modifies SeaBIOS's default delay when pausing at the
+	  'Press F12 for Boot Menu' prompt
+
+config SEABIOS_BOOT_MENU_WAIT_TIME
+	int "BOOT-MENU-WAIT time in msecs"
+	depends on SEABIOS_ADD_BOOT_MENU_WAIT
+	default 5000
+	help
+	  This modifies SeaBIOS's default delay when pausing at the
+	  'Press F12 for Boot Menu' prompt
+
+config SEABIOS_THREAD_OPTIONROMS
+       prompt "Hardware init during option ROM execution" if PAYLOAD_SEABIOS
+       default n
+       bool
+       help
+         Allow hardware init to run in parallel with optionrom execution.
+
+         This can reduce boot time, but can cause some timing
+         variations during option ROM code execution. It is not
+         known if all option ROMs will behave properly with this option.
+
+endmenu # end seabios options
+endif	#SEABIOS_ENABLE_OPTIONS
+
+
+###############################################################################
+# Additional Option ROM
+###############################################################################
+config OPTION_ROM
+	bool "Add an additional option ROM"
+	help
+	  Select this option if you have an additional option ROM that you would
+	  like to add to the CBFS image.
+
+	  You will be able to specify the location and file name of the
+	  image later.
+
+if OPTION_ROM
+menu "Additional Option ROM"
+
+config OPTION_ROM_FILE_IN
+	string "Option ROM source path and filename"
+	depends on OPTION_ROM
+	default "VVVVDDDD.bin"
+	help
+	  The path and filename of the option ROM you wish to add.
+
+config OPTION_ROM_FILE_OUT
+	string "Option ROM destination in CBFS"
+	depends on OPTION_ROM
+	default "pciVVVV,DDDD.rom"
+	help
+	  The destination path and name in the CBFS.
+
+config OPTION_ROM_ADDRESS
+	string "Option ROM address in CBFS"
+	depends on OPTION_ROM
+	help
+	  Place the option ROM at a specific address.  If left blank, the option ROM
+	  will be placed at an unused address range in CBFS.  If an address is
+	  specified, it must point to an unused range within the boot ROM device.
+
+endmenu	# Additional Option ROM
+endif	#OPTION_ROM
+
+###############################################################################
+# Additional CBFS files
+###############################################################################
+config CBFS_FILE
+	bool "Add an additional file"
+	help
+	  Select this option if you have an generic file that you would
+	  like to add to the CBFS image.
+
+	  You will be able to specify the location and file name of the
+	  image later.
+
+if CBFS_FILE
+menu "Additional File in CBFS"
+
+config CBFS_FILE_FILE_IN
+	string "File source path and filename"
+	depends on CBFS_FILE
+	default "path/filename"
+	help
+	  The path and filename of the file you wish to add.
+
+config CBFS_FILE_FILE_OUT
+	string "File destination in CBFS"
+	depends on CBFS_FILE
+	default "filename"
+	help
+	  The destination path and name in the CBFS.
+
+config CBFS_FILE_ADDRESS
+	string "File address in CBFS"
+	depends on CBFS_FILE
+	help
+	  Place the file at a specific address.  If left blank, the file
+	  will be placed at an unused address range in CBFS.  If an address is
+	  specified, it must point to an unused range within the boot ROM device.
+
+config CBFS_2ND_FILE
+	bool "Add a 2nd additional file"
+	depends on CBFS_FILE
+	help
+	  Select this option if you have an 2nd generic file that you would
+	  like to add to the CBFS image.
+
+	  You will be able to specify the location and file name of the
+	  image later.
+
+config CBFS_2ND_FILE_FILE_IN
+	string "File source path and filename"
+	depends on CBFS_2ND_FILE
+	default "path/filename"
+	help
+	  The path and filename of the file you wish to add.
+
+config CBFS_2ND_FILE_FILE_OUT
+	string "File destination in CBFS"
+	depends on CBFS_2ND_FILE
+	default "filename"
+	help
+	  The destination path and name in the CBFS.
+
+config CBFS_2ND_FILE_ADDRESS
+	string "File address in CBFS"
+	depends on CBFS_2ND_FILE
+	help
+	  Place the file at a specific address.  If left blank, the file
+	  will be placed at an unused address range in CBFS.  If an address is
+	  specified, it must point to an unused range within the boot ROM device.
+
+config CBFS_3RD_FILE
+	bool "Add a 3rd additional file"
+	depends on CBFS_2ND_FILE
+	help
+	  Select this option if you have a 3rd generic file that you would
+	  like to add to the CBFS image.
+
+	  You will be able to specify the location and file name of the
+	  image later.
+
+config CBFS_3RD_FILE_FILE_IN
+	string "File source path and filename"
+	depends on CBFS_3RD_FILE
+	default "path/filename"
+	help
+	  The path and filename of the file you wish to add.
+
+config CBFS_3RD_FILE_FILE_OUT
+	string "File destination in CBFS"
+	depends on CBFS_3RD_FILE
+	default "filename"
+	help
+	  The destination path and name in the CBFS.
+
+config CBFS_3RD_FILE_ADDRESS
+	string "File address in CBFS"
+	depends on CBFS_3RD_FILE
+	help
+	  Place the file at a specific address.  If left blank, the file
+	  will be placed at an unused address range in CBFS.  If an address is
+	  specified, it must point to an unused range within the boot ROM device.
+
+config CBFS_4TH_FILE
+	bool "Add a 4th additional file"
+	depends on CBFS_3RD_FILE
+	help
+	  Select this option if you have a 4th generic file that you would
+	  like to add to the CBFS image.
+
+	  You will be able to specify the location and file name of the
+	  image later.
+
+config CBFS_4TH_FILE_FILE_IN
+	string "File source path and filename"
+	depends on CBFS_4TH_FILE
+	default "path/filename"
+	help
+	  The path and filename of the file you wish to add.
+
+config CBFS_4TH_FILE_FILE_OUT
+	string "File destination in CBFS"
+	depends on CBFS_4TH_FILE
+	default "filename"
+	help
+	  The destination path and name in the CBFS.
+
+config CBFS_4TH_FILE_ADDRESS
+	string "File address in CBFS"
+	depends on CBFS_4TH_FILE
+	help
+	  Place the file at a specific address.  If left blank, the file
+	  will be placed at an unused address range in CBFS.  If an address is
+	  specified, it must point to an unused range within the boot ROM device.
+
+config CBFS_5TH_FILE
+	bool "Add a 5th additional file"
+	depends on CBFS_4TH_FILE
+	help
+	  Select this option if you have a 5th generic file that you would
+	  like to add to the CBFS image.
+
+	  You will be able to specify the location and file name of the
+	  image later.
+
+config CBFS_5TH_FILE_FILE_IN
+	string "File source path and filename"
+	depends on CBFS_5TH_FILE
+	default "path/filename"
+	help
+	  The path and filename of the file you wish to add.
+
+config CBFS_5TH_FILE_FILE_OUT
+	string "File destination in CBFS"
+	depends on CBFS_5TH_FILE
+	default "filename"
+	help
+	  The destination path and name in the CBFS.
+
+config CBFS_5TH_FILE_ADDRESS
+	string "File address in CBFS"
+	depends on CBFS_5TH_FILE
+	help
+	  Place the file at a specific address.  If left blank, the file
+	  will be placed at an unused address range in CBFS.  If an address is
+	  specified, it must point to an unused range within the boot ROM device.
+
+config CBFS_6TH_FILE
+	bool "Add a 6th additional file"
+	depends on CBFS_5TH_FILE
+	help
+	  Select this option if you have a 6th generic file that you would
+	  like to add to the CBFS image.
+
+	  You will be able to specify the location and file name of the
+	  image later.
+
+config CBFS_6TH_FILE_FILE_IN
+	string "File source path and filename"
+	depends on CBFS_6TH_FILE
+	default "path/filename"
+	help
+	  The path and filename of the file you wish to add.
+
+config CBFS_6TH_FILE_FILE_OUT
+	string "File destination in CBFS"
+	depends on CBFS_6TH_FILE
+	default "filename"
+	help
+	  The destination path and name in the CBFS.
+
+config CBFS_6TH_FILE_ADDRESS
+	string "File address in CBFS"
+	depends on CBFS_6TH_FILE
+	help
+	  Place the file at a specific address.  If left blank, the file
+	  will be placed at an unused address range in CBFS.  If an address is
+	  specified, it must point to an unused range within the boot ROM device.
+
+endmenu	# end Additional file
+endif	# CBFS_FILE
+
+###############################################################################
+# PXE
+###############################################################################
+config PXE_ROM
+	bool "Add a PXE ROM image"
+	help
+	  Select this option if you have a PXE ROM image that you would
+	  like to add to your ROM.
+
+if PXE_ROM
+menu "PXE ROM"
+
+config PXE_ROM_PUT_IN_GENROMS
+	bool "Put the PXE ROM in CBFS genroms directory for SeaBIOS"
+	depends on SEABIOS_ENABLE_OPTIONS
+	default n
+	help
+	  All option ROMs in the CBFS genroms directory are loaded.  The PXE ROM
+	  vendor and device IDs are ignored for the purpose of determining which
+	  option ROMs to load when this option is selected.
+
+config PXE_ROM_ID
+	string "network card PCI IDs"
+	default "10ec,8168"
+	help
+	  The comma-separated PCI vendor and device ID that would associate
+	  your PXE ROM to your network card.
+
+	  Example: 10ec,8168
+
+	  In the above example 10ec is the PCI vendor ID (in hex, but without
+	  the "0x" prefix) and 8168 specifies the PCI device ID of the
+	  network card (also in hex, without "0x" prefix).
+
+	  Under GNU/Linux you can run `lspci -nn` to list the IDs of your PCI devices.
+
+choice
+	depends on PXE_ROM
+	prompt "PXE ROM Serial Port"
+	default PXE_USE_CONSOLE_COM_PORT if CONSOLE_SERIAL
+	default PXE_SERIAL_NONE
+
+config PXE_USE_CONSOLE_COM_PORT
+	bool "Use same serial port as debug console"
+
+config PXE_SERIAL_NONE
+	bool "None"
+
+config PXE_SERIAL_COM1
+	bool "COM1/ttyS0, I/O port 0x3f8"
+	depends on DRIVERS_UART_8250IO
+
+config PXE_SERIAL_COM2
+	bool "COM2/ttyS1, I/O port 0x2f8"
+	depends on DRIVERS_UART_8250IO
+
+config PXE_SERIAL_COM3
+	bool "COM3/ttyS2, I/O port 0x3e8"
+	depends on DRIVERS_UART_8250IO
+
+config PXE_SERIAL_COM4
+	bool "COM4/ttyS3, I/O port 0x2e8"
+	depends on DRIVERS_UART_8250IO
+
+endchoice	# PXE Serial Port
+
+
+
+config PXE_ROM_ADDRESS
+	hex "PXE ROM address in CBFS"
+	default "0x00000000"
+	help
+	  Place the PXE ROM at a specific address.  If left blank, the PXE ROM
+	  will be placed at an unused address range in CBFS.  If an address is
+	  specified, it must point to an unused range within the boot ROM device.
+
+endmenu	# end pxe roms
+endif	# PXE_ROM
+
+###############################################################################
+# Memtest
+###############################################################################
+
+config PAYLOAD_MEMTEST
+	bool "Add Memtest payload"
+	default n
+	help
+	  Add a memtest binary as a payload
+
+if PAYLOAD_MEMTEST
+menu "Memtest86+"
+
+choice
+	depends on PAYLOAD_MEMTEST
+	prompt "Memtest Serial Port"
+	default MEMTEST_USE_CONSOLE_COM_PORT if DRIVERS_UART_8250IO
+	default MEMTEST_SERIAL_NONE
+
+config MEMTEST_USE_CONSOLE_COM_PORT
+	bool "Use same serial port as debug console"
+
+config MEMTEST_SERIAL_NONE
+	bool "None"
+
+config MEMTEST_SERIAL_COM1
+	bool "COM1/ttyS0, I/O port 0x3f8"
+	depends on DRIVERS_UART_8250IO
+
+config MEMTEST_SERIAL_COM2
+	bool "COM2/ttyS1, I/O port 0x2f8"
+	depends on DRIVERS_UART_8250IO
+
+config MEMTEST_SERIAL_COM3
+	bool "COM3/ttyS2, I/O port 0x3e8"
+	depends on DRIVERS_UART_8250IO
+
+config MEMTEST_SERIAL_COM4
+	bool "COM4/ttyS3, I/O port 0x2e8"
+	depends on DRIVERS_UART_8250IO
+
+endchoice	# Memtest Serial Port
+
+config MEMTEST_COMPRESSED_LZMA
+	bool "Use LZMA compression memtest payload"
+	default y
+	depends on PAYLOAD_MEMTEST
+	help
+	  In order to reduce the size payloads take up in the ROM chip
+	  coreboot can compress them using the LZMA algorithm.
+
+config MEMTEST_PAYLOAD_BASE
+	hex "Memtest payload base address"
+	depends on PAYLOAD_MEMTEST
+	default 0x00000000
+	help
+	  Select a base address in memory for the payload. A 0 tells
+	  cbfstool to choose the location for you.  This is calculated as
+	  0xFFFFFFFF - rom size + payload location *in the rom* +1.  Note
+	  that the base address is where the payload binary starts.  The
+	  header starts 0x40 bytes lower.
+
+config MEMTEST_CBFS_NAME
+	string "Name of Memtest ROM in CBFS"
+	depends on PAYLOAD_MEMTEST
+	default "img/memtest"
+	help
+	  The destination path and name in the CBFS.
+
+endmenu	# Memtest
+endif	# PAYLOAD_MEMTEST
+endmenu	#end payloads and option-roms
+
+###############################################################################

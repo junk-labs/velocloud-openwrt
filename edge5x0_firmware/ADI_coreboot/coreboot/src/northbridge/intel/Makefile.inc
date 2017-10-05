@@ -1,1 +1,0 @@
-subdirs-$(CONFIG_NORTHBRIDGE_INTEL_FSP_RANGELEY) += fsp_rangeley

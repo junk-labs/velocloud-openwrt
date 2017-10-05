@@ -15,6 +15,9 @@ ROOT_FSIMAGE="$5"
 INST_ROOT_SIZE="$6"
 INST_DIR="$7"
 
+# extra inst size for firmware, etc;
+EXTRA_SIZE="200"
+
 OUTPUTBASE="${OUTPUT//-usb-ext4.img}"
 if [ "${OUTPUTBASE}" != "$OUTPUT" ]; then
     EMBEDDED="${OUTPUT//-usb-ext4.img}-embedded-ext4.tar.bz2"
@@ -59,7 +62,7 @@ ROOT_OFF=$BOOT_END
 ROOT_END="$(($ROOT_OFF + $ROOT_SIZE))"
 
 INST_OFF=$ROOT_END
-INST_END="$(($INST_OFF + $ROOT_SIZE))"
+INST_END="$(($INST_OFF + $ROOT_SIZE + $EXTRA_SIZE))"
 
 TAIL_OFF=$INST_END
 TAIL_SIZE=1
@@ -73,7 +76,7 @@ dd if=/dev/zero of="$OUTPUT" bs=1M seek="$TAIL_OFF" conv=notrunc count="$TAIL_SI
 # copy installer trees;
 
 BLOCK_SIZE=4096
-BLOCKS="$(($ROOT_SIZE * 1024 / 4))"
+BLOCKS="$((($INST_END - $INST_OFF) * 1024 / 4))"
 
 mkdir -p $root_dirs || exit 1
 echo $INST_ROOT_SIZE > $IROOT/$INST_PATH/root-size

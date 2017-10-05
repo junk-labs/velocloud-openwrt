@@ -1,2 +1,0 @@
-subdirs-$(CONFIG_SOUTHBRIDGE_INTEL_COMMON) += common
-subdirs-$(CONFIG_SOUTHBRIDGE_INTEL_FSP_RANGELEY) += fsp_rangeley

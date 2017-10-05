@@ -1,0 +1,139 @@
+##
+## This file is part of the coreboot project.
+##
+## Copyright (C) 2013-2014 Sage Electronic Engineering, LLC.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+##
+
+if BOARD_INTEL_PAINTED_GORGE
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_X86
+	select CPU_INTEL_SOCKET_RPGA989
+	select NORTHBRIDGE_INTEL_FSP_RANGELEY
+	select SOUTHBRIDGE_INTEL_FSP_RANGELEY
+	select BOARD_ROMSIZE_KB_8192
+	select HAVE_ACPI_TABLES
+	select HAVE_OPTION_TABLE
+	select MMCONF_SUPPORT
+	select HAVE_FSP_BIN
+	select HAVE_MP_TABLE
+	select HAVE_PIRQ_TABLE
+	select EARLY_CBMEM_INIT
+	select DEFAULT_PAYLOAD_ELF
+
+config MAINBOARD_DIR
+	string
+	default "intel/painted_gorge"
+
+config MAINBOARD_PART_NUMBER
+	string
+	default "Painted Gorge"
+
+config MMCONF_BASE_ADDRESS
+	hex
+	default 0xe0000000
+
+config IRQ_SLOT_COUNT
+	int
+	default 18
+
+config MAX_CPUS
+	int
+	default 16
+
+config ME_PATH
+	string
+	default "../intel/mainboard/intel/painted_gorge/unlocked_descriptor"
+
+config DRIVERS_PS2_KEYBOARD
+	bool
+	default n
+
+config CONSOLE_POST
+	bool
+	default y
+
+config DEFAULT_PAYLOAD_ELF
+	bool
+	default y
+
+config PAYLOAD_USE_CONFIG_FILE
+	string
+	default "./payloads/seabios/configs/config.painted_gorge"
+
+config SEABIOS_ENABLE_OPTIONS
+	bool
+	default y
+
+config SEABIOS_ADD_BOOTORDER
+	bool
+	default y
+
+config SEABIOS_BOOTORDER_FILE
+	string
+	default "./src/mainboard/intel/painted_gorge/bootorder"
+
+config PAYLOAD_FILE
+	string
+	default "./payloads/seabios/out/bios.bin.elf"
+
+config ENABLE_VMX
+	bool
+	default y
+
+config CBFS_SIZE
+	hex
+	default 0x7f0000
+
+config CACHE_ROM_SIZE_OVERRIDE
+	hex
+	default 0x800000
+
+config ACPI_INCLUDE_GPIO
+	bool
+	default n
+
+config ACPI_INCLUDE_PMIO
+	bool
+	default n
+
+config UART_FOR_CONSOLE
+        int
+        default 1 # 1 = COM2
+
+choice
+	prompt "AHCI maximum Speed"
+	default AHCI_MAX_GEN2
+
+config AHCI_MAX_GEN3
+	bool "6 GB/S - Gen 3"
+
+config AHCI_MAX_GEN2
+	bool "3 GB/S - Gen 2"
+
+config AHCI_MAX_GEN1
+	bool "1.5 GB/S - Gen 1"
+
+endchoice
+
+config AHCI_MAX_SPEED
+	int
+	default 1 if AHCI_MAX_GEN1
+	default 3 if AHCI_MAX_GEN3
+	default 2
+
+endif # BOARD_INTEL_PAINTED_GORGE

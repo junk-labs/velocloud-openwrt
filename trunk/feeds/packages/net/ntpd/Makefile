@@ -92,6 +92,7 @@ define Package/ntp-keygen
 $(call Package/ntpd/Default)
   TITLE+=keygen
   VARIANT:=nossl
+  DEPENDS+= +libevent2
 endef
 
 define Package/ntp-keygen/description

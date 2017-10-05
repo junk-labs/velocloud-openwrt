@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gpsd
-PKG_VERSION:=3.10
+PKG_VERSION:=3.17
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://download-mirror.savannah.gnu.org/releases/gpsd/
-PKG_MD5SUM:=fc5b03aae38b9b5b6880b31924d0ace3
+PKG_MD5SUM:=e0cfadcf4a65dfbdd2afb11c58f4e4a1
 
 PKG_BUILD_DEPENDS:=libncurses libusb-1.0
 
@@ -150,7 +150,7 @@ endef
 
 define Package/libgpsd/install
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgpsd.so.* $(1)/usr/lib/
+	#$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgpsd.so.* $(1)/usr/lib/
 endef
 
 $(eval $(call BuildPackage,gpsd))

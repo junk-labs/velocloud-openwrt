@@ -1,0 +1,170 @@
+
+I2C interface:
+	reminder: must have i2c-dev module
+	I2C_ADDR bytes ...
+
+I2C_LED_SET
+LED set
+	0x40 RR GG BB
+	i2cset -y 1 0x20 RR GG BB
+	cat 0xRRGGBB > /sys/devices/platform/vc/leds/logo
+
+I2C_LED_GET
+LED get
+	0x41 RR GG BB
+	i2cget -y 1 0x20 ...
+	cat /sys/devices/platform/vc/leds/logo
+
+I2C_PST_SET
+power control
+	0x42 PST
+	PST: 1=warm reset, 2=cold reset, 3=power off 4=power-cycle, 10=pwr cycle on cold reset, else nop
+	i2cset -y 1 0x21 PST
+
+I2C_PST_GET
+get reset/power cause
+	0x43 PST
+	PST: 1=warm reset, 2=cold reset, 3=power off, 4=power-cycle,
+	     5=swdt (cold reset), 6=button push, 7=therm trip, 8=pwrgd, 9=PMU_SLP,
+	     10=pwr cycle on cold reset, 11=swdt (power cycle), 12=unknown
+	     else previous write;
+	i2cget -y 1 0x21
+
+I2C_SWDT_SET
+set system watchdog
+	0x44 LSB MSB
+	16-bit value in 40msec ticks, 1sec=25
+	value 0..1min -> assumes 0, which means off;
+	1 minute minimal time on
+	default loaded from PIC eeprom bytes 0..1;
+	i2cset -y 1 0x22 LSB MSB
+
+I2C_SWDT_GET
+get system watchdog
+	0x45 LSB MSB
+	current time left
+	i2cget -y 1 0x22 0 w
+
+I2C_BLE_SET
+set BLE reset
+	0x46 CTRL
+	CTRL: 1=assert, 2=deassert, else nop
+	i2cset -y 1 0x23 CTRL
+
+I2C_BLE_GET
+get BLE reset
+	0x47 STATUS
+	STATUS: [0]=in reset [1]=eeprom reset
+	default loaded from PIC eeprom byte 2, on PIC startup;
+	0xff in eeprom (unprogrammed) keep BLE in reset, STATUS=0x03
+	i2cget -y 1 0x23
+
+I2C_EE_WRITE
+eeprom write
+	0x48 ADDR DATA
+	ADDR: 0..255 for byte position
+	DATA: 8-bit data
+	one byte written at a time
+	this command only issues the write, does not wait for completion
+	other I2C_EE_WRITE, I2C_EE_ADDR, I2C_EE_READ issued while busy, are NACKed
+	i2cset -y 1 0x24 ADDR DATA
+	i2cget -y 1 0x24 (wait until 0x00 done)
+
+I2C_EE_STS
+eeprom write status
+	0x49 STATUS
+	STATUS: 0=idle, 1=error, 2=started, 3=busy
+	i2cget -y 1 0x24
+
+I2C_EE_ADDR
+set address for eeprom sequential read
+	0x4a ADDR
+	ADDR: 0..255 for eeprom address
+	i2cset -y 1 0x25 ADDR
+
+I2C_EE_READ
+read single eeprom byte
+	0x4B DATA
+	read single eeprom byte, auto-icrements address
+	i2cget -y 1 0x25
+
+I2C_MSG_SET
+set message pointer
+	0x4c LSB MSB
+	sets pointer to 400-byte message buffer
+	message buffer is kept in PIC SRAM, lost after PIC reboot/power cycle
+	intended for singalling across system reboots
+	i2cset -y 1 0x26 LSB MSB
+
+I2C_MSG_GET
+get message pointer
+	0x4d LSB MSB
+	use aftger reboot to read how many bytes are in buffer
+	i2cget -y 1 0x26 0 w
+
+I2C_MSG_PUTC
+message putc
+	0x4e CHAR
+	writes single char to message buffer pointer
+	increments msg pointer
+	NACKed when msg buffer full
+	i2cset -y 1 0x27 c
+
+I2C_MSG_GETC
+message getc
+	0x4f CHAR
+	reads single char from message buffer pointer
+	increments msg pointer
+	NACKed when outside valid range
+	i2cget -y 1 0x27
+
+I2C_VERSION
+get pic version string
+	0x51 C C C C
+	reads upto 4 bytes of version string
+	i2cget -y 1 0x28 0 w
+
+I2C_RESET
+pic reset cause
+	0x53 RST
+	RST:
+		[0]=power-on reset
+		[1]=brown-out reset
+		[2]=PIC watchdog reset
+		[3]=MCLR pin reset
+		[4]=reset instruction
+		[5]= stack over/underflow
+	i2cget -y 1 0x29
+
+I2C_RBPT_GET
+get reset button push timer
+	reset button is debounce, all <200ms are ignored;
+	pushing reset button turns on system if it was off;
+	pushing reset button resets system if it was on;
+	button push timer starts at push event, increments to max;
+	this comamnd reads that timer, which could still be ticking, if button is still pushed;
+	timer in 100msec ticks
+	0x55 LSB MSB
+	i2cget -y 1 0x2a 0 w
+
+I2C_RBPT_SET
+set reset button push timer;
+	system software needs to clear the button timer after if completed the action
+	otherwise, the timer will still be set after a reset or reboot;
+	0x54 LSB MSB
+	i2cset -y 1 0x2a 0 0
+
+EEPROM bytes:
+
+0..1	LSB/MSB of default system watchdog in 40msec;
+	0xffff (unprogrammed) will assume 5min default;
+	0 turns off system watchdog
+
+2	BLE reset behavior
+	0xff (unprogrammed) keeps BLE in reset after PIC reboot/power cycle
+	else do not touch BLE reset pin
+	use i2c commands to control BLE reset
+
+3..31	reserved for PIC code use
+32..255	free for system use
+

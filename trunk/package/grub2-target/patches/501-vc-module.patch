@@ -967,7 +967,7 @@
 +		return NULL;
 +
 +	for(brd = vc_brds; (name = brd->board); brd++) {
-+		if( !grub_strcmp(board, name))
++		if( !grub_strncmp(board, name, grub_strlen(name)))
 +			return brd;
 +	}
 +	return(NULL);

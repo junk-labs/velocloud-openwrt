@@ -1,7 +1,7 @@
-From 9bf08c873dd353882ce310bf4d8755443d9f83c0 Mon Sep 17 00:00:00 2001
+From 73b439cd1ddcae02a9750f6260d2ce75817d2e10 Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Tue, 22 Nov 2016 21:50:20 +0100
-Subject: [PATCH 02/12] build: allow disabling location interface support
+Subject: [PATCH 02/11] build: allow disabling location interface support
 
 ---
  cli/Makefile.am                                    |   5 +-
@@ -123,10 +123,10 @@ index 58ff34e1..9574ffb6 100644
  /* Messaging group */
  GOptionGroup *mmcli_modem_messaging_get_option_group   (void);
 diff --git a/configure.ac b/configure.ac
-index fa46b4f5..0408173d 100644
+index f432e81d..37a9f38a 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -363,6 +363,24 @@ case $with_qmi in
+@@ -361,6 +361,24 @@ case $with_qmi in
          ;;
  esac
  
@@ -151,7 +151,7 @@ index fa46b4f5..0408173d 100644
  NM_COMPILER_WARNINGS
  
  dnl-----------------------------------------------------------------------------
-@@ -453,6 +471,9 @@ echo "
+@@ -450,6 +468,9 @@ echo "
        systemd suspend/resume:  ${with_systemd_suspend_resume}
        systemd journal:         ${with_systemd_journal}
  
@@ -162,7 +162,7 @@ index fa46b4f5..0408173d 100644
        gobject introspection:   ${found_introspection}
        vala bindings:           ${enable_vala}
 diff --git a/docs/reference/api/ModemManager-sections.txt b/docs/reference/api/ModemManager-sections.txt
-index 1100be99..cdefe687 100644
+index a60c3a41..3714adef 100644
 --- a/docs/reference/api/ModemManager-sections.txt
 +++ b/docs/reference/api/ModemManager-sections.txt
 @@ -1,10 +1,11 @@
@@ -258,13 +258,14 @@ index 00000000..498cd639
 +
 +#endif /*  _MODEMMANAGER_ENUMS_LOCATION_H_ */
 diff --git a/include/ModemManager-enums.h b/include/ModemManager-enums.h
-index 2ceb0e71..16481a38 100644
+index ff4779fd..d38951dc 100644
 --- a/include/ModemManager-enums.h
 +++ b/include/ModemManager-enums.h
-@@ -812,28 +812,6 @@ typedef enum { /*< underscore_name=mm_sms_cdma_service_category >*/
+@@ -888,28 +888,6 @@ typedef enum { /*< underscore_name=mm_sms_cdma_service_category >*/
+     MM_SMS_CDMA_SERVICE_CATEGORY_CMAS_TEST                        = 0x1004,
  } MMSmsCdmaServiceCategory;
  
- /**
+-/**
 - * MMModemLocationSource:
 - * @MM_MODEM_LOCATION_SOURCE_NONE: None.
 - * @MM_MODEM_LOCATION_SOURCE_3GPP_LAC_CI: Location Area Code and Cell ID.
@@ -286,10 +287,9 @@ index 2ceb0e71..16481a38 100644
 -    MM_MODEM_LOCATION_SOURCE_AGPS          = 1 << 5,
 -} MMModemLocationSource;
 -
--/**
+ /**
   * MMModemContactsStorage:
   * @MM_MODEM_CONTACTS_STORAGE_UNKNOWN: Unknown location.
-  * @MM_MODEM_CONTACTS_STORAGE_ME: Device's local memory.
 diff --git a/include/ModemManager-version.h.in b/include/ModemManager-version.h.in
 index 0cb4341e..4865e93a 100644
 --- a/include/ModemManager-version.h.in
@@ -824,7 +824,7 @@ index 47a4a97d..f306e567 100644
 +
  #endif  /* MM_COMMON_CINTERION_H */
 diff --git a/plugins/huawei/mm-broadband-modem-huawei.c b/plugins/huawei/mm-broadband-modem-huawei.c
-index 864dfc86..e8bbf8ff 100644
+index 3d743675..99927509 100644
 --- a/plugins/huawei/mm-broadband-modem-huawei.c
 +++ b/plugins/huawei/mm-broadband-modem-huawei.c
 @@ -39,7 +39,9 @@
@@ -880,7 +880,7 @@ index 864dfc86..e8bbf8ff 100644
  
      GArray *syscfg_supported_modes;
      GArray *syscfgex_supported_modes;
-@@ -3680,6 +3689,7 @@ huawei_modem_create_sim (MMIfaceModem *self,
+@@ -3564,6 +3573,7 @@ huawei_modem_create_sim (MMIfaceModem *self,
                         user_data);
  }
  
@@ -888,8 +888,8 @@ index 864dfc86..e8bbf8ff 100644
  
  /*****************************************************************************/
  /* Location capabilities loading (Location interface) */
-@@ -3985,6 +3995,8 @@ enable_location_gathering (MMIfaceModemLocation *self,
-                                                             ctx);
+@@ -3865,6 +3875,8 @@ enable_location_gathering (MMIfaceModemLocation *self,
+                                                             task);
  }
  
 +#endif /* MM_INTERFACE_LOCATION_SUPPORTED */
@@ -897,7 +897,7 @@ index 864dfc86..e8bbf8ff 100644
  /*****************************************************************************/
  /* Check support (Time interface) */
  
-@@ -4285,6 +4297,7 @@ set_ignored_unsolicited_events_handlers (MMBroadbandModemHuawei *self)
+@@ -4161,6 +4173,7 @@ set_ignored_unsolicited_events_handlers (MMBroadbandModemHuawei *self)
      g_list_free_full (ports, g_object_unref);
  }
  
@@ -905,7 +905,7 @@ index 864dfc86..e8bbf8ff 100644
  static void
  gps_trace_received (MMPortSerialGps *port,
                      const gchar *trace,
-@@ -4292,12 +4305,11 @@ gps_trace_received (MMPortSerialGps *port,
+@@ -4168,12 +4181,11 @@ gps_trace_received (MMPortSerialGps *port,
  {
      mm_iface_modem_location_gps_update (self, trace);
  }
@@ -919,7 +919,7 @@ index 864dfc86..e8bbf8ff 100644
      /* Call parent's setup ports first always */
      MM_BROADBAND_MODEM_CLASS (mm_broadband_modem_huawei_parent_class)->setup_ports (self);
  
-@@ -4309,19 +4321,25 @@ setup_ports (MMBroadbandModem *self)
+@@ -4185,19 +4197,25 @@ setup_ports (MMBroadbandModem *self)
      set_cdma_unsolicited_events_handlers (MM_BROADBAND_MODEM_HUAWEI (self), FALSE);
      set_voice_unsolicited_events_handlers(MM_BROADBAND_MODEM_HUAWEI (self), FALSE);
  
@@ -957,7 +957,7 @@ index 864dfc86..e8bbf8ff 100644
  }
  
  /*****************************************************************************/
-@@ -4576,6 +4594,8 @@ iface_modem_cdma_init (MMIfaceModemCdma *iface)
+@@ -4452,6 +4470,8 @@ iface_modem_cdma_init (MMIfaceModemCdma *iface)
      iface->get_detailed_registration_state_finish = get_detailed_registration_state_finish;
  }
  
@@ -966,7 +966,7 @@ index 864dfc86..e8bbf8ff 100644
  static void
  iface_modem_location_init (MMIfaceModemLocation *iface)
  {
-@@ -4589,6 +4609,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+@@ -4465,6 +4485,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
      iface->disable_location_gathering_finish = disable_location_gathering_finish;
  }
  
@@ -976,7 +976,7 @@ index 864dfc86..e8bbf8ff 100644
  iface_modem_time_init (MMIfaceModemTime *iface)
  {
 diff --git a/plugins/mbm/mm-broadband-modem-mbm.c b/plugins/mbm/mm-broadband-modem-mbm.c
-index 513f2d43..702fc20b 100644
+index 06bc9ac2..cf2ccbb4 100644
 --- a/plugins/mbm/mm-broadband-modem-mbm.c
 +++ b/plugins/mbm/mm-broadband-modem-mbm.c
 @@ -42,23 +42,31 @@
@@ -1024,8 +1024,8 @@ index 513f2d43..702fc20b 100644
  
      guint mbm_mode;
  };
-@@ -1129,6 +1139,8 @@ modem_3gpp_disable_unsolicited_events (MMIfaceModem3gpp *self,
-         result);
+@@ -1055,6 +1065,8 @@ modem_3gpp_disable_unsolicited_events (MMIfaceModem3gpp *self,
+         g_task_new (self, NULL, callback, user_data));
  }
  
 +#if MM_INTERFACE_LOCATION_SUPPORTED
@@ -1033,8 +1033,8 @@ index 513f2d43..702fc20b 100644
  /*****************************************************************************/
  /* Location capabilities loading (Location interface) */
  
-@@ -1428,6 +1440,8 @@ enable_location_gathering (MMIfaceModemLocation *self,
-                                                             ctx);
+@@ -1347,6 +1359,8 @@ enable_location_gathering (MMIfaceModemLocation *self,
+                                                             task);
  }
  
 +#endif /* MM_INTERFACE_LOCATION_SUPPORTED */
@@ -1042,7 +1042,7 @@ index 513f2d43..702fc20b 100644
  /*****************************************************************************/
  /* Setup ports (Broadband modem class) */
  
-@@ -1439,6 +1453,7 @@ emrdy_received (MMPortSerialAt *port,
+@@ -1358,6 +1372,7 @@ emrdy_received (MMPortSerialAt *port,
      self->priv->have_emrdy = TRUE;
  }
  
@@ -1050,7 +1050,7 @@ index 513f2d43..702fc20b 100644
  static void
  gps_trace_received (MMPortSerialGps *port,
                      const gchar *trace,
-@@ -1446,13 +1461,13 @@ gps_trace_received (MMPortSerialGps *port,
+@@ -1365,13 +1380,13 @@ gps_trace_received (MMPortSerialGps *port,
  {
      mm_iface_modem_location_gps_update (self, trace);
  }
@@ -1065,7 +1065,7 @@ index 513f2d43..702fc20b 100644
      guint i;
  
      /* Call parent's setup ports first always */
-@@ -1507,19 +1522,25 @@ setup_ports (MMBroadbandModem *_self)
+@@ -1426,19 +1441,25 @@ setup_ports (MMBroadbandModem *_self)
      /* Now reset the unsolicited messages we'll handle when enabled */
      set_unsolicited_events_handlers (MM_BROADBAND_MODEM_MBM (self), FALSE);
  
@@ -1103,7 +1103,7 @@ index 513f2d43..702fc20b 100644
  }
  
  /*****************************************************************************/
-@@ -1633,6 +1654,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+@@ -1552,6 +1573,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
      iface->cleanup_unsolicited_events_finish = modem_3gpp_setup_cleanup_unsolicited_events_finish;
  }
  
@@ -1112,7 +1112,7 @@ index 513f2d43..702fc20b 100644
  static void
  iface_modem_location_init (MMIfaceModemLocation *iface)
  {
-@@ -1646,6 +1669,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+@@ -1565,6 +1588,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
      iface->disable_location_gathering_finish = disable_location_gathering_finish;
  }
  
@@ -1122,7 +1122,7 @@ index 513f2d43..702fc20b 100644
  mm_broadband_modem_mbm_class_init (MMBroadbandModemMbmClass *klass)
  {
 diff --git a/plugins/option/mm-broadband-modem-hso.c b/plugins/option/mm-broadband-modem-hso.c
-index 7af374a4..b088766f 100644
+index 70074720..d7023fb1 100644
 --- a/plugins/option/mm-broadband-modem-hso.c
 +++ b/plugins/option/mm-broadband-modem-hso.c
 @@ -29,7 +29,9 @@
@@ -1167,8 +1167,8 @@ index 7af374a4..b088766f 100644
  };
  
  /*****************************************************************************/
-@@ -372,6 +382,8 @@ modem_3gpp_cleanup_unsolicited_events (MMIfaceModem3gpp *self,
-         result);
+@@ -332,6 +342,8 @@ modem_3gpp_cleanup_unsolicited_events (MMIfaceModem3gpp *self,
+         g_task_new (self, NULL, callback, user_data));
  }
  
 +#if MM_INTERFACE_LOCATION_SUPPORTED
@@ -1176,8 +1176,8 @@ index 7af374a4..b088766f 100644
  /*****************************************************************************/
  /* Location capabilities loading (Location interface) */
  
-@@ -673,9 +685,13 @@ enable_location_gathering (MMIfaceModemLocation *self,
-         ctx);
+@@ -625,9 +637,13 @@ enable_location_gathering (MMIfaceModemLocation *self,
+         task);
  }
  
 +#endif
@@ -1190,7 +1190,7 @@ index 7af374a4..b088766f 100644
  static void
  trace_received (MMPortSerialGps *port,
                  const gchar *trace,
-@@ -705,12 +721,11 @@ trace_received (MMPortSerialGps *port,
+@@ -657,12 +673,11 @@ trace_received (MMPortSerialGps *port,
      mm_iface_modem_location_gps_update (self, trace);
  }
  
@@ -1205,7 +1205,7 @@ index 7af374a4..b088766f 100644
      /* Call parent's setup ports first always */
      MM_BROADBAND_MODEM_CLASS (mm_broadband_modem_hso_parent_class)->setup_ports (self);
  
-@@ -727,23 +742,30 @@ setup_ports (MMBroadbandModem *self)
+@@ -679,23 +694,30 @@ setup_ports (MMBroadbandModem *self)
                    MM_PORT_SERIAL_AT_REMOVE_ECHO, FALSE,
                    NULL);
  
@@ -1252,7 +1252,7 @@ index 7af374a4..b088766f 100644
  }
  
  /*****************************************************************************/
-@@ -784,7 +806,9 @@ mm_broadband_modem_hso_init (MMBroadbandModemHso *self)
+@@ -736,7 +758,9 @@ mm_broadband_modem_hso_init (MMBroadbandModemHso *self)
  
      self->priv->_owancall_regex = g_regex_new ("_OWANCALL: (\\d),\\s*(\\d)\\r\\n",
                                                 G_REGEX_RAW | G_REGEX_OPTIMIZE, 0, NULL);
@@ -1262,7 +1262,7 @@ index 7af374a4..b088766f 100644
  }
  
  static void
-@@ -811,6 +835,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+@@ -763,6 +787,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
      iface->cleanup_unsolicited_events_finish = modem_3gpp_setup_cleanup_unsolicited_events_finish;
  }
  
@@ -1271,7 +1271,7 @@ index 7af374a4..b088766f 100644
  static void
  iface_modem_location_init (MMIfaceModemLocation *iface)
  {
-@@ -824,6 +850,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+@@ -776,6 +802,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
      iface->disable_location_gathering_finish = disable_location_gathering_finish;
  }
  
@@ -1308,7 +1308,7 @@ index 5a735be9..d6c547ab 100644
  
  # Additional Polkit support
 diff --git a/src/mm-broadband-modem-mbim.c b/src/mm-broadband-modem-mbim.c
-index 815f5455..941a288b 100644
+index 79f5998e..c57d87aa 100644
 --- a/src/mm-broadband-modem-mbim.c
 +++ b/src/mm-broadband-modem-mbim.c
 @@ -35,25 +35,33 @@
@@ -1347,7 +1347,7 @@ index 815f5455..941a288b 100644
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_MESSAGING, iface_modem_messaging_init)
                          G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIGNAL, iface_modem_signal_init))
  
-@@ -3288,6 +3296,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+@@ -3434,6 +3442,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
      iface->scan_networks_finish = modem_3gpp_scan_networks_finish;
  }
  
@@ -1356,7 +1356,7 @@ index 815f5455..941a288b 100644
  static void
  iface_modem_location_init (MMIfaceModemLocation *iface)
  {
-@@ -3297,6 +3307,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+@@ -3443,6 +3453,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
      iface->enable_location_gathering_finish = NULL;
  }
  
@@ -1366,7 +1366,7 @@ index 815f5455..941a288b 100644
  iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  {
 diff --git a/src/mm-broadband-modem-qmi.c b/src/mm-broadband-modem-qmi.c
-index 3a04e993..59473029 100644
+index 541a24cb..f817c26d 100644
 --- a/src/mm-broadband-modem-qmi.c
 +++ b/src/mm-broadband-modem-qmi.c
 @@ -35,7 +35,9 @@
@@ -1420,7 +1420,7 @@ index 3a04e993..59473029 100644
  
      /* Oma helpers */
      gboolean oma_unsolicited_events_enabled;
-@@ -4567,8 +4576,6 @@ common_process_serving_system_3gpp (MMBroadbandModemQmi *self,
+@@ -4643,8 +4652,6 @@ common_process_serving_system_3gpp (MMBroadbandModemQmi *self,
      guint16 mnc;
      const gchar *description;
      gboolean has_pcs_digit;
@@ -1429,7 +1429,7 @@ index 3a04e993..59473029 100644
      MMModemAccessTechnology mm_access_technologies;
      MMModem3gppRegistrationState mm_cs_registration_state;
      MMModem3gppRegistrationState mm_ps_registration_state;
-@@ -4630,7 +4637,9 @@ common_process_serving_system_3gpp (MMBroadbandModemQmi *self,
+@@ -4706,7 +4713,9 @@ common_process_serving_system_3gpp (MMBroadbandModemQmi *self,
          mm_iface_modem_3gpp_update_cs_registration_state (MM_IFACE_MODEM_3GPP (self), reg_state_3gpp);
          mm_iface_modem_3gpp_update_ps_registration_state (MM_IFACE_MODEM_3GPP (self), reg_state_3gpp);
          mm_iface_modem_3gpp_update_access_technologies (MM_IFACE_MODEM_3GPP (self), MM_MODEM_ACCESS_TECHNOLOGY_UNKNOWN);
@@ -1439,7 +1439,7 @@ index 3a04e993..59473029 100644
          return;
      }
  
-@@ -4717,18 +4726,23 @@ common_process_serving_system_3gpp (MMBroadbandModemQmi *self,
+@@ -4793,18 +4802,23 @@ common_process_serving_system_3gpp (MMBroadbandModemQmi *self,
      mm_iface_modem_3gpp_update_cs_registration_state (MM_IFACE_MODEM_3GPP (self), mm_cs_registration_state);
      mm_iface_modem_3gpp_update_ps_registration_state (MM_IFACE_MODEM_3GPP (self), mm_ps_registration_state);
  
@@ -1474,7 +1474,7 @@ index 3a04e993..59473029 100644
  
      /* Note: don't update access technologies with the ones retrieved here; they
       * are not really the 'current' access technologies */
-@@ -5526,9 +5540,6 @@ common_process_serving_system_cdma (MMBroadbandModemQmi *self,
+@@ -5602,9 +5616,6 @@ common_process_serving_system_cdma (MMBroadbandModemQmi *self,
      MMModemCdmaRegistrationState mm_evdo_registration_state;
      guint16 sid = 0;
      guint16 nid = 0;
@@ -1484,7 +1484,7 @@ index 3a04e993..59473029 100644
  
      if (response_output)
          qmi_message_nas_get_serving_system_output_get_serving_system (
-@@ -5580,7 +5591,9 @@ common_process_serving_system_cdma (MMBroadbandModemQmi *self,
+@@ -5656,7 +5667,9 @@ common_process_serving_system_cdma (MMBroadbandModemQmi *self,
                                                               MM_MODEM_CDMA_REGISTRATION_STATE_UNKNOWN);
          mm_iface_modem_cdma_update_access_technologies (MM_IFACE_MODEM_CDMA (self),
                                                          MM_MODEM_ACCESS_TECHNOLOGY_UNKNOWN);
@@ -1494,7 +1494,7 @@ index 3a04e993..59473029 100644
          return;
      }
  
-@@ -5590,12 +5603,6 @@ common_process_serving_system_cdma (MMBroadbandModemQmi *self,
+@@ -5666,12 +5679,6 @@ common_process_serving_system_cdma (MMBroadbandModemQmi *self,
      else
          qmi_indication_nas_serving_system_output_get_cdma_system_id (indication_output, &sid, &nid, NULL);
  
@@ -1507,7 +1507,7 @@ index 3a04e993..59473029 100644
      /* Build generic registration states */
      if (mm_access_technologies & MM_IFACE_MODEM_CDMA_ALL_CDMA1X_ACCESS_TECHNOLOGIES_MASK)
          mm_cdma1x_registration_state = mm_modem_cdma_registration_state_from_qmi_registration_state (registration_state);
-@@ -5675,20 +5682,34 @@ common_process_serving_system_cdma (MMBroadbandModemQmi *self,
+@@ -5751,20 +5758,34 @@ common_process_serving_system_cdma (MMBroadbandModemQmi *self,
      /* Note: don't update access technologies with the ones retrieved here; they
       * are not really the 'current' access technologies */
  
@@ -1553,7 +1553,7 @@ index 3a04e993..59473029 100644
  }
  
  static void
-@@ -8317,6 +8338,8 @@ messaging_create_sms (MMIfaceModemMessaging *_self)
+@@ -8393,6 +8414,8 @@ messaging_create_sms (MMIfaceModemMessaging *_self)
      return mm_sms_qmi_new (MM_BASE_MODEM (self));
  }
  
@@ -1562,7 +1562,7 @@ index 3a04e993..59473029 100644
  /*****************************************************************************/
  /* Location capabilities loading (Location interface) */
  
-@@ -9316,6 +9339,8 @@ enable_location_gathering (MMIfaceModemLocation *self,
+@@ -9392,6 +9415,8 @@ enable_location_gathering (MMIfaceModemLocation *self,
          ctx);
  }
  
@@ -1571,7 +1571,7 @@ index 3a04e993..59473029 100644
  /*****************************************************************************/
  /* Check support (OMA interface) */
  
-@@ -11147,11 +11172,13 @@ enabling_started (MMBroadbandModem *self,
+@@ -11223,11 +11248,13 @@ enabling_started (MMBroadbandModem *self,
  /*****************************************************************************/
  /* First initialization step */
  
@@ -1586,7 +1586,7 @@ index 3a04e993..59473029 100644
      guint service_index;
  } InitializationStartedContext;
  
-@@ -11295,6 +11322,7 @@ initialization_started (MMBroadbandModem *self,
+@@ -11371,6 +11398,7 @@ initialization_started (MMBroadbandModem *self,
                          gpointer user_data)
  {
      InitializationStartedContext *ctx;
@@ -1594,7 +1594,7 @@ index 3a04e993..59473029 100644
  
      ctx = g_new0 (InitializationStartedContext, 1);
      ctx->self = g_object_ref (self);
-@@ -11320,14 +11348,19 @@ initialization_started (MMBroadbandModem *self,
+@@ -11396,14 +11424,19 @@ initialization_started (MMBroadbandModem *self,
          return;
      }
  
@@ -1621,7 +1621,7 @@ index 3a04e993..59473029 100644
  
      /* Now open our QMI port */
      mm_port_qmi_open (ctx->qmi,
-@@ -11588,6 +11621,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
+@@ -11666,6 +11699,8 @@ iface_modem_messaging_init (MMIfaceModemMessaging *iface)
      iface->create_sms = messaging_create_sms;
  }
  
@@ -1630,7 +1630,7 @@ index 3a04e993..59473029 100644
  static void
  iface_modem_location_init (MMIfaceModemLocation *iface)
  {
-@@ -11605,6 +11640,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+@@ -11683,6 +11718,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
      iface->disable_location_gathering_finish = disable_location_gathering_finish;
  }
  
@@ -1640,7 +1640,7 @@ index 3a04e993..59473029 100644
  iface_modem_signal_init (MMIfaceModemSignal *iface)
  {
 diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
-index 552bdc5f..9a99daff 100644
+index 3d96372a..67542b1f 100644
 --- a/src/mm-broadband-modem.c
 +++ b/src/mm-broadband-modem.c
 @@ -34,7 +34,9 @@
@@ -1734,7 +1734,7 @@ index 552bdc5f..9a99daff 100644
  /*****************************************************************************/
  /* Load network time (Time interface) */
  
-@@ -8955,7 +8973,9 @@ typedef enum {
+@@ -8951,7 +8969,9 @@ typedef enum {
      DISABLING_STEP_IFACE_TIME,
      DISABLING_STEP_IFACE_MESSAGING,
      DISABLING_STEP_IFACE_VOICE,
@@ -1744,7 +1744,7 @@ index 552bdc5f..9a99daff 100644
      DISABLING_STEP_IFACE_CONTACTS,
      DISABLING_STEP_IFACE_CDMA,
      DISABLING_STEP_IFACE_3GPP_USSD,
-@@ -9042,7 +9062,9 @@ INTERFACE_DISABLE_READY_FN (iface_modem,           MM_IFACE_MODEM,           TRU
+@@ -9038,7 +9058,9 @@ INTERFACE_DISABLE_READY_FN (iface_modem,           MM_IFACE_MODEM,           TRU
  INTERFACE_DISABLE_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
  INTERFACE_DISABLE_READY_FN (iface_modem_3gpp_ussd, MM_IFACE_MODEM_3GPP_USSD, TRUE)
  INTERFACE_DISABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
@@ -1754,7 +1754,7 @@ index 552bdc5f..9a99daff 100644
  INTERFACE_DISABLE_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FALSE)
  INTERFACE_DISABLE_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  INTERFACE_DISABLE_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
-@@ -9215,6 +9237,7 @@ disabling_step (GTask *task)
+@@ -9211,6 +9233,7 @@ disabling_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -1762,7 +1762,7 @@ index 552bdc5f..9a99daff 100644
      case DISABLING_STEP_IFACE_LOCATION:
          if (ctx->self->priv->modem_location_dbus_skeleton) {
              mm_dbg ("Modem has location capabilities, disabling the Location interface...");
-@@ -9226,6 +9249,7 @@ disabling_step (GTask *task)
+@@ -9222,6 +9245,7 @@ disabling_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -1770,7 +1770,7 @@ index 552bdc5f..9a99daff 100644
  
      case DISABLING_STEP_IFACE_CONTACTS:
          /* Fall down to next step */
-@@ -9321,7 +9345,9 @@ typedef enum {
+@@ -9317,7 +9341,9 @@ typedef enum {
      ENABLING_STEP_IFACE_3GPP_USSD,
      ENABLING_STEP_IFACE_CDMA,
      ENABLING_STEP_IFACE_CONTACTS,
@@ -1780,7 +1780,7 @@ index 552bdc5f..9a99daff 100644
      ENABLING_STEP_IFACE_MESSAGING,
      ENABLING_STEP_IFACE_VOICE,
      ENABLING_STEP_IFACE_TIME,
-@@ -9401,7 +9427,9 @@ INTERFACE_ENABLE_READY_FN (iface_modem,           MM_IFACE_MODEM,           TRUE
+@@ -9397,7 +9423,9 @@ INTERFACE_ENABLE_READY_FN (iface_modem,           MM_IFACE_MODEM,           TRUE
  INTERFACE_ENABLE_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
  INTERFACE_ENABLE_READY_FN (iface_modem_3gpp_ussd, MM_IFACE_MODEM_3GPP_USSD, TRUE)
  INTERFACE_ENABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
@@ -1790,7 +1790,7 @@ index 552bdc5f..9a99daff 100644
  INTERFACE_ENABLE_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FALSE)
  INTERFACE_ENABLE_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  INTERFACE_ENABLE_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
-@@ -9548,6 +9576,7 @@ enabling_step (GTask *task)
+@@ -9544,6 +9572,7 @@ enabling_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -1798,7 +1798,7 @@ index 552bdc5f..9a99daff 100644
      case ENABLING_STEP_IFACE_LOCATION:
          if (ctx->self->priv->modem_location_dbus_skeleton) {
              mm_dbg ("Modem has location capabilities, enabling the Location interface...");
-@@ -9560,6 +9589,7 @@ enabling_step (GTask *task)
+@@ -9556,6 +9585,7 @@ enabling_step (GTask *task)
          }
          /* Fall down to next step */
          ctx->step++;
@@ -1806,7 +1806,7 @@ index 552bdc5f..9a99daff 100644
  
      case ENABLING_STEP_IFACE_MESSAGING:
          if (ctx->self->priv->modem_messaging_dbus_skeleton) {
-@@ -9743,7 +9773,9 @@ typedef enum {
+@@ -9739,7 +9769,9 @@ typedef enum {
      INITIALIZE_STEP_IFACE_3GPP_USSD,
      INITIALIZE_STEP_IFACE_CDMA,
      INITIALIZE_STEP_IFACE_CONTACTS,
@@ -1816,7 +1816,7 @@ index 552bdc5f..9a99daff 100644
      INITIALIZE_STEP_IFACE_MESSAGING,
      INITIALIZE_STEP_IFACE_VOICE,
      INITIALIZE_STEP_IFACE_TIME,
-@@ -9928,7 +9960,9 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
+@@ -9924,7 +9956,9 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
  INTERFACE_INIT_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
  INTERFACE_INIT_READY_FN (iface_modem_3gpp_ussd, MM_IFACE_MODEM_3GPP_USSD, FALSE)
  INTERFACE_INIT_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
@@ -1826,7 +1826,7 @@ index 552bdc5f..9a99daff 100644
  INTERFACE_INIT_READY_FN (iface_modem_messaging, MM_IFACE_MODEM_MESSAGING, FALSE)
  INTERFACE_INIT_READY_FN (iface_modem_voice,     MM_IFACE_MODEM_VOICE,     FALSE)
  INTERFACE_INIT_READY_FN (iface_modem_time,      MM_IFACE_MODEM_TIME,      FALSE)
-@@ -10028,6 +10062,7 @@ initialize_step (GTask *task)
+@@ -10024,6 +10058,7 @@ initialize_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -1834,7 +1834,7 @@ index 552bdc5f..9a99daff 100644
      case INITIALIZE_STEP_IFACE_LOCATION:
          /* Initialize the Location interface */
          mm_iface_modem_location_initialize (MM_IFACE_MODEM_LOCATION (ctx->self),
-@@ -10035,6 +10070,7 @@ initialize_step (GTask *task)
+@@ -10031,6 +10066,7 @@ initialize_step (GTask *task)
                                              (GAsyncReadyCallback)iface_modem_location_initialize_ready,
                                              task);
          return;
@@ -1842,7 +1842,7 @@ index 552bdc5f..9a99daff 100644
  
      case INITIALIZE_STEP_IFACE_MESSAGING:
          /* Initialize the Messaging interface */
-@@ -10185,7 +10221,9 @@ sim_hot_swap_enabled:
+@@ -10181,7 +10217,9 @@ sim_hot_swap_enabled:
                  mm_iface_modem_3gpp_shutdown (MM_IFACE_MODEM_3GPP (ctx->self));
                  mm_iface_modem_3gpp_ussd_shutdown (MM_IFACE_MODEM_3GPP_USSD (ctx->self));
                  mm_iface_modem_cdma_shutdown (MM_IFACE_MODEM_CDMA (ctx->self));
@@ -1852,7 +1852,7 @@ index 552bdc5f..9a99daff 100644
                  mm_iface_modem_messaging_shutdown (MM_IFACE_MODEM_MESSAGING (ctx->self));
                  mm_iface_modem_voice_shutdown (MM_IFACE_MODEM_VOICE (ctx->self));
                  mm_iface_modem_time_shutdown (MM_IFACE_MODEM_TIME (ctx->self));
-@@ -10417,10 +10455,12 @@ set_property (GObject *object,
+@@ -10413,10 +10451,12 @@ set_property (GObject *object,
          g_clear_object (&self->priv->modem_simple_dbus_skeleton);
          self->priv->modem_simple_dbus_skeleton = g_value_dup_object (value);
          break;
@@ -1865,7 +1865,7 @@ index 552bdc5f..9a99daff 100644
      case PROP_MODEM_MESSAGING_DBUS_SKELETON:
          g_clear_object (&self->priv->modem_messaging_dbus_skeleton);
          self->priv->modem_messaging_dbus_skeleton = g_value_dup_object (value);
-@@ -10537,9 +10577,11 @@ get_property (GObject *object,
+@@ -10533,9 +10573,11 @@ get_property (GObject *object,
      case PROP_MODEM_SIMPLE_DBUS_SKELETON:
          g_value_set_object (value, self->priv->modem_simple_dbus_skeleton);
          break;
@@ -1877,7 +1877,7 @@ index 552bdc5f..9a99daff 100644
      case PROP_MODEM_MESSAGING_DBUS_SKELETON:
          g_value_set_object (value, self->priv->modem_messaging_dbus_skeleton);
          break;
-@@ -10692,10 +10734,12 @@ dispose (GObject *object)
+@@ -10691,10 +10733,12 @@ dispose (GObject *object)
          g_clear_object (&self->priv->modem_cdma_dbus_skeleton);
      }
  
@@ -1890,7 +1890,7 @@ index 552bdc5f..9a99daff 100644
  
      if (self->priv->modem_messaging_dbus_skeleton) {
          mm_iface_modem_messaging_shutdown (MM_IFACE_MODEM_MESSAGING (object));
-@@ -10886,6 +10930,8 @@ iface_modem_simple_init (MMIfaceModemSimple *iface)
+@@ -10885,6 +10929,8 @@ iface_modem_simple_init (MMIfaceModemSimple *iface)
  {
  }
  
@@ -1899,7 +1899,7 @@ index 552bdc5f..9a99daff 100644
  static void
  iface_modem_location_init (MMIfaceModemLocation *iface)
  {
-@@ -10895,6 +10941,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
+@@ -10894,6 +10940,8 @@ iface_modem_location_init (MMIfaceModemLocation *iface)
      iface->enable_location_gathering_finish = enable_location_gathering_finish;
  }
  
@@ -1908,7 +1908,7 @@ index 552bdc5f..9a99daff 100644
  static void
  iface_modem_messaging_init (MMIfaceModemMessaging *iface)
  {
-@@ -11014,9 +11062,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+@@ -11013,9 +11061,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
                                        PROP_MODEM_SIMPLE_DBUS_SKELETON,
                                        MM_IFACE_MODEM_SIMPLE_DBUS_SKELETON);
  
@@ -2029,5 +2029,5 @@ index 6237b8aa..15944f92 100644
  /* Run all registration checks */
  void mm_iface_modem_3gpp_run_registration_checks (MMIfaceModem3gpp *self,
 -- 
-2.13.1
+2.14.1
 

@@ -1,7 +1,7 @@
-From 2f56aed1ed12ceadb279ad86ac98a9a354179d25 Mon Sep 17 00:00:00 2001
+From 752acee655f6ccbe73e7b1b85e05159b73ed4a7e Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Thu, 20 Oct 2016 19:01:23 +0200
-Subject: [PATCH 11/12] build: disabling interfaces not allowed when gtk-doc
+Subject: [PATCH 11/11] build: disabling interfaces not allowed when gtk-doc
  requested
 
 We don't want to make the contents of the documentation depend on whether the
@@ -12,10 +12,10 @@ we require that all interfaces are enabled when gtk-doc is requested.
  1 file changed, 24 insertions(+)
 
 diff --git a/configure.ac b/configure.ac
-index e9ed2bd2..cd302216 100644
+index 164f4818..5bbb4bcb 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -375,6 +375,9 @@ AM_CONDITIONAL(WITH_INTERFACE_3GPP_USSD, test "x$with_interface_3gpp_ussd" = "xy
+@@ -373,6 +373,9 @@ AM_CONDITIONAL(WITH_INTERFACE_3GPP_USSD, test "x$with_interface_3gpp_ussd" = "xy
  if test "x$with_interface_3gpp_ussd" = "xyes"; then
      MM_INTERFACE_3GPP_USSD_SUPPORTED=1
  else
@@ -25,7 +25,7 @@ index e9ed2bd2..cd302216 100644
      with_interface_3gpp_ussd=no
      MM_INTERFACE_3GPP_USSD_SUPPORTED=0
  fi
-@@ -389,6 +392,9 @@ AM_CONDITIONAL(WITH_INTERFACE_LOCATION, test "x$with_interface_location" = "xyes
+@@ -387,6 +390,9 @@ AM_CONDITIONAL(WITH_INTERFACE_LOCATION, test "x$with_interface_location" = "xyes
  if test "x$with_interface_location" = "xyes"; then
      MM_INTERFACE_LOCATION_SUPPORTED=1
  else
@@ -35,7 +35,7 @@ index e9ed2bd2..cd302216 100644
      with_interface_location=no
      MM_INTERFACE_LOCATION_SUPPORTED=0
  fi
-@@ -403,6 +409,9 @@ AM_CONDITIONAL(WITH_INTERFACE_MESSAGING, test "x$with_interface_messaging" = "xy
+@@ -401,6 +407,9 @@ AM_CONDITIONAL(WITH_INTERFACE_MESSAGING, test "x$with_interface_messaging" = "xy
  if test "x$with_interface_messaging" = "xyes"; then
      MM_INTERFACE_MESSAGING_SUPPORTED=1
  else
@@ -45,7 +45,7 @@ index e9ed2bd2..cd302216 100644
      with_interface_messaging=no
      MM_INTERFACE_MESSAGING_SUPPORTED=0
  fi
-@@ -417,6 +426,9 @@ AM_CONDITIONAL(WITH_INTERFACE_TIME, test "x$with_interface_time" = "xyes")
+@@ -415,6 +424,9 @@ AM_CONDITIONAL(WITH_INTERFACE_TIME, test "x$with_interface_time" = "xyes")
  if test "x$with_interface_time" = "xyes"; then
      MM_INTERFACE_TIME_SUPPORTED=1
  else
@@ -55,7 +55,7 @@ index e9ed2bd2..cd302216 100644
      with_interface_time=no
      MM_INTERFACE_TIME_SUPPORTED=0
  fi
-@@ -431,6 +443,9 @@ AM_CONDITIONAL(WITH_INTERFACE_VOICE, test "x$with_interface_voice" = "xyes")
+@@ -429,6 +441,9 @@ AM_CONDITIONAL(WITH_INTERFACE_VOICE, test "x$with_interface_voice" = "xyes")
  if test "x$with_interface_voice" = "xyes"; then
      MM_INTERFACE_VOICE_SUPPORTED=1
  else
@@ -65,7 +65,7 @@ index e9ed2bd2..cd302216 100644
      with_interface_voice=no
      MM_INTERFACE_VOICE_SUPPORTED=0
  fi
-@@ -445,6 +460,9 @@ AM_CONDITIONAL(WITH_INTERFACE_SIGNAL, test "x$with_interface_signal" = "xyes")
+@@ -443,6 +458,9 @@ AM_CONDITIONAL(WITH_INTERFACE_SIGNAL, test "x$with_interface_signal" = "xyes")
  if test "x$with_interface_signal" = "xyes"; then
      MM_INTERFACE_SIGNAL_SUPPORTED=1
  else
@@ -75,7 +75,7 @@ index e9ed2bd2..cd302216 100644
      with_interface_signal=no
      MM_INTERFACE_SIGNAL_SUPPORTED=0
  fi
-@@ -459,6 +477,9 @@ AM_CONDITIONAL(WITH_INTERFACE_OMA, test "x$with_interface_oma" = "xyes")
+@@ -457,6 +475,9 @@ AM_CONDITIONAL(WITH_INTERFACE_OMA, test "x$with_interface_oma" = "xyes")
  if test "x$with_interface_oma" = "xyes"; then
      MM_INTERFACE_OMA_SUPPORTED=1
  else
@@ -85,7 +85,7 @@ index e9ed2bd2..cd302216 100644
      with_interface_oma=no
      MM_INTERFACE_OMA_SUPPORTED=0
  fi
-@@ -473,6 +494,9 @@ AM_CONDITIONAL(WITH_INTERFACE_FIRMWARE, test "x$with_interface_firmware" = "xyes
+@@ -471,6 +492,9 @@ AM_CONDITIONAL(WITH_INTERFACE_FIRMWARE, test "x$with_interface_firmware" = "xyes
  if test "x$with_interface_firmware" = "xyes"; then
      MM_INTERFACE_FIRMWARE_SUPPORTED=1
  else
@@ -96,5 +96,5 @@ index e9ed2bd2..cd302216 100644
      MM_INTERFACE_FIRMWARE_SUPPORTED=0
  fi
 -- 
-2.13.1
+2.14.1
 

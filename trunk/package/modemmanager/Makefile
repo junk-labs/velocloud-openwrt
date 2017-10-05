@@ -11,13 +11,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=modemmanager
-PKG_VERSION:=1.7.0-20170809
-PKG_RELEASE:=3
+PKG_VERSION:=1.7.0-20171005
+PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://anongit.freedesktop.org/git/ModemManager/ModemManager.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=9528450684bb7b3e28b7d8f3b61b6bf191ef2aca
+PKG_SOURCE_VERSION:=71730509ee0f84fed250cd79c9384df5fa2f0c77
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 
 PKG_FIXUP:=autoreconf
@@ -75,13 +75,6 @@ CONFIGURE_ARGS += \
 	--without-interface-signal \
 	--without-interface-oma \
 	--without-interface-firmware
-
-define Build/Prepare
-	$(call Build/Prepare/Default)
-	( cd "$(PKG_BUILD_DIR)"; \
-		intltoolize || exit 1; \
-	)
-endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/ModemManager

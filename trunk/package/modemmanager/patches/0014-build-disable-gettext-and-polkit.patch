@@ -1,0 +1,105 @@
+From 905a0c566620fd96b95a5810444e61898c9cdd42 Mon Sep 17 00:00:00 2001
+From: Aleksander Morgado <aleksander@aleksander.es>
+Date: Thu, 5 Oct 2017 13:47:05 +0200
+Subject: [PATCH] build: disable gettext and polkit
+
+---
+ Makefile.am      |  1 -
+ configure.ac     | 12 ------------
+ data/Makefile.am | 24 ------------------------
+ 3 files changed, 37 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index cdff9d6f..4b2ff0ed 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -3,7 +3,6 @@ SUBDIRS = \
+ 	. \
+ 	introspection \
+ 	build-aux \
+-	po \
+ 	data \
+ 	include \
+ 	libqcdm \
+diff --git a/configure.ac b/configure.ac
+index 5bbb4bcb..8c0c6771 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -78,17 +78,6 @@ dnl
+ 
+ GTK_DOC_CHECK(1.0)
+ 
+-dnl-----------------------------------------------------------------------------
+-dnl i18n
+-dnl
+-
+-AM_GNU_GETTEXT([external])
+-AM_GNU_GETTEXT_VERSION([0.19.8])
+-
+-GETTEXT_PACKAGE=ModemManager
+-AC_SUBST(GETTEXT_PACKAGE)
+-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Gettext package])
+-
+ dnl-----------------------------------------------------------------------------
+ dnl Build dependencies
+ dnl
+@@ -548,7 +537,6 @@ uml290/Makefile
+ test/Makefile
+ introspection/Makefile
+ introspection/tests/Makefile
+-po/Makefile.in
+ docs/Makefile
+ docs/man/Makefile
+ docs/reference/Makefile
+diff --git a/data/Makefile.am b/data/Makefile.am
+index ee05bdf6..a96a4c1f 100644
+--- a/data/Makefile.am
++++ b/data/Makefile.am
+@@ -59,34 +59,13 @@ diagrams = \
+ 	ModemManager-interface-initialization-sequence.png \
+ 	ModemManager-interface-initialization-sequence-subclassed.png
+ 
+-# Polkit
+-
+-# build file with translations, which we will include in dist
+-org.freedesktop.ModemManager1.policy.in: org.freedesktop.ModemManager1.policy.in.in
+-	$(AM_V_GEN) GETTEXTDATADIR=$(top_srcdir)/data $(MSGFMT) --xml -d $(top_srcdir)/po/ -o $@ --template $<
+-
+-if WITH_POLKIT
+-
+-# build with requested user policy
+-org.freedesktop.ModemManager1.policy: org.freedesktop.ModemManager1.policy.in
+-	$(AM_V_GEN) sed -e s,@MM_DEFAULT_USER_POLICY\@,$(MM_DEFAULT_USER_POLICY), $< > $@.tmp && mv $@.tmp $@
+-
+-polkit_policydir = $(datadir)/polkit-1/actions
+-polkit_policy_DATA = org.freedesktop.ModemManager1.policy
+-
+-endif
+-
+ # Set up pkg-config .pc files for exported libraries
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = \
+ 	ModemManager.pc \
+ 	mm-glib.pc
+ 
+-MAINTAINERCLEANFILES = \
+-	org.freedesktop.ModemManager1.policy.in
+-
+ DISTCLEANFILES = \
+-	org.freedesktop.ModemManager1.policy \
+ 	$(dbusactivation_DATA) \
+ 	$(dbusservice_DATA)
+ 
+@@ -95,9 +74,6 @@ DISTCLEANFILES += $(systemdsystemunit_DATA)
+ endif
+ 
+ EXTRA_DIST = \
+-	its \
+-	org.freedesktop.ModemManager1.policy.in.in \
+-	org.freedesktop.ModemManager1.policy.in \
+ 	$(systemdsystemunit_in_files) \
+ 	$(dbusactivation_in_files) \
+ 	$(dbusservice_file_polkit) \
+-- 
+2.14.1
+

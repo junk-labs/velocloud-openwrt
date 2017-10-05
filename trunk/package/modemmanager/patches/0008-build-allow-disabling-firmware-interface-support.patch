@@ -1,7 +1,7 @@
-From 6abc6991faed1a0e29555b3c0790616322b24e1c Mon Sep 17 00:00:00 2001
+From 3584535fa5bc2fc520321511e12caba9d860ef67 Mon Sep 17 00:00:00 2001
 From: Aleksander Morgado <aleksander@aleksander.es>
 Date: Mon, 25 Jul 2016 16:51:52 +0200
-Subject: [PATCH 08/12] build: allow disabling firmware interface support
+Subject: [PATCH 08/11] build: allow disabling firmware interface support
 
 ---
  cli/Makefile.am                              |  5 ++-
@@ -113,13 +113,14 @@ index 63f3af2a..b4df9506 100644
  #if MM_INTERFACE_SIGNAL_SUPPORTED
  /* Signal group */
 diff --git a/configure.ac b/configure.ac
-index 216d743f..3c96d23f 100644
+index f143562e..f6cbd7d8 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -448,6 +448,20 @@ fi
+@@ -445,6 +445,20 @@ else
+ fi
  AC_SUBST(MM_INTERFACE_OMA_SUPPORTED)
  
- dnl-----------------------------------------------------------------------------
++dnl-----------------------------------------------------------------------------
 +dnl Firmware interface
 +dnl
 +
@@ -133,11 +134,10 @@ index 216d743f..3c96d23f 100644
 +fi
 +AC_SUBST(MM_INTERFACE_FIRMWARE_SUPPORTED)
 +
-+dnl-----------------------------------------------------------------------------
+ dnl-----------------------------------------------------------------------------
  dnl Compiler warnings
  dnl
- 
-@@ -548,6 +562,7 @@ echo "
+@@ -545,6 +559,7 @@ echo "
        voice:                   ${with_interface_voice}
        signal:                  ${with_interface_signal}
        oma:                     ${with_interface_oma}
@@ -146,7 +146,7 @@ index 216d743f..3c96d23f 100644
      Miscellaneous:
        gobject introspection:   ${found_introspection}
 diff --git a/docs/reference/api/ModemManager-sections.txt b/docs/reference/api/ModemManager-sections.txt
-index 7549cc95..96a924a5 100644
+index 38940ca1..701f1c70 100644
 --- a/docs/reference/api/ModemManager-sections.txt
 +++ b/docs/reference/api/ModemManager-sections.txt
 @@ -11,6 +11,7 @@ MM_INTERFACE_TIME_SUPPORTED
@@ -226,10 +226,10 @@ index 00000000..bc693431
 +
 +#endif /*  _MODEMMANAGER_ENUMS_FIRMWARE_H_ */
 diff --git a/include/ModemManager-enums.h b/include/ModemManager-enums.h
-index a62013f6..7079a94f 100644
+index 611abd3d..4d4b6a8e 100644
 --- a/include/ModemManager-enums.h
 +++ b/include/ModemManager-enums.h
-@@ -663,18 +663,4 @@ typedef enum { /*< underscore_name=mm_modem_3gpp_ussd_session_state >*/
+@@ -740,18 +740,4 @@ typedef enum { /*< underscore_name=mm_modem_3gpp_ussd_session_state >*/
      MM_MODEM_3GPP_USSD_SESSION_STATE_USER_RESPONSE = 3,
  } MMModem3gppUssdSessionState;
  
@@ -576,7 +576,7 @@ index 96e95355..a05b7168 100644
  
  # Additional Polkit support
 diff --git a/src/mm-broadband-modem-qmi.c b/src/mm-broadband-modem-qmi.c
-index 536c5715..683de2fd 100644
+index c3a0f5ec..47e95462 100644
 --- a/src/mm-broadband-modem-qmi.c
 +++ b/src/mm-broadband-modem-qmi.c
 @@ -43,7 +43,9 @@
@@ -633,7 +633,7 @@ index 536c5715..683de2fd 100644
  };
  
  /*****************************************************************************/
-@@ -10026,6 +10036,8 @@ oma_enable_unsolicited_events (MMIfaceModemOma *self,
+@@ -10102,6 +10112,8 @@ oma_enable_unsolicited_events (MMIfaceModemOma *self,
  
  #endif /* MM_INTERFACE_OMA_SUPPORTED */
  
@@ -642,7 +642,7 @@ index 536c5715..683de2fd 100644
  /*****************************************************************************/
  /* Check firmware support (Firmware interface) */
  
-@@ -10676,6 +10688,8 @@ firmware_change_current (MMIfaceModemFirmware *self,
+@@ -10752,6 +10764,8 @@ firmware_change_current (MMIfaceModemFirmware *self,
      qmi_message_dms_set_firmware_preference_input_unref (input);
  }
  
@@ -651,7 +651,7 @@ index 536c5715..683de2fd 100644
  #if MM_INTERFACE_SIGNAL_SUPPORTED
  
  /*****************************************************************************/
-@@ -11464,12 +11478,13 @@ finalize (GObject *object)
+@@ -11540,12 +11554,13 @@ finalize (GObject *object)
  static void
  dispose (GObject *object)
  {
@@ -666,7 +666,7 @@ index 536c5715..683de2fd 100644
  
      G_OBJECT_CLASS (mm_broadband_modem_qmi_parent_class)->dispose (object);
  }
-@@ -11726,6 +11741,8 @@ iface_modem_oma_init (MMIfaceModemOma *iface)
+@@ -11804,6 +11819,8 @@ iface_modem_oma_init (MMIfaceModemOma *iface)
  
  #endif /* MM_INTERFACE_OMA_SUPPORTED */
  
@@ -675,7 +675,7 @@ index 536c5715..683de2fd 100644
  static void
  iface_modem_firmware_init (MMIfaceModemFirmware *iface)
  {
-@@ -11739,6 +11756,8 @@ iface_modem_firmware_init (MMIfaceModemFirmware *iface)
+@@ -11817,6 +11834,8 @@ iface_modem_firmware_init (MMIfaceModemFirmware *iface)
      iface->change_current_finish = firmware_change_current_finish;
  }
  
@@ -685,7 +685,7 @@ index 536c5715..683de2fd 100644
  mm_broadband_modem_qmi_class_init (MMBroadbandModemQmiClass *klass)
  {
 diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
-index 2e5517be..e6e8b79d 100644
+index 0fc6940e..bfb02e4a 100644
 --- a/src/mm-broadband-modem.c
 +++ b/src/mm-broadband-modem.c
 @@ -49,7 +49,9 @@
@@ -743,7 +743,7 @@ index 2e5517be..e6e8b79d 100644
  };
  
  /*****************************************************************************/
-@@ -9037,7 +9048,9 @@ typedef enum {
+@@ -9033,7 +9044,9 @@ typedef enum {
      DISABLING_STEP_WAIT_FOR_FINAL_STATE,
      DISABLING_STEP_DISCONNECT_BEARERS,
      DISABLING_STEP_IFACE_SIMPLE,
@@ -753,7 +753,7 @@ index 2e5517be..e6e8b79d 100644
  #if MM_INTERFACE_SIGNAL_SUPPORTED
      DISABLING_STEP_IFACE_SIGNAL,
  #endif
-@@ -9263,9 +9276,11 @@ disabling_step (GTask *task)
+@@ -9259,9 +9272,11 @@ disabling_step (GTask *task)
          /* Fall down to next step */
          ctx->step++;
  
@@ -765,7 +765,7 @@ index 2e5517be..e6e8b79d 100644
  
  #if MM_INTERFACE_SIGNAL_SUPPORTED
      case DISABLING_STEP_IFACE_SIGNAL:
-@@ -9463,7 +9478,9 @@ typedef enum {
+@@ -9459,7 +9474,9 @@ typedef enum {
  #if MM_INTERFACE_OMA_SUPPORTED
      ENABLING_STEP_IFACE_OMA,
  #endif
@@ -775,7 +775,7 @@ index 2e5517be..e6e8b79d 100644
      ENABLING_STEP_IFACE_SIMPLE,
      ENABLING_STEP_LAST,
  } EnablingStep;
-@@ -9786,9 +9803,11 @@ enabling_step (GTask *task)
+@@ -9782,9 +9799,11 @@ enabling_step (GTask *task)
          ctx->step++;
  #endif
  
@@ -787,7 +787,7 @@ index 2e5517be..e6e8b79d 100644
  
      case ENABLING_STEP_IFACE_SIMPLE:
          /* Fall down to next step */
-@@ -9921,7 +9940,9 @@ typedef enum {
+@@ -9917,7 +9936,9 @@ typedef enum {
  #if MM_INTERFACE_OMA_SUPPORTED
      INITIALIZE_STEP_IFACE_OMA,
  #endif
@@ -797,7 +797,7 @@ index 2e5517be..e6e8b79d 100644
      INITIALIZE_STEP_SIM_HOT_SWAP,
      INITIALIZE_STEP_IFACE_SIMPLE,
      INITIALIZE_STEP_LAST,
-@@ -10027,9 +10048,13 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
+@@ -10023,9 +10044,13 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
  
          mm_iface_modem_update_failed_state (MM_IFACE_MODEM (self), failed_reason);
  
@@ -811,7 +811,7 @@ index 2e5517be..e6e8b79d 100644
          initialize_step (task);
          return;
      }
-@@ -10044,7 +10069,11 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
+@@ -10040,7 +10065,11 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
      if (ctx->self->priv->modem_state == MM_MODEM_STATE_LOCKED) {
          /* Jump to the Firmware interface. We do allow modems to export
           * both the Firmware and Simple interfaces when locked. */
@@ -823,7 +823,7 @@ index 2e5517be..e6e8b79d 100644
          initialize_step (task);
          return;
      }
-@@ -10118,7 +10147,9 @@ INTERFACE_INIT_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
+@@ -10114,7 +10143,9 @@ INTERFACE_INIT_READY_FN (iface_modem_signal,    MM_IFACE_MODEM_SIGNAL,    FALSE)
  #if MM_INTERFACE_OMA_SUPPORTED
  INTERFACE_INIT_READY_FN (iface_modem_oma,       MM_IFACE_MODEM_OMA,       FALSE)
  #endif
@@ -833,7 +833,7 @@ index 2e5517be..e6e8b79d 100644
  
  static void
  initialize_step (GTask *task)
-@@ -10272,6 +10303,7 @@ initialize_step (GTask *task)
+@@ -10268,6 +10299,7 @@ initialize_step (GTask *task)
          return;
  #endif
  
@@ -841,7 +841,7 @@ index 2e5517be..e6e8b79d 100644
      case INITIALIZE_STEP_IFACE_FIRMWARE:
          /* Initialize the Firmware interface */
          mm_iface_modem_firmware_initialize (MM_IFACE_MODEM_FIRMWARE (ctx->self),
-@@ -10279,6 +10311,7 @@ initialize_step (GTask *task)
+@@ -10275,6 +10307,7 @@ initialize_step (GTask *task)
                                              (GAsyncReadyCallback)iface_modem_firmware_initialize_ready,
                                              task);
          return;
@@ -849,7 +849,7 @@ index 2e5517be..e6e8b79d 100644
  
      case INITIALIZE_STEP_SIM_HOT_SWAP:
          /* Create the SIM hot swap ports context only if not already done before
-@@ -10660,10 +10693,12 @@ set_property (GObject *object,
+@@ -10656,10 +10689,12 @@ set_property (GObject *object,
          self->priv->modem_oma_dbus_skeleton = g_value_dup_object (value);
          break;
  #endif
@@ -862,7 +862,7 @@ index 2e5517be..e6e8b79d 100644
      case PROP_MODEM_SIM:
          g_clear_object (&self->priv->modem_sim);
          self->priv->modem_sim = g_value_dup_object (value);
-@@ -10790,9 +10825,11 @@ get_property (GObject *object,
+@@ -10786,9 +10821,11 @@ get_property (GObject *object,
          g_value_set_object (value, self->priv->modem_oma_dbus_skeleton);
          break;
  #endif
@@ -874,7 +874,7 @@ index 2e5517be..e6e8b79d 100644
      case PROP_MODEM_SIM:
          g_value_set_object (value, self->priv->modem_sim);
          break;
-@@ -11233,11 +11270,15 @@ iface_modem_oma_init (MMIfaceModemOma *iface)
+@@ -11232,11 +11269,15 @@ iface_modem_oma_init (MMIfaceModemOma *iface)
  
  #endif
  
@@ -890,7 +890,7 @@ index 2e5517be..e6e8b79d 100644
  static void
  mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
  {
-@@ -11325,9 +11366,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+@@ -11324,9 +11365,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
                                        MM_IFACE_MODEM_OMA_DBUS_SKELETON);
  #endif
  
@@ -903,5 +903,5 @@ index 2e5517be..e6e8b79d 100644
      g_object_class_override_property (object_class,
                                        PROP_MODEM_SIM,
 -- 
-2.13.1
+2.14.1
 

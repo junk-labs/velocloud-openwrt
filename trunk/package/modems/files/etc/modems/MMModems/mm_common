@@ -683,7 +683,8 @@ process_modem_list()
     # Monitor list of modems reported by ModemManager, looking for the one with the
     # expected sysfs path
     while [ 1 ]; do
-        ${MMCLI} --list-modems | grep "/org/freedesktop/ModemManager1/Modem" | awk '{print $1}' | while read -r DBUSPATH ; do
+        local DBUSPATH_LIST=$(${MMCLI} --list-modems | grep "/org/freedesktop/ModemManager1/Modem" | awk '{print $1}')
+        for DBUSPATH in "${DBUS_PATH_LIST}"; do
             local MODEM_SYSFS_PATH=$(${MMCLI} --modem ${DBUSPATH} | grep "device:" | grep "/sys" | awk -F "'" '{print $2}')
             if [ "${MODEM_SYSFS_PATH}" == "${SYSFS_PATH}" ]; then
                 process_modem

@@ -1,0 +1,8 @@
+# This file is processed by /etc/hotplug.d/usb/20-usb_mode
+# It contains a list of vid:pid entries for which the usb mode
+# switching operation needs to be delayed
+
+# Huawei E3372 in hard disk only mode, wait 5s before
+# modeswitching to ECM mode (12d1:157f).
+12d1:1f1e   5
+

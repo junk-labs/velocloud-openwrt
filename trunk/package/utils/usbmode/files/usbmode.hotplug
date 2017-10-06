@@ -1,1 +1,48 @@
+#!/bin/sh
+
+USBMODE_SLEEP=/etc/usb-mode.sleep
+
+find_physdev_sysfs_path() {
+	local tmp_path="$1"
+
+	while [ 1 ]; do
+		tmp_path=$(dirname ${tmp_path})
+
+		# avoid infinite loops iterating
+		[ -z "${tmp_path}" ] || [ "${tmp_path}" = "/" ] && return
+
+		# the physical device will be that with a idVendor and idProduct pair of files
+		[ -f ${tmp_path}/idVendor ] && [ -f ${tmp_path}/idProduct ] && {
+			tmp_path=$(readlink -f $tmp_path)
+			echo ${tmp_path}
+			return
+		}
+	done
+}
+
+process_sleep() {
+	local sysfs_path="$1"
+
+	local physdev_sysfs_path=$(find_physdev_sysfs_path ${sysfs_path})
+	[ -z "${physdev_sysfs_path}" ] && return
+
+	local vid=$(cat ${physdev_sysfs_path}/idVendor)
+	local pid=$(cat ${physdev_sysfs_path}/idProduct)
+	[ -z "${vid}" ] || [ -z "${pid}" ] && return
+
+	# Check if the vid:pid:conf entry is in the list
+	local full_entry=$(awk -v prod="$vid:$pid" '!/^#/ && $0 ~ prod { print $0 }' $USBMODE_SLEEP)
+
+	# Not listed?
+	[ -z "$full_entry" ] && return
+
+	# If it is, get the amount of seconds to sleep
+	local sleeptime=$(echo $full_entry | awk '{ $1=""; print $0 }')
+	[ -n "$sleeptime" ] && {
+		/usr/bin/logger -t "usbmode" "hotplug: deferring modeswitch for $vid:$pid: $sleeptime seconds"
+		/bin/sleep $sleeptime
+	}
+}
+
+[ "${ACTION}" = "add" ] && process_sleep /sys${DEVPATH}
 /etc/init.d/usbmode start

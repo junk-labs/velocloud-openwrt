@@ -1,0 +1,16 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2011 OpenWrt.org
+
+START=15
+
+USE_PROCD=1
+PROG=/sbin/acpid
+
+start_service() {
+	[ ! -x "$PROG" ] && return
+
+	procd_open_instance
+	procd_set_param command "$PROG" -f
+	procd_set_param respawn
+	procd_close_instance
+}

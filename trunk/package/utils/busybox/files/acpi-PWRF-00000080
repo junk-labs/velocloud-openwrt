@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "Power button from ACPI: shutting down" > /dev/kmsg
+sleep 1
+poweroff

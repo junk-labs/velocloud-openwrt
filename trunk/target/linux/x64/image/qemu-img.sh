@@ -24,13 +24,15 @@ fi
 if [ -e "$STAGING_DIR_HOST"/bin/bundled/qemu-img ]; then
     #QLIB="$STAGING_DIR_HOST"/bin/bundled/lib
     QBIN="$STAGING_DIR_HOST"/bin/bundled
+    PFX=""
 elif [ -e "$STAGING_DIR_HOST"/bin/qemu-img ]; then
-    #QLIB="$STAGING_DIR_HOST"/lib
+    QLIB="$STAGING_DIR_HOST"/lib
     QBIN="$STAGING_DIR_HOST"/bin
+    PFX="env LD_LIBRARY_PATH=$QLIB"
 else
     1>&2 echo Cannot find qemu-img under "$STAGING_DIR_HOST"
     exit 1
 fi
 
 #env LD_LIBRARY_PATH="$QLIB" "$QBIN"/qemu-img "$@"
-"$QBIN"/qemu-img "$@"
+$PFX "$QBIN"/qemu-img "$@"

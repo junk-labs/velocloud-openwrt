@@ -522,6 +522,9 @@
 19d2:1010 qmiwwan
 19d2:2002 qmiwwan
 19d2:1176 qmiwwan
+# NOTE: the following device NEEDS AT management even if it has a network
+# interface. Flagging it 'ecm' will very likely not work. But MM can handle
+# it nicely.
 19d2:1181 ecm
 19d2:1003 ecm
 19d2:1015 ecm

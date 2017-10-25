@@ -326,7 +326,7 @@ get_modem_type()
 	if [ "$modemtype" == "" ]; then
 		local found=0
 		local index=1
-		local mtypes="eth=cdcether usb=cdcether wwan=qmiwwan"
+		local mtypes="eth=cdcether usb=cdcether wwan=cdcether"
 		local mtotal=$(echo $mtypes | awk '{print NF}')
 		local intf type
 

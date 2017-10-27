@@ -1,6 +1,6 @@
 diff -Naur a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
 --- a/drivers/net/ethernet/intel/igb/e1000_82575.c	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c	2016-09-13 11:08:14.688988854 -0700
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.c	2017-10-27 13:39:37.322139155 -0700
 @@ -44,28 +44,28 @@
  static void igb_release_phy_82575(struct e1000_hw *);
  static s32  igb_acquire_nvm_82575(struct e1000_hw *);
@@ -192,7 +192,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet
  
 diff -Naur a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
 --- a/drivers/net/ethernet/intel/igb/e1000_defines.h	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h	2016-09-13 11:08:14.708987917 -0700
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h	2017-10-27 13:39:37.326138929 -0700
 @@ -760,9 +760,12 @@
  #define NVM_A8_OPCODE_SPI          0x08 /* opcode bit-3 = address bit-8 */
  #define NVM_WREN_OPCODE_SPI        0x06 /* NVM set Write Enable latch */
@@ -224,7 +224,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethern
  
 diff -Naur a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
 --- a/drivers/net/ethernet/intel/igb/e1000_hw.h	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/net/ethernet/intel/igb/e1000_hw.h	2016-09-13 11:08:14.732986825 -0700
++++ b/drivers/net/ethernet/intel/igb/e1000_hw.h	2017-10-27 13:39:37.334138477 -0700
 @@ -49,6 +49,7 @@
  #define E1000_DEV_ID_82575EB_COPPER		0x10A7
  #define E1000_DEV_ID_82575EB_FIBER_SERDES	0x10A9
@@ -333,7 +333,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/in
  struct net_device *igb_get_hw_dev(struct e1000_hw *hw);
 diff -Naur a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
 --- a/drivers/net/ethernet/intel/igb/e1000_phy.c	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/net/ethernet/intel/igb/e1000_phy.c	2016-09-13 11:08:14.772984991 -0700
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.c	2017-10-27 13:39:37.338138252 -0700
 @@ -773,7 +773,9 @@
  		phy_data |= M88E1000_PSCR_POLARITY_REVERSAL;
  
@@ -371,7 +371,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/i
  					    &default_page);
 diff -Naur a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
 --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c	2016-09-13 11:08:15.044972545 -0700
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c	2017-10-27 13:39:37.342138027 -0700
 @@ -42,6 +42,9 @@
  
  #include "igb.h"
@@ -438,7 +438,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet
  						     ADVERTISED_FIBRE |
 diff -Naur a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
 --- a/drivers/net/ethernet/intel/igb/igb.h	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/net/ethernet/intel/igb/igb.h	2016-09-13 11:08:14.864980782 -0700
++++ b/drivers/net/ethernet/intel/igb/igb.h	2017-10-27 13:39:37.342138027 -0700
 @@ -456,6 +456,8 @@
  	unsigned long link_check_timeout;
  	int copper_tries;
@@ -450,7 +450,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/i
  #define IGB_FLAG_HAS_MSI		(1 << 0)
 diff -Naur a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
 --- a/drivers/net/ethernet/intel/igb/igb_main.c	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c	2016-09-13 11:08:14.816982981 -0700
++++ b/drivers/net/ethernet/intel/igb/igb_main.c	2017-10-27 13:39:37.346137803 -0700
 @@ -87,10 +87,12 @@
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_SGMII), board_82575 },
  	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_COPPER_FLASHLESS), board_82575 },
@@ -707,9 +707,9 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/in
  		break;
  	case SPEED_1000 + DUPLEX_HALF: /* not supported */
 diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/intel/igb/igb_vc.c
---- /dev/null
-+++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2017-05-12 10:01:19.661338458 -0700
-@@ -0,0 +1,3570 @@
+--- a/drivers/net/ethernet/intel/igb/igb_vc.c	1969-12-31 16:00:00.000000000 -0800
++++ b/drivers/net/ethernet/intel/igb/igb_vc.c	2017-10-27 13:43:37.172654104 -0700
+@@ -0,0 +1,3572 @@
 +/* Velocloud Intel IGB Ethernet driver
 + * Copyright(c) 2014 Velocloud Inc.
 +
@@ -3835,10 +3835,12 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +
 +	// don't force link, speed, duplex or flow control state on ports;
 +	// but force the CPU port and all DSA ports to 1000 Mb/s full duplex;
-+
-+	val = 0x000f;
-+	if(ds->dsa_port_mask & pmask)
-+		val = 0x800e;
++        if(dsa_is_cpu_port(ds, p))
++                val = 0x000e;
++        else if(ds->dsa_port_mask & pmask)
++                val = 0x800e;
++        else
++                val = 0x000f;
 +	ret = m88e6176_reg_write(ds, addr, 0x01, val);
 +	if(ret)
 +		goto out;
@@ -4282,7 +4284,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/igb_vc.c b/drivers/net/ethernet/inte
 +
 diff -Naur a/drivers/net/ethernet/intel/igb/Makefile b/drivers/net/ethernet/intel/igb/Makefile
 --- a/drivers/net/ethernet/intel/igb/Makefile	2016-04-19 23:41:04.000000000 -0700
-+++ b/drivers/net/ethernet/intel/igb/Makefile	2016-09-13 11:08:14.476998540 -0700
++++ b/drivers/net/ethernet/intel/igb/Makefile	2017-10-27 13:39:37.354137352 -0700
 @@ -34,4 +34,4 @@
  
  igb-objs := igb_main.o igb_ethtool.o e1000_82575.o \
@@ -4291,7 +4293,7 @@ diff -Naur a/drivers/net/ethernet/intel/igb/Makefile b/drivers/net/ethernet/inte
 +	    e1000_i210.o igb_ptp.o igb_hwmon.o igb_vc.o
 diff -Naur a/include/uapi/linux/if_ether.h b/include/uapi/linux/if_ether.h
 --- a/include/uapi/linux/if_ether.h	2016-04-19 23:41:04.000000000 -0700
-+++ b/include/uapi/linux/if_ether.h	2016-09-13 11:08:14.888979687 -0700
++++ b/include/uapi/linux/if_ether.h	2017-10-27 13:39:37.354137352 -0700
 @@ -34,6 +34,7 @@
  #define ETH_DATA_LEN	1500		/* Max. octets in payload	 */
  #define ETH_FRAME_LEN	1514		/* Max. octets in frame sans FCS */

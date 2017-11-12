@@ -110,6 +110,11 @@ zclient_init (struct zclient *zclient, int redist_default)
   zclient_event (ZCLIENT_SCHEDULE, zclient);
 }
 
+void
+zclient_init_vrf (struct zclient *zclient, int redist_default, u_short id)
+{
+    zclient_init (zclient, redist_default);
+}
 /* Stop zebra client services. */
 void
 zclient_stop (struct zclient *zclient)
@@ -300,6 +305,38 @@ zclient_create_header (struct stream *s, uint16_t command)
   stream_putc (s, ZEBRA_HEADER_MARKER);
   stream_putc (s, ZSERV_VERSION);
   stream_putw (s, command);
+}
+
+void
+zclient_create_header_vrf (struct stream *s, uint16_t command, vrf_id_t vrf_id)
+{
+    zclient_create_header(s, command);
+}
+
+int
+zclient_read_header (struct stream *s, int sock, u_int16_t *size, u_char *marker,
+                     u_char *version, vrf_id_t *vrf_id, u_int16_t *cmd)
+{
+  if (stream_read (s, sock, ZEBRA_HEADER_SIZE) != ZEBRA_HEADER_SIZE)
+    return -1;
+
+  *size = stream_getw (s) - ZEBRA_HEADER_SIZE;
+  *marker = stream_getc (s);
+  *version = stream_getc (s);
+  *vrf_id = stream_getw (s);
+  *cmd = stream_getw (s);
+
+  if (*version != ZSERV_VERSION || *marker != ZEBRA_HEADER_MARKER)
+    {
+      zlog_err("%s: socket %d version mismatch, marker %d, version %d",
+               __func__, sock, *marker, *version);
+      return -1;
+    }
+
+  if (*size && stream_read (s, sock, *size) != *size)
+    return -1;
+
+  return 0;
 }
 
 /* Send simple Zebra message. */
@@ -723,6 +760,11 @@ zebra_interface_add_read (struct stream *s)
   return ifp;
 }
 
+struct interface *
+zebra_interface_add_read_vrf (struct stream *s, vrf_id_t vrf_id)
+{
+    return zebra_interface_add_read(s);
+}
 /* 
  * Read interface up/down msg (ZEBRA_INTERFACE_UP/ZEBRA_INTERFACE_DOWN)
  * from zebra server.  The format of this message is the same as
@@ -750,6 +792,12 @@ zebra_interface_state_read (struct stream *s)
   zebra_interface_if_set_value (s, ifp);
 
   return ifp;
+}
+
+struct interface *
+zebra_interface_state_read_vrf (struct stream *s, vrf_id_t vrf_id)
+{
+    return zebra_interface_state_read(s);
 }
 
 /* 
@@ -899,6 +947,11 @@ zebra_interface_address_read (int type, struct stream *s)
   return ifc;
 }
 
+struct connected *
+zebra_interface_address_read_vrf (int type, struct stream *s, vrf_id_t vrf_id)
+{
+    return zebra_interface_address_read(type, s);
+}
 
 /* Zebra client message read function. */
 static int
@@ -1105,6 +1158,12 @@ zclient_redistribute_default (int command, struct zclient *zclient)
 
   if (zclient->sock > 0)
     zebra_message_send (zclient, command);
+}
+
+void
+zclient_redistribute_default_vrf (int command, struct zclient *zclient, vrf_id_t vrf_id)
+{
+   zclient_redistribute_default(command, zclient);
 }
 
 static void

@@ -108,6 +108,8 @@ extern union sockunion *sockunion_getsockname (int);
 extern union sockunion *sockunion_getpeername (int);
 extern union sockunion *sockunion_dup (union sockunion *);
 extern void sockunion_free (union sockunion *);
+extern void
+sockunion_init (union sockunion *su);
 
 #ifndef HAVE_INET_NTOP
 extern const char * inet_ntop (int family, const void *addrptr, 

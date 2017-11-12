@@ -762,3 +762,9 @@ sockunion_free (union sockunion *su)
 {
   XFREE (MTYPE_SOCKUNION, su);
 }
+
+void
+sockunion_init (union sockunion *su)
+{
+  memset(su, 0, sizeof(union sockunion));
+}

@@ -125,6 +125,11 @@ prefix_master_get (afi_t afi)
   return NULL;
 }
 
+const char *prefix_list_name (struct prefix_list *plist)
+{
+  return plist->name;
+}
+
 /* Lookup prefix_list from list of prefix_list by name. */
 struct prefix_list *
 prefix_list_lookup (afi_t afi, const char *name)

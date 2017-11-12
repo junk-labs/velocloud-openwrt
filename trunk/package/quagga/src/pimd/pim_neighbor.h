@@ -17,7 +17,6 @@
   Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
   MA 02110-1301 USA
   
-  $QuaggaId: $Format:%an, %ai, %h$ $
 */
 
 #ifndef PIM_NEIGHBOR_H
@@ -27,6 +26,7 @@
 
 #include "if.h"
 #include "linklist.h"
+#include "prefix.h"
 
 #include "pim_tlv.h"
 
@@ -42,12 +42,21 @@ struct pim_neighbor {
   struct list       *prefix_list; /* list of struct prefix */
   struct thread     *t_expire_timer;
   struct interface  *interface;
+
+  struct thread     *jp_timer;
+  struct list       *upstream_jp_agg;
 };
 
 void pim_neighbor_timer_reset(struct pim_neighbor *neigh, uint16_t holdtime);
 void pim_neighbor_free(struct pim_neighbor *neigh);
 struct pim_neighbor *pim_neighbor_find(struct interface *ifp,
 				       struct in_addr source_addr);
+
+struct pim_neighbor *pim_neighbor_find_if (struct interface *ifp);
+
+
+#define PIM_NEIGHBOR_SEND_DELAY 0
+#define PIM_NEIGHBOR_SEND_NOW   1
 struct pim_neighbor *pim_neighbor_add(struct interface *ifp,
 				      struct in_addr source_addr,
 				      pim_hello_options hello_options,
@@ -56,7 +65,8 @@ struct pim_neighbor *pim_neighbor_add(struct interface *ifp,
 				      uint16_t override_interval,
 				      uint32_t dr_priority,
 				      uint32_t generation_id,
-				      struct list *addr_list);
+				      struct list *addr_list,
+				      int send_hello_now);
 void pim_neighbor_delete(struct interface *ifp,
 			 struct pim_neighbor *neigh,
 			 const char *delete_message);
@@ -69,6 +79,6 @@ void pim_neighbor_update(struct pim_neighbor *neigh,
 			 struct list *addr_list);
 struct prefix *pim_neighbor_find_secondary(struct pim_neighbor *neigh,
 					   struct in_addr addr);
-void pim_if_dr_election(struct interface *ifp);
+int pim_if_dr_election(struct interface *ifp);
 
 #endif /* PIM_NEIGHBOR_H */

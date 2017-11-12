@@ -17,11 +17,13 @@
   Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
   MA 02110-1301 USA
   
-  $QuaggaId: $Format:%an, %ai, %h$ $
 */
+
+#include <zebra.h>
 
 #include <string.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include "pim_int.h"
 

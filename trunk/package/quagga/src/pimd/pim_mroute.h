@@ -17,7 +17,6 @@
   Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
   MA 02110-1301 USA
   
-  $QuaggaId: $Format:%an, %ai, %h$ $
 */
 
 #ifndef PIM_MROUTE_H
@@ -40,12 +39,16 @@
 
 #define PIM_MROUTE_MIN_TTL (1)
 
+#define HAVE_LINUX_MROUTE_H
+#if defined(HAVE_LINUX_MROUTE_H)
+#include <linux/mroute.h>
+#else
 /*
   Below: from <linux/mroute.h>
 */
 
 #ifndef MAXVIFS
-#define MAXVIFS (32)
+#define MAXVIFS (256)
 #endif
 
 #ifndef SIOCGETVIFCNT
@@ -154,6 +157,11 @@ struct igmpmsg
   struct in_addr im_src,im_dst;
 };
 #endif
+#endif
+
+#ifndef IGMPMSG_WRVIFWHOLE
+#define IGMPMSG_WRVIFWHOLE 4
+#endif
 
 /*
   Above: from <linux/mroute.h>
@@ -162,12 +170,13 @@ struct igmpmsg
 int pim_mroute_socket_enable(void);
 int pim_mroute_socket_disable(void);
 
-int pim_mroute_add_vif(int vif_index, struct in_addr ifaddr);
+int pim_mroute_add_vif(struct interface *ifp, struct in_addr ifaddr, unsigned char flags);
 int pim_mroute_del_vif(int vif_index);
 
-int pim_mroute_add(struct mfcctl *mc);
-int pim_mroute_del(struct mfcctl *mc);
+int pim_mroute_add(struct channel_oil *c_oil, const char *name);
+int pim_mroute_del(struct channel_oil *c_oil, const char *name);
 
 int pim_mroute_msg(int fd, const char *buf, int buf_size);
 
+void pim_mroute_update_counters (struct channel_oil *c_oil);
 #endif /* PIM_MROUTE_H */

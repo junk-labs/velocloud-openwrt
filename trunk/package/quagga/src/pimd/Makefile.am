@@ -72,11 +72,11 @@ noinst_HEADERS = \
 pimd_SOURCES = \
 	pim_main.c $(libpim_a_SOURCES)
 
-test_igmpv3_join_SOURCES = \
-	test_igmpv3_join.c
+#test_igmpv3_join_SOURCES = \
+#	test_igmpv3_join.c
 
 pimd_LDADD = ../lib/libzebra.la @LIBCAP@
-test_igmpv3_join_LDADD = ../lib/libzebra.la
+#test_igmpv3_join_LDADD = ../lib/libzebra.la ./libpim.a
 
 examplesdir = $(exampledir)
 dist_examples_DATA = pimd.conf.sample

@@ -28,7 +28,9 @@ void igmp_v2_send_query (struct igmp_group *group,
                          char *query_buf,
                          struct in_addr dst_addr,
                          struct in_addr group_addr,
-                         int query_max_response_time_dsec);
+                         int query_max_response_time_dsec,
+                         struct interface *ifp,
+                         struct in_addr src);
 
 int igmp_v2_recv_report (struct igmp_sock *igmp,
                          struct in_addr from, const char *from_str,

@@ -630,7 +630,9 @@ static int pim_igmp_general_query(struct thread *t)
                    pim_ifp->igmp_query_max_response_time_dsec,
                    1 /* s_flag: always set for general queries */,
                    igmp->querier_robustness_variable,
-                   igmp->querier_query_interval);
+                   igmp->querier_query_interval,
+                   igmp->interface,
+                   pim_ifp->primary_address);
 
   pim_igmp_general_query_on(igmp);
 
@@ -1152,7 +1154,9 @@ igmp_send_query (int igmp_version,
                  int query_max_response_time_dsec,
                  uint8_t s_flag,
                  uint8_t querier_robustness_variable,
-                 uint16_t querier_query_interval)
+                 uint16_t querier_query_interval,
+                 struct interface *ifp,
+                 struct in_addr src)
 {
   if (igmp_version == 3) {
     igmp_v3_send_query (group, fd, ifname, query_buf,
@@ -1160,10 +1164,14 @@ igmp_send_query (int igmp_version,
                         dst_addr, group_addr,
                         query_max_response_time_dsec, s_flag,
                         querier_robustness_variable,
-                        querier_query_interval);
+                        querier_query_interval,
+                        ifp,
+                        src);
   } else if (igmp_version == 2) {
     igmp_v2_send_query (group, fd, ifname, query_buf,
                         dst_addr, group_addr,
-                        query_max_response_time_dsec);
+                        query_max_response_time_dsec,
+                        ifp,
+                        src);
   }
 }

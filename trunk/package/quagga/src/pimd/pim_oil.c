@@ -20,6 +20,7 @@
 */
 
 #include <zebra.h>
+#include "zclient.h"
 
 #include "log.h"
 #include "memory.h"
@@ -49,7 +50,11 @@ pim_channel_oil_dump (struct channel_oil *c_oil, char *buf, size_t size)
   sprintf(buf, "%s IIF: %d, OIFS: ",
           pim_str_sg_dump (&sg), c_oil->oil.mfcc_parent);
 
+#ifdef HAVE_ZEBRA_MQ
+  for (i = 0 ; i < ZEB_MAXVIFS ; i++)
+#else
   for (i = 0 ; i < MAXVIFS ; i++)
+#endif
     {
       if (c_oil->oil.mfcc_ttls[i] != 0)
         {
@@ -449,7 +454,11 @@ int pim_channel_add_oif(struct channel_oil *channel_oil,
 int
 pim_channel_oil_empty (struct channel_oil *c_oil)
 {
+#ifdef HAVE_ZEBRA_MQ
+  static uint32_t zero[ZEB_MAXVIFS];
+#else
   static uint32_t zero[MAXVIFS];
+#endif
   static int inited = 0;
 
   if (!c_oil)
@@ -460,9 +469,17 @@ pim_channel_oil_empty (struct channel_oil *c_oil)
    */
   if (!inited)
     {
+#ifdef HAVE_ZEBRA_MQ
+      memset(&zero, 0, sizeof(uint32_t) * ZEB_MAXVIFS);
+#else
       memset(&zero, 0, sizeof(uint32_t) * MAXVIFS);
+#endif
       inited = 1;
     }
 
+#ifdef HAVE_ZEBRA_MQ
+  return !memcmp(c_oil->oif_flags, zero, ZEB_MAXVIFS * sizeof(uint32_t));
+#else
   return !memcmp(c_oil->oif_flags, zero, MAXVIFS * sizeof(uint32_t));
+#endif
 }

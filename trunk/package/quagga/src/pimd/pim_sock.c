@@ -32,10 +32,10 @@
 #include <netdb.h>
 #include <errno.h>
 
+#include "lib/zclient.h"
 #include "log.h"
 #include "privs.h"
 #include "if.h"
-
 #include "pimd.h"
 #include "pim_mroute.h"
 #include "pim_sock.h"
@@ -74,6 +74,9 @@ pim_socket_ip_hdr (int fd)
   const int on = 1;
   int ret;
 
+#ifdef HAVE_ZEBRA_MQ
+    return 0;
+#endif
   if (pimd_privs.change (ZPRIVS_RAISE))
     zlog_err ("%s: could not raise privs, %s",
 	      __PRETTY_FUNCTION__, safe_strerror (errno));
@@ -95,6 +98,10 @@ int
 pim_socket_bind (int fd, struct interface *ifp)
 {
   int ret;
+
+#ifdef HAVE_ZEBRA_MQ
+    return 0;
+#endif
 
   if (pimd_privs.change (ZPRIVS_RAISE))
     zlog_err ("%s: could not raise privs, %s",
@@ -218,6 +225,7 @@ int pim_socket_mcast(int protocol, struct in_addr ifaddr, int ifindex, int loop)
 
   memset (&mreq, 0, sizeof (mreq));
   mreq.imr_ifindex = ifindex;
+#ifndef HAVE_ZEBRA_MQ
   if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
 		 (void *) &mreq, sizeof(mreq))) {
     zlog_warn("Could not set Outgoing Interface Option on socket fd=%d: errno=%d: %s",
@@ -225,6 +233,19 @@ int pim_socket_mcast(int protocol, struct in_addr ifaddr, int ifindex, int loop)
     close(fd);
     return PIM_SOCK_ERR_IFACE;
   }
+#else
+  if (PIM_DEBUG_PIM_TRACE) {
+    zlog_debug("%s: VC_SCALL IP_MULTICAST_IF ifindex %d",
+	       __PRETTY_FUNCTION__,
+	       ifindex);
+  }
+  if (zclient_send_ip_multicast_if(qpim_zclient_update, &mreq)) {
+      zlog_warn("Could not set Outgoing Interface Option on socket fd=%d: errno=%d: %s",
+              fd, errno, safe_strerror(errno));
+      close(fd);
+      return PIM_SOCK_ERR_IFACE;
+  }
+#endif
 
   if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf)))
       zlog_warn("%s: Failure to set buffer size to %d",
@@ -261,6 +282,33 @@ int pim_socket_join(int fd, struct in_addr group,
   struct ip_mreqn opt;
 #else
   struct ip_mreq opt;
+#endif
+
+#ifdef HAVE_ZEBRA_MQ
+  ret = zclient_send_ip_add_membership(qpim_zclient_update, group.s_addr, ifindex);
+  if (ret) {
+    char group_str[INET_ADDRSTRLEN];
+    char ifaddr_str[INET_ADDRSTRLEN];
+    if (!inet_ntop(AF_INET, &group, group_str , sizeof(group_str)))
+      sprintf(group_str, "<group?>");
+    if (!inet_ntop(AF_INET, &ifaddr, ifaddr_str , sizeof(ifaddr_str)))
+      sprintf(ifaddr_str, "<ifaddr?>");
+
+    zlog_err("Failure socket joining fd=%d group %s on interface address %s: errno=%d: %s",
+	     fd, group_str, ifaddr_str, errno, safe_strerror(errno));
+    return ret;
+  }
+  if (PIM_DEBUG_PIM_TRACE) {
+    char ifaddr_str[INET_ADDRSTRLEN];
+    char group_str[INET_ADDRSTRLEN];
+    pim_inet4_dump("<ifaddr?>", ifaddr, ifaddr_str, sizeof(ifaddr_str));
+    pim_inet4_dump("<group?>", group, group_str, sizeof(group_str));
+    zlog_debug("%s: VC_SCALL IP_ADD_MEMBERSHIP ifaddr %s grp %s ifindex %d",
+	       __PRETTY_FUNCTION__,
+	       ifaddr_str, group_str,
+           ifindex);
+  }
+  return 0;
 #endif
 
   opt.imr_multiaddr = group;
@@ -306,6 +354,19 @@ int pim_socket_join_source(int fd, ifindex_t ifindex,
 			   struct in_addr source_addr,
 			   const char *ifname)
 {
+#ifdef HAVE_ZEBRA_MQ
+  if (PIM_DEBUG_PIM_TRACE) {
+    char src_str[INET_ADDRSTRLEN];
+    char group_str[INET_ADDRSTRLEN];
+    pim_inet4_dump("<src?>", source_addr, src_str, sizeof(src_str));
+    pim_inet4_dump("<group?>", group_addr, group_str, sizeof(group_str));
+    zlog_debug("%s: VC_SCALL MCAST_JOIN_SOURCE_GROUP src_addr %s grp_addr %s",
+	       __PRETTY_FUNCTION__,
+	       src_str, group_str);
+  }
+  return zclient_send_mcast_join_source_group(qpim_zclient_update, group_addr.s_addr, source_addr.s_addr, ifindex);
+#endif
+
   if (pim_igmp_join_source(fd, ifindex, group_addr, source_addr)) {
     char group_str[INET_ADDRSTRLEN];
     char source_str[INET_ADDRSTRLEN];

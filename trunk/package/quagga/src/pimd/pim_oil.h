@@ -50,7 +50,11 @@
  * fix it.
  */
 #define PIM_OIF_PIM_REGISTER_VIF   0
+#ifdef HAVE_ZEBRA_MQ
+#define PIM_MAX_USABLE_VIFS        (ZEB_MAXVIFS - 1)
+#else
 #define PIM_MAX_USABLE_VIFS        (MAXVIFS - 1)
+#endif
 
 
 struct channel_counts
@@ -72,13 +76,22 @@ struct channel_counts
 */
 
 struct channel_oil {
+#ifdef HAVE_ZEBRA_MQ
+  struct zeb_mfcctl oil;
+#else
   struct mfcctl oil;
+#endif
   int           installed;
   int           oil_inherited_rescan;
   int           oil_size;
   int           oil_ref_count;
+#ifdef HAVE_ZEBRA_MQ
+  time_t        oif_creation[ZEB_MAXVIFS];
+  uint32_t      oif_flags[ZEB_MAXVIFS];
+#else
   time_t        oif_creation[MAXVIFS];
   uint32_t      oif_flags[MAXVIFS];
+#endif
   struct channel_counts cc;
 };
 

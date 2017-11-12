@@ -21,6 +21,7 @@
 
 #include <zebra.h>
 
+#include "zclient.h"
 #include "zebra/rib.h"
 
 #include "log.h"

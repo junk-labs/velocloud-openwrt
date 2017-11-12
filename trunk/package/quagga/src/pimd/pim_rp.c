@@ -22,7 +22,6 @@
 
 #include "zebra/rib.h"
 
-#include "lib/json.h"
 #include "log.h"
 #include "network.h"
 #include "if.h"
@@ -802,14 +801,7 @@ pim_rp_show_information (struct vty *vty, u_char uj)
   struct rp_info *prev_rp_info = NULL;
   struct listnode *node;
 
-  json_object *json = NULL;
-  json_object *json_rp_rows = NULL;
-  json_object *json_row = NULL;
-
-  if (uj)
-    json = json_object_new_object();
-  else
-    vty_out (vty, "RP address       group/prefix-list   OIF         I am RP%s", VTY_NEWLINE);
+  vty_out (vty, "RP address       group/prefix-list   OIF         I am RP%s", VTY_NEWLINE);
 
   for (ALL_LIST_ELEMENTS_RO (qpim_rp_list, node, rp_info))
     {
@@ -817,68 +809,27 @@ pim_rp_show_information (struct vty *vty, u_char uj)
         {
           char buf[48];
 
-          if (uj)
-            {
-              /*
-               * If we have moved on to a new RP then add the entry for the previous RP
-               */
-              if (prev_rp_info &&
-                  prev_rp_info->rp.rpf_addr.u.prefix4.s_addr != rp_info->rp.rpf_addr.u.prefix4.s_addr)
-                {
-                  json_object_object_add(json, inet_ntoa (prev_rp_info->rp.rpf_addr.u.prefix4), json_rp_rows);
-                  json_rp_rows = NULL;
-                }
+          vty_out (vty, "%-15s  ", inet_ntoa (rp_info->rp.rpf_addr.u.prefix4));
 
-              if (!json_rp_rows)
-                  json_rp_rows = json_object_new_array();
+          if (rp_info->plist)
+              vty_out (vty, "%-18s  ", rp_info->plist);
+          else {
+              prefix2str(&rp_info->group, buf, 48);
+              vty_out (vty, "%-18s  ", buf);
+          }
 
-              json_row = json_object_new_object();
-	      if (rp_info->rp.source_nexthop.interface)
-		json_object_string_add(json_row, "outboundInterface", rp_info->rp.source_nexthop.interface->name);
-
-              if (rp_info->i_am_rp)
-                json_object_boolean_true_add(json_row, "iAmRP");
-
-              if (rp_info->plist)
-                json_object_string_add(json_row, "prefixList", rp_info->plist);
-              else {
-                 prefix2str(&rp_info->group, buf, 48);
-                json_object_string_add(json_row, "group", buf);
-              }
-
-              json_object_array_add(json_rp_rows, json_row);
-            }
+          if (rp_info->rp.source_nexthop.interface)
+              vty_out (vty, "%-10s  ", rp_info->rp.source_nexthop.interface->name);
           else
-            {
-              vty_out (vty, "%-15s  ", inet_ntoa (rp_info->rp.rpf_addr.u.prefix4));
+              vty_out (vty, "%-10s  ", "(Unknown)");
 
-              if (rp_info->plist)
-                vty_out (vty, "%-18s  ", rp_info->plist);
-              else {
-                  prefix2str(&rp_info->group, buf, 48);
-                vty_out (vty, "%-18s  ", buf);
-              }
-
-	      if (rp_info->rp.source_nexthop.interface)
-		vty_out (vty, "%-10s  ", rp_info->rp.source_nexthop.interface->name);
-	      else
-		vty_out (vty, "%-10s  ", "(Unknown)");
-
-              if (rp_info->i_am_rp)
-                vty_out (vty, "yes%s", VTY_NEWLINE);
-              else
-                vty_out (vty, "no%s", VTY_NEWLINE);
-            }
+          if (rp_info->i_am_rp)
+              vty_out (vty, "yes%s", VTY_NEWLINE);
+          else
+              vty_out (vty, "no%s", VTY_NEWLINE);
 
           prev_rp_info = rp_info;
         }
     }
 
-  if (uj) {
-    if (prev_rp_info && json_rp_rows)
-      json_object_object_add(json, inet_ntoa (prev_rp_info->rp.rpf_addr.u.prefix4), json_rp_rows);
-
-    vty_out (vty, "%s%s", json_object_to_json_string_ext(json, JSON_C_TO_STRING_PRETTY), VTY_NEWLINE);
-    json_object_free(json);
-  }
 }

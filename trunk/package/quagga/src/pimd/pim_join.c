@@ -20,6 +20,7 @@
 */
 
 #include <zebra.h>
+#include "zclient.h"
 
 #include "log.h"
 #include "prefix.h"
@@ -462,7 +463,8 @@ int pim_joinprune_send(struct pim_rpf *rpf,
                            qpim_all_pim_routers_addr,
                            pim_msg,
                            packet_size,
-                           rpf->source_nexthop.interface->name)) {
+                           rpf->source_nexthop.interface->name,
+                           rpf->source_nexthop.interface->ifindex)) {
             zlog_warn("%s: could not send PIM message on interface %s",
                       __PRETTY_FUNCTION__, rpf->source_nexthop.interface->name);
           }
@@ -505,7 +507,8 @@ int pim_joinprune_send(struct pim_rpf *rpf,
                            qpim_all_pim_routers_addr,
                            pim_msg,
                            packet_size,
-                           rpf->source_nexthop.interface->name)) {
+                           rpf->source_nexthop.interface->name,
+                           rpf->source_nexthop.interface->ifindex)) {
             zlog_warn("%s: could not send PIM message on interface %s",
                       __PRETTY_FUNCTION__, rpf->source_nexthop.interface->name);
           }
@@ -524,7 +527,8 @@ int pim_joinprune_send(struct pim_rpf *rpf,
                        qpim_all_pim_routers_addr,
                        pim_msg,
                        packet_size,
-                       rpf->source_nexthop.interface->name)) {
+                       rpf->source_nexthop.interface->name,
+                       rpf->source_nexthop.interface->ifindex)) {
         zlog_warn("%s: could not send PIM message on interface %s",
                   __PRETTY_FUNCTION__, rpf->source_nexthop.interface->name);
       }

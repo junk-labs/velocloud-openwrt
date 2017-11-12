@@ -33,7 +33,11 @@ struct static_route {
 
    struct channel_oil c_oil;
    ifindex_t          iif;
+#ifdef HAVE_ZEBRA_MQ
+   unsigned char  oif_ttls[ZEB_MAXVIFS];
+#else
    unsigned char  oif_ttls[MAXVIFS];
+#endif
 };
 
 void pim_static_route_free(struct static_route *s_route);

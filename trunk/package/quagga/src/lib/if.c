@@ -23,6 +23,8 @@
 
 #include <zebra.h>
 
+#include "lib/vrf.h"
+
 #include "linklist.h"
 #include "vector.h"
 #include "vty.h"
@@ -37,7 +39,7 @@
 #include "log.h"
 
 /* Master list of interfaces. */
-struct list *iflist;
+struct list *iflist = NULL;
 
 /* One for each program.  This structure is needed to store hooks. */
 struct if_master
@@ -199,8 +201,7 @@ if_lookup_by_index_vrf (ifindex_t ifindex, vrf_id_t vrf_id)
   struct listnode *node;
   struct interface *ifp;
 
-  //for (ALL_LIST_ELEMENTS_RO (vrf_iflist (vrf_id), node, ifp))
-  for (ALL_LIST_ELEMENTS_RO (iflist, node, ifp))
+  for (ALL_LIST_ELEMENTS_RO (vrf_iflist (vrf_id), node, ifp))
     {
       if (ifp->ifindex == ifindex)
 	return ifp;
@@ -235,8 +236,7 @@ if_lookup_by_name_vrf (const char *name, vrf_id_t vrf_id)
   struct interface *ifp;
   
   if (name)
-    //for (ALL_LIST_ELEMENTS_RO (vrf_iflist (vrf_id), node, ifp))
-    for (ALL_LIST_ELEMENTS_RO (iflist, node, ifp))
+    for (ALL_LIST_ELEMENTS_RO (vrf_iflist (vrf_id), node, ifp))
       {
         if (strcmp(name, ifp->name) == 0)
           return ifp;

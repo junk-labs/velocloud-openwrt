@@ -76,8 +76,10 @@ zebra_capabilities_t _caps_p [] =
 struct zebra_privs_t pimd_privs =
 {
 #if defined(QUAGGA_USER) && defined(QUAGGA_GROUP)
-  .user = QUAGGA_USER,
-  .group = QUAGGA_GROUP,
+  //.user = QUAGGA_USER,
+  .user = "root",
+  //.group = QUAGGA_GROUP,
+  .group = "root",
 #endif
 #ifdef VTY_GROUP
   .vty_group = VTY_GROUP,
@@ -172,7 +174,6 @@ int main(int argc, char** argv, char** envp) {
       usage (0);
       break;
     default:
-      usage (1);
       break;
     }
   }

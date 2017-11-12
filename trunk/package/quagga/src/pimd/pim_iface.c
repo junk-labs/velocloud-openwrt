@@ -21,6 +21,7 @@
 #include <zebra.h>
 
 #include "zebra/rib.h"
+#include "zclient.h"
 
 #include "if.h"
 #include "log.h"
@@ -47,7 +48,11 @@
 
 struct interface *pim_regiface = NULL;
 struct list *pim_ifchannel_list = NULL;
+#ifdef HAVE_ZEBRA_MQ
+static int pim_iface_vif_index[ZEB_MAXVIFS];
+#else
 static int pim_iface_vif_index[MAXVIFS];
+#endif
 
 static void pim_if_igmp_join_del_all(struct interface *ifp);
 
@@ -56,7 +61,11 @@ pim_if_init (void)
 {
   int i;
 
+#ifdef HAVE_ZEBRA_MQ
+  for (i = 0; i < ZEB_MAXVIFS; i++)
+#else
   for (i = 0; i < MAXVIFS; i++)
+#endif
     pim_iface_vif_index[i] = 0;
 
   vrf_iflist_create(VRF_DEFAULT);
@@ -889,12 +898,20 @@ pim_iface_next_vif_index (struct interface *ifp)
   if (ifp->ifindex == PIM_OIF_PIM_REGISTER_VIF)
     return 0;
 
+#ifdef HAVE_ZEBRA_MQ
+  for (i = 1 ; i < ZEB_MAXVIFS; i++)
+#else
   for (i = 1 ; i < MAXVIFS; i++)
+#endif
     {
       if (pim_iface_vif_index[i] == 0)
         return i;
     }
+#ifdef HAVE_ZEBRA_MQ
+  return ZEB_MAXVIFS;
+#else
   return MAXVIFS;
+#endif
 }
 
 /*
@@ -934,11 +951,19 @@ int pim_if_add_vif(struct interface *ifp)
 
   pim_ifp->mroute_vif_index = pim_iface_next_vif_index (ifp);
 
+#ifdef HAVE_ZEBRA_MQ
+  if (pim_ifp->mroute_vif_index >= ZEB_MAXVIFS)
+#else
   if (pim_ifp->mroute_vif_index >= MAXVIFS)
+#endif
     {
       zlog_warn("%s: Attempting to configure more than MAXVIFS=%d on pim enabled interface %s",
 		__PRETTY_FUNCTION__,
+#ifdef HAVE_ZEBRA_MQ
+		ZEB_MAXVIFS, ifp->name);
+#else
 		MAXVIFS, ifp->name);
+#endif
       return -3;
     }
 

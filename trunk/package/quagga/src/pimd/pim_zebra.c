@@ -20,6 +20,7 @@
 */
 
 #include <zebra.h>
+#include "zclient.h"
 
 #include "zebra/rib.h"
 
@@ -48,9 +49,18 @@
 #include "pim_jp_agg.h"
 #include "pim_nht.h"
 #include "pim_ssm.h"
+#include "pim_mroute.h"
 
 #undef PIM_DEBUG_IFADDR_DUMP
 #define PIM_DEBUG_IFADDR_DUMP
+
+#ifdef HAVE_ZEBRA_MQ
+extern void
+pim_zebra_mq_pkt(struct zclient *qpim_zclient, unsigned int ifindex, char *buffer, int sendlen);
+extern int
+pim_zebra_mq_recv (int command, struct zclient *zclient,
+                      zebra_size_t length);
+#endif
 
 static int fib_lookup_if_vif_index(struct in_addr addr);
 
@@ -697,6 +707,9 @@ void pim_zebra_init(char *zebra_sock_path)
   qpim_zclient_update->interface_address_add    = pim_zebra_if_address_add;
   qpim_zclient_update->interface_address_delete = pim_zebra_if_address_del;
   qpim_zclient_update->nexthop_update           = pim_zebra_nexthop_update;
+#ifdef HAVE_ZEBRA_MQ
+  qpim_zclient_update->proto_mq_recv            = pim_zebra_mq_recv;
+#endif
 
   zclient_init_vrf(qpim_zclient_update, ZEBRA_ROUTE_PIM, 0);
   if (PIM_DEBUG_PIM_TRACE) {
@@ -1143,3 +1156,115 @@ void pim_forward_stop(struct pim_ifchannel *ch)
                       ch->interface,
                       PIM_OIF_FLAG_PROTO_PIM);
 }
+
+#ifdef HAVE_ZEBRA_MQ
+static uint16_t ip_id = 0;
+
+void
+igmp_construct_ip_header(const char *igmp_buf, int buf_size, struct in_addr src, struct in_addr dst, char *out_buffer,
+        int *out_len)
+{
+    struct ip *ip;
+    unsigned char      *msg_start;
+    int sendlen = sizeof (struct ip) + buf_size;
+
+    memset(out_buffer, 0, *out_len);
+    msg_start = out_buffer + sizeof (struct ip);
+
+    memcpy(msg_start, igmp_buf, buf_size);
+    ip = (struct ip *) out_buffer;
+    
+    ip->ip_id = htons (++ip_id);
+    ip->ip_hl = 5;
+    ip->ip_v = 4;
+    ip->ip_p = PIM_IP_PROTO_IGMP;
+    ip->ip_src = src;
+    ip->ip_dst = dst;
+    ip->ip_ttl = 1;
+    ip->ip_len = htons (sendlen);
+
+    *out_len = sendlen;
+
+    return;
+}
+
+void
+pim_zebra_mq_pkt(struct zclient *qpim_zclient, unsigned int ifindex, char *buffer, int sendlen)
+{
+    int idx = 0;
+
+    // Format of ZEBRA_PROTO_MQ
+    //  ---------------------------------------------
+    // | 6-bytes Zebra Header | 4-bytes ifindex | PL |
+    //  ---------------------------------------------
+
+    stream_reset(qpim_zclient->obuf);
+    zclient_create_header(qpim_zclient->obuf, ZEBRA_PROTO_MQ);
+    stream_putl(qpim_zclient->obuf, ifindex);
+    
+    stream_write (qpim_zclient->obuf, (u_char *) buffer, sendlen);
+    
+    /* Put length at the first point of the stream. */
+    stream_putw_at (qpim_zclient->obuf, 0, stream_get_endp (qpim_zclient->obuf));
+    zclient_send_message(qpim_zclient);
+}
+
+int
+pim_zebra_mq_recv (int command, struct zclient *zclient,
+                      zebra_size_t length)
+{
+    unsigned int            ifindex;
+    struct interface        *ifp = NULL;
+    int                     fail = 0;
+    uint8_t                 *buf = NULL;
+    size_t                  len = 0;
+    struct pim_interface    *pim_ifp;
+    struct ip               *ip_hdr;
+
+    ifindex = stream_getl(zclient->ibuf);
+
+    zlog_debug("%s: Rcvd cmd %d of length %u, ifindex=%d, pl len=%d\n", 
+            __PRETTY_FUNCTION__, 
+            command, length, 
+            ifindex, 
+            (int) (zclient->ibuf->endp - zclient->ibuf->getp));
+    
+    buf = (uint8_t *) (zclient->ibuf->data + zclient->ibuf->getp);
+    len = (zclient->ibuf->endp - zclient->ibuf->getp);
+    
+    // 1. Send IGMP / spl-IGMP to IGMP pkt handler
+    ip_hdr = (struct ip *) buf;
+    if (IPPROTO_IGMP == ip_hdr->ip_p || (0 == ip_hdr->ip_p)) {
+        pim_mroute_msg(qpim_mroute_socket_fd, buf, len);
+        return 0;
+    }
+
+    // 2. lookup interface
+    ifp = if_lookup_by_index_vrf(ifindex, VRF_DEFAULT); 
+
+    if (!ifp) {
+        zlog_err("%s: No ifp found for ifindex=%d\n", __PRETTY_FUNCTION__, ifindex);
+        return 0;
+    }
+    
+    // 3. Send to PIM pkt processing path
+    pim_ifp = ifp->info;
+
+    if (!pim_ifp) {
+        zlog_err("%s: No PIM enabled on ifp found for ifindex=%d [%s]\n", __PRETTY_FUNCTION__, ifindex, ifp->name);
+        return 0;
+    }
+    
+    fail = pim_pim_packet(ifp, buf, len);
+    if (fail) {
+        if (PIM_DEBUG_PIM_PACKETS)
+            zlog_debug("%s: pim_pim_packet() return=%d",
+                    __PRETTY_FUNCTION__, fail);
+        
+        ++pim_ifp->pim_ifstat_hello_recvfail;
+    }
+
+    return 0;
+}
+
+#endif

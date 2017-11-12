@@ -46,7 +46,7 @@
 int debug_vrf = 0;
 
 /* Vector for routing table.  */
-static vector vrf_vector;
+vector vrf_vector;
 
 /* Holding VRF hooks  */
 struct vrf_master
@@ -116,6 +116,9 @@ vrf_info_lookup (vrf_id_t vrf_id)
 struct list *
 vrf_iflist (vrf_id_t vrf_id)
 {
+    if (VRF_DEFAULT == vrf_id) {
+        return iflist;
+    }
    struct vrf * vrf = vrf_lookup (vrf_id);
    return vrf ? vrf->iflist : NULL;
 }
@@ -125,6 +128,15 @@ void
 vrf_iflist_create (vrf_id_t vrf_id)
 {
    struct vrf * vrf = vrf_lookup (vrf_id);
+   
+   if ((VRF_DEFAULT == vrf_id) && !iflist) {
+       if_init();
+       if (vrf) {
+           vrf->iflist = iflist;
+       }
+       return;
+   }
+
    if (vrf && !vrf->iflist)
      if_init_list (&vrf->iflist);
 }
@@ -134,6 +146,15 @@ void
 vrf_iflist_terminate (vrf_id_t vrf_id)
 {
    struct vrf * vrf = vrf_lookup (vrf_id);
+   
+   if ((VRF_DEFAULT == vrf_id) && !iflist) {
+       if_terminate();
+       if (vrf) {
+           vrf->iflist = NULL;
+       }
+       return;
+   }
+
    if (vrf && vrf->iflist)
      if_terminate_list (&vrf->iflist);
 }
@@ -171,6 +192,28 @@ vrf_add_hook (int type, int (*func)(vrf_id_t, const char *, void **))
   }
 }
 
+/*
+ * Enable a VRF - that is, let the VRF be ready to use.
+ * The VRF_ENABLE_HOOK callback will be called to inform
+ * that they can allocate resources in this VRF.
+ *
+ * RETURN: 1 - enabled successfully; otherwise, 0.
+ */
+int
+vrf_enable (struct vrf *vrf)
+{
+  if (debug_vrf)
+    zlog_debug ("VRF %u is enabled.", vrf->id);
+
+  if (!CHECK_FLAG (vrf->status, VRF_ACTIVE))
+    SET_FLAG (vrf->status, VRF_ACTIVE);
+
+  if (vrf_master.vrf_enable_hook)
+    (*vrf_master.vrf_enable_hook) (vrf->id, vrf->name, &vrf->info);
+
+  return 1;
+}
+
 /* Initialize VRF.  */
 void
 vrf_init (void)
@@ -181,9 +224,14 @@ vrf_init (void)
   vrf_vector = vector_init (1);
 
   /* Allocate default main table.  */
-  default_table = vrf_alloc ("Default-IP-Routing-Table");
+  default_table = vrf_alloc ("VRF_DEFAULT");
 
   /* Default table index must be 0.  */
   vector_set_index (vrf_vector, 0, default_table);
+
+  if (vrf_master.vrf_new_hook) {
+      (*vrf_master.vrf_new_hook) (VRF_DEFAULT, default_table->name, &default_table->info);
+      vrf_enable(default_table);
+  }
 }
 

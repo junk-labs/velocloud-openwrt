@@ -99,7 +99,9 @@ void igmp_v3_send_query (struct igmp_group *group,
                          int query_max_response_time_dsec,
                          uint8_t s_flag,
                          uint8_t querier_robustness_variable,
-                         uint16_t querier_query_interval);
+                         uint16_t querier_query_interval,
+                         struct interface *ifp,
+                         struct in_addr src);
 
 void igmp_v3_recv_query (struct igmp_sock *igmp, const char *from_str,
                          char *igmp_msg);

@@ -20,6 +20,7 @@
 */
 
 #include <zebra.h>
+#include "zclient.h"
 
 #include "zebra/rib.h"
 
@@ -58,6 +59,20 @@ static int pim_mroute_set(int fd, int enable)
   int rcvbuf = 1024 * 1024 * 8;
   long flags;
 
+#ifdef HAVE_ZEBRA_MQ
+  if (PIM_DEBUG_PIM_TRACE) {
+    zlog_debug("%s: VC_SCALL IGMPMSG_WRVIFWHOLE, MRT_INIT ",
+	       __PRETTY_FUNCTION__);
+  }
+  err = zclient_send_igmpmsg_wrvifwhole(qpim_zclient_update);
+  if (err)
+  {
+      zlog_warn ("Failure to register for VIFWHOLE and WRONGVIF upcalls %d %s",
+              errno, safe_strerror (errno));
+      return -1;
+  }
+  return 0;
+#endif
   err = setsockopt(fd, IPPROTO_IP, opt, &opt, opt_len);
   if (err) {
     zlog_warn("%s %s: failure: setsockopt(fd=%d,IPPROTO_IP,%s=%d): errno=%d: %s",
@@ -572,6 +587,10 @@ static int mroute_read(struct thread *t)
 
   while (cont)
     {
+#ifdef HAVE_ZEBRA_MQ
+        // TODO: here this should look for message (MC pkt) from zebra 
+        goto done;
+#endif
       rd = read(fd, buf, sizeof(buf));
       if (rd < 0) {
 	if (errno == EINTR)
@@ -648,7 +667,9 @@ int pim_mroute_socket_enable()
   qpim_mroute_socket_fd       = fd;
 
   qpim_mroute_socket_creation = pim_time_monotonic_sec();
+#ifndef HAVE_ZEBRA_MQ
   mroute_read_on();
+#endif // !HAVE_ZEBRA_MQ
 
   return 0;
 }
@@ -715,6 +736,23 @@ int pim_mroute_add_vif(struct interface *ifp, struct in_addr ifaddr, unsigned ch
   }
 #endif
 
+#ifdef HAVE_ZEBRA_MQ
+
+    err = zclient_send_mrt_add_vif(qpim_zclient_update, &vc);
+    if (err) {
+        char ifaddr_str[INET_ADDRSTRLEN];
+
+        pim_inet4_dump("<ifaddr?>", ifaddr, ifaddr_str, sizeof(ifaddr_str));
+
+        zlog_warn("%s %s: failure: setsockopt(fd=%d,IPPROTO_IP,MRT_ADD_VIF,vif_index=%d,ifaddr=%s,flag=%d): errno=%d: %s",
+                __FILE__, __PRETTY_FUNCTION__,
+                qpim_mroute_socket_fd, ifp->ifindex, ifaddr_str, flags,
+                errno, safe_strerror(errno));
+        return -2;
+    }
+
+    return 0;
+#endif
   err = setsockopt(qpim_mroute_socket_fd, IPPROTO_IP, MRT_ADD_VIF, (void*) &vc, sizeof(vc));
   if (err) {
     char ifaddr_str[INET_ADDRSTRLEN];
@@ -752,6 +790,17 @@ int pim_mroute_del_vif(int vif_index)
   memset(&vc, 0, sizeof(vc));
   vc.vifc_vifi = vif_index;
 
+#ifdef HAVE_ZEBRA_MQ
+    err = zclient_send_mrt_del_vif(qpim_zclient_update, &vc);
+    if (err) {
+        zlog_warn("%s %s: failure: setsockopt(fd=%d,IPPROTO_IP,MRT_DEL_VIF,vif_index=%d): errno=%d: %s",
+                __FILE__, __PRETTY_FUNCTION__,
+                qpim_mroute_socket_fd, vif_index,
+                errno, safe_strerror(errno));
+        return -2;
+    }
+    return 0;
+#endif
   err = setsockopt(qpim_mroute_socket_fd, IPPROTO_IP, MRT_DEL_VIF, (void*) &vc, sizeof(vc)); 
   if (err) {
     zlog_warn("%s %s: failure: setsockopt(fd=%d,IPPROTO_IP,MRT_DEL_VIF,vif_index=%d): errno=%d: %s",
@@ -766,7 +815,7 @@ int pim_mroute_del_vif(int vif_index)
 
 int pim_mroute_add(struct channel_oil *c_oil, const char *name)
 {
-  int err;
+  int err = 0;
   int orig = 0;
   int orig_iif_vif = 0;
 
@@ -779,7 +828,11 @@ int pim_mroute_add(struct channel_oil *c_oil, const char *name)
     return -1;
   }
   /* Do not install route if incoming interface is undefined. */
+#ifdef HAVE_ZEBRA_MQ
+  if (c_oil->oil.mfcc_parent >= ZEB_MAXVIFS)
+#else
   if (c_oil->oil.mfcc_parent >= MAXVIFS)
+#endif
     {
       if (PIM_DEBUG_MROUTE)
         {
@@ -813,15 +866,43 @@ int pim_mroute_add(struct channel_oil *c_oil, const char *name)
       orig_iif_vif = c_oil->oil.mfcc_parent;
       c_oil->oil.mfcc_parent = 0;
     }
+#ifndef HAVE_ZEBRA_MQ
   err = setsockopt(qpim_mroute_socket_fd, IPPROTO_IP, MRT_ADD_MFC,
 		   &c_oil->oil, sizeof(c_oil->oil));
+#else
+  if (PIM_DEBUG_PIM_TRACE) {
+    char src_str[INET_ADDRSTRLEN];
+    char group_str[INET_ADDRSTRLEN];
+    pim_inet4_dump("<src?>", c_oil->oil.mfcc_origin, src_str, sizeof(src_str));
+    pim_inet4_dump("<group?>", c_oil->oil.mfcc_mcastgrp, group_str, sizeof(group_str));
+    zlog_debug("%s: VC_SCALL MRT_ADD_MFC ifname %s parent vifi %d to OIL mfcc_origin %s grp %s",
+	       __PRETTY_FUNCTION__,
+	       name, c_oil->oil.mfcc_parent,
+           src_str, group_str);
+  }
+  err = zclient_send_mrt_add_mfc(qpim_zclient_update, &c_oil->oil);
+#endif
 
   if (!err && !c_oil->installed && c_oil->oil.mfcc_origin.s_addr != INADDR_ANY &&
       orig_iif_vif != 0)
     {
       c_oil->oil.mfcc_parent = orig_iif_vif;
+#ifndef HAVE_ZEBRA_MQ
       err = setsockopt (qpim_mroute_socket_fd, IPPROTO_IP, MRT_ADD_MFC,
 			&c_oil->oil, sizeof (c_oil->oil));
+#else
+  if (PIM_DEBUG_PIM_TRACE) {
+    char src_str[INET_ADDRSTRLEN];
+    char group_str[INET_ADDRSTRLEN];
+    pim_inet4_dump("<src?>", c_oil->oil.mfcc_origin, src_str, sizeof(src_str));
+    pim_inet4_dump("<group?>", c_oil->oil.mfcc_mcastgrp, group_str, sizeof(group_str));
+    zlog_debug("%s: VC_SCALL MRT_ADD_MFC ifname %s parent vifi %d to OIL mfcc_origin %s grp %s",
+	       __PRETTY_FUNCTION__,
+	       name, c_oil->oil.mfcc_parent,
+           src_str, group_str);
+  }
+  err = zclient_send_mrt_add_mfc(qpim_zclient_update, &c_oil->oil);
+#endif
     }
 
   if (c_oil->oil.mfcc_origin.s_addr == INADDR_ANY)
@@ -872,6 +953,7 @@ int pim_mroute_del (struct channel_oil *c_oil, const char *name)
       return -2;
     }
 
+#ifndef HAVE_ZEBRA_MQ
   err = setsockopt(qpim_mroute_socket_fd, IPPROTO_IP, MRT_DEL_MFC, &c_oil->oil, sizeof(c_oil->oil));
   if (err) {
     if (PIM_DEBUG_MROUTE)
@@ -881,6 +963,27 @@ int pim_mroute_del (struct channel_oil *c_oil, const char *name)
 		errno, safe_strerror(errno));
     return -2;
   }
+#else
+  if (PIM_DEBUG_PIM_TRACE) {
+    char src_str[INET_ADDRSTRLEN];
+    char group_str[INET_ADDRSTRLEN];
+    pim_inet4_dump("<src?>", c_oil->oil.mfcc_origin, src_str, sizeof(src_str));
+    pim_inet4_dump("<group?>", c_oil->oil.mfcc_mcastgrp, group_str, sizeof(group_str));
+    zlog_debug("%s: VC_SCALL MRT_DEL_MFC ifname %s parent vifi %d to OIL mfcc_origin %s grp %s",
+	       __PRETTY_FUNCTION__,
+	       name, c_oil->oil.mfcc_parent,
+           src_str, group_str);
+  }
+  err = zclient_send_mrt_del_mfc(qpim_zclient_update, &c_oil->oil);
+  if (err) {
+    if (PIM_DEBUG_MROUTE)
+      zlog_warn("%s %s: failure: setsockopt(fd=%d,IPPROTO_IP,MRT_DEL_MFC): errno=%d: %s",
+		__FILE__, __PRETTY_FUNCTION__,
+		qpim_mroute_socket_fd,
+		errno, safe_strerror(errno));
+    return -2;
+  }
+#endif
 
   if (PIM_DEBUG_MROUTE)
     {
@@ -892,7 +995,11 @@ int pim_mroute_del (struct channel_oil *c_oil, const char *name)
 
   /*reset incoming vifi and kernel installed flags*/
   c_oil->installed = 0;
+#ifdef HAVE_ZEBRA_MQ
+  c_oil->oil.mfcc_parent = ZEB_MAXVIFS;
+#else
   c_oil->oil.mfcc_parent = MAXVIFS;
+#endif
 
   return 0;
 }
@@ -927,6 +1034,7 @@ pim_mroute_update_counters (struct channel_oil *c_oil)
   sgreq.grp = c_oil->oil.mfcc_mcastgrp;
 
   pim_zlookup_sg_statistics (c_oil);
+#ifndef HAVE_ZEBRA_MQ
   if (ioctl (qpim_mroute_socket_fd, SIOCGETSGCNT, &sgreq))
     {
       if (PIM_DEBUG_MROUTE)
@@ -948,6 +1056,7 @@ pim_mroute_update_counters (struct channel_oil *c_oil)
   c_oil->cc.pktcnt = sgreq.pktcnt;
   c_oil->cc.bytecnt = sgreq.bytecnt;
   c_oil->cc.wrong_if = sgreq.wrong_if;
+#endif
 
   return;
 }

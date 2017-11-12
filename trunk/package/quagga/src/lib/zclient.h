@@ -71,6 +71,7 @@ struct zclient
   u_char default_information;
 
   /* Pointer to the callback functions. */
+  void (*zebra_connected) (struct zclient *);
   int (*router_id_update) (int, struct zclient *, uint16_t);
   int (*interface_add) (int, struct zclient *, uint16_t);
   int (*interface_delete) (int, struct zclient *, uint16_t);
@@ -82,6 +83,7 @@ struct zclient
   int (*ipv4_route_delete) (int, struct zclient *, uint16_t);
   int (*ipv6_route_add) (int, struct zclient *, uint16_t);
   int (*ipv6_route_delete) (int, struct zclient *, uint16_t);
+  int (*nexthop_update) (int, struct zclient *, uint16_t);
 #ifdef HAVE_ZEBRA_MQ
   int (*proto_mq_recv) (int, struct zclient *, uint16_t);
 #endif
@@ -198,6 +200,21 @@ extern void zebra_interface_if_set_value (struct stream *, struct interface *);
 extern void zebra_router_id_update_read (struct stream *s, char *iname, struct prefix *rid);
 extern int zapi_ipv4_route (u_char, struct zclient *, struct prefix_ipv4 *, 
                             struct zapi_ipv4 *);
+extern struct interface *
+zebra_interface_add_read_vrf (struct stream *s, vrf_id_t vrf_id);
+extern struct interface *
+zebra_interface_state_read_vrf (struct stream *s, vrf_id_t vrf_id);
+extern struct connected *
+zebra_interface_address_read_vrf (int type, struct stream *s, vrf_id_t vrf_id);
+extern void
+zclient_init_vrf (struct zclient *zclient, int redist_default, u_short id);
+extern void
+zclient_redistribute_default_vrf (int command, struct zclient *zclient, vrf_id_t vrf_id);
+extern int
+zclient_read_header (struct stream *s, int sock, u_int16_t *size, u_char *marker,
+                     u_char *version, vrf_id_t *vrf_id, u_int16_t *cmd);
+extern void
+zclient_create_header_vrf (struct stream *s, uint16_t command, vrf_id_t vrf_id);
 
 #ifdef HAVE_IPV6
 /* IPv6 prefix add and delete function prototype. */

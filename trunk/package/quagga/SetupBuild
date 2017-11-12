@@ -58,6 +58,7 @@ else
         --disable-ripngd \
         --disable-babeld \
         --disable-vtysh \
+        --enable-pimd \
         --enable-tcp-zebra \
         --enable-zebra-mq
 

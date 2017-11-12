@@ -17,7 +17,6 @@
   Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
   MA 02110-1301 USA
   
-  $QuaggaId: $Format:%an, %ai, %h$ $
 */
 
 #include <zebra.h>
@@ -25,6 +24,9 @@
 #include "log.h"
 #include "prefix.h"
 #include "memory.h"
+#include "if.h"
+#include "vty.h"
+#include "plist.h"
 
 #include "pimd.h"
 #include "pim_neighbor.h"
@@ -34,6 +36,10 @@
 #include "pim_pim.h"
 #include "pim_upstream.h"
 #include "pim_ifchannel.h"
+#include "pim_rp.h"
+#include "pim_zebra.h"
+#include "pim_join.h"
+#include "pim_jp_agg.h"
 
 static void dr_election_by_addr(struct interface *ifp)
 {
@@ -106,7 +112,7 @@ static void dr_election_by_pri(struct interface *ifp)
   PIM Hello message is received, when a neighbor times out, or when a
   router's own DR Priority changes.
  */
-void pim_if_dr_election(struct interface *ifp)
+int pim_if_dr_election(struct interface *ifp)
 {
   struct pim_interface *pim_ifp = ifp->info;
   struct in_addr old_dr_addr;
@@ -125,9 +131,9 @@ void pim_if_dr_election(struct interface *ifp)
   /* DR changed ? */
   if (old_dr_addr.s_addr != pim_ifp->pim_dr_addr.s_addr) {
 
-    /* if (PIM_DEBUG_PIM_EVENTS) */ {
-      char dr_old_str[100];
-      char dr_new_str[100];
+    if (PIM_DEBUG_PIM_EVENTS) {
+      char dr_old_str[INET_ADDRSTRLEN];
+      char dr_new_str[INET_ADDRSTRLEN];
       pim_inet4_dump("<old_dr?>", old_dr_addr, dr_old_str, sizeof(dr_old_str));
       pim_inet4_dump("<new_dr?>", pim_ifp->pim_dr_addr, dr_new_str, sizeof(dr_new_str));
       zlog_debug("%s: DR was %s now is %s on interface %s",
@@ -140,7 +146,10 @@ void pim_if_dr_election(struct interface *ifp)
     pim_if_update_join_desired(pim_ifp);
     pim_if_update_could_assert(ifp);
     pim_if_update_assert_tracking_desired(ifp);
+    return 1;
   }
+
+  return 0;
 }
 
 static void update_dr_priority(struct pim_neighbor *neigh,
@@ -205,20 +214,18 @@ static int on_neighbor_timer(struct thread *t)
   struct interface *ifp;
   char msg[100];
 
-  zassert(t);
   neigh = THREAD_ARG(t);
-  zassert(neigh);
 
   ifp = neigh->interface;
 
   if (PIM_DEBUG_PIM_TRACE) {
-    char src_str[100];
+    char src_str[INET_ADDRSTRLEN];
     pim_inet4_dump("<src?>", neigh->source_addr, src_str, sizeof(src_str));
     zlog_debug("Expired %d sec holdtime for neighbor %s on interface %s",
 	       neigh->holdtime, src_str, ifp->name);
   }
 
-  neigh->t_expire_timer = 0;
+  neigh->t_expire_timer = NULL;
 
   snprintf(msg, sizeof(msg), "%d-sec holdtime expired", neigh->holdtime);
   pim_neighbor_delete(ifp, neigh, msg);
@@ -235,26 +242,11 @@ static int on_neighbor_timer(struct thread *t)
   return 0;
 }
 
-static void neighbor_timer_off(struct pim_neighbor *neigh)
-{
-  if (PIM_DEBUG_PIM_TRACE) {
-    if (neigh->t_expire_timer) {
-      char src_str[100];
-      pim_inet4_dump("<src?>", neigh->source_addr, src_str, sizeof(src_str));
-      zlog_debug("%s: cancelling timer for neighbor %s on %s",
-		 __PRETTY_FUNCTION__,
-		 src_str, neigh->interface->name);
-    }
-  }
-  THREAD_OFF(neigh->t_expire_timer);
-  zassert(!neigh->t_expire_timer);
-}
-
 void pim_neighbor_timer_reset(struct pim_neighbor *neigh, uint16_t holdtime)
 {
   neigh->holdtime = holdtime;
 
-  neighbor_timer_off(neigh);
+  THREAD_OFF(neigh->t_expire_timer);
 
   /*
     0xFFFF is request for no holdtime
@@ -263,8 +255,8 @@ void pim_neighbor_timer_reset(struct pim_neighbor *neigh, uint16_t holdtime)
     return;
   }
 
-  if (PIM_DEBUG_PIM_TRACE) {
-    char src_str[100];
+  if (PIM_DEBUG_PIM_TRACE_DETAIL) {
+    char src_str[INET_ADDRSTRLEN];
     pim_inet4_dump("<src?>", neigh->source_addr, src_str, sizeof(src_str));
     zlog_debug("%s: starting %u sec timer for neighbor %s on %s",
 	       __PRETTY_FUNCTION__,
@@ -274,6 +266,41 @@ void pim_neighbor_timer_reset(struct pim_neighbor *neigh, uint16_t holdtime)
   THREAD_TIMER_ON(master, neigh->t_expire_timer,
 		  on_neighbor_timer,
 		  neigh, neigh->holdtime);
+}
+
+static int
+on_neighbor_jp_timer (struct thread *t)
+{
+  struct pim_neighbor *neigh = THREAD_ARG(t);
+  struct pim_rpf rpf;
+
+  if (PIM_DEBUG_PIM_TRACE)
+    {
+      char src_str[INET_ADDRSTRLEN];
+      pim_inet4_dump("<src?>", neigh->source_addr, src_str, sizeof(src_str));
+      zlog_debug("%s:Sending JP Agg to %s on %s with %d groups", __PRETTY_FUNCTION__,
+                 src_str, neigh->interface->name, neigh->upstream_jp_agg->count);
+    }
+  neigh->jp_timer = NULL;
+
+  rpf.source_nexthop.interface = neigh->interface;
+  rpf.rpf_addr.u.prefix4 = neigh->source_addr;
+  pim_joinprune_send(&rpf, neigh->upstream_jp_agg);
+
+  THREAD_TIMER_ON(master, neigh->jp_timer,
+                  on_neighbor_jp_timer,
+                  neigh, qpim_t_periodic);
+
+  return 0;
+}
+
+static void
+pim_neighbor_start_jp_timer (struct pim_neighbor *neigh)
+{
+  THREAD_TIMER_OFF(neigh->jp_timer);
+  THREAD_TIMER_ON(master, neigh->jp_timer,
+                  on_neighbor_jp_timer,
+                  neigh, qpim_t_periodic);
 }
 
 static struct pim_neighbor *pim_neighbor_new(struct interface *ifp,
@@ -288,15 +315,15 @@ static struct pim_neighbor *pim_neighbor_new(struct interface *ifp,
 {
   struct pim_interface *pim_ifp;
   struct pim_neighbor *neigh;
-  char src_str[100];
+  char src_str[INET_ADDRSTRLEN];
 
   zassert(ifp);
   pim_ifp = ifp->info;
   zassert(pim_ifp);
 
-  neigh = XMALLOC(MTYPE_PIM_NEIGHBOR, sizeof(*neigh));
+  neigh = XCALLOC(MTYPE_PIM_NEIGHBOR, sizeof(*neigh));
   if (!neigh) {
-    zlog_err("%s: PIM XMALLOC(%zu) failure",
+    zlog_err("%s: PIM XCALLOC(%zu) failure",
 	     __PRETTY_FUNCTION__, sizeof(*neigh));
     return 0;
   }
@@ -309,10 +336,23 @@ static struct pim_neighbor *pim_neighbor_new(struct interface *ifp,
   neigh->dr_priority            = dr_priority;
   neigh->generation_id          = generation_id;
   neigh->prefix_list            = addr_list;
-  neigh->t_expire_timer         = 0;
+  neigh->t_expire_timer         = NULL;
   neigh->interface              = ifp;
 
+  neigh->upstream_jp_agg = list_new();
+  neigh->upstream_jp_agg->cmp = pim_jp_agg_group_list_cmp;
+  neigh->upstream_jp_agg->del = (void (*)(void *))pim_jp_agg_group_list_free;
+  pim_neighbor_start_jp_timer(neigh);
+
   pim_neighbor_timer_reset(neigh, holdtime);
+  /*
+   * The pim_ifstat_hello_sent variable is used to decide if
+   * we should expedite a hello out the interface.  If we
+   * establish a new neighbor, we unfortunately need to
+   * reset the value so that we can know to hurry up and
+   * hello
+   */
+  pim_ifp->pim_ifstat_hello_sent = 0;
 
   pim_inet4_dump("<src?>", source_addr, src_str, sizeof(src_str));
 
@@ -344,26 +384,6 @@ static struct pim_neighbor *pim_neighbor_new(struct interface *ifp,
     ++pim_ifp->pim_dr_num_nondrpri_neighbors; 
   }
 
-  /*
-    RFC 4601: 4.3.2.  DR Election
-    
-    A router's idea of the current DR on an interface can change when a
-    PIM Hello message is received, when a neighbor times out, or when a
-    router's own DR Priority changes.
-  */
-  pim_if_dr_election(neigh->interface); // new neighbor -- should not trigger dr election...
-
-  /*
-    RFC 4601: 4.3.1.  Sending Hello Messages
-
-    To allow new or rebooting routers to learn of PIM neighbors quickly,
-    when a Hello message is received from a new neighbor, or a Hello
-    message with a new GenID is received from an existing neighbor, a
-    new Hello message should be sent on this interface after a
-    randomized delay between 0 and Triggered_Hello_Delay.
-  */
-  pim_hello_restart_triggered(neigh->interface);
-  
   return neigh;
 }
 
@@ -398,6 +418,9 @@ void pim_neighbor_free(struct pim_neighbor *neigh)
 
   delete_prefix_list(neigh);
 
+  list_delete(neigh->upstream_jp_agg);
+  THREAD_OFF(neigh->jp_timer);
+
   XFREE(MTYPE_PIM_NEIGHBOR, neigh);
 }
 
@@ -409,7 +432,8 @@ struct pim_neighbor *pim_neighbor_find(struct interface *ifp,
   struct pim_neighbor  *neigh;
 
   pim_ifp = ifp->info;
-  zassert(pim_ifp);
+  if (!pim_ifp)
+    return NULL;
 
   for (ALL_LIST_ELEMENTS_RO(pim_ifp->pim_neighbor_list, node, neigh)) {
     if (source_addr.s_addr == neigh->source_addr.s_addr) {
@@ -417,7 +441,35 @@ struct pim_neighbor *pim_neighbor_find(struct interface *ifp,
     }
   }
 
-  return 0;
+  return NULL;
+}
+
+/*
+ * Find the *one* interface out
+ * this interface.  If more than
+ * one return NULL
+ */
+struct pim_neighbor *
+pim_neighbor_find_if (struct interface *ifp)
+{
+  struct pim_interface *pim_ifp = ifp->info;
+
+  if (!pim_ifp || pim_ifp->pim_neighbor_list->count != 1)
+    return NULL;
+
+  return listnode_head (pim_ifp->pim_neighbor_list);
+}
+
+/* rpf info associated with an upstream entry needs to be re-evaluated
+ * when an RPF neighbor comes or goes */
+static void
+pim_neighbor_rpf_update(void)
+{
+  /* XXX: for the time being piggyback on the timer used on rib changes
+   * to scan and update the rpf nexthop. This is expensive processing
+   * and we should be able to optimize neighbor changes differently than
+   * nexthop changes. */
+  sched_rpf_cache_refresh();
 }
 
 struct pim_neighbor *pim_neighbor_add(struct interface *ifp,
@@ -428,7 +480,8 @@ struct pim_neighbor *pim_neighbor_add(struct interface *ifp,
 				      uint16_t override_interval,
 				      uint32_t dr_priority,
 				      uint32_t generation_id,
-				      struct list *addr_list)
+				      struct list *addr_list,
+				      int send_hello_now)
 {
   struct pim_interface *pim_ifp;
   struct pim_neighbor *neigh;
@@ -450,6 +503,39 @@ struct pim_neighbor *pim_neighbor_add(struct interface *ifp,
 
   listnode_add(pim_ifp->pim_neighbor_list, neigh);
 
+  /*
+    RFC 4601: 4.3.2.  DR Election
+
+    A router's idea of the current DR on an interface can change when a
+    PIM Hello message is received, when a neighbor times out, or when a
+    router's own DR Priority changes.
+  */
+  pim_if_dr_election(neigh->interface); // new neighbor -- should not trigger dr election...
+
+  /*
+    RFC 4601: 4.3.1.  Sending Hello Messages
+
+    To allow new or rebooting routers to learn of PIM neighbors quickly,
+    when a Hello message is received from a new neighbor, or a Hello
+    message with a new GenID is received from an existing neighbor, a
+    new Hello message should be sent on this interface after a
+    randomized delay between 0 and Triggered_Hello_Delay.
+
+    This is a bit silly to do it that way.  If I get a new
+    genid we need to send the hello *now* because we've
+    lined up a bunch of join/prune messages to go out the
+    interface.
+  */
+  if (send_hello_now)
+    pim_hello_restart_now (ifp);
+  else
+    pim_hello_restart_triggered(neigh->interface);
+
+  pim_upstream_find_new_rpf();
+
+  pim_rp_setup ();
+
+  pim_neighbor_rpf_update();
   return neigh;
 }
 
@@ -506,7 +592,7 @@ void pim_neighbor_delete(struct interface *ifp,
 			 const char *delete_message)
 {
   struct pim_interface *pim_ifp;
-  char src_str[100];
+  char src_str[INET_ADDRSTRLEN];
 
   pim_ifp = ifp->info;
   zassert(pim_ifp);
@@ -515,7 +601,7 @@ void pim_neighbor_delete(struct interface *ifp,
   zlog_info("PIM NEIGHBOR DOWN: neighbor %s on interface %s: %s",
 	    src_str, ifp->name, delete_message);
 
-  neighbor_timer_off(neigh);
+  THREAD_OFF(neigh->t_expire_timer);
 
   pim_if_assert_on_neighbor_down(ifp, neigh->source_addr);
 
@@ -562,6 +648,8 @@ void pim_neighbor_delete(struct interface *ifp,
   listnode_delete(pim_ifp->pim_neighbor_list, neigh);
 
   pim_neighbor_free(neigh);
+
+  pim_neighbor_rpf_update();
 }
 
 void pim_neighbor_delete_all(struct interface *ifp,
@@ -644,9 +732,9 @@ static void delete_from_neigh_addr(struct interface *ifp,
       {
 	struct prefix *p = pim_neighbor_find_secondary(neigh, addr->u.prefix4);
 	if (p) {
-	  char addr_str[100];
-	  char this_neigh_str[100];
-	  char other_neigh_str[100];
+	  char addr_str[INET_ADDRSTRLEN];
+	  char this_neigh_str[INET_ADDRSTRLEN];
+	  char other_neigh_str[INET_ADDRSTRLEN];
 	  
 	  pim_inet4_dump("<addr?>", addr->u.prefix4, addr_str, sizeof(addr_str));
 	  pim_inet4_dump("<neigh1?>", neigh_addr, this_neigh_str, sizeof(this_neigh_str));

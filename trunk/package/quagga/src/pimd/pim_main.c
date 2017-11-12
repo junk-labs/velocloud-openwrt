@@ -16,11 +16,12 @@
   along with this program; see the file COPYING; if not, write to the
   Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
   MA 02110-1301 USA
-  
-  $QuaggaId: $Format:%an, %ai, %h$ $
+
 */
 
 #include <zebra.h>
+
+#include "zebra/rib.h"
 
 #include "log.h"
 #include "privs.h" 
@@ -31,19 +32,20 @@
 #include <signal.h>
 
 #include "memory.h"
+//#include "memory_vty.h"
 #include "filter.h"
 #include "vty.h"
 #include "sigevent.h"
 #include "version.h"
+#include "prefix.h"
+#include "plist.h"
 
 #include "pimd.h"
 #include "pim_version.h"
 #include "pim_signals.h"
 #include "pim_zebra.h"
-
-#ifdef PIM_ZCLIENT_DEBUG
-extern int zclient_debug;
-#endif
+#include "pim_msdp.h"
+#include "pim_iface.h"
 
 extern struct host host;
 
@@ -67,6 +69,7 @@ zebra_capabilities_t _caps_p [] =
   ZCAP_NET_ADMIN,
   ZCAP_SYS_ADMIN,
   ZCAP_NET_RAW,
+  ZCAP_BIND,
 };
 
 /* pimd privileges to run with */
@@ -101,23 +104,13 @@ Daemon which manages PIM.\n\n\
 -A, --vty_addr       Set vty's bind address\n\
 -P, --vty_port       Set vty's port number\n\
 -v, --version        Print program version\n\
-"
-
-#ifdef PIM_ZCLIENT_DEBUG
-"\
--Z, --debug_zclient  Enable zclient debugging\n\
-"
-#endif
-
-"\
 -h, --help           Display this help and exit\n\
 \n\
-Report bugs to %s\n", progname, PIMD_BUG_ADDRESS);
+Report bugs to %s\n", progname, PACKAGE_BUGREPORT);
   }
 
   exit (status);
 }
-
 
 int main(int argc, char** argv, char** envp) {
   char *p;
@@ -131,10 +124,15 @@ int main(int argc, char** argv, char** envp) {
   umask(0027);
  
   progname = ((p = strrchr(argv[0], '/')) ? ++p : argv[0]);
- 
-  zlog_default = openzlog(progname, ZLOG_PIM,
-			  LOG_CONS|LOG_NDELAY|LOG_PID, LOG_DAEMON);
-     
+
+  zlog_default = openzlog(progname, ZLOG_PIM, 0,
+			  LOG_CONS|LOG_NDELAY|LOG_PID);
+			  //LOG_CONS|LOG_NDELAY|LOG_PID, LOG_DAEMON);
+  zprivs_init (&pimd_privs);
+#if defined(HAVE_CUMULUS)
+  zlog_set_level (NULL, ZLOG_DEST_SYSLOG, zlog_default->default_lvl);
+#endif
+
   /* this while just reads the options */                       
   while (1) {
     int opt;
@@ -170,11 +168,6 @@ int main(int argc, char** argv, char** envp) {
       print_version(QUAGGA_PROGNAME);
       exit (0);
       break;
-#ifdef PIM_ZCLIENT_DEBUG
-    case 'Z':
-      zclient_debug = 1;
-      break;
-#endif
     case 'h':
       usage (0);
       break;
@@ -186,38 +179,28 @@ int main(int argc, char** argv, char** envp) {
 
   master = thread_master_create();
 
-  /*
-   * Temporarily send zlog to stdout
-   */
-  zlog_default->maxlvl[ZLOG_DEST_STDOUT] = zlog_default->default_lvl;
-  zlog_notice("Boot logging temporarily directed to stdout - begin");
-
   zlog_notice("Quagga %s " PIMD_PROGNAME " %s starting",
 	      QUAGGA_VERSION, PIMD_VERSION);
 
   /* 
    * Initializations
    */
-  zprivs_init (&pimd_privs);
   pim_signals_init();
   cmd_init(1);
   vty_init(master);
   memory_init();
+  pim_vrf_init ();
   access_list_init();
+  prefix_list_init ();
+  prefix_list_add_hook (pim_prefix_list_update);
+  prefix_list_delete_hook (pim_prefix_list_update);
+
+  pim_route_map_init ();
   pim_init();
+  pim_msdp_init (master);
 
   /*
-   * reset zlog default, then will obey configuration file
-   */
-  zlog_notice("Boot logging temporarily directed to stdout - end");
-#if 0
-  /* this would disable logging to stdout, but config has not been
-     loaded yet to reconfig the logging output */
-  zlog_default->maxlvl[ZLOG_DEST_STDOUT] = ZLOG_DISABLED;
-#endif
-
-  /*
-    Initialize zclient "update" and "lookup" sockets
+   * Initialize zclient "update" and "lookup" sockets
    */
   pim_zebra_init(zebra_sock_path);
 
@@ -259,11 +242,6 @@ int main(int argc, char** argv, char** envp) {
   PIM_DO_DEBUG_IGMP_PACKETS;
   PIM_DO_DEBUG_IGMP_TRACE;
   PIM_DO_DEBUG_ZEBRA;
-#endif
-
-#ifdef PIM_ZCLIENT_DEBUG
-  zlog_notice("PIM_ZCLIENT_DEBUG: zclient debugging is supported, mode is %s (see option -Z)",
-	      zclient_debug ? "ON" : "OFF");
 #endif
 
 #ifdef PIM_CHECK_RECV_IFINDEX_SANITY

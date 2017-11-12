@@ -92,6 +92,10 @@ typedef int socklen_t;
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif /* HAVE_INTTYPES_H */
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#endif
+#include <stdbool.h>
 
 /* machine dependent includes */
 #ifdef SUNOS_5
@@ -413,9 +417,15 @@ struct in_pktinfo
 #define ZEBRA_HELLO                       23
 #define ZEBRA_IPV4_NEXTHOP_LOOKUP_MRIB    24
 
+#define ZEBRA_IPMR_ROUTE_STATS            27
+#define ZEBRA_NEXTHOP_REGISTER            28
+#define ZEBRA_NEXTHOP_UNREGISTER          29
+#define ZEBRA_NEXTHOP_UPDATE              30
+
+
 #ifdef HAVE_ZEBRA_MQ
 #define ZEBRA_PROTO_MQ                    25
-#define ZEBRA_MESSAGE_MAX                 26
+#define ZEBRA_MESSAGE_MAX                 255
 #else 
 #define ZEBRA_MESSAGE_MAX                 25
 #endif // ZEBRA_PROTO_MQ
@@ -527,6 +537,9 @@ typedef u_int8_t safi_t;
 /* Zebra types. Used in Zserv message header. */
 typedef u_int16_t zebra_size_t;
 typedef u_int16_t zebra_command_t;
+
+/* VRF ID type. */
+typedef u_int16_t vrf_id_t;
 
 /* FIFO -- first in first out structure and macros.  */
 struct fifo

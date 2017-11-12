@@ -20,6 +20,7 @@
 */
 
 #include <zebra.h>
+#include "zclient.h"
 
 #include "zebra/rib.h"
 

@@ -41,4 +41,15 @@ void pim_forward_start(struct pim_ifchannel *ch);
 void pim_forward_stop(struct pim_ifchannel *ch);
 
 void sched_rpf_cache_refresh(void);
+#ifdef HAVE_ZEBRA_MQ
+extern void
+igmp_construct_ip_header(const char *igmp_buf, int buf_size, struct in_addr src, struct in_addr dst, char *out_buffer,
+        int *out_len);
+extern void
+pim_zebra_mq_pkt(struct zclient *pim_client, unsigned int ifindex, char *buffer, int sendlen);
+extern int
+pim_zebra_mq_recv (int command, struct zclient *zclient,
+                      zebra_size_t length);
+#endif
+
 #endif /* PIM_ZEBRA_H */

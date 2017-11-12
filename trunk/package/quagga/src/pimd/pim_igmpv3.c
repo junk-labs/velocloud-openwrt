@@ -23,6 +23,7 @@
 #include "log.h"
 #include "memory.h"
 #include "if.h"
+#include "zclient.h"
 
 #include "pimd.h"
 #include "pim_iface.h"
@@ -1073,7 +1074,9 @@ static void group_retransmit_group(struct igmp_group *group)
                   pim_ifp->igmp_specific_query_max_response_time_dsec,
                   s_flag,
                   igmp->querier_robustness_variable,
-                  igmp->querier_query_interval);
+                  igmp->querier_query_interval,
+                  igmp->interface,
+                  pim_ifp->primary_address);
 }
 
 /*
@@ -1192,7 +1195,9 @@ static int group_retransmit_sources(struct igmp_group *group,
                         pim_ifp->igmp_specific_query_max_response_time_dsec,
                         1 /* s_flag */,
                         igmp->querier_robustness_variable,
-                        igmp->querier_query_interval);
+                        igmp->querier_query_interval,
+                        igmp->interface,
+                        pim_ifp->primary_address);
       }
 
     } /* send_with_sflag_set */
@@ -1234,7 +1239,9 @@ static int group_retransmit_sources(struct igmp_group *group,
                       pim_ifp->igmp_specific_query_max_response_time_dsec,
                       0 /* s_flag */,
                       igmp->querier_robustness_variable,
-                      igmp->querier_query_interval);
+                      igmp->querier_query_interval,
+                      igmp->interface,
+                      pim_ifp->primary_address);
     }
   }
 
@@ -1605,7 +1612,9 @@ igmp_v3_send_query (struct igmp_group *group,
                     int query_max_response_time_dsec,
                     uint8_t s_flag,
                     uint8_t querier_robustness_variable,
-                    uint16_t querier_query_interval)
+                    uint16_t querier_query_interval,
+                    struct interface *ifp,
+                    struct in_addr src)
 {
   ssize_t             msg_size;
   uint8_t             max_resp_code;
@@ -1614,6 +1623,10 @@ igmp_v3_send_query (struct igmp_group *group,
   struct sockaddr_in  to;
   socklen_t           tolen;
   uint16_t            checksum;
+#ifdef HAVE_ZEBRA_MQ
+  unsigned char      buffer[10000];
+  int sendlen = sizeof(buffer);
+#endif
 
   zassert(num_sources >= 0);
 
@@ -1665,6 +1678,12 @@ igmp_v3_send_query (struct igmp_group *group,
                num_sources, msg_size, s_flag, querier_robustness_variable,
                querier_query_interval, qqic);
   }
+
+#ifdef HAVE_ZEBRA_MQ
+  igmp_construct_ip_header(query_buf, msg_size, src, dst_addr, buffer, &sendlen);
+  pim_zebra_mq_pkt(qpim_zclient_update, ifp->ifindex, buffer, sendlen);
+  return;
+#endif
 
   memset(&to, 0, sizeof(to));
   to.sin_family = AF_INET;

@@ -20,9 +20,9 @@
  */
 #include <zebra.h>
 #include "zebra/rib.h"
+#include "zclient.h"
 
 #include "network.h"
-#include "zclient.h"
 #include "stream.h"
 #include "nexthop.h"
 #include "if.h"

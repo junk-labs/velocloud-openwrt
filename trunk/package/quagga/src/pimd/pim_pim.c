@@ -26,6 +26,10 @@
 #include "memory.h"
 #include "if.h"
 
+#include "lib/stream.h"
+#include "lib/zclient.h"
+#include "lib/vrf.h"
+
 #include "pimd.h"
 #include "pim_pim.h"
 #include "pim_time.h"
@@ -470,7 +474,6 @@ void pim_sock_reset(struct interface *ifp)
 
 static uint16_t ip_id = 0;
 
-
 static int
 pim_msg_send_frame (int fd, char *buf, size_t len,
 		    struct sockaddr *dst, size_t salen)
@@ -527,7 +530,8 @@ pim_msg_send_frame (int fd, char *buf, size_t len,
 int
 pim_msg_send(int fd, struct in_addr src,
 	     struct in_addr dst, uint8_t *pim_msg,
-	     int pim_msg_size, const char *ifname)
+	     int pim_msg_size, const char *ifname, 
+         unsigned int ifindex)
 {
   struct sockaddr_in to;
   socklen_t          tolen;
@@ -594,8 +598,12 @@ pim_msg_send(int fd, struct in_addr src,
     pim_pkt_dump(__PRETTY_FUNCTION__, pim_msg, pim_msg_size);
   }
 
+#ifdef HAVE_ZEBRA_MQ
+  pim_zebra_mq_pkt(qpim_zclient_update, ifindex, buffer, sendlen);
+#else
   pim_msg_send_frame (fd, (char *)buffer, sendlen,
 		      (struct sockaddr *)&to, tolen);
+#endif
   return 0;
 }
 
@@ -648,7 +656,8 @@ static int hello_send(struct interface *ifp,
 		   qpim_all_pim_routers_addr,
 		   pim_msg,
 		   pim_msg_size,
-		   ifp->name)) {
+		   ifp->name,
+           ifp->ifindex)) {
     if (PIM_DEBUG_PIM_HELLO) {
       zlog_debug("%s: could not send PIM message on interface %s",
 		 __PRETTY_FUNCTION__, ifp->name);

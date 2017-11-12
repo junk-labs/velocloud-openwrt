@@ -20,6 +20,7 @@
  */
 
 #include <zebra.h>
+#include "zclient.h"
 
 #include "log.h"
 #include "if.h"
@@ -102,7 +103,8 @@ pim_register_stop_send (struct interface *ifp, struct prefix_sg *sg,
     }
   if (pim_msg_send (pinfo->pim_sock_fd, src, originator,
 		    buffer, b1length + PIM_MSG_REGISTER_STOP_LEN,
-		    ifp->name))
+		    ifp->name,
+            ifp->ifindex))
     {
       if (PIM_DEBUG_PIM_TRACE)
 	{
@@ -202,7 +204,8 @@ pim_register_send (const uint8_t *buf, int buf_size, struct in_addr src, struct 
 		   rpg->rpf_addr.u.prefix4,
 		   buffer,
 		   buf_size + PIM_MSG_REGISTER_LEN,
-		   ifp->name)) {
+		   ifp->name,
+           ifp->ifindex)) {
     if (PIM_DEBUG_PIM_TRACE) {
       zlog_debug("%s: could not send PIM register message on interface %s",
 		 __PRETTY_FUNCTION__, ifp->name);

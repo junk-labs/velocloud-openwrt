@@ -26,6 +26,7 @@
 #include "pim_str.h"
 #include "pim_time.h"
 #include "pim_util.h"
+#include "pim_zebra.h"
 
 
 static void
@@ -47,7 +48,9 @@ igmp_v2_send_query (struct igmp_group *group,
                     char *query_buf,
                     struct in_addr dst_addr,
                     struct in_addr group_addr,
-                    int query_max_response_time_dsec)
+                    int query_max_response_time_dsec,
+                    struct interface *ifp,
+                    struct in_addr src)
 {
   ssize_t             msg_size = 8;
   uint8_t             max_resp_code;
@@ -55,6 +58,10 @@ igmp_v2_send_query (struct igmp_group *group,
   struct sockaddr_in  to;
   socklen_t           tolen;
   uint16_t            checksum;
+#ifdef HAVE_ZEBRA_MQ
+  unsigned char      buffer[10000];
+  int sendlen = sizeof(buffer);
+#endif
 
   /* max_resp_code must be non-zero else this will look like an IGMP v1 query */
   max_resp_code = igmp_msg_encode16to8(query_max_response_time_dsec);
@@ -76,6 +83,12 @@ igmp_v2_send_query (struct igmp_group *group,
     zlog_debug("Send IGMPv2 QUERY to %s on %s for group %s",
 	       dst_str, ifname, group_str);
   }
+
+#ifdef HAVE_ZEBRA_MQ
+  igmp_construct_ip_header(query_buf, msg_size, src, dst_addr, buffer, &sendlen);
+  pim_zebra_mq_pkt(qpim_zclient_update, ifp->ifindex, buffer, sendlen);
+  return;
+#endif
 
   memset(&to, 0, sizeof(to));
   to.sin_family = AF_INET;

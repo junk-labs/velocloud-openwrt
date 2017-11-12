@@ -22,6 +22,7 @@
 #include <zebra.h>
 
 #include "zebra/rib.h"
+#include "zclient.h"
 
 #include "linklist.h"
 #include "thread.h"

@@ -35,6 +35,7 @@
 #include "prefix.h"
 #include "routemap.h"
 
+#include "lib/vrf.h"
 #include "zebra/rib.h"
 #include "zebra/rt.h"
 #include "zebra/zserv.h"
@@ -42,6 +43,7 @@
 #include "zebra/debug.h"
 #include "zebra/zebra_fpm.h"
 
+extern vector vrf_vector;
 /* Default rtm_table for all clients */
 extern struct zebra_t zebrad;
 

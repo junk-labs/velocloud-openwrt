@@ -305,7 +305,8 @@ if test "${enable_fpm}" = "yes"; then
    AC_DEFINE(HAVE_FPM,,Forwarding Plane Manager support)
 fi
 
-if test "${enable_zebra_mq}" = "yes" && test "${enable_tcp_zebra}" = "yes" && test "${enable_zebra}" = "no" ; then
+#if test "${enable_zebra_mq}" = "yes" && test "${enable_tcp_zebra}" = "yes" && test "${enable_zebra}" = "no" ; then
+if test "${enable_zebra_mq}" = "yes" && test "${enable_tcp_zebra}" = "yes" ; then
    AC_DEFINE(HAVE_ZEBRA_MQ,,Zebra message queue support)
 fi
 
@@ -1201,11 +1202,6 @@ AC_CHECK_LIB(c, inet_ntop, [AC_DEFINE(HAVE_INET_NTOP,,inet_ntop)])
 AC_CHECK_LIB(c, inet_pton, [AC_DEFINE(HAVE_INET_PTON,,inet_pton)])
 AC_CHECK_LIB(crypt, crypt)
 AC_CHECK_LIB(resolv, res_init)
-AC_CHECK_HEADERS(json-c/json.h)
-AC_CHECK_LIB(json-c, json_object_get, LIBS="$LIBS -ljson-c")
-if test $ac_cv_lib_json_c_json_object_get = no; then
-  AC_MSG_ERROR([lib json is needed to compile])
-fi
 
 dnl ---------------------------
 dnl check system has PCRE regexp

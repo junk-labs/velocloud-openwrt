@@ -40,6 +40,9 @@ pim_msdp_update_sock_send_buffer_size (int fd)
   int optval;
   socklen_t optlen = sizeof(optval);
 
+#ifdef HAVE_ZEBRA_MQ
+    return 0;
+#endif
   if (getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &optval, &optlen) < 0) {
     zlog_err("getsockopt of SO_SNDBUF failed %s\n", safe_strerror(errno));
     return;

@@ -425,9 +425,22 @@ struct in_pktinfo
 
 #ifdef HAVE_ZEBRA_MQ
 #define ZEBRA_PROTO_MQ                    25
+// 200 to 254 -> setsockopt calls                                                                                                                                                                           
+#define ZEBRA_MRT_INIT                      200
+#define ZEBRA_MRT_DONE                      201
+#define ZEBRA_IGMPMSG_WRVIFWHOLE            202
+#define ZEBRA_IP_MULTICAST_IF               203
+#define ZEBRA_IP_ADD_MEMBERSHIP             204
+#define ZEBRA_IP_DEL_MEMBERSHIP             205
+#define ZEBRA_MRT_ADD_MFC                   206
+#define ZEBRA_MRT_DEL_MFC                   207
+#define ZEBRA_MCAST_JOIN_SOURCE_GROUP       208
+#define ZEBRA_MRT_ADD_VIF                   209
+#define ZEBRA_MRT_DEL_VIF                   210
+
 #define ZEBRA_MESSAGE_MAX                 255
 #else 
-#define ZEBRA_MESSAGE_MAX                 25
+#define ZEBRA_MESSAGE_MAX                 30
 #endif // ZEBRA_PROTO_MQ
 
 /* Marker value used in new Zserv, in the byte location corresponding

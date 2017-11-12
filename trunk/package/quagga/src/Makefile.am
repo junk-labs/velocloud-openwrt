@@ -26,4 +26,4 @@ clean-local:
 endif
 
 ACLOCAL_AMFLAGS = -I m4
-ACLOCAL_LDFLAGS = -ljson
+#ACLOCAL_LDFLAGS = -ljson

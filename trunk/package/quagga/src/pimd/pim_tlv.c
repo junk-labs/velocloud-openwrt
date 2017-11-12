@@ -496,6 +496,20 @@ pim_parse_addr_ucast (struct prefix *p,
     addr += sizeof(struct in_addr);
 
     break;
+  case PIM_MSG_ADDRESS_FAMILY_IPV6:
+    if ((addr + sizeof(struct in6_addr)) > pastend) {
+      zlog_warn("%s: IPv6 unicast address overflow: left=%zd needed=%zu",
+		__PRETTY_FUNCTION__,
+		pastend - addr, sizeof(struct in6_addr));
+      return -3;
+    }
+
+    p->family = AF_INET6; /* notice: AF_INET != PIM_MSG_ADDRESS_FAMILY_IPV4 */
+    memcpy(&p->u.prefix6, addr, sizeof(struct in6_addr));
+
+    addr += sizeof(struct in6_addr);
+
+    break;
   default:
     {
       zlog_warn("%s: unknown unicast address encoding family=%d from",
@@ -707,6 +721,19 @@ int pim_tlv_parse_addr_list(const char *ifname, struct in_addr src_addr,
 		     addr_str, src_str, ifname);
 	}
 	break;
+      case AF_INET6:
+	{
+	  char addr_str[INET_ADDRSTRLEN];
+	  char src_str[INET_ADDRSTRLEN];
+	  pim_addr_dump("<addr?>", &tmp, addr_str, sizeof(addr_str));
+	  pim_inet4_dump("<src?>", src_addr, src_str, sizeof(src_str));
+	  zlog_debug("%s: PIM hello TLV option: list_old_size=%d address %s from %s on %s",
+		     __PRETTY_FUNCTION__,
+		     *hello_option_addr_list ?
+		     ((int) listcount(*hello_option_addr_list)) : -1,
+		     addr_str, src_str, ifname);
+	}
+	break;
       default:
 	{
 	  char src_str[INET_ADDRSTRLEN];
@@ -733,6 +760,14 @@ int pim_tlv_parse_addr_list(const char *ifname, struct in_addr src_addr,
 		    src_str, ifname);
 	  continue;
       }
+    } else {
+        // IPv6 or other families are not supported now! Move on to next.
+	  char addr_str[INET_ADDRSTRLEN];
+	  pim_addr_dump("<src?>", &tmp, addr_str, sizeof(addr_str));
+	  zlog_warn("%s: ignoring address %s in secondary list on %s",
+		    __PRETTY_FUNCTION__,
+		    addr_str, ifname);
+	  continue;
     }
 
     /*

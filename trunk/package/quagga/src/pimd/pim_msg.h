@@ -36,6 +36,7 @@
   http://www.iana.org/assignments/address-family-numbers
 */
 #define PIM_MSG_ADDRESS_FAMILY_IPV4 (1)
+#define PIM_MSG_ADDRESS_FAMILY_IPV6 (2)
 
 /*
  * Network Order pim_msg_hdr

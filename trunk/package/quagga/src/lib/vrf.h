@@ -71,6 +71,10 @@ struct vrf
   
   /* Master list of interfaces belonging to this VRF */
   struct list *iflist;
+
+  /* Zebra internal VRF status */
+  u_char status;
+#define VRF_ACTIVE     (1 << 0)
   
   /* User data */
   void *info;

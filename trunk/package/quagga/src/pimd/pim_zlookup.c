@@ -21,6 +21,7 @@
 
 #include <zebra.h>
 #include "zebra/rib.h"
+#include "zclient.h"
 
 #include "log.h"
 #include "prefix.h"
@@ -502,6 +503,30 @@ pim_zlookup_sg_statistics (struct channel_oil *c_oil)
         }
     }
 
+#ifdef HAVE_ZEBRA_MQ
+  sg.src.s_addr = stream_get_ipv4 (s);
+  sg.grp.s_addr = stream_get_ipv4 (s);
+  if (sg.src.s_addr != c_oil->oil.mfcc_origin.s_addr ||
+      sg.grp.s_addr != c_oil->oil.mfcc_mcastgrp.s_addr)
+    {
+       zlog_err ("%s: Received wrong %s information",
+		 __PRETTY_FUNCTION__, pim_str_sg_dump (&sg));
+       zclient_lookup_failed (zlookup);
+       return -3;
+    }
+
+  stream_get (&lastused, s, sizeof (lastused));
+  c_oil->cc.pktcnt = stream_getl (s);
+  c_oil->cc.bytecnt = stream_getl (s);
+  c_oil->cc.wrong_if = stream_getl (s);
+  
+  ret = stream_getl (s);
+
+  if (PIM_DEBUG_ZEBRA)
+    zlog_debug ("Received %lld for %s success: %d", lastused, pim_str_sg_dump (&sg), ret);
+
+  c_oil->cc.lastused = lastused;
+#else
   sg.src.s_addr = stream_get_ipv4 (s);
   sg.grp.s_addr = stream_get_ipv4 (s);
   if (sg.src.s_addr != c_oil->oil.mfcc_origin.s_addr ||
@@ -520,6 +545,7 @@ pim_zlookup_sg_statistics (struct channel_oil *c_oil)
     zlog_debug ("Received %lld for %s success: %d", lastused, pim_str_sg_dump (&sg), ret);
 
   c_oil->cc.lastused = lastused;
+#endif
 
   return 0;
 

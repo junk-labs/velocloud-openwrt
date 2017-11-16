@@ -20,6 +20,8 @@
  * MA 02111-1307, USA.
  */
 
+#include <netinet/in.h>
+#include <linux/mroute.h>
 #include <zebra.h>
 
 #include "prefix.h"
@@ -28,6 +30,7 @@
 #include "network.h"
 #include "if.h"
 #include "log.h"
+#include "vrf.h"
 #include "thread.h"
 #include "zclient.h"
 #include "memory.h"
@@ -110,6 +113,11 @@ zclient_init (struct zclient *zclient, int redist_default)
   zclient_event (ZCLIENT_SCHEDULE, zclient);
 }
 
+void
+zclient_init_vrf (struct zclient *zclient, int redist_default, u_short id)
+{
+    zclient_init (zclient, redist_default);
+}
 /* Stop zebra client services. */
 void
 zclient_stop (struct zclient *zclient)
@@ -300,6 +308,39 @@ zclient_create_header (struct stream *s, uint16_t command)
   stream_putc (s, ZEBRA_HEADER_MARKER);
   stream_putc (s, ZSERV_VERSION);
   stream_putw (s, command);
+}
+
+void
+zclient_create_header_vrf (struct stream *s, uint16_t command, vrf_id_t vrf_id)
+{
+    zclient_create_header(s, command);
+}
+
+int
+zclient_read_header (struct stream *s, int sock, u_int16_t *size, u_char *marker,
+                     u_char *version, vrf_id_t *vrf_id, u_int16_t *cmd)
+{
+  if (stream_read (s, sock, ZEBRA_HEADER_SIZE) != ZEBRA_HEADER_SIZE)
+    return -1;
+
+  *size = stream_getw (s) - ZEBRA_HEADER_SIZE;
+  *marker = stream_getc (s);
+  *version = stream_getc (s);
+  // *vrf_id = stream_getw (s); // FIXME: Header
+  *vrf_id = VRF_DEFAULT;
+  *cmd = stream_getw (s);
+
+  if (*version != ZSERV_VERSION || *marker != ZEBRA_HEADER_MARKER)
+    {
+      zlog_err("%s: socket %d version mismatch, marker %d, version %d",
+               __func__, sock, *marker, *version);
+      return -1;
+    }
+
+  if (*size && stream_read (s, sock, *size) != *size)
+    return -1;
+
+  return 0;
 }
 
 /* Send simple Zebra message. */
@@ -723,6 +764,11 @@ zebra_interface_add_read (struct stream *s)
   return ifp;
 }
 
+struct interface *
+zebra_interface_add_read_vrf (struct stream *s, vrf_id_t vrf_id)
+{
+    return zebra_interface_add_read(s);
+}
 /* 
  * Read interface up/down msg (ZEBRA_INTERFACE_UP/ZEBRA_INTERFACE_DOWN)
  * from zebra server.  The format of this message is the same as
@@ -750,6 +796,12 @@ zebra_interface_state_read (struct stream *s)
   zebra_interface_if_set_value (s, ifp);
 
   return ifp;
+}
+
+struct interface *
+zebra_interface_state_read_vrf (struct stream *s, vrf_id_t vrf_id)
+{
+    return zebra_interface_state_read(s);
 }
 
 /* 
@@ -899,6 +951,11 @@ zebra_interface_address_read (int type, struct stream *s)
   return ifc;
 }
 
+struct connected *
+zebra_interface_address_read_vrf (int type, struct stream *s, vrf_id_t vrf_id)
+{
+    return zebra_interface_address_read(type, s);
+}
 
 /* Zebra client message read function. */
 static int
@@ -1040,6 +1097,10 @@ zclient_read (struct thread *thread)
       if (zclient->ipv6_route_delete)
 	(*zclient->ipv6_route_delete) (command, zclient, length);
       break;
+    case ZEBRA_NEXTHOP_UPDATE:
+      if (zclient->nexthop_update)
+	(*zclient->nexthop_update) (command, zclient, length);
+      break;
 #ifdef HAVE_ZEBRA_MQ
     case ZEBRA_PROTO_MQ:
       if (zclient->proto_mq_recv)
@@ -1107,6 +1168,12 @@ zclient_redistribute_default (int command, struct zclient *zclient)
     zebra_message_send (zclient, command);
 }
 
+void
+zclient_redistribute_default_vrf (int command, struct zclient *zclient, vrf_id_t vrf_id)
+{
+   zclient_redistribute_default(command, zclient);
+}
+
 static void
 zclient_event (enum event event, struct zclient *zclient)
 {
@@ -1165,3 +1232,217 @@ zclient_serv_path_set (char *path)
   zclient_serv_path = path;
 }
 
+#ifdef HAVE_ZEBRA_MQ
+// Setsock/ioctl calls via MQ
+int
+zclient_send_mrt_init(struct zclient *zclient)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MRT_INIT);
+    
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_mrt_done(struct zclient *zclient)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MRT_DONE);
+    
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_igmpmsg_wrvifwhole(struct zclient *zclient)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_IGMPMSG_WRVIFWHOLE);
+    
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_ip_multicast_if(struct zclient *zclient, struct ip_mreqn *mreq)
+{
+    struct stream *s;
+    int ifindex = mreq->imr_ifindex;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_IP_MULTICAST_IF);
+
+    stream_putl(s, ifindex);
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_ip_add_membership(struct zclient *zclient, uint32_t grp_addr, uint32_t ifindex)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_IP_ADD_MEMBERSHIP);
+
+    stream_putl(s, ifindex);
+
+    stream_putl(s, grp_addr);
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_ip_del_membership(struct zclient *zclient, uint32_t grp_addr, uint32_t ifindex)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_IP_DEL_MEMBERSHIP);
+
+    stream_putl(s, ifindex);
+
+    stream_putl(s, grp_addr);
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_mrt_add_mfc(struct zclient *zclient, struct zeb_mfcctl *oil)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MRT_ADD_MFC);
+
+    stream_write(s, oil, sizeof(struct zeb_mfcctl));
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_mrt_del_mfc(struct zclient *zclient, struct zeb_mfcctl *oil)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MRT_DEL_MFC);
+
+    stream_write(s, oil, sizeof(struct zeb_mfcctl));
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_mcast_join_source_group(struct zclient *zclient, uint32_t group_addr, uint32_t source_addr, uint32_t
+        ifindex)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MCAST_JOIN_SOURCE_GROUP);
+
+    stream_putl(s, group_addr);
+    stream_putl(s, source_addr);
+    stream_putl(s, ifindex);
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_mrt_add_vif(struct zclient *zclient, struct vifctl *vc)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MRT_ADD_VIF);
+
+    stream_write(s, vc, sizeof(struct vifctl));
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_mrt_del_vif(struct zclient *zclient, struct vifctl *vc)
+{
+    struct stream *s;
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MRT_DEL_VIF);
+
+    stream_write(s, vc, sizeof(struct vifctl));
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+#endif

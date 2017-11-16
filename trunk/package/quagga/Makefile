@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=quagga
 PKG_VERSION:=0.99.24.1
-PKG_RELEASE:=18
+PKG_RELEASE:=19
 PKG_MD5SUM:=b168db69435100ee04564c4fb39c7413
 
 PKG_SOURCE_PROTO:=none
@@ -31,6 +31,7 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_quagga-isisd \
 	CONFIG_PACKAGE_quagga-ospf6d \
 	CONFIG_PACKAGE_quagga-ripd \
+	CONFIG_PACKAGE_quagga-pimd \
 	CONFIG_PACKAGE_quagga-ripngd \
 	CONFIG_PACKAGE_quagga-babeld \
 	CONFIG_PACKAGE_quagga-vtysh
@@ -52,7 +53,7 @@ endef
 
 define Package/quagga
   $(call Package/quagga/Default)
-  DEPENDS:=+librt
+  DEPENDS:=+librt +libjson-c
   MENU:=1
 endef
 
@@ -116,6 +117,12 @@ define Package/quagga-ripd
   TITLE:=RIP routing engine
 endef
 
+define Package/quagga-pimd
+  $(call Package/quagga/Default)
+  DEPENDS+=+quagga-libzebra +libjson-c
+  TITLE:=PIM routing engine
+endef
+
 define Package/quagga-ripngd
   $(call Package/quagga/Default)
   DEPENDS+=+quagga-libzebra @IPV6
@@ -158,6 +165,10 @@ define Package/quagga-ripd/conffiles
 /etc/quagga/ripd.conf
 endef
 
+define Package/quagga-pimd/conffiles
+/etc/quagga/pimd.conf
+endef
+
 define Package/quagga-ripngd/conffiles
 /etc/quagga/ripngd.conf
 endef
@@ -175,6 +186,7 @@ CONFIG_PACKAGE_quagga-bgpd:=m
 CONFIG_PACKAGE_quagga-isisd:=m
 CONFIG_PACKAGE_quagga-ospf6d:=m
 CONFIG_PACKAGE_quagga-ripd:=m
+CONFIG_PACKAGE_quagga-pimd:=m
 CONFIG_PACKAGE_quagga-ripngd:=m
 CONFIG_PACKAGE_quagga-babeld:=m
 CONFIG_PACKAGE_quagga-vtysh:=m
@@ -198,10 +210,11 @@ CONFIGURE_ARGS+= \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-isisd,isisd) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-ospf6d,ospf6d) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-ripd,ripd) \
+	$(call autoconf_bool,CONFIG_PACKAGE_quagga-pimd,pimd) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-ripngd,ripngd) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-babeld,babeld) \
 	$(call autoconf_bool,CONFIG_PACKAGE_quagga-vtysh,vtysh) \
-	--disable-zebra \
+	--enable-zebra \
 	--enable-tcp-zebra \
 	--enable-zebra-mq \
 
@@ -268,6 +281,14 @@ define Package/quagga-ripd/install
 	$(INSTALL_CONF) ./files/quagga.conf $(1)/etc/quagga/ripd.conf
 endef
 
+define Package/quagga-pimd/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/pimd $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/etc/quagga
+	chmod 0750 $(1)/etc/quagga
+	$(INSTALL_CONF) ./files/quagga.conf $(1)/etc/quagga/pimd.conf
+endef
+
 define Package/quagga-ripngd/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/ripngd $(1)/usr/sbin/
@@ -309,6 +330,7 @@ $(eval $(call BuildPackage,quagga-isisd))
 $(eval $(call BuildPackage,quagga-ospfd))
 $(eval $(call BuildPackage,quagga-ospf6d))
 $(eval $(call BuildPackage,quagga-ripd))
+$(eval $(call BuildPackage,quagga-pimd))
 $(eval $(call BuildPackage,quagga-ripngd))
 $(eval $(call BuildPackage,quagga-babeld))
 $(eval $(call BuildPackage,quagga-vtysh))

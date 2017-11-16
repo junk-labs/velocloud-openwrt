@@ -107,8 +107,10 @@ define Build/Compile
 endef
 
 define Package/busybox/install
-	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/etc/acpi/PWRF
 	$(CP) $(PKG_INSTALL_DIR)/* $(1)/
+	$(INSTALL_BIN) ./files/acpid $(1)/etc/init.d/acpid
+	$(INSTALL_BIN) ./files/acpi-PWRF-00000080 $(1)/etc/acpi/PWRF/00000080
 	$(INSTALL_BIN) ./files/cron $(1)/etc/init.d/cron
 	$(INSTALL_BIN) ./files/telnet $(1)/etc/init.d/telnet
 	$(INSTALL_BIN) ./files/sysntpd $(1)/etc/init.d/sysntpd

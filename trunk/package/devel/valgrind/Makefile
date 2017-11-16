@@ -98,6 +98,7 @@ CONFIGURE_ARGS += \
 	--disable-tui \
 	--disable-valgrindtk \
 	--with-pagesize=4 \
+	--with-mpicc=/dev/null \
 	--without-included-gettext
 
 define Build/Install

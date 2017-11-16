@@ -26,17 +26,11 @@
 #include "prefix.h"
 #include "table.h"
 #include "queue.h"
+#include "lib/vrf.h"
 
 #define DISTANCE_INFINITY  255
 
 /* Routing information base. */
-
-union g_addr {
-  struct in_addr ipv4;
-#ifdef HAVE_IPV6
-  struct in6_addr ipv6;
-#endif /* HAVE_IPV6 */
-};
 
 struct rib
 {
@@ -254,10 +248,13 @@ struct nexthop
 #define NEXTHOP_FLAG_FIB        (1 << 1) /* FIB nexthop. */
 #define NEXTHOP_FLAG_RECURSIVE  (1 << 2) /* Recursive nexthop. */
 #define NEXTHOP_FLAG_ONLINK     (1 << 3) /* Nexthop should be installed onlink. */
+#define NEXTHOP_FLAG_MATCHED    (1 << 4) /* Already matched vs a nexthop */
+#define NEXTHOP_FLAG_FILTERED   (1 << 5) /* rmap filtered, used by static only */
 
   /* Nexthop address */
   union g_addr gate;
   union g_addr src;
+  union g_addr rmap_src;	/* Src is set via routemap */
 
   /* Nexthops obtained by recursive resolution.
    *
@@ -313,28 +310,6 @@ struct nexthop
     : ((nexthop)->next ? ((recursing) ? (nexthop)->next \
                                       : ((tnexthop) = (nexthop)->next)) \
                        : (((recursing) = 0),((tnexthop) = (tnexthop)->next)))
-
-/* Routing table instance.  */
-struct vrf
-{
-  /* Identifier.  This is same as routing table vector index.  */
-  u_int32_t id;
-
-  /* Routing table name.  */
-  char *name;
-
-  /* Description.  */
-  char *desc;
-
-  /* FIB identifier.  */
-  u_char fib_id;
-
-  /* Routing table.  */
-  struct route_table *table[AFI_MAX][SAFI_MAX];
-
-  /* Static route configuration.  */
-  struct route_table *stable[AFI_MAX][SAFI_MAX];
-};
 
 /*
  * rib_table_info_t
@@ -415,7 +390,6 @@ extern int rib_lookup_ipv4_route (struct prefix_ipv4 *, union sockunion *);
 extern struct nexthop *nexthop_ipv6_add (struct rib *, struct in6_addr *);
 #endif /* HAVE_IPV6 */
 
-extern struct vrf *vrf_lookup (u_int32_t);
 extern struct route_table *vrf_table (afi_t afi, safi_t safi, u_int32_t id);
 extern struct route_table *vrf_static_table (afi_t afi, safi_t safi, u_int32_t id);
 
@@ -484,7 +458,6 @@ static_delete_ipv6 (struct prefix *p, u_char type, struct in6_addr *gate,
 
 extern int rib_gc_dest (struct route_node *rn);
 extern struct route_table *rib_tables_iter_next (rib_tables_iter_t *iter);
-
 /*
  * Inline functions.
  */

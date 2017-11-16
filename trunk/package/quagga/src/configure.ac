@@ -305,7 +305,8 @@ if test "${enable_fpm}" = "yes"; then
    AC_DEFINE(HAVE_FPM,,Forwarding Plane Manager support)
 fi
 
-if test "${enable_zebra_mq}" = "yes" && test "${enable_tcp_zebra}" = "yes" && test "${enable_zebra}" = "no" ; then
+#if test "${enable_zebra_mq}" = "yes" && test "${enable_tcp_zebra}" = "yes" && test "${enable_zebra}" = "no" ; then
+if test "${enable_zebra_mq}" = "yes" && test "${enable_tcp_zebra}" = "yes" ; then
    AC_DEFINE(HAVE_ZEBRA_MQ,,Zebra message queue support)
 fi
 

@@ -17,10 +17,11 @@
   Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
   MA 02110-1301 USA
   
-  $QuaggaId: $Format:%an, %ai, %h$ $
 */
 
-#include "pim_mroute.h"
+#include <zebra.h>
+
+#include "zebra/rib.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -31,19 +32,20 @@
 #include <netdb.h>
 #include <errno.h>
 
-#include <zebra.h>
+#include "lib/zclient.h"
 #include "log.h"
 #include "privs.h"
-
+#include "if.h"
 #include "pimd.h"
+#include "pim_mroute.h"
 #include "pim_sock.h"
 #include "pim_str.h"
 #include "pim_igmp_join.h"
 
 /* GLOBAL VARS */
-extern struct zebra_privs_t pimd_privs;
 
-int pim_socket_raw(int protocol)
+int
+pim_socket_raw (int protocol)
 {
   int fd;
 
@@ -66,8 +68,59 @@ int pim_socket_raw(int protocol)
   return fd;
 }
 
-int pim_socket_mcast(int protocol, struct in_addr ifaddr, int loop)
+int
+pim_socket_ip_hdr (int fd)
 {
+  const int on = 1;
+  int ret;
+
+#ifdef HAVE_ZEBRA_MQ
+    return 0;
+#endif
+  if (pimd_privs.change (ZPRIVS_RAISE))
+    zlog_err ("%s: could not raise privs, %s",
+	      __PRETTY_FUNCTION__, safe_strerror (errno));
+
+  ret = setsockopt (fd, IPPROTO_IP, IP_HDRINCL, &on, sizeof (on));
+
+  if (pimd_privs.change (ZPRIVS_LOWER))
+    zlog_err ("%s: could not lower privs, %s",
+	      __PRETTY_FUNCTION__, safe_strerror (errno));
+
+  return ret;
+}
+
+/*
+ * Given a socket and a interface,
+ * Bind that socket to that interface
+ */
+int
+pim_socket_bind (int fd, struct interface *ifp)
+{
+  int ret;
+
+#ifdef HAVE_ZEBRA_MQ
+    return 0;
+#endif
+
+  if (pimd_privs.change (ZPRIVS_RAISE))
+    zlog_err ("%s: could not raise privs, %s",
+	      __PRETTY_FUNCTION__, safe_strerror (errno));
+
+  ret = setsockopt (fd, SOL_SOCKET,
+		    SO_BINDTODEVICE, ifp->name, strlen (ifp->name));
+
+  if (pimd_privs.change (ZPRIVS_LOWER))
+    zlog_err ("%s: could not lower privs, %s",
+	      __PRETTY_FUNCTION__, safe_strerror (errno));
+
+  return ret;
+}
+
+int pim_socket_mcast(int protocol, struct in_addr ifaddr, int ifindex, int loop)
+{
+  int rcvbuf = 1024 * 1024 * 8;
+  struct ip_mreqn mreq;
   int fd;
 
   fd = pim_socket_raw(protocol);
@@ -77,12 +130,33 @@ int pim_socket_mcast(int protocol, struct in_addr ifaddr, int loop)
     return PIM_SOCK_ERR_SOCKET;
   }
 
+#ifdef SO_BINDTODEVICE
+  if (protocol == IPPROTO_PIM)
+    {
+      int ret;
+      struct interface *ifp = NULL;
+
+      ifp = if_lookup_by_index_vrf (ifindex, VRF_DEFAULT);
+
+      ret = pim_socket_bind (fd, ifp);
+      if (ret)
+	{
+	  zlog_warn("Could not set fd: %d for interface: %s to device",
+		    fd, ifp->name);
+	  return PIM_SOCK_ERR_BIND;
+	}
+    }
+#else
+  /* XXX: use IP_PKTINFO / IP_RECVIF to emulate behaviour?  Or change to
+   * only use 1 socket for all interfaces? */
+#endif
+
   /* Needed to obtain destination address from recvmsg() */
   {
 #if defined(HAVE_IP_PKTINFO)
-    /* Linux IP_PKTINFO */
+    /* Linux and Solaris IP_PKTINFO */
     int opt = 1;
-    if (setsockopt(fd, SOL_IP, IP_PKTINFO, &opt, sizeof(opt))) {
+    if (setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &opt, sizeof(opt))) {
       zlog_warn("Could not set IP_PKTINFO on socket fd=%d: errno=%d: %s",
 		fd, errno, safe_strerror(errno));
     }
@@ -149,13 +223,33 @@ int pim_socket_mcast(int protocol, struct in_addr ifaddr, int loop)
     return PIM_SOCK_ERR_LOOP;
   }
 
+  memset (&mreq, 0, sizeof (mreq));
+  mreq.imr_ifindex = ifindex;
+#ifndef HAVE_ZEBRA_MQ
   if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
-		 (void *) &ifaddr, sizeof(ifaddr))) {
+		 (void *) &mreq, sizeof(mreq))) {
     zlog_warn("Could not set Outgoing Interface Option on socket fd=%d: errno=%d: %s",
 	      fd, errno, safe_strerror(errno));
     close(fd);
     return PIM_SOCK_ERR_IFACE;
   }
+#else
+  if (PIM_DEBUG_PIM_TRACE) {
+    zlog_debug("%s: VC_SCALL IP_MULTICAST_IF ifindex %d",
+	       __PRETTY_FUNCTION__,
+	       ifindex);
+  }
+  if (zclient_send_ip_multicast_if(qpim_zclient_update, &mreq)) {
+      zlog_warn("Could not set Outgoing Interface Option on socket fd=%d: errno=%d: %s",
+              fd, errno, safe_strerror(errno));
+      close(fd);
+      return PIM_SOCK_ERR_IFACE;
+  }
+#endif
+
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf)))
+      zlog_warn("%s: Failure to set buffer size to %d",
+		__PRETTY_FUNCTION__, rcvbuf);
 
   {
     long flags;
@@ -180,7 +274,7 @@ int pim_socket_mcast(int protocol, struct in_addr ifaddr, int loop)
 }
 
 int pim_socket_join(int fd, struct in_addr group,
-		    struct in_addr ifaddr, int ifindex)
+		    struct in_addr ifaddr, ifindex_t ifindex)
 {
   int ret;
 
@@ -188,6 +282,33 @@ int pim_socket_join(int fd, struct in_addr group,
   struct ip_mreqn opt;
 #else
   struct ip_mreq opt;
+#endif
+
+#ifdef HAVE_ZEBRA_MQ
+  ret = zclient_send_ip_add_membership(qpim_zclient_update, group.s_addr, ifindex);
+  if (ret) {
+    char group_str[INET_ADDRSTRLEN];
+    char ifaddr_str[INET_ADDRSTRLEN];
+    if (!inet_ntop(AF_INET, &group, group_str , sizeof(group_str)))
+      sprintf(group_str, "<group?>");
+    if (!inet_ntop(AF_INET, &ifaddr, ifaddr_str , sizeof(ifaddr_str)))
+      sprintf(ifaddr_str, "<ifaddr?>");
+
+    zlog_err("Failure socket joining fd=%d group %s on interface address %s: errno=%d: %s",
+	     fd, group_str, ifaddr_str, errno, safe_strerror(errno));
+    return ret;
+  }
+  if (PIM_DEBUG_PIM_TRACE) {
+    char ifaddr_str[INET_ADDRSTRLEN];
+    char group_str[INET_ADDRSTRLEN];
+    pim_inet4_dump("<ifaddr?>", ifaddr, ifaddr_str, sizeof(ifaddr_str));
+    pim_inet4_dump("<group?>", group, group_str, sizeof(group_str));
+    zlog_debug("%s: VC_SCALL IP_ADD_MEMBERSHIP ifaddr %s grp %s ifindex %d",
+	       __PRETTY_FUNCTION__,
+	       ifaddr_str, group_str,
+           ifindex);
+  }
+  return 0;
 #endif
 
   opt.imr_multiaddr = group;
@@ -201,8 +322,8 @@ int pim_socket_join(int fd, struct in_addr group,
 
   ret = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &opt, sizeof(opt));
   if (ret) {
-    char group_str[100];
-    char ifaddr_str[100];
+    char group_str[INET_ADDRSTRLEN];
+    char ifaddr_str[INET_ADDRSTRLEN];
     if (!inet_ntop(AF_INET, &group, group_str , sizeof(group_str)))
       sprintf(group_str, "<group?>");
     if (!inet_ntop(AF_INET, &ifaddr, ifaddr_str , sizeof(ifaddr_str)))
@@ -214,8 +335,8 @@ int pim_socket_join(int fd, struct in_addr group,
   }
 
   if (PIM_DEBUG_TRACE) {
-    char group_str[100];
-    char ifaddr_str[100];
+    char group_str[INET_ADDRSTRLEN];
+    char ifaddr_str[INET_ADDRSTRLEN];
     if (!inet_ntop(AF_INET, &group, group_str , sizeof(group_str)))
       sprintf(group_str, "<group?>");
     if (!inet_ntop(AF_INET, &ifaddr, ifaddr_str , sizeof(ifaddr_str)))
@@ -228,21 +349,33 @@ int pim_socket_join(int fd, struct in_addr group,
   return ret;
 }
 
-int pim_socket_join_source(int fd, int ifindex,
+int pim_socket_join_source(int fd, ifindex_t ifindex,
 			   struct in_addr group_addr,
 			   struct in_addr source_addr,
 			   const char *ifname)
 {
+#ifdef HAVE_ZEBRA_MQ
+  if (PIM_DEBUG_PIM_TRACE) {
+    char src_str[INET_ADDRSTRLEN];
+    char group_str[INET_ADDRSTRLEN];
+    pim_inet4_dump("<src?>", source_addr, src_str, sizeof(src_str));
+    pim_inet4_dump("<group?>", group_addr, group_str, sizeof(group_str));
+    zlog_debug("%s: VC_SCALL MCAST_JOIN_SOURCE_GROUP src_addr %s grp_addr %s",
+	       __PRETTY_FUNCTION__,
+	       src_str, group_str);
+  }
+  return zclient_send_mcast_join_source_group(qpim_zclient_update, group_addr.s_addr, source_addr.s_addr, ifindex);
+#endif
+
   if (pim_igmp_join_source(fd, ifindex, group_addr, source_addr)) {
-    int e = errno;
-    char group_str[100];
-    char source_str[100];
+    char group_str[INET_ADDRSTRLEN];
+    char source_str[INET_ADDRSTRLEN];
     pim_inet4_dump("<grp?>", group_addr, group_str, sizeof(group_str));
     pim_inet4_dump("<src?>", source_addr, source_str, sizeof(source_str));
     zlog_warn("%s: setsockopt(fd=%d) failure for IGMP group %s source %s ifindex %d on interface %s: errno=%d: %s",
 	      __PRETTY_FUNCTION__,
 	      fd, group_str, source_str, ifindex, ifname,
-	      e, safe_strerror(e));
+	      errno, safe_strerror(errno));
     return -1;
   }
 
@@ -252,7 +385,7 @@ int pim_socket_join_source(int fd, int ifindex,
 int pim_socket_recvfromto(int fd, uint8_t *buf, size_t len,
 			  struct sockaddr_in *from, socklen_t *fromlen,
 			  struct sockaddr_in *to, socklen_t *tolen,
-			  int *ifindex)
+			  ifindex_t *ifindex)
 {
   struct msghdr msgh;
   struct cmsghdr *cmsg;
@@ -267,17 +400,14 @@ int pim_socket_recvfromto(int fd, uint8_t *buf, size_t len,
   if (to) {
     struct sockaddr_in si;
     socklen_t si_len = sizeof(si);
-    
-    ((struct sockaddr_in *) to)->sin_family = AF_INET;
 
-    if (pim_socket_getsockname(fd, (struct sockaddr *) &si, &si_len)) {
-      ((struct sockaddr_in *) to)->sin_port        = ntohs(0);
-      ((struct sockaddr_in *) to)->sin_addr.s_addr = ntohl(0);
-    }
-    else {
-      ((struct sockaddr_in *) to)->sin_port = si.sin_port;
-      ((struct sockaddr_in *) to)->sin_addr = si.sin_addr;
-    }
+    memset (&si, 0, sizeof (si));
+    to->sin_family = AF_INET;
+
+    pim_socket_getsockname(fd, (struct sockaddr *) &si, &si_len);
+
+    to->sin_port = si.sin_port;
+    to->sin_addr = si.sin_addr;
 
     if (tolen) 
       *tolen = sizeof(si);
@@ -306,7 +436,7 @@ int pim_socket_recvfromto(int fd, uint8_t *buf, size_t len,
        cmsg = CMSG_NXTHDR(&msgh,cmsg)) {
 
 #ifdef HAVE_IP_PKTINFO
-    if ((cmsg->cmsg_level == SOL_IP) && (cmsg->cmsg_type == IP_PKTINFO)) {
+    if ((cmsg->cmsg_level == IPPROTO_IP) && (cmsg->cmsg_type == IP_PKTINFO)) {
       struct in_pktinfo *i = (struct in_pktinfo *) CMSG_DATA(cmsg);
       if (to)
 	((struct sockaddr_in *) to)->sin_addr = i->ipi_addr;
@@ -314,14 +444,6 @@ int pim_socket_recvfromto(int fd, uint8_t *buf, size_t len,
 	*tolen = sizeof(struct sockaddr_in);
       if (ifindex)
 	*ifindex = i->ipi_ifindex;
-
-      if (to && PIM_DEBUG_PACKETS) {
-	char to_str[100];
-	pim_inet4_dump("<to?>", to->sin_addr, to_str, sizeof(to_str));
-	zlog_debug("%s: HAVE_IP_PKTINFO to=%s,%d",
-		   __PRETTY_FUNCTION__,
-		   to_str, ntohs(to->sin_port));
-      }
 
       break;
     }
@@ -334,14 +456,6 @@ int pim_socket_recvfromto(int fd, uint8_t *buf, size_t len,
 	((struct sockaddr_in *) to)->sin_addr = *i;
       if (tolen)
 	*tolen = sizeof(struct sockaddr_in);
-
-      if (to && PIM_DEBUG_PACKETS) {
-	char to_str[100];
-	pim_inet4_dump("<to?>", to->sin_addr, to_str, sizeof(to_str));
-	zlog_debug("%s: HAVE_IP_RECVDSTADDR to=%s,%d",
-		   __PRETTY_FUNCTION__,
-		   to_str, ntohs(to->sin_port));
-      }
 
       break;
     }

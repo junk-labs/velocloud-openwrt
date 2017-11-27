@@ -35,6 +35,7 @@
 #include "prefix.h"
 #include "routemap.h"
 
+#include "lib/vrf.h"
 #include "zebra/rib.h"
 #include "zebra/rt.h"
 #include "zebra/zserv.h"
@@ -42,6 +43,7 @@
 #include "zebra/debug.h"
 #include "zebra/zebra_fpm.h"
 
+extern vector vrf_vector;
 /* Default rtm_table for all clients */
 extern struct zebra_t zebrad;
 
@@ -72,11 +74,10 @@ static const struct
   /* no entry/default: 150 */
 };
 
-/* Vector for routing table.  */
-static vector vrf_vector;
-
 /* RPF lookup behaviour */
 static enum multicast_mode ipv4_multicast_mode = MCAST_NO_CONFIG;
+
+
 
 static void
 _rnode_zlog(const char *_func, struct route_node *rn, int priority,
@@ -112,76 +113,6 @@ _rnode_zlog(const char *_func, struct route_node *rn, int priority,
 #define rnode_info(node, ...) \
 	_rnode_zlog(__func__, node, LOG_INFO, __VA_ARGS__)
 
-/*
- * vrf_table_create
- */
-static void
-vrf_table_create (struct vrf *vrf, afi_t afi, safi_t safi)
-{
-  rib_table_info_t *info;
-  struct route_table *table;
-
-  assert (!vrf->table[afi][safi]);
-
-  table = route_table_init ();
-  vrf->table[afi][safi] = table;
-
-  info = XCALLOC (MTYPE_RIB_TABLE_INFO, sizeof (*info));
-  info->vrf = vrf;
-  info->afi = afi;
-  info->safi = safi;
-  table->info = info;
-}
-
-/* Allocate new VRF.  */
-static struct vrf *
-vrf_alloc (const char *name)
-{
-  struct vrf *vrf;
-
-  vrf = XCALLOC (MTYPE_VRF, sizeof (struct vrf));
-
-  /* Put name.  */
-  if (name)
-    vrf->name = XSTRDUP (MTYPE_VRF_NAME, name);
-
-  /* Allocate routing table and static table.  */
-  vrf_table_create (vrf, AFI_IP, SAFI_UNICAST);
-  vrf_table_create (vrf, AFI_IP6, SAFI_UNICAST);
-  vrf->stable[AFI_IP][SAFI_UNICAST] = route_table_init ();
-  vrf->stable[AFI_IP6][SAFI_UNICAST] = route_table_init ();
-  vrf_table_create (vrf, AFI_IP, SAFI_MULTICAST);
-  vrf_table_create (vrf, AFI_IP6, SAFI_MULTICAST);
-  vrf->stable[AFI_IP][SAFI_MULTICAST] = route_table_init ();
-  vrf->stable[AFI_IP6][SAFI_MULTICAST] = route_table_init ();
-
-
-  return vrf;
-}
-
-/* Lookup VRF by identifier.  */
-struct vrf *
-vrf_lookup (u_int32_t id)
-{
-  return vector_lookup (vrf_vector, id);
-}
-
-/* Initialize VRF.  */
-static void
-vrf_init (void)
-{
-  struct vrf *default_table;
-
-  /* Allocate VRF vector.  */
-  vrf_vector = vector_init (1);
-
-  /* Allocate default main table.  */
-  default_table = vrf_alloc ("Default-IP-Routing-Table");
-
-  /* Default table index must be 0.  */
-  vector_set_index (vrf_vector, 0, default_table);
-}
-
 /* Lookup route table.  */
 struct route_table *
 vrf_table (afi_t afi, safi_t safi, u_int32_t id)
@@ -213,6 +144,7 @@ vrf_static_table (afi_t afi, safi_t safi, u_int32_t id)
 
   return vrf->stable[afi][safi];
 }
+
 
 /*
  * nexthop_type_to_str

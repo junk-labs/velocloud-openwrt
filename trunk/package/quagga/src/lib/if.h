@@ -37,6 +37,8 @@ Boston, MA 02111-1307, USA.  */
 #define INSTANCE_NAMSIZ       128
 #define INTERFACE_HWADDR_MAX  20
 
+typedef signed int ifindex_t;
+
 #ifdef HAVE_PROC_NET_DEV
 struct if_stats
 {
@@ -248,11 +250,15 @@ extern struct interface *if_lookup_by_index (unsigned int);
 extern struct interface *if_lookup_exact_address (struct in_addr);
 extern struct interface *if_lookup_address (struct in_addr);
 extern struct interface *if_lookup_prefix (struct prefix *prefix);
+extern struct interface *
+if_lookup_by_index_vrf (ifindex_t ifindex, vrf_id_t vrf_id);
 
 /* These 2 functions are to be used when the ifname argument is terminated
    by a '\0' character: */
 extern struct interface *if_lookup_by_name (const char *ifname);
 extern struct interface *if_get_by_name (const char *ifname);
+extern struct interface *
+if_lookup_by_name_vrf (const char *name, vrf_id_t vrf_id);
 
 /* For these 2 functions, the namelen argument should be the precise length
    of the ifname string (not counting any optional trailing '\0' character).
@@ -280,7 +286,11 @@ extern int if_is_pointopoint (struct interface *);
 extern int if_is_multicast (struct interface *);
 extern void if_add_hook (int, int (*)(struct interface *));
 extern void if_init (void);
+extern void
+if_init_list (struct list **intf_list);
 extern void if_terminate (void);
+extern void
+if_terminate_list (struct list **intf_list);
 extern void if_dump_all (void);
 extern const char *if_flag_dump(unsigned long);
 

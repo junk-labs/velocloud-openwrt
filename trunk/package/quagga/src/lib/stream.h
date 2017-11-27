@@ -185,6 +185,12 @@ extern u_int32_t stream_getl_from (struct stream *, size_t);
 extern uint64_t stream_getq (struct stream *);
 extern uint64_t stream_getq_from (struct stream *, size_t);
 extern u_int32_t stream_get_ipv4 (struct stream *);
+extern u_int32_t
+stream_get3 (struct stream *s);
+extern u_int32_t
+stream_get3_from (struct stream *s, size_t from);
+extern int
+stream_put3 (struct stream *s, u_int32_t l);
 
 #undef stream_read
 #undef stream_write

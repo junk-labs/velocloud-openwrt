@@ -71,6 +71,7 @@ struct zclient
   u_char default_information;
 
   /* Pointer to the callback functions. */
+  void (*zebra_connected) (struct zclient *);
   int (*router_id_update) (int, struct zclient *, uint16_t);
   int (*interface_add) (int, struct zclient *, uint16_t);
   int (*interface_delete) (int, struct zclient *, uint16_t);
@@ -82,6 +83,7 @@ struct zclient
   int (*ipv4_route_delete) (int, struct zclient *, uint16_t);
   int (*ipv6_route_add) (int, struct zclient *, uint16_t);
   int (*ipv6_route_delete) (int, struct zclient *, uint16_t);
+  int (*nexthop_update) (int, struct zclient *, uint16_t);
 #ifdef HAVE_ZEBRA_MQ
   int (*proto_mq_recv) (int, struct zclient *, uint16_t);
 #endif
@@ -162,6 +164,26 @@ struct zapi_redis
   int type;
 };
 
+#ifndef HAVE_VIFI_T
+typedef unsigned short vifi_t;
+#endif
+
+#ifdef HAVE_ZEBRA_MQ
+#define ZEB_MAXVIFS (256 + (256 * 4)) // 256 underlay + 1K overlay support
+
+struct zeb_mfcctl {
+  struct in_addr mfcc_origin;             /* Origin of mcast      */
+  struct in_addr mfcc_mcastgrp;           /* Group in question    */
+  vifi_t         mfcc_parent;             /* Where it arrived     */
+  unsigned char  mfcc_ttls[ZEB_MAXVIFS];  /* Where it is going    */
+  unsigned int   mfcc_pkt_cnt;            /* pkt count for src-grp */
+  unsigned int   mfcc_byte_cnt;
+  unsigned int   mfcc_wrong_if;
+  int            mfcc_expire;
+};
+#endif
+
+
 /* Prototypes of zebra client service functions. */
 extern struct zclient *zclient_new (void);
 extern void zclient_init (struct zclient *, int);
@@ -198,6 +220,57 @@ extern void zebra_interface_if_set_value (struct stream *, struct interface *);
 extern void zebra_router_id_update_read (struct stream *s, char *iname, struct prefix *rid);
 extern int zapi_ipv4_route (u_char, struct zclient *, struct prefix_ipv4 *, 
                             struct zapi_ipv4 *);
+extern struct interface *
+zebra_interface_add_read_vrf (struct stream *s, vrf_id_t vrf_id);
+extern struct interface *
+zebra_interface_state_read_vrf (struct stream *s, vrf_id_t vrf_id);
+extern struct connected *
+zebra_interface_address_read_vrf (int type, struct stream *s, vrf_id_t vrf_id);
+extern void
+zclient_init_vrf (struct zclient *zclient, int redist_default, u_short id);
+extern void
+zclient_redistribute_default_vrf (int command, struct zclient *zclient, vrf_id_t vrf_id);
+extern int
+zclient_read_header (struct stream *s, int sock, u_int16_t *size, u_char *marker,
+                     u_char *version, vrf_id_t *vrf_id, u_int16_t *cmd);
+extern void
+zclient_create_header_vrf (struct stream *s, uint16_t command, vrf_id_t vrf_id);
+#ifdef HAVE_ZEBRA_MQ
+struct mfcctl;
+#else
+struct zeb_mfcctl;
+#endif
+struct vifctl;
+extern int
+zclient_send_mrt_init(struct zclient *zclient);
+extern int
+zclient_send_mrt_done(struct zclient *zclient);
+extern int
+zclient_send_igmpmsg_wrvifwhole(struct zclient *zclient);
+extern int
+zclient_send_ip_multicast_if(struct zclient *zclient, struct ip_mreqn *mreq);
+extern int
+zclient_send_ip_add_membership(struct zclient *zclient, uint32_t grp_addr, uint32_t ifindex);
+extern int
+zclient_send_ip_del_membership(struct zclient *zclient, uint32_t grp_addr, uint32_t ifindex);
+#ifdef HAVE_ZEBRA_MQ
+extern int
+zclient_send_mrt_add_mfc(struct zclient *zclient, struct zeb_mfcctl *oil);
+extern int
+zclient_send_mrt_del_mfc(struct zclient *zclient, struct zeb_mfcctl *oil);
+#else
+extern int
+zclient_send_mrt_add_mfc(struct zclient *zclient, struct mfcctl *oil);
+extern int
+zclient_send_mrt_del_mfc(struct zclient *zclient, struct mfcctl *oil);
+#endif
+extern int
+zclient_send_mcast_join_source_group(struct zclient *zclient, uint32_t group_addr, uint32_t source_addr, uint32_t
+        ifindex);
+extern int
+zclient_send_mrt_add_vif(struct zclient *zclient, struct vifctl *vc);
+extern int
+zclient_send_mrt_del_vif(struct zclient *zclient, struct vifctl *vc);
 
 #ifdef HAVE_IPV6
 /* IPv6 prefix add and delete function prototype. */

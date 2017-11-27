@@ -89,7 +89,7 @@
 
 # ZTE
 19d2:1405 autoconnected device with webadmin control in 192.168.0.1 (e.g. MF823)
-19d2:1181 ecm
+#19d2:1181 this is an icera-based ZTE modem, needs AT management
 19d2:1003 ecm
 19d2:1015 ecm
 19d2:1024 ecm

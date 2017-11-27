@@ -98,6 +98,14 @@ struct prefix_ptr
   uintptr_t prefix __attribute__ ((aligned (8)));
 };
 
+struct prefix_sg
+{
+  u_char family;
+  u_char prefixlen;
+  struct in_addr src __attribute ((aligned (8)));
+  struct in_addr grp;
+};
+
 /* helper to get type safety/avoid casts on calls
  * (w/o this, functions accepting all prefix types need casts on the caller
  * side, which strips type safety since the cast will accept any pointer
@@ -128,6 +136,10 @@ union prefix46constptr
 #ifndef INET6_BUFSIZ
 #define INET6_BUFSIZ 51
 #endif /* INET6_BUFSIZ */
+
+/* Maximum prefix string length (IPv6) */
+#define PREFIX_STRLEN 51
+#define PREFIX2STR_BUFFER  PREFIX_STRLEN
 
 /* Max bit/byte length of IPv4 address. */
 #define IPV4_MAX_BYTELEN    4

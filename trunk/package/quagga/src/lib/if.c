@@ -23,6 +23,8 @@
 
 #include <zebra.h>
 
+#include "lib/vrf.h"
+
 #include "linklist.h"
 #include "vector.h"
 #include "vty.h"
@@ -37,7 +39,7 @@
 #include "log.h"
 
 /* Master list of interfaces. */
-struct list *iflist;
+struct list *iflist = NULL;
 
 /* One for each program.  This structure is needed to store hooks. */
 struct if_master
@@ -193,6 +195,21 @@ if_lookup_by_index (unsigned int index)
   return NULL;
 }
 
+struct interface *
+if_lookup_by_index_vrf (ifindex_t ifindex, vrf_id_t vrf_id)
+{
+  struct listnode *node;
+  struct interface *ifp;
+
+  for (ALL_LIST_ELEMENTS_RO (vrf_iflist (vrf_id), node, ifp))
+    {
+      if (ifp->ifindex == ifindex)
+	return ifp;
+    }
+  return NULL;
+}
+
+
 const char *
 ifindex2ifname (unsigned int index)
 {
@@ -209,6 +226,22 @@ ifname2ifindex (const char *name)
 
   return ((ifp = if_lookup_by_name(name)) != NULL) ? ifp->ifindex
                                                    : IFINDEX_INTERNAL;
+}
+
+/* Interface existance check by interface name. */
+struct interface *
+if_lookup_by_name_vrf (const char *name, vrf_id_t vrf_id)
+{
+  struct listnode *node;
+  struct interface *ifp;
+  
+  if (name)
+    for (ALL_LIST_ELEMENTS_RO (vrf_iflist (vrf_id), node, ifp))
+      {
+        if (strcmp(name, ifp->name) == 0)
+          return ifp;
+      }
+  return NULL;
 }
 
 /* Interface existance check by interface name. */
@@ -886,6 +919,23 @@ ifaddr_ipv4_lookup (struct in_addr *addr, unsigned int ifindex)
 
 /* Initialize interface list. */
 void
+if_init_list (struct list **intf_list)
+{
+  *intf_list = list_new ();
+#if 0
+  ifaddr_ipv4_table = route_table_init ();
+#endif /* ifaddr_ipv4_table */
+
+  if (*intf_list) {
+    (*intf_list)->cmp = (int (*)(void *, void *))if_cmp_func;
+    return;
+  }
+
+  return;
+}
+
+/* Initialize interface list. */
+void
 if_init (void)
 {
   iflist = list_new ();
@@ -917,4 +967,22 @@ if_terminate (void)
 
   list_delete (iflist);
   iflist = NULL;
+}
+
+void
+if_terminate_list (struct list **intf_list)
+{
+  for (;;)
+    {
+      struct interface *ifp;
+
+      ifp = listnode_head (*intf_list);
+      if (ifp == NULL)
+	break;
+
+      if_delete (ifp);
+    }
+
+  list_delete (*intf_list);
+  *intf_list = NULL;
 }

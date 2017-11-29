@@ -463,7 +463,7 @@ define Host/Configure
 		rm -rf config.cache; \
 		CONFIG_SITE= \
 		OPT="$(HOST_CFLAGS)" \
-		./configure --without-cxx-main --with-threads --prefix=$(STAGING_DIR_HOST); \
+		./configure --without-cxx-main --with-threads --enable-unicode=ucs4 --prefix=$(STAGING_DIR_HOST); \
 	)
 endef
 

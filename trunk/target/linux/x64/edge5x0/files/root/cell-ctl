@@ -149,6 +149,11 @@ usb-qmi)
 usb-mbim)
 	set_usb 8
 	;;
+fw-info)
+	qmicli -d $qmidev --dms-list-stored-images
+	qmicli -d $qmidev --dms-swi-get-current-firmware
+	qmicli -d $qmidev --dms-get-firmware-preference
+	;;
 sim)
 	if [ "$2" = "enable" ]; then
 		echo 1 > $slotb/sim_enable
@@ -210,6 +215,7 @@ help)
 	echo "  imei         - dump just the IMEI"
 	echo "  usb-qmi      - set usb composition to QMI mode"
 	echo "  usb-mbim     - set usb composition to MBIM mode"
+	echo "  fw-info      - dump firmware images and info"
 	echo "  sim disable  - enable the current SIM slot, disable before switching SIMs"
 	echo "  sim enable   - enable the current SIM slot, enable after switching SIMs"
 	echo "  sim1         - select SIM1 (bottom) via on-board mux"

@@ -1,0 +1,491 @@
+#!/bin/sh
+#set -x
+
+# where firmware directory is located;
+fwpath=/x/images/firmware/sierra-wireless
+fwdir=SWI9X30C_02.24
+
+# prefix of firmware files;
+fwpre=SWI9X30C_
+
+# expected firmwares, carrier configs, and default carrier preference;
+
+fw_7455="02.24.03.00 02.24.05.06"
+ca_7455="02.24.03.00_Sprint 02.24.05.06_GENERIC 02.24.05.06_ATT 02.24.05.06_VERIZON"
+capref_7455=ATT
+
+fw_7430="02.24.05.06"
+ca_7430="02.24.05.06_GENERIC 02.24.05.06_DOCOMO 02.24.05.06_KDDI 02.24.05.06_TELSTRA 02.24.05.06_Softbank"
+capref_7430=TELSTRA
+
+# single-carrier-only example;
+
+fw_att="02.24.05.06"
+ca_att="02.24.05.06_ATT"
+capref_att=ATT
+
+# sysfs/dev files;
+
+slotb=/sys/devices/platform/vc/slotb
+usbdev=/sys/bus/usb/devices/1-1.3
+
+# match substring;
+
+strstr() {
+	if [ "${1//${2}*}" != "${1}" ]; then
+		return 1
+	else
+		return 0
+	fi
+}
+
+# wait for modem to be gone;
+# $1 is timeout in secs;
+
+wait_off() {
+	to=$1;
+	while [ $to -gt 0 -a -L $usbdev ]; do sleep 1; to=$(($to - 1)); done;
+	if [ $to -lt 0 ]; then
+		echo 'error: modem did not turn off'
+		exit 10
+	fi
+}
+
+# wait for modem to be there;
+# $1 is timeout in secs for usb to appear;
+# $2 is additional wait for modem sw to run;
+
+wait_on() {
+	to=$1;
+	while [ $to -gt 0 -a ! -L $usbdev ]; do sleep 1; to=$(($to - 1)); done;
+	if [ $to -lt 0 ]; then
+		echo 'error: modem did not turn off'
+		exit 11
+	fi
+	sleep $2
+}
+
+# idle all modem handling;
+
+cell_kill() {
+	/etc/init.d/ModemManager stop > /dev/null 2>&1
+	killall -q mbim-proxy qmi-proxy mm_run.sh
+}
+
+# get current images;
+
+get_cur_img() {
+	local bids;
+	bids=$(qmicli -d /dev/cdc-wdm0 --dms-list-stored-images | grep -i 'build id:\|type' | awk -e '{ print $3 }')
+	echo $bids
+}
+
+# get current firmware info;
+# returns current ids;
+
+get_cur_fw() {
+	qmicli -d /dev/cdc-wdm0 --dms-list-stored-images >> $1
+	ids=$(get_cur_img)
+	echo -e "Current firmware IDs:\n$ids" >> $1
+	echo $ids
+}
+
+# see if we have firmware path;
+
+#if [ ! -d $fwpath ]; then
+	#echo "error: firmware path $fwpath not mounted?"
+	#exit 1
+#fi
+
+# process options;
+
+fwexp=""
+caexp=""
+capref=""
+
+while [ "$#" -gt 0 ]; do
+	case $1 in
+	help)
+		echo "usage: $0 [commands|config|carrier]"
+		echo " help     - print help"
+		echo " na       - north-american carriers"
+		echo " ap       - asia-pacific carriers"
+		exit 20
+		;;
+
+	# all north-america;
+	na)
+		caexp=$ca_7455
+		;;
+
+	# all asia-pacific;
+	ap)
+		caexp=$ca_7430
+		;;
+
+	# valid preferred carriers;
+	GENERIC)
+		capref=$1
+		;;
+	ATT|VERIZON|Sprint)
+		capref=$1
+		;;
+	DOCOMO|KDDI|TELSTRA|Softbank)
+		capref=$1
+		;;
+
+	# ATT-only;
+	att-only)
+		fwexp=$fw_att
+		caexp=$ca_att
+		capref=$capref_att
+		;;
+
+	*)
+		echo "error: unknown command or config: $1"
+		exit 2
+		;;
+	esac
+	shift
+done
+
+# disabling modem;
+
+echo 'Disabling modem'
+echo 0 > $slotb/reset
+echo 0 > $slotb/power
+cell_kill
+wait_off 10
+
+# power-on without sim to get info;
+
+echo 'Powering modem without SIM'
+echo 1 > $slotb/sim_enable
+echo 1 > $slotb/reset
+echo 1 > $slotb/power
+wait_on 15 20;
+cell_kill
+
+# get model and model-specific assigns;
+
+model=$(qmicli -d /dev/cdc-wdm0 --dms-get-model | grep -i 'model:' | awk -e '{print $2}')
+case $model in
+*EM7455*)
+	fw_model=$fw_7455
+	fw_ca=na
+	ca_model=$ca_7455
+	capref_model=$capref_7455
+	;;
+*EM7430*)
+	fw_model=$fw_7430
+	fw_ca=ap
+	ca_model=$ca_7430
+	capref_model=$capref_7430
+	;;
+*)
+	echo "error: model $model not supported"
+	exit 3
+	;;
+esac
+
+if [ -z "$fwexp" ]; then
+	fwexp=$fw_model
+fi
+
+# check that carrier configs match model;
+
+if [ -z "$caexp" ]; then
+	caexp=$ca_model;
+else
+	for ca in $caexp; do
+		caval=""
+		for cam in $ca_model; do
+			if [ "$cam" = "$ca" ]; then
+				caval=1
+				break
+			fi
+		done
+		if [ -z "$caval" ]; then
+			echo "error: invalid carrier config $ca for $model"
+			exit 15
+		fi
+	done
+fi
+
+if [ -z "$capref" ]; then
+	capref=$capref_model
+else
+	caval=""
+	for ca in $caexp; do
+		strstr $ca $capref
+		if [ "$?" -eq 1 ]; then
+			caval=1
+			break;
+		fi
+	done
+	if [ -z "$caval" ]; then
+		echo "error: invalid carrier preference $capref for $model"
+		exit 16
+	fi
+fi
+
+# get imei from card;
+# do not use $log before this;
+
+imei=$(qmicli -d /dev/cdc-wdm0 --dms-get-ids | grep IMEI | awk -e '{print $2}')
+log=/root/imei-$imei
+echo -e "\nfirmware update: $(date)\n" >> $log
+
+echo "Model $model, imei $imei, carriers $caexp, preferred $capref"
+
+# get current firmware;
+
+echo "Saving current modem info into $log"
+echo 'current cellular modem' >> $log
+qmicli -d /dev/cdc-wdm0 --dms-get-manufacturer >> $log
+qmicli -d /dev/cdc-wdm0 --dms-get-model >> $log
+qmicli -d /dev/cdc-wdm0 --dms-get-capabilities >> $log
+qmicli -d /dev/cdc-wdm0 --dms-get-band-capabilities >> $log
+qmicli -d /dev/cdc-wdm0 --dms-swi-get-current-firmware >> $log
+ids=$(get_cur_fw $log)
+
+# determine if update is needed;
+
+upd=0
+fwneed=0
+fwhave=0
+caneed=0
+cahave=0
+
+idx=0
+for fw in $fwexp; do
+	fwneed=$(($fwneed | (1 << $idx)))
+	idx=$(($idx + 1))
+done
+idx=0
+for ca in $caexp; do
+	caneed=$(($caneed | (1 << $idx)))
+	idx=$(($idx + 1))
+done
+if [ "$fwneed" -eq 0 ]; then
+	echo "error: no firmwares configured"
+	exit 4
+fi
+if [ "$caneed" -eq 0 ]; then
+	echo "error: no carriers configured"
+	exit 5
+fi
+
+# check what the card has installed;
+
+for id in $ids; do
+	echo "  $id" >> $log
+	idx=0
+	for fw in $fwexp; do
+		strstr $id $fw
+		if [ "$?" -eq 1 ]; then
+			fwhave=$(($fwhave | (1 << $idx)))
+		fi
+		idx=$(($idx + 1))
+	done
+	idx=0
+	for ca in $caexp; do
+		cau=$(echo $ca | tr '[a-z]' '[A-Z]')
+		strstr $id $cau
+		if [ "$?" -eq 1 ]; then
+			cahave=$(($cahave | (1 << $idx)))
+		fi
+		idx=$(($idx + 1))
+	done
+done
+
+#echo "FW have $fwhave need $fwneed"
+#echo "CA have $cahave need $caneed"
+
+if [ "$fwneed" -ne "$fwhave" ]; then
+	echo "Some required firmwares are missing, reflashing ..."
+	upd=1
+fi
+if [ "$caneed" -ne "$cahave" ]; then
+	echo "Some required carrier configs are missing, reflashing ..."
+	upd=1
+fi
+
+if [ "$upd" != "1" ]; then
+	echo "Nothing to update"
+	exit 0
+fi
+
+# verify fw files;
+
+echo "Validating firmware files"
+fwfiles=$(find $fwpath/$fwdir -regex ".*\.\(nvu\|spk\|cwe\)")
+for fwfile in $fwfiles; do
+	echo "File: $fwfile"
+	echo "File: $fwfile" >> $log
+	qmi-firmware-update -v -z $fwfile >> $log
+	if [ $? -ne 0 ]; then
+		echo "Firmware file $fwfile corrupted"
+		exit 6
+	fi
+done
+
+# remove old firmware;
+# the running one cannot be removed though, even it is not listed;
+
+echo "Removing old firmware images"
+qmicli -d /dev/cdc-wdm0 --dms-set-firmware-preference=image0,pri0,GENERIC
+num=4
+while [ "$num" -gt 0 ]; do
+	qmicli -d /dev/cdc-wdm0 --dms-delete-stored-image=modem0
+	num=$(($num - 1))
+done
+echo "Removing old carrier configs"
+num=10
+while [ "$num" -gt 0 ]; do
+	qmicli -d /dev/cdc-wdm0 --dms-delete-stored-image=pri0
+	num=$(($num - 1))
+done
+
+# reboot to DFU;
+# link carrier configs to firmwares;
+
+for fw in $fwexp; do
+	fwca="$fwpath/$fwdir/${fwpre}${fw}.cwe"
+	for ca in $caexp; do
+		strstr $ca $fw
+		if [ "$?" -eq 1 ]; then
+			fwca="$fwca $fwpath/$fwdir/$fw_ca/${fwpre}${ca}*.nvu";
+		fi
+	done
+	echo "Flashing firmware $fwca ..."
+	qmicli -d /dev/cdc-wdm0 --dms-set-firmware-preference=image0,pri0,GENERIC
+
+	echo "Rebooting modem to DFU"
+	qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode=offline
+	qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode=reset
+	wait_off 30;
+	wait_on 60 10;
+	cell_kill
+
+	echo "Uploading firmware files ..."
+	qmi-firmware-update -t /dev/ttyUSB0 -U $fwca
+	wait_off 150;
+	wait_on 60 30;
+	cell_kill
+done
+
+echo -e "\nafter update\n" >> $log
+ids=$(get_cur_fw $log)
+
+# set preferred carrier;
+
+ids=$(get_cur_img)
+
+echo "Setting carrier to $capref"
+pri=-1
+pref=""
+for id in $ids; do
+	strstr $id "pri"
+	if [ "$?" -eq 1 ]; then
+		pri=0;
+		continue;
+	fi
+	if [ "$pri" -lt 0 ]; then
+		continue;
+	fi
+	strstr $id $capref
+	if [ "$?" -eq 1 ]; then
+		pref="${id//_${capref}*}"
+		break
+	fi
+	pri=$(($pri + 1))
+done
+if [ -z "$pref" ]; then
+	echo "error: preferred carrier '$capref' not found"
+	exit 7
+fi
+
+# find modem image for carrier;
+
+modem=-1
+idx=0
+for id in $ids; do
+	case $id in
+	*modem*)
+		continue
+		;;
+	*pri*)
+		break
+		;;
+	esac
+	strstr $id $pref
+	if [ "$?" -eq 1 ]; then
+		modem=$idx
+		break
+	fi
+	idx=$(($idx + 1))
+done
+if [ "$modem" -lt 0 ]; then
+	echo "error: modem image for '$capref' not found"
+	exit 8
+fi
+
+echo "Selecting image modem${modem},pri${pri}"
+qmicli -d /dev/cdc-wdm0 --dms-select-stored-image=modem${modem},pri${pri}
+if [ "$?" -ne 0 ]; then
+	echo "error: setting of carrier '$capref' failed"
+	exit 9
+fi
+
+# reboot modem for new firmware to run;
+
+echo "Rebooting modem to use carrier config"
+qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode=offline
+qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode=reset
+wait_off 60;
+wait_on 150 30;
+cell_kill
+
+# delete old non-running firmwares;
+
+echo "Cleaning up old firmwares"
+dodel=1
+while [ "$dodel" -gt 0 ]; do
+	idx=0
+	ids=$(get_cur_img)
+	dodel=0
+	for id in $ids; do
+		case $id in
+		*modem*)
+			continue
+			;;
+		*pri*)
+			break
+			;;
+		esac
+		valfw=""
+		for fw in $fwexp; do
+			strstr $id $fw
+			if [ "$?" -eq 1 ]; then
+				valfw=1
+				break
+			fi
+		done
+		if [ -z "$valfw" ]; then
+			echo "deleting old modem${idx} firmware"
+			qmicli -d /dev/cdc-wdm0 --dms-delete-stored-image=modem${idx}
+			dodel=1
+			break
+		fi
+		idx=$(($idx + 1))
+	done
+done
+
+# set preferred carrier;
+
+echo -e "\nafter cleanup\n" >> $log
+ids=$(get_cur_fw $log)
+
+exit 0
+

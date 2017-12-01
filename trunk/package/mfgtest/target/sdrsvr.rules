@@ -1,0 +1,2 @@
+SUBSYSTEMS=="usb", ENV{DEVTYPE}=="usb_device", ACTION=="add", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6066", RUN+="/bin/systemctl --no-block start bladerf@%k.service"
+SUBSYSTEMS=="usb", ACTION=="remove", RUN+="/home/velocloud/bladerf/udev.sh remove"

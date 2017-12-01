@@ -248,6 +248,10 @@ define Image/Build/velocloud/gpt
 	if [ -d $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/firmware ]; then \
 		$(CP) -HL $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/firmware $(KDIR)/ || true; \
 	fi
+	$(INSTALL_DIR) $(KDIR)/mfgtest
+	if [ -d $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/mfgtest ]; then \
+		$(RSYNC) -avH $(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/mfgtest/ $(KDIR)/mfgtest/ || true; \
+	fi
 	chmod u+x ./gen_image_velocloud.sh
 	GRUB2_MODULES="$(GRUB2_MODULES)" \
 	PATH="$(TARGET_PATH)" \
@@ -260,7 +264,7 @@ define Image/Build/velocloud/gpt
 		$(TARGET_DIR) \
 		$(KDIR)/root.grub \
 		$(KDIR)/inst.grub \
-		$(KDIR)/firmware
+		$(KDIR)/firmware $(KDIR)/mfgtest
 	echo '(hd0) $(BIN_DIR)/$(2)' > $(KDIR)/grub2/device.map
 	grub-bios-setup \
 		--device-map="$(KDIR)/grub2/device.map" \

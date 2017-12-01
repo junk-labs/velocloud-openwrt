@@ -1,0 +1,20 @@
+bladerf/
+	tar container for building of libbladeRF and tools;
+	unpack, config and build manually;
+
+cals/
+	saved calibrations for bladeRF SDRs we got;
+	still, redo calibration every once in a while;
+
+sdrsvr/
+	SDR server, running on minnowboard;
+
+swtest/
+	sierra wireless modem RF test tool;
+
+target/
+	files going on target system;
+	composed manually right now;
+
+THIS NEEDS CLEANUP and integration into normal build structure;
+

@@ -1,0 +1,8 @@
+[Unit]
+Description=Run BladeRF
+#BindsTo=dev=%i.device
+
+[Service]
+Type=simple
+ExecStart=/home/velocloud/bladerf/udev.sh add %I
+#ExecStop=/home/velocloud/bladerf/udev.sh remove %I

@@ -161,8 +161,31 @@ sim)
 	elif [ "$2" = "disable" ]; then
 		echo 0 > $slotb/sim_enable
 		echo "sim disabled"
+	elif [ "$2" = "plug" ]; then
+		echo 0 > $slotb/sim_enable
+		sleep 0.5
+		echo 1 > $slotb/sim_enable
+	elif [ "$2" = "info" ]; then
+		qmicli -d $qmidev --uim-get-card-status
+	elif [ "$2" = "detect" ]; then
+		qmicli -d $qmidev --uim-get-card-status | awk -e '/Card state:/ { if(last == "Card [0]:") { print }} { last = $0 }'
+	elif [ "$2" = "both" ]; then
+		echo 0 > $slotb/sim_enable
+		sleep 0.5
+		echo 0 > $slotb/sim_select
+		sleep 0.5
+		echo 1 > $slotb/sim_enable
+		sleep 0.5
+		qmicli -d $qmidev --uim-get-card-status | awk -e '/Card state:/ { if(last == "Card [0]:") { print "sim1:" $0 }} { last = $0 }'
+		echo 0 > $slotb/sim_enable
+		sleep 0.5
+		echo 1 > $slotb/sim_select
+		sleep 0.5
+		echo 1 > $slotb/sim_enable
+		sleep 0.5
+		qmicli -d $qmidev --uim-get-card-status | awk -e '/Card state:/ { if(last == "Card [0]:") { print "sim2:" $0 }} { last = $0 }'
 	else
-		echo "error: usage: $0 sim [enable|disable]"
+		echo "error: usage: $0 sim [enable|disable|plug|info|detect|both]"
 		exit 5
 	fi
 	;;
@@ -177,9 +200,6 @@ sim2)
 	echo 1 > $slotb/sim_select
 	echo 1 > $slotb/sim_enable
 	echo "sim2 (top) selected"
-	;;
-sim-info)
-	qmicli -d $qmidev --uim-get-card-status
 	;;
 test)
 	if [ "$2" = "enable" ]; then
@@ -218,9 +238,12 @@ help)
 	echo "  fw-info      - dump firmware images and info"
 	echo "  sim disable  - enable the current SIM slot, disable before switching SIMs"
 	echo "  sim enable   - enable the current SIM slot, enable after switching SIMs"
+	echo "  sim plug     - tell modem that a sim plug/unplug event has happened"
+	echo "  sim info     - print SIM info of currently selected slot"
+	echo "  sim detect   - print if SIM is detected in currently selected slot"
+	echo "  sim both     - print detection status of both SIM cards"
 	echo "  sim1         - select SIM1 (bottom) via on-board mux"
 	echo "  sim2         - select SIM2 (top) via on-board mux"
-	echo "  sim-info     - print SIM info of currently selected slot"
 	echo "  test disable - disable test mode, brings up the modem network stack"
 	echo "  test enable  - enable test mode, tears down the modem network stack"
 	echo "  at           - opens a picocom to issue AT commands"

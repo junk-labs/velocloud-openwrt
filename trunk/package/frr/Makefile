@@ -13,7 +13,8 @@ PKG_RELEASE:=1
 PKG_FULL_VERSION=$(PKG_VERSION)-$(PKG_RELEASE)
 
 PKG_GIT_URL=git@bitbucket.org:velocloud/frr.git
-PKG_GIT_COMMIT=f633dc2998a8aa20d7206e40cddb714a91fb3c67
+# Every time the following is bumped, remember to bump the PKG_RELEASE above!
+PKG_GIT_COMMIT=30283fd991d34517b5fb08ea9f6b65e68432af55
 
 PKG_GIT_DIR=$(TOPDIR)/git-src/frr
 PKG_BUILD_PARALLEL:=1

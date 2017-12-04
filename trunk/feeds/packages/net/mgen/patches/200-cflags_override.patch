@@ -1,5 +1,5 @@
---- a/unix/Makefile.linux
-+++ b/unix/Makefile.linux
+--- a/makefiles/Makefile.linux	2017-12-04 14:03:50.987038138 -0800
++++ b/makefiles/Makefile.linux	2017-12-04 14:05:39.608860983 -0800
 @@ -5,8 +5,8 @@
  # 1) System specific additional libraries, include paths, etc
  #    (Where to find X11 libraries, etc)
@@ -8,17 +8,45 @@
 -SYSTEM_LDFLAGS = -L/usr/X11R6/lib 
 +SYSTEM_INCLUDES ?= -I/usr/X11R6/include 
 +SYSTEM_LDFLAGS ?= -L/usr/X11R6/lib 
- SYSTEM_LIBS = -ldl -lpthread
+ SYSTEM_LIBS = -ldl -lpthread -lpcap
  
  # 2) System specific capabilities
-@@ -39,8 +39,8 @@ SYSTEM_HAVES = -DLINUX -DHAVE_PSELECT -D
- -DHAVE_ASSERT $(NETSEC)
+@@ -38,8 +38,8 @@
+ SYSTEM_HAVES = -DLINUX -DHAVE_SCHED -DHAVE_GETLOGIN -DHAVE_LOCKF -DHAVE_DIRFD -DHAVE_ASSERT $(NETSEC) -D_FILE_OFFSET_BITS=64 -DUNIX -DUSE_SELECT -DUSE_TIMERFD -DHAVE_PSELECT
  
  SYSTEM = linux
 -CC = g++
 -RANLIB = ranlib
 -AR = ar
 +CC ?= g++
++RANLIB ?= ranlib
++AR ?= ar
+ 
+ include Makefile.common
+--- a/protolib/makefiles/Makefile.linux	2017-12-04 14:10:39.271820763 -0800
++++ b/protolib/makefiles/Makefile.linux	2017-12-04 14:11:59.963234004 -0800
+@@ -5,8 +5,8 @@
+ 
+ # System specific additional libraries, include paths, etc
+ #
+-SYSTEM_INCLUDES = -I../include/unix
+-SYSTEM_LDFLAGS =
++SYSTEM_INCLUDES ?= -I../include/unix
++SYSTEM_LDFLAGS ?=
+ SYSTEM_LIBS = -ldl -lrt
+ 
+ # 6) System specific capabilities
+@@ -52,11 +52,11 @@
+ SYSTEM_LIB_EX = -lnetfilter_queue
+ SYSTEM = linux
+ 
+-CC = g++
++CC ?= g++
+ SYSTEM_CFLAGS = -Wall -Wcast-align -pedantic -fPIC
+ SYSTEM_SOFLAGS = -shared 
+ SYSTEM_SOEXT = so
+-RANLIB = ranlib
+-AR = ar
 +RANLIB ?= ranlib
 +AR ?= ar
  

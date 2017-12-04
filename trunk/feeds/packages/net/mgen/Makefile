@@ -8,17 +8,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mgen
-PKG_VERSION:=5.01b
-PKG_RELEASE:=3
+PKG_VERSION:=5.02c
+PKG_RELEASE:=1
 
 PKG_SOURCE:=src-$(PKG_NAME)-$(PKG_VERSION).tgz
 PKG_SOURCE_URL:=http://downloads.pf.itd.nrl.navy.mil/mgen/
-PKG_MD5SUM:=1e467131446d649c8a0aebdcd8e5f2a9
+PKG_MD5SUM:=1b1675ddf6848fd3a6bc2e22b0d4a0b5
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/uclibc++.mk
 include $(INCLUDE_DIR)/package.mk
+
+TAR_CMD:=$(HOST_TAR) -C $(PKG_BUILD_DIR) --strip-components 1 $(TAR_OPTIONS)
 
 define Package/mgen
   TITLE:=Multi-Generator
@@ -37,10 +39,10 @@ define Package/mgen/Description
 endef
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR)/unix \
+	$(MAKE) -C $(PKG_BUILD_DIR)/makefiles \
 		$(TARGET_CONFIGURE_OPTS) \
 		CC="$(TARGET_CXX)" \
-		SYSTEM_INCLUDES="$(TARGET_CFLAGS) $(TARGET_CPPFLAGS)" \
+		SYSTEM_INCLUDES="$(TARGET_CFLAGS) $(TARGET_CPPFLAGS) -I../include/unix" \
 		SYSTEM_LDFLAGS="$(TARGET_LDFLAGS)" \
 		SYSTEM_LIBS="-ldl -lpthread" \
 		-f Makefile.linux mgen
@@ -48,7 +50,7 @@ endef
 
 define Package/mgen/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(CP) $(PKG_BUILD_DIR)/unix/mgen $(1)/usr/bin/mgen
+	$(CP) $(PKG_BUILD_DIR)/makefiles/mgen $(1)/usr/bin/mgen
 endef
 
 $(eval $(call BuildPackage,mgen))

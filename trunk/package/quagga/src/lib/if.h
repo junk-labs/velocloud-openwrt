@@ -303,6 +303,8 @@ extern struct connected  *connected_add_by_prefix (struct interface *,
                                             struct prefix *);
 extern struct connected  *connected_delete_by_prefix (struct interface *, 
                                                struct prefix *);
+extern struct connected  *connected_exact_lookup_address (struct interface *, 
+                                              struct prefix *);
 extern struct connected  *connected_lookup_address (struct interface *, 
                                              struct in_addr);
 

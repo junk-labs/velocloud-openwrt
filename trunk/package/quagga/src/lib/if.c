@@ -762,6 +762,24 @@ connected_delete_by_prefix (struct interface *ifp, struct prefix *p)
   return NULL;
 }
 
+struct connected *
+connected_exact_lookup_address (struct interface *ifp, struct prefix *address)
+{
+  struct listnode *cnode;
+  struct connected *c;
+  struct connected *match;
+
+  match = NULL;
+
+  for (ALL_LIST_ELEMENTS_RO (ifp->connected, cnode, c))
+    {
+      if (c->address && (c->address->family == AF_INET) &&
+	  connected_same_prefix(c->address, address))
+	  match = c;
+    }
+  return match;
+}
+
 /* Find the IPv4 address on our side that will be used when packets
    are sent to dst. */
 struct connected *

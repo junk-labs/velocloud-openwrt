@@ -923,8 +923,10 @@ zebra_interface_address_read (int type, struct stream *s)
   if (type == ZEBRA_INTERFACE_ADDRESS_ADD) 
     {
        /* N.B. NULL destination pointers are encoded as all zeroes */
-       ifc = connected_add_by_prefix(ifp, &p,(memconstant(&d.u.prefix,0,plen) ?
+       if (!(ifc = connected_exact_lookup_address(ifp, &p))) {
+           ifc = connected_add_by_prefix(ifp, &p,(memconstant(&d.u.prefix,0,plen) ?
 					      NULL : &d));
+       }
        if (ifc != NULL)
 	 {
 	   ifc->flags = ifc_flags;

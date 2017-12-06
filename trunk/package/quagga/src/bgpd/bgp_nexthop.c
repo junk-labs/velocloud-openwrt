@@ -607,8 +607,10 @@ bgp_address_add (struct bgp *bgp, struct prefix *p)
 
   tmp.addr = p->u.prefix4;
 
-  addr = hash_get (bgp->bgp_address_hash, &tmp, bgp_address_hash_alloc);
-  addr->refcnt++;
+  if (!(addr = hash_lookup (bgp->bgp_address_hash, &tmp))) {
+     addr = hash_get (bgp->bgp_address_hash, &tmp, bgp_address_hash_alloc);
+     addr->refcnt++;
+  }
 }
 
 static void

@@ -4,12 +4,31 @@
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
+.NOTPARALLEL:
+
 include $(TOPDIR)/rules.mk
+
+ifneq ($(ENV_CONFIG_TARGET_KERNEL_PARTSIZE),)
+CONFIG_TARGET_KERNEL_PARTSIZE:=$(ENV_CONFIG_TARGET_KERNEL_PARTSIZE)
+endif
+ifneq ($(ENV_CONFIG_TARGET_ROOTFS_INSTSIZE),)
+CONFIG_TARGET_ROOTFS_INSTSIZE:=$(ENV_CONFIG_TARGET_ROOTFS_INSTSIZE)
+endif
+ifneq ($(ENV_CONFIG_TARGET_ROOTFS_PARTSIZE),)
+CONFIG_TARGET_ROOTFS_PARTSIZE:=$(ENV_CONFIG_TARGET_ROOTFS_PARTSIZE)
+endif
+ifneq ($(ENV_CONFIG_TARGET_VDISK_SIZE),)
+CONFIG_TARGET_VDISK_SIZE:=$(ENV_CONFIG_TARGET_VDISK_SIZE)
+endif
+ifneq ($(ENV_CONFIG_NO_TARBZ2),)
+override CONFIG_TARGET_ROOTFS_TARBZ2:=
+endif
+
 include $(INCLUDE_DIR)/image.mk
 
 export PATH=$(TARGET_PATH):/sbin
 
-GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos part_gpt reboot vga acpi smbios vc
+GRUB2_MODULES = biosdisk boot chain configfile ext2 linux ls part_msdos part_gpt reboot vga acpi smbios vc test
 GRUB2_MODULES_ISO = biosdisk boot chain configfile iso9660 linux ls part_msdos reboot vga
 GRUB_TERMINALS =
 GRUB_SERIAL_CONFIG =
@@ -327,7 +346,7 @@ ifneq ($(CONFIG_EC2_IMAGES),)
 
   define Image/Build/vc-ec2
 	# Build single-partition (paravirt) EC2 Image
-	E2SIZE=$(shell echo $$(($(CONFIG_TARGET_ROOTFS_PARTSIZE)*1024)))
+	E2SIZE=$(shell echo $$(($(CONFIG_TARGET_ROOTFS_PARTSIZE)*1024*1024)))
 	mkdir -p $(TARGET_DIR)/boot/grub
 	$(CP) $(KDIR)/bzImage $(TARGET_DIR)/boot/vmlinuz
 	sed \
@@ -338,9 +357,7 @@ ifneq ($(CONFIG_EC2_IMAGES),)
 		$(TOPDIR)/target/linux/$(BOARD)/$(SUBTARGET)/grub/menu.lst \
 		  > $(TARGET_DIR)/boot/grub/menu.lst
 
-	$(STAGING_DIR_HOST)/bin/genext2fs -U -B $(CONFIG_TARGET_EXT4_BLOCKSIZE) -b $(E2SIZE) -N $(CONFIG_TARGET_EXT4_MAXINODE) -m $(CONFIG_TARGET_EXT4_RESERVED_PCT) -d $(TARGET_DIR)/ $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
-	$(STAGING_DIR_HOST)/bin/tune2fs -O extents,uninit_bg,dir_index $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
-	$(STAGING_DIR_HOST)/bin/e2fsck -fy $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img
+	$(STAGING_DIR_HOST)/bin/make_ext4fs -b $(CONFIG_TARGET_EXT4_BLOCKSIZE) -l $(E2SIZE) -i $(CONFIG_TARGET_EXT4_MAXINODE) -m $(CONFIG_TARGET_EXT4_RESERVED_PCT) $(BIN_DIR)/$(IMG_PREFIX)-ec2-$(1).img $(TARGET_DIR)/
   endef
 endif
 

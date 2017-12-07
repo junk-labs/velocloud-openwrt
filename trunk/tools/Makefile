@@ -25,7 +25,7 @@ endif
 
 tools-$(BUILD_TOOLCHAIN) += gmp mpfr mpc libelf
 tools-y += m4 libtool autoconf automake flex bison pkg-config sed mklibs
-tools-y += sstrip ipkg-utils genext2fs e2fsprogs mtd-utils mkimage
+tools-y += sstrip ipkg-utils genext2fs e2fsprogs make-ext4fs mtd-utils mkimage
 tools-y += firmware-utils patch-image patch quilt yaffs2 flock padjffs2
 tools-y += mm-macros xorg-macros xfce-macros missing-macros xz cmake scons bc
 tools-y += findutils

@@ -3,20 +3,25 @@
 
 # where firmware directory is located;
 fwpath=/x/images/firmware/sierra-wireless
-fwdir=SWI9X30C_02.24
+fwdir=SWI9X30C_02
 
 # prefix of firmware files;
 fwpre=SWI9X30C_
 
 # expected firmwares, carrier configs, and default carrier preference;
 
-fw_7455="02.24.03.00 02.24.05.06"
-ca_7455="02.24.03.00_Sprint 02.24.05.06_GENERIC 02.24.05.06_ATT 02.24.05.06_VERIZON"
+fw_7455="02.24.03.00 02.24.05.06 02.26.01.00"
+ca_7455="02.24.05.06_ATT 02.24.05.06_GENERIC 02.24.05.06_ROGERS 02.26.01.00_SPRINT 02.24.05.06_VERIZON 02.24.05.06_BELL 02.24.03.00_VODAFONE 02.24.05.06_TELUS 02.24.05.06_US-Cellular"
 capref_7455=ATT
 
-fw_7430="02.24.05.06"
-ca_7430="02.24.05.06_GENERIC 02.24.05.06_DOCOMO 02.24.05.06_KDDI 02.24.05.06_TELSTRA 02.24.05.06_Softbank"
+fw_7430="02.24.05.06 02.26.01.00"
+ca_7430="02.24.05.06_DOCOMO 02.26.01.00_GENERIC 02.24.05.06_KDDI 02.24.05.06_TELSTRA 02.24.05.06_Softbank"
 capref_7430=TELSTRA
+
+capref_gen="GENERIC"
+capref_na="ATT ROGERS SPRINT VERIZON BELL TELUS US-Cellular VODAFONE"
+capref_eu="VODAFONE"
+capref_ap="DOCOMO GENERIC KDDI TELSTRA Softbank"
 
 # single-carrier-only example;
 
@@ -103,13 +108,21 @@ fwexp=""
 caexp=""
 capref=""
 
+capref_all="$capref_gen $capref_na $capref_eu $capref_ap"
+
 while [ "$#" -gt 0 ]; do
 	case $1 in
 	help)
 		echo "usage: $0 [commands|config|carrier]"
-		echo " help     - print help"
-		echo " na       - north-american carriers"
-		echo " ap       - asia-pacific carriers"
+		echo " help      - print help"
+		echo " na        - north-american carriers"
+		echo " eu        - european carriers"
+		echo " ap        - asia-pacific carriers"
+		echo " [carrier] - specific carrier"
+		echo "  generic: $capref_gen"
+		echo "  na: $capref_na"
+		echo "  eu: $capref_eu"
+		echo "  ap: $capref_ap"
 		exit 20
 		;;
 
@@ -118,20 +131,14 @@ while [ "$#" -gt 0 ]; do
 		caexp=$ca_7455
 		;;
 
+	# europe;
+	eu)
+		caexp=$ca_7455
+		;;
+
 	# all asia-pacific;
 	ap)
 		caexp=$ca_7430
-		;;
-
-	# valid preferred carriers;
-	GENERIC)
-		capref=$1
-		;;
-	ATT|VERIZON|Sprint)
-		capref=$1
-		;;
-	DOCOMO|KDDI|TELSTRA|Softbank)
-		capref=$1
 		;;
 
 	# ATT-only;
@@ -142,8 +149,16 @@ while [ "$#" -gt 0 ]; do
 		;;
 
 	*)
-		echo "error: unknown command or config: $1"
-		exit 2
+		# valid preferred carriers;
+		for capref in $capref_all; do
+			if [ "$capref" = "$1" ]; then
+				break;
+			fi
+		done
+		if [ "$capref" != "$1" ]; then
+			echo "error: unknown command or config: $1"
+			exit 2
+		fi
 		;;
 	esac
 	shift

@@ -16,7 +16,7 @@ INST_ROOT_SIZE="$6"
 INST_DIR="$7"
 
 # extra inst size for firmware, etc;
-EXTRA_SIZE="200"
+EXTRA_SIZE="400"
 
 OUTPUTBASE="${OUTPUT//-usb-ext4.img}"
 if [ "${OUTPUTBASE}" != "$OUTPUT" ]; then

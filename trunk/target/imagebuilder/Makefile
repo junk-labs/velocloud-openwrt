@@ -53,7 +53,8 @@ $(BIN_DIR)/$(IB_NAME).tar.bz2: clean
 	if [ -d $(LINUX_DIR)/arch/$(ARCH)/boot/dts ]; then \
 		$(CP) $(LINUX_DIR)/arch/$(ARCH)/boot/dts/* $(IB_DTSDIR); \
 	fi
-	[ -d $(KERNEL_BUILD_DIR)/firmware ] && $(CP) $(KERNEL_BUILD_DIR)/firmware $(IB_KDIR)/ || true # and optional firmware
+	[ -d $(KERNEL_BUILD_DIR)/firmware ] && $(CP) -a $(KERNEL_BUILD_DIR)/firmware $(IB_KDIR)/ || true # and optional firmware
+	[ -d $(KERNEL_BUILD_DIR)/mfgtest ] && $(CP) -a $(KERNEL_BUILD_DIR)/mfgtest $(IB_KDIR)/ || true # and optional firmware
 	(cd $(LINUX_DIR) ; find . -name Makefile -o -name Kconfig -o -name \*.pl > $(IB_KDIR)/.headers.lst)
 	(cd $(LINUX_DIR) ; find Module.symvers scripts -type f >> $(IB_KDIR)/.headers.lst)
 	(cd $(LINUX_DIR) ; find arch/x86/include include -type f >> $(IB_KDIR)/.headers.lst)

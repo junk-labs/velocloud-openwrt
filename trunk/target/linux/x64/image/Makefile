@@ -283,7 +283,7 @@ define Image/Build/velocloud/gpt
 		$(TARGET_DIR) \
 		$(KDIR)/root.grub \
 		$(KDIR)/inst.grub \
-		$(KDIR)/firmware $(KDIR)/mfgtest
+		$(KDIR)/firmware $(KDIR)/mfgtest $(ENV_ADDITIONAL_INST_DIRS)
 	echo '(hd0) $(BIN_DIR)/$(2)' > $(KDIR)/grub2/device.map
 	grub-bios-setup \
 		--device-map="$(KDIR)/grub2/device.map" \

@@ -15,11 +15,8 @@ ROOT_FSIMAGE="$5"
 INST_ROOT_SIZE="$6"
 INST_DIR="$7"
 
-# extra inst size for firmware, etc;
-EXTRA_SIZE="400"
-
 OUTPUTBASE="${OUTPUT//-usb-ext4.img}"
-if [ "${OUTPUTBASE}" != "$OUTPUT" ]; then
+if [ "${OUTPUTBASE}" != "$OUTPUT" -a -z "${ENV_CONFIG_TARGET_NO_EMBEDDED}" ]; then
     EMBEDDED="${OUTPUT//-usb-ext4.img}-embedded-ext4.tar.bz2"
 else
     EMBEDDED=""
@@ -31,22 +28,31 @@ fi
 IROOT="${OUTPUT}.iroot"
 INST_PATH="images"
 
-all_arg_dirs=""
-root_dirs=""
-inst_dirs=""
+#root_dirs=""
+#inst_dirs=""
+copy_dirs=""
 i=6
 while [ $i -lt $# ]
 do
 	arg=${ARGV[$i]}
 	base=`basename $arg`
-	root_dirs="$root_dirs ${IROOT}/${INST_PATH}/${base}"
-	inst_dirs="$inst_dirs -d ${arg}:/${INST_PATH}/${base}"
-	all_arg_dirs="$all_arg_dirs ${arg}"
+	#root_dirs="$root_dirs ${IROOT}/${INST_PATH}/${base}"
+	#inst_dirs="$inst_dirs -d ${arg}:/${INST_PATH}/${base}"
+	copy_dirs="$copy_dirs ${arg}"
 	i=$(($i + 1))
 done
 
 rm -f "$OUTPUT"
 rm -rf $IROOT
+
+INST_SIZE=`du -msc $copy_dirs 2>/dev/null | tail -1 | awk '{print $1;}'`
+# add 5%
+INST_SIZE=$((INST_SIZE*105/100))
+# round up to multiple of 100 MB
+INST_SIZE=$(((INST_SIZE+99)/100*100))
+
+mkdir -p $IROOT/$INST_PATH
+cp -a $copy_dirs $IROOT/$INST_PATH
 
 # align all partition to 1MB boundaries;
 # root and installer filesystem are same size;
@@ -62,7 +68,7 @@ ROOT_OFF=$BOOT_END
 ROOT_END="$(($ROOT_OFF + $ROOT_SIZE))"
 
 INST_OFF=$ROOT_END
-INST_END="$(($INST_OFF + $ROOT_SIZE + $EXTRA_SIZE))"
+INST_END="$(($INST_OFF + $INST_SIZE))"
 
 TAIL_OFF=$INST_END
 TAIL_SIZE=1
@@ -78,24 +84,21 @@ dd if=/dev/zero of="$OUTPUT" bs=1M seek="$TAIL_OFF" conv=notrunc count="$TAIL_SI
 BLOCK_SIZE=4096
 BLOCKS="$((($INST_END - $INST_OFF) * 1024 / 4))"
 
-mkdir -p $root_dirs || exit 1
+# mkdir -p $root_dirs || exit 1
 echo $INST_ROOT_SIZE > $IROOT/$INST_PATH/root-size
 echo $GRUB2_MODULES > $IROOT/$INST_PATH/grub-modules
-$STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$IROOT" -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.inst" || exit 1
+
+$STAGING_DIR_HOST/bin/make_ext4fs -i 8192 -l $((BLOCKS*BLOCK_SIZE)) -m 0 "$OUTPUT.inst" "$IROOT"
 if [ ! -z "$EMBEDDED" ]; then
     # Generate an "installer tarball" for Dolphin and newer hardware platforms
-    if [ ! -z "$all_arg_dirs" ]; then
-        cp -a $all_arg_dirs $IROOT/$INST_PATH
-    fi
     if [ -r $IROOT/$INST_PATH/root-x64/root/installer ]; then
         cp -a $IROOT/$INST_PATH/root-x64/root/installer $IROOT
         tar cjf "$EMBEDDED" -C $IROOT installer $INST_PATH
     fi
 fi
 rm -rf "$IROOT"
-$STAGING_DIR_HOST/bin/genext2fs -U -x "$OUTPUT.inst" $inst_dirs -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.inst" || exit 1
 INST_UUID=`uuidgen`
-$STAGING_DIR_HOST/bin/tune2fs -O extents,uninit_bg,dir_index -U $INST_UUID "$OUTPUT.inst" || exit 1
+$STAGING_DIR_HOST/bin/tune2fs -U $INST_UUID "$OUTPUT.inst" || exit 1
 $STAGING_DIR_HOST/bin/e2fsck -fy "$OUTPUT.inst"
 
 dd if="$OUTPUT.inst" of="$OUTPUT" bs=1M seek="$INST_OFF" conv=notrunc || exit 1
@@ -133,7 +136,7 @@ sed -i \
 BLOCK_SIZE=4096
 BLOCKS="$(($BOOT_SIZE * 1024 / 4))"
 
-$STAGING_DIR_HOST/bin/genext2fs -U -i 8192 -d "$BOOT_DIR" -B "$BLOCK_SIZE" -b "$BLOCKS" "$OUTPUT.boot" || exit 1
+$STAGING_DIR_HOST/bin/make_ext4fs -i 8192 -l $((BLOCKS*BLOCK_SIZE)) -m 0 "$OUTPUT.boot" "$BOOT_DIR"
 dd if="$OUTPUT.boot" of="$OUTPUT" bs=1M seek="$BOOT_OFF" conv=notrunc || exit 1
 rm -f "$OUTPUT.boot"
 

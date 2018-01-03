@@ -1,7 +1,9 @@
 # Makefile for bladerf server and client;
 
 # test profile config;
-PROFILE=profile-wcdma
+PROFILE=profile.em7455
+PROFILE_EM7455=profile.em7455
+PROFILE_EM7430=profile.em7430
 TTY=/dev/ttyUSB2
 
 # build machine;
@@ -100,8 +102,12 @@ rso:
 # run DUT cellular radio test;
 # use minnowboard SDR server;
 
-test-sdr:
-	-./bins/swtest -t $(TTY) -f $(PROFILE) -N $(vcid) -B $(MINIP)
+test-em7455:
+	-./bins/swtest -t $(TTY) -f $(PROFILE_EM7455) -N $(vcid) -B $(MINIP)
+	rsync -avH -e "$(SSHOPTS)" plots/ $(MINSDR)/
+
+test-em7430:
+	-./bins/swtest -t $(TTY) -f $(PROFILE_EM7430) -N $(vcid) -B $(MINIP)
 	rsync -avH -e "$(SSHOPTS)" plots/ $(MINSDR)/
 
 # run DUR cellular test manually;
@@ -134,4 +140,6 @@ help:
 	@echo " brf-start    - start SDR server"
 	@echo " fw-fpga      - flash SDR fpga firmware"
 	@echo " fw-bladerf   - flash SDR arm firmware"
+	@echo " test-em7455  - test with SDR, expecting EM7455"
+	@echo " test-em7430  - test with SDR, expecting EM7430"
 

@@ -34,7 +34,7 @@
 #define SDR_SRATE 20000000	// default sample rate;
 #define SDR_DFTSZ 1024		// dft size;
 #define SDR_RXGAIN 0		// rx gain;
-#define RFM_DB_BIN 3.0		// max db/bin outside limits;
+#define RFM_DB_BIN 1.2		// max db/bin outside limits;
 
 #define N_REX	7
 #define REG_DEF (REG_EXTENDED | REG_ICASE)
@@ -128,7 +128,8 @@ struct rfm {
 	int tech;		// technology index;
 	unsigned sr;		// sample rate in samples/sec;
 	int64_t uf, df;		// <0 means illegal, in Hz;
-	float dbin[2];		// max/act db/bin power outside of limits;
+	float dbin[3];		// max db/bin, act db, act db/bin power outside of limits;
+	unsigned nbin;		// # of bins outside of limits;
 };
 
 // spectrum analyzer info;
@@ -763,7 +764,9 @@ plot_ps(g_t *g, rfm_t *rfm, float *data, int dftsz, char *msg)
 	fprintf(pf, "# %s #%d %s - %s\n", band->str, rfm->channel, txmod->str, msg);
 	fprintf(pf, "set terminal gif size 1280,720\n");
 	fprintf(pf, "set output '%s.gif'\n", file);
-	fprintf(pf, "set title \"%s #%d %s - %s\"\n", band->str, rfm->channel, txmod->str, msg);
+	fprintf(pf, "set title \"%s #%d %s - %s (%.1f/%u %.1f)\"\n",
+		band->str, rfm->channel, txmod->str,
+		msg, rfm->dbin[1], rfm->nbin, rfm->dbin[2]);
 	fprintf(pf, "set yrange [-90:5]\n");
 	fprintf(pf, "set ylabel \"dbm\"\n");
 	fprintf(pf, "set ytics 10\n");
@@ -854,7 +857,9 @@ pe_check(g_t *g, rfm_t *rfm, float *data, int dftsz)
 			}
 		}
 	}
-	rfm->dbin[1] = pout / (float)nbin;
+	rfm->nbin = nbin;
+	rfm->dbin[1] = pout;
+	rfm->dbin[2] = pout / (float)nbin;
 
 	return(NULL);
 }
@@ -959,8 +964,9 @@ rf_pwr_measure(g_t *g, atc_t *atc)
 	if(err)
 		goto out;
 	sts = "passed";
-	if(rfm->dbin[1] > rfm->dbin[0]) {
-		Msg("rf power check FAILED, db/bin %.2f > max (%.2f)\n", rfm->dbin[1], rfm->dbin[0]);
+	if(rfm->dbin[2] > rfm->dbin[0]) {
+		Msg("rf power check FAILED, %.1fdb/%ubin %.2f > max (%.2f)\n",
+			rfm->dbin[1], rfm->nbin, rfm->dbin[2], rfm->dbin[0]);
 		g->failed++;
 		sts = "FAILED";
 	}

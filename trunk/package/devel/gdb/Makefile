@@ -17,8 +17,11 @@ PKG_MD5SUM:=35374c77a70884eb430c97061053a36e
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
+PKG_BUILD_DEPENDS:=python
 
 include $(INCLUDE_DIR)/package.mk
+$(call include_mk, python-package.mk)
+
 
 define Package/gdb/Default
   SECTION:=devel
@@ -30,7 +33,7 @@ endef
 define Package/gdb
 $(call Package/gdb/Default)
   TITLE:=GNU Debugger
-  DEPENDS+=+libreadline +libncurses +zlib
+  DEPENDS+=+libreadline +libncurses +zlib +libexpat
 endef
 
 define Package/gdb/description
@@ -52,7 +55,7 @@ endef
 # XXX: add --disable-werror to prevent build failure with arm
 CONFIGURE_ARGS+= \
 	--with-system-readline \
-	--without-expat \
+	--with-expat --with-python=$(HOST_PYTHON_BIN) \
 	--disable-werror
 
 CONFIGURE_VARS+= \

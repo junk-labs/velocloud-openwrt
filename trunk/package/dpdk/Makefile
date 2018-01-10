@@ -7,7 +7,7 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=dpdk
 PKG_VERSION:=17.02
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKG_FULL_VERSION=$(PKG_VERSION)-$(PKG_RELEASE)
 
 PKG_GIT_URL=git@git.assembla.com:velocloud.dpdk.git

@@ -356,6 +356,10 @@ ospf_interface_access_list_check(struct ospf_interface *oi, struct ospf_lsa *lsa
         return 0;
     }
 
+    if (!IS_LSA_SELF(lsa)) {
+        return 0;
+    }
+
     params = IF_DEF_PARAMS (oi->ifp);
 
     if (!params) {

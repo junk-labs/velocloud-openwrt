@@ -158,6 +158,16 @@ static const struct vendor_name vendor_names[] = {
  */
 static u32 vendor_dev_id CAR_GLOBAL;
 
+static inline __attribute__((always_inline))
+void vc_early_udelay(const uint32_t delay_us)
+{
+        uint32_t i;
+
+        for (i = 0; i < delay_us; i++)
+                inb(0x80);
+}
+
+
 static inline u8 tpm_read_status(int locality)
 {
 	u8 value = readb(TIS_REG(locality, TIS_REG_STS));
@@ -232,7 +242,7 @@ static int tis_wait_sts(int locality, u8 mask, u8 expected)
 		u8 value = tpm_read_status(locality);
 		if ((value & mask) == expected)
 			return 0;
-		udelay(1); /* 1 us */
+		vc_early_udelay(1); /* 1 us */
 		time_us--;
 	}
 	return TPM_TIMEOUT_ERR;
@@ -285,7 +295,7 @@ static int tis_wait_access(int locality, u8 mask, u8 expected)
 		u8 value = tpm_read_access(locality);
 		if ((value & mask) == expected)
 			return 0;
-		udelay(1); /* 1 us */
+		vc_early_udelay(1); /* 1 us */
 		time_us--;
 	}
 	return TPM_TIMEOUT_ERR;
@@ -437,7 +447,7 @@ static u32 tis_senddata(const u8 * const data, u32 len)
 				       __FILE__, __LINE__, len - offset, len);
 				return TPM_DRIVER_ERR;
 			}
-			udelay(1);
+			vc_early_udelay(1);
 			burst = tpm_read_burst_count(locality);
 		}
 
@@ -524,7 +534,7 @@ static u32 tis_readresponse(u8 *buffer, size_t *len)
 				       __FILE__, __LINE__);
 				return TPM_DRIVER_ERR;
 			}
-			udelay(1);
+			vc_early_udelay(1);
 		}
 
 		max_cycles = 0;
@@ -622,11 +632,10 @@ int tis_open(void)
 	}
 
 	/* Certain TPMs seem to need some delay here or they hang... */
-	udelay(10);
+	vc_early_udelay(10);
 
 	if (tis_command_ready(locality) == TPM_TIMEOUT_ERR)
 		return TPM_DRIVER_ERR;
-
 	return 0;
 }
 

@@ -110,12 +110,15 @@ test-em7430:
 	-./bins/swtest -t $(TTY) -f $(PROFILE_EM7430) -N $(vcid) -B $(MINIP)
 	rsync -avH -e "$(SSHOPTS)" plots/ $(MINSDR)/
 
-# run DUR cellular test manually;
+# run DUT cellular test manually;
 # for co-lo testing, manually step through profiles;
 # or use command line options;
 
-test-colo:
-	-./bins/swtest -t $(TTY) -f $(PROFILE) -N $(vcid)
+colo-7455:
+	-./bins/swtest -t $(TTY) -f $(PROFILE_EM7455) -N $(vcid)
+
+colo-7430:
+	-./bins/swtest -t $(TTY) -f $(PROFILE_EM7430) -N $(vcid)
 
 # copy plots out to minnowboard;
 

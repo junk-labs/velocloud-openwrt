@@ -13,6 +13,7 @@ DEFAULT_PACKAGES += \
 	kmod-e1000e \
 	kmod-vmxnet3 \
 	kmod-igbvf \
+	kmod-intel-i40evf \
 	kmod-intel-ixgbevf \
 	kmod-fs-vfat \
 	kmod-fs-isofs \

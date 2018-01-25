@@ -34,6 +34,9 @@ case "$EDGETYPE" in
     edge1000sm-gbe)
         cat /etc/config-defaults/edge1000sm-gbe/network >> /etc/config/network
         ;;
+    edge1000r640)
+        cat /etc/config-defaults/edge1000r640/network >> /etc/config/network
+        ;;
     *)  # something else?
         cat /etc/config-defaults/edge1000ifm/network >> /etc/config/network
         ;;

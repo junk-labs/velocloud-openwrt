@@ -15,6 +15,7 @@ DEFAULT_PACKAGES += \
 	kmod-hyperv-util \
 	kmod-hyperv-storage \
 	kmod-igbvf \
+	kmod-intel-i40evf \
 	kmod-intel-ixgbevf \
 	kmod-fs-vfat \
 	kmod-fs-isofs \

@@ -8,11 +8,12 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=intel-ixgbevf
-PKG_VERSION:=3.1.2
+PKG_VERSION:=4.3.3
 PKG_RELEASE:=1
 
 PKG_SOURCE=ixgbevf-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL=@SF/e1000/ixgbevf%20stable
+PKG_MD5SUM:=d4572d606f06255a766b930361d643de
 
 include $(INCLUDE_DIR)/package.mk
 

@@ -8,11 +8,12 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=intel-ixgbe
-PKG_VERSION:=4.3.15
+PKG_VERSION:=5.3.5
 PKG_RELEASE:=1
 
 PKG_SOURCE=ixgbe-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL=@SF/e1000/ixgbe%20stable
+PKG_MD5SUM:=5fa5067db86cbdb62958c945ace5653c
 
 include $(INCLUDE_DIR)/package.mk
 

@@ -723,7 +723,7 @@ int pim_tlv_parse_addr_list(const char *ifname, struct in_addr src_addr,
 	break;
       case AF_INET6:
 	{
-	  char addr_str[INET_ADDRSTRLEN];
+	  char addr_str[PREFIX_STRLEN];
 	  char src_str[INET_ADDRSTRLEN];
 	  pim_addr_dump("<addr?>", &tmp, addr_str, sizeof(addr_str));
 	  pim_inet4_dump("<src?>", src_addr, src_str, sizeof(src_str));
@@ -762,7 +762,7 @@ int pim_tlv_parse_addr_list(const char *ifname, struct in_addr src_addr,
       }
     } else {
         // IPv6 or other families are not supported now! Move on to next.
-	  char addr_str[INET_ADDRSTRLEN];
+	  char addr_str[PREFIX_STRLEN];
 	  pim_addr_dump("<src?>", &tmp, addr_str, sizeof(addr_str));
 	  zlog_warn("%s: ignoring address %s in secondary list on %s",
 		    __PRETTY_FUNCTION__,

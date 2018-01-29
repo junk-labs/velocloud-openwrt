@@ -217,7 +217,7 @@ int pim_joinprune_recv(struct interface *ifp,
     uint16_t      msg_num_joined_sources;
     uint16_t      msg_num_pruned_sources;
     int           source;
-    struct        pim_ifchannel *ch = NULL;
+    struct        pim_ifchannel *ch = NULL, *sg_ch = NULL;
 
     memset (&sg, 0, sizeof (struct prefix_sg));
     addr_offset = pim_parse_addr_group (&sg,
@@ -297,6 +297,33 @@ int pim_joinprune_recv(struct interface *ifp,
 		 msg_upstream_addr.u.prefix4,
 		 &sg,
 		 msg_source_flags);
+			
+      /*
+       * So if we are receiving a S,G,RPT prune
+       * before we have any data for that S,G
+       * We need to retrieve the sg_ch after
+       * we parse the prune.
+       */
+      sg_ch = pim_ifchannel_find(ifp, &sg);
+
+      /* Received SG-RPT Prune delete oif from specific S,G */
+      if (ch && sg_ch
+              && (msg_source_flags & PIM_RPT_BIT_MASK)
+              && !(msg_source_flags & PIM_WILDCARD_BIT_MASK)) {
+          struct pim_upstream *up = sg_ch->upstream;
+          PIM_IF_FLAG_SET_S_G_RPT(sg_ch->flags);
+          if (up) {
+              if (PIM_DEBUG_TRACE)
+                  zlog_debug(
+                          "%s: SGRpt flag is set, del inherit oif from up %s",
+                          __PRETTY_FUNCTION__,
+                          up->sg_str);
+              pim_channel_del_oif(
+                      up->channel_oil,
+                      ch->interface,
+                      PIM_OIF_FLAG_PROTO_STAR);
+          }
+      }
     }
     if (ch)
       pim_ifchannel_set_star_g_join_state (ch, 1);

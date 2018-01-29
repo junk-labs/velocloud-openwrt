@@ -11,6 +11,7 @@ DEFAULT_PACKAGES += \
 	kmod-virtio-net \
 	kmod-virtio-random \
 	kmod-igbvf \
+	kmod-intel-i40evf \
 	kmod-intel-ixgbevf \
 	kmod-fs-vfat \
 	kmod-fs-isofs \

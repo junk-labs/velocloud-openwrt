@@ -42,6 +42,9 @@
 #define PORT 0x4252
 #define PLOT_DIR "plots"
 
+#define LTE_ATWAR		// LTE AT commands break spec;
+#define TX_PWR_MIN -200		// min tx power, in dbm;
+
 // types;
 
 typedef struct smap smap_t;
@@ -125,6 +128,7 @@ struct rfm {
 	rfpe_t *pe;		// expected power envelope;
 	int channel;		// actual channel;
 	int bandwidth;		// SDR bandwidth;
+	int txpwr;		// tx power, in dbm;
 	int tech;		// technology index;
 	unsigned sr;		// sample rate in samples/sec;
 	int64_t uf, df;		// <0 means illegal, in Hz;
@@ -326,8 +330,349 @@ ufreq_utra_8(int uarfcn)
 	return(f + 340000000LL);
 }
 
+// LTE bands;
+
 int64_t
-freq_XXX(int uarfcn)
+ufreq_eutra_1(int uarfcn)
+{
+	int64_t f;
+
+	f = 1920000000LL + (uarfcn - 18000) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_2(int uarfcn)
+{
+	int64_t f;
+
+	f = 1850000000LL + (uarfcn - 18600) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_3(int uarfcn)
+{
+	int64_t f;
+
+	f = 1710000000LL + (uarfcn - 19200) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_4(int uarfcn)
+{
+	int64_t f;
+
+	f = 1710000000LL + (uarfcn - 19950) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_5(int uarfcn)
+{
+	int64_t f;
+
+	f = 824000000LL + (uarfcn - 20400) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_6(int uarfcn)
+{
+	int64_t f;
+
+	f = 830000000LL + (uarfcn - 20650) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_7(int uarfcn)
+{
+	int64_t f;
+
+	f = 2500000000LL + (uarfcn - 20750) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_8(int uarfcn)
+{
+	int64_t f;
+
+	f = 880000000LL + (uarfcn - 21450) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_9(int uarfcn)
+{
+	int64_t f;
+
+	f = 1749900000LL + (uarfcn - 21800) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_10(int uarfcn)
+{
+	int64_t f;
+
+	f = 1710000000LL + (uarfcn - 22150) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_11(int uarfcn)
+{
+	int64_t f;
+
+	f = 1428900000LL + (uarfcn - 22750) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_12(int uarfcn)
+{
+	int64_t f;
+
+	f = 698000000LL + (uarfcn - 23000) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_13(int uarfcn)
+{
+	int64_t f;
+
+	f = 777000000LL + (uarfcn - 23180) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_14(int uarfcn)
+{
+	int64_t f;
+
+	f = 788000000LL + (uarfcn - 23280) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_17(int uarfcn)
+{
+	int64_t f;
+
+	f = 704000000LL + (uarfcn - 23730) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_18(int uarfcn)
+{
+	int64_t f;
+
+	f = 815000000LL + (uarfcn - 23850) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_19(int uarfcn)
+{
+	int64_t f;
+
+	f = 830000000LL + (uarfcn - 24000) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_20(int uarfcn)
+{
+	int64_t f;
+
+	f = 832000000LL + (uarfcn - 24150) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_21(int uarfcn)
+{
+	int64_t f;
+
+	f = 1447900000LL + (uarfcn - 24450) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_22(int uarfcn)
+{
+	int64_t f;
+
+	f = 3410000000LL + (uarfcn - 24600) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_23(int uarfcn)
+{
+	int64_t f;
+
+	f = 2000000000LL + (uarfcn - 25500) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_24(int uarfcn)
+{
+	int64_t f;
+
+	f = 1626500000LL + (uarfcn - 25700) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_25(int uarfcn)
+{
+	int64_t f;
+
+	f = 1850000000LL + (uarfcn - 26040) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_26(int uarfcn)
+{
+	int64_t f;
+
+	f = 814000000LL + (uarfcn - 26690) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_27(int uarfcn)
+{
+	int64_t f;
+
+	f = 807000000LL + (uarfcn - 27040) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_28(int uarfcn)
+{
+	int64_t f;
+
+	f = 703000000LL + (uarfcn - 27210) * 100000LL;
+	return(f);
+}
+
+// lte band 29 is downlink only;
+
+int64_t
+ufreq_eutra_30(int uarfcn)
+{
+	int64_t f;
+
+	f = 2305000000LL + (uarfcn - 27660) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_31(int uarfcn)
+{
+	int64_t f;
+
+	f = 452500000LL + (uarfcn - 27760) * 100000LL;
+	return(f);
+}
+
+// lte band 32 is downlink only;
+
+int64_t
+ufreq_eutra_33(int uarfcn)
+{
+	int64_t f;
+
+	f = 1900000000LL + (uarfcn - 36000) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_34(int uarfcn)
+{
+	int64_t f;
+
+	f = 2010000000LL + (uarfcn - 36200) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_35(int uarfcn)
+{
+	int64_t f;
+
+	f = 1850000000LL + (uarfcn - 36350) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_36(int uarfcn)
+{
+	int64_t f;
+
+	f = 1930000000LL + (uarfcn - 36950) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_37(int uarfcn)
+{
+	int64_t f;
+
+	f = 1910000000LL + (uarfcn - 37550) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_38(int uarfcn)
+{
+	int64_t f;
+
+	f = 2570000000LL + (uarfcn - 37750) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_39(int uarfcn)
+{
+	int64_t f;
+
+	f = 1880000000LL + (uarfcn - 38250) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_40(int uarfcn)
+{
+	int64_t f;
+
+	f = 2300000000LL + (uarfcn - 38650) * 100000LL;
+	return(f);
+}
+
+int64_t
+ufreq_eutra_41(int uarfcn)
+{
+	int64_t f;
+
+	f = 2496000000LL + (uarfcn - 39650) * 100000LL;
+	return(f);
+}
+
+// generic fail;
+
+int64_t
+freq_invalid(int uarfcn)
 {
 	return(-1); //XXX
 }
@@ -335,46 +680,112 @@ freq_XXX(int uarfcn)
 // uplink frequencies;
 
 smap_t ufreq_map[] = {
-	{ "GSM-850", .freq = freq_XXX, SM_GSM },
-	{ "GSM-900", .freq = freq_XXX, SM_GSM },
-	{ "GSM-900", .freq = freq_XXX, SM_GSM },
-	{ "GSM-1800", .freq = freq_XXX, SM_GSM },
-	{ "GSM-1900", .freq = freq_XXX, SM_GSM },
+	{ "GSM-850", .freq = freq_invalid, SM_GSM },
+	{ "GSM-900", .freq = freq_invalid, SM_GSM },
+	{ "GSM-900", .freq = freq_invalid, SM_GSM },
+	{ "GSM-1800", .freq = freq_invalid, SM_GSM },
+	{ "GSM-1900", .freq = freq_invalid, SM_GSM },
 	{ "WCDMA-850", .freq = ufreq_utra_5, SM_WCDMA },
 	{ "WCDMA-900", .freq = ufreq_utra_8, SM_WCDMA },
 	{ "WCDMA-1900", .freq = ufreq_utra_2, SM_WCDMA },
 	{ "WCDMA-2100", .freq = ufreq_utra_1, SM_WCDMA },
-	{ "LTE-B1", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B3", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B4", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B7", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B8", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B13", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B17", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B20", .freq = freq_XXX, SM_LTE },
+	{ "LTE-B1", .freq = ufreq_eutra_1, SM_LTE },
+	{ "LTE-B2", .freq = ufreq_eutra_2, SM_LTE },
+	{ "LTE-B3", .freq = ufreq_eutra_3, SM_LTE },
+	{ "LTE-B4", .freq = ufreq_eutra_4, SM_LTE },
+	{ "LTE-B5", .freq = ufreq_eutra_5, SM_LTE },
+	{ "LTE-B6", .freq = ufreq_eutra_6, SM_LTE },
+	{ "LTE-B7", .freq = ufreq_eutra_7, SM_LTE },
+	{ "LTE-B8", .freq = ufreq_eutra_8, SM_LTE },
+	{ "LTE-B9", .freq = ufreq_eutra_9, SM_LTE },
+	{ "LTE-B10", .freq = ufreq_eutra_10, SM_LTE },
+	{ "LTE-B11", .freq = ufreq_eutra_11, SM_LTE },
+	{ "LTE-B12", .freq = ufreq_eutra_12, SM_LTE },
+	{ "LTE-B13", .freq = ufreq_eutra_13, SM_LTE },
+	{ "LTE-B14", .freq = ufreq_eutra_14, SM_LTE },
+	{ "LTE-B15", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B16", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B17", .freq = ufreq_eutra_17, SM_LTE },
+	{ "LTE-B18", .freq = ufreq_eutra_18, SM_LTE },
+	{ "LTE-B19", .freq = ufreq_eutra_19, SM_LTE },
+	{ "LTE-B20", .freq = ufreq_eutra_20, SM_LTE },
+	{ "LTE-B21", .freq = ufreq_eutra_21, SM_LTE },
+	{ "LTE-B22", .freq = ufreq_eutra_22, SM_LTE },
+	{ "LTE-B23", .freq = ufreq_eutra_23, SM_LTE },
+	{ "LTE-B24", .freq = ufreq_eutra_24, SM_LTE },
+	{ "LTE-B25", .freq = ufreq_eutra_25, SM_LTE },
+	{ "LTE-B26", .freq = ufreq_eutra_26, SM_LTE },
+	{ "LTE-B27", .freq = ufreq_eutra_27, SM_LTE },
+	{ "LTE-B28", .freq = ufreq_eutra_28, SM_LTE },
+	{ "LTE-B29", .freq = freq_invalid, SM_LTE }, // downlink only
+	{ "LTE-B30", .freq = ufreq_eutra_30, SM_LTE },
+	{ "LTE-B31", .freq = ufreq_eutra_31, SM_LTE },
+	{ "LTE-B32", .freq = freq_invalid, SM_LTE }, // downlink only
+	{ "LTE-B33", .freq = ufreq_eutra_33, SM_LTE },
+	{ "LTE-B34", .freq = ufreq_eutra_34, SM_LTE },
+	{ "LTE-B35", .freq = ufreq_eutra_35, SM_LTE },
+	{ "LTE-B36", .freq = ufreq_eutra_36, SM_LTE },
+	{ "LTE-B37", .freq = ufreq_eutra_37, SM_LTE },
+	{ "LTE-B38", .freq = ufreq_eutra_38, SM_LTE },
+	{ "LTE-B39", .freq = ufreq_eutra_39, SM_LTE },
+	{ "LTE-B40", .freq = ufreq_eutra_40, SM_LTE },
+	{ "LTE-B41", .freq = ufreq_eutra_41, SM_LTE },
 	{ 0 },
 };
 
 // downlink frequencies;
 
 smap_t dfreq_map[] = {
-	{ "GSM-850", .freq = freq_XXX, SM_GSM },
-	{ "GSM-900", .freq = freq_XXX, SM_GSM },
-	{ "GSM-900", .freq = freq_XXX, SM_GSM },
-	{ "GSM-1800", .freq = freq_XXX, SM_GSM },
-	{ "GSM-1900", .freq = freq_XXX, SM_GSM },
-	{ "WCDMA-850", .freq = freq_XXX, SM_WCDMA },
-	{ "WCDMA-900", .freq = freq_XXX, SM_WCDMA },
-	{ "WCDMA-1900", .freq = freq_XXX, SM_WCDMA },
-	{ "WCDMA-2100", .freq = freq_XXX, SM_WCDMA },
-	{ "LTE-B1", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B3", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B4", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B7", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B8", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B13", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B17", .freq = freq_XXX, SM_LTE },
-	{ "LTE-B20", .freq = freq_XXX, SM_LTE },
+	{ "GSM-850", .freq = freq_invalid, SM_GSM },
+	{ "GSM-900", .freq = freq_invalid, SM_GSM },
+	{ "GSM-900", .freq = freq_invalid, SM_GSM },
+	{ "GSM-1800", .freq = freq_invalid, SM_GSM },
+	{ "GSM-1900", .freq = freq_invalid, SM_GSM },
+	{ "WCDMA-850", .freq = freq_invalid, SM_WCDMA },
+	{ "WCDMA-900", .freq = freq_invalid, SM_WCDMA },
+	{ "WCDMA-1900", .freq = freq_invalid, SM_WCDMA },
+	{ "WCDMA-2100", .freq = freq_invalid, SM_WCDMA },
+	{ "LTE-B1", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B2", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B3", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B4", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B5", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B6", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B7", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B8", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B9", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B10", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B11", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B12", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B13", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B14", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B15", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B16", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B17", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B18", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B19", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B20", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B21", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B22", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B23", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B24", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B25", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B26", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B27", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B28", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B29", .freq = freq_invalid, SM_LTE }, // downlink only
+	{ "LTE-B30", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B31", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B32", .freq = freq_invalid, SM_LTE }, // downlink only
+	{ "LTE-B33", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B34", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B35", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B36", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B37", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B38", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B39", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B40", .freq = freq_invalid, SM_LTE },
+	{ "LTE-B41", .freq = freq_invalid, SM_LTE },
 	{ 0 },
 };
 
@@ -391,13 +802,46 @@ smap_t channel_map[] = {
 	{ "WCDMA-1900", .ir = { 9262, 9538 }, SM_WCDMA },
 	{ "WCDMA-2100", .ir = { 9612, 9888 }, SM_WCDMA },
 	{ "LTE-B1", .ir = { 18000, 18599 }, SM_LTE },
+	{ "LTE-B2", .ir = { 18600, 19199 }, SM_LTE },
 	{ "LTE-B3", .ir = { 19200, 19949 }, SM_LTE },
 	{ "LTE-B4", .ir = { 19950, 20399 }, SM_LTE },
+	{ "LTE-B5", .ir = { 20400, 20649 }, SM_LTE },
+	{ "LTE-B6", .ir = { 20650, 20749 }, SM_LTE },
 	{ "LTE-B7", .ir = { 20750, 21449 }, SM_LTE },
 	{ "LTE-B8", .ir = { 21450, 21799 }, SM_LTE },
+	{ "LTE-B9", .ir = { 21800, 22149 }, SM_LTE },
+	{ "LTE-B10", .ir = { 22150, 22749 }, SM_LTE },
+	{ "LTE-B11", .ir = { 22750, 22999 }, SM_LTE },
+	{ "LTE-B12", .ir = { 23000, 23179 }, SM_LTE },
 	{ "LTE-B13", .ir = { 23180, 23279 }, SM_LTE },
+	{ "LTE-B14", .ir = { 23280, 23379 }, SM_LTE },
+	{ "LTE-B15", .ir = { 0, 0 }, SM_LTE },
+	{ "LTE-B16", .ir = { 0, 0 }, SM_LTE },
 	{ "LTE-B17", .ir = { 23730, 23849 }, SM_LTE },
+	{ "LTE-B18", .ir = { 23850, 23999 }, SM_LTE },
+	{ "LTE-B19", .ir = { 24000, 24149 }, SM_LTE },
 	{ "LTE-B20", .ir = { 24150, 24449 }, SM_LTE },
+	{ "LTE-B21", .ir = { 24450, 24599 }, SM_LTE },
+	{ "LTE-B22", .ir = { 24600, 25399 }, SM_LTE },
+	{ "LTE-B23", .ir = { 25500, 25699 }, SM_LTE },
+	{ "LTE-B24", .ir = { 25700, 26039 }, SM_LTE },
+	{ "LTE-B25", .ir = { 26040, 26689 }, SM_LTE },
+	{ "LTE-B26", .ir = { 26690, 27039 }, SM_LTE },
+	{ "LTE-B27", .ir = { 27040, 27209 }, SM_LTE },
+	{ "LTE-B28", .ir = { 27210, 27659 }, SM_LTE },
+	{ "LTE-B29", .ir = { 0, 0 }, SM_LTE },
+	{ "LTE-B30", .ir = { 27660, 27759 }, SM_LTE },
+	{ "LTE-B31", .ir = { 27760, 27809 }, SM_LTE },
+	{ "LTE-B32", .ir = { 0, 0 }, SM_LTE },
+	{ "LTE-B33", .ir = { 36000, 36199 }, SM_LTE },
+	{ "LTE-B34", .ir = { 36200, 36349 }, SM_LTE },
+	{ "LTE-B35", .ir = { 36350, 36949 }, SM_LTE },
+	{ "LTE-B36", .ir = { 36950, 37549 }, SM_LTE },
+	{ "LTE-B37", .ir = { 37550, 37749 }, SM_LTE },
+	{ "LTE-B38", .ir = { 37750, 38249 }, SM_LTE },
+	{ "LTE-B39", .ir = { 38250, 38649 }, SM_LTE },
+	{ "LTE-B40", .ir = { 38650, 39649 }, SM_LTE },
+	{ "LTE-B41", .ir = { 39650, 41589 }, SM_LTE },
 	{ 0 },
 };
 
@@ -411,13 +855,46 @@ smap_t band_map[] = {
 	{ "WCDMA-1900", 16, SM_WCDMA },
 	{ "WCDMA-2100", 9, SM_WCDMA },
 	{ "LTE-B1", 34, SM_LTE },
+	{ "LTE-B2", 43, SM_LTE },
 	{ "LTE-B3", 44, SM_LTE },
 	{ "LTE-B4", 42, SM_LTE },
+	{ "LTE-B5", 45, SM_LTE },
+	{ "LTE-B6", 46, SM_LTE },
 	{ "LTE-B7", 35, SM_LTE },
 	{ "LTE-B8", 47, SM_LTE },
+	{ "LTE-B9", 48, SM_LTE },
+	{ "LTE-B10", 49, SM_LTE },
+	{ "LTE-B11", 41, SM_LTE },
+	{ "LTE-B12", 50, SM_LTE },
 	{ "LTE-B13", 36, SM_LTE },
+	{ "LTE-B14", 51, SM_LTE },
+	{ "LTE-B15", 52, SM_LTE },
+	{ "LTE-B16", 53, SM_LTE },
 	{ "LTE-B17", 37, SM_LTE },
+	{ "LTE-B18", 54, SM_LTE },
+	{ "LTE-B19", 55, SM_LTE },
 	{ "LTE-B20", 56, SM_LTE },
+	{ "LTE-B21", 57, SM_LTE },
+	{ "LTE-B22", 58, SM_LTE },
+	{ "LTE-B23", 59, SM_LTE },
+	{ "LTE-B24", 60, SM_LTE },
+	{ "LTE-B25", 61, SM_LTE },
+	{ "LTE-B26", 62, SM_LTE },
+	{ "LTE-B27", 63, SM_LTE },
+	{ "LTE-B28", 64, SM_LTE },
+	{ "LTE-B29", 65, SM_LTE },
+	{ "LTE-B30", 66, SM_LTE },
+	{ "LTE-B31", 67, SM_LTE },
+	{ "LTE-B32", 68, SM_LTE },
+	{ "LTE-B33", 69, SM_LTE },
+	{ "LTE-B34", 70, SM_LTE },
+	{ "LTE-B35", 71, SM_LTE },
+	{ "LTE-B36", 72, SM_LTE },
+	{ "LTE-B37", 73, SM_LTE },
+	{ "LTE-B38", 38, SM_LTE },
+	{ "LTE-B39", 74, SM_LTE },
+	{ "LTE-B40", 39, SM_LTE },
+	{ "LTE-B41", 76, SM_LTE },
 	{ 0 },
 };
 
@@ -444,6 +921,7 @@ smap_t txmod_map[] = {
 	{ "QAM256", 2, SM_LTE },
 	{ 0 },
 };
+
 
 // print a string map strings;
 
@@ -761,11 +1239,11 @@ plot_ps(g_t *g, rfm_t *rfm, float *data, int dftsz, char *msg)
 
 	// plot script;
 
-	fprintf(pf, "# %s #%d %s - %s\n", band->str, rfm->channel, txmod->str, msg);
+	fprintf(pf, "# %s #%d %s %ddbm - %s\n", band->str, rfm->channel, txmod->str, rfm->txpwr, msg);
 	fprintf(pf, "set terminal gif size 1280,720\n");
 	fprintf(pf, "set output '%s.gif'\n", file);
-	fprintf(pf, "set title \"%s #%d %s - %s (%.1f/%u %.1f)\"\n",
-		band->str, rfm->channel, txmod->str,
+	fprintf(pf, "set title \"%s #%d %s %ddbm - %s (%.1f/%u %.1f)\"\n",
+		band->str, rfm->channel, txmod->str, rfm->txpwr,
 		msg, rfm->dbin[1], rfm->nbin, rfm->dbin[2]);
 	fprintf(pf, "set yrange [-90:5]\n");
 	fprintf(pf, "set ylabel \"dbm\"\n");
@@ -1039,7 +1517,10 @@ atc_t at_dawstxcw = { atc_dawstxcw, buf_dawstxcw, 1000, 0, { &rea_error, &rea_ok
 int
 atc_dawstxpwr(g_t *g, atc_t *atc)
 {
-	sprintf(atc->cmd, "!DAWSTXPWR=1,%d", 23); //XXX
+	rfm_t *rfm = g->rfmc;
+
+	assert(rfm);
+	sprintf(atc->cmd, "!DAWSTXPWR=1,%d", rfm->txpwr);
 	return(-1);
 }
 
@@ -1075,12 +1556,35 @@ atc_t at_dalsnsval = { atc_dalsnsval, buf_dalsnsval, 1000, 0, { &rea_error, &rea
 int
 atc_dalswaveform(g_t *g, atc_t *atc)
 {
-	sprintf(atc->cmd, "!DALSWAVEFORM=%d", 0); //XXX
+	sprintf(atc->cmd, "!DALSWAVEFORM=%d,%d,%d,%d", 1, 12, 0, 19); //XXX
 	return(-1);
 }
 
 char buf_dalswaveform[32];
 atc_t at_dalswaveform = { atc_dalswaveform, buf_dalswaveform, 1000, 0, { &rea_error, &rea_ok }, };
+
+// set lte tx power;
+
+int
+atc_dalstxpwr(g_t *g, atc_t *atc)
+{
+	rfm_t *rfm = g->rfmc;
+
+	assert(rfm);
+	sprintf(atc->cmd, "!DALSTXPWR=1,%d", rfm->txpwr);
+	return(-1);
+}
+
+int
+atc_dalstxpwr0(g_t *g, atc_t *atc)
+{
+	sprintf(atc->cmd, "!DALSTXPWR=0,0");
+	return(-1);
+}
+
+char buf_dalstxpwr[32];
+atc_t at_dalstxpwr = { atc_dalstxpwr, buf_dalstxpwr, 1000, 0, { &rea_error, &rea_ok }, };
+atc_t at_dalstxpwr0 = { atc_dalstxpwr0, buf_dalstxpwr, 1000, 0, { &rea_error, &rea_ok }, };
 
 // set tx mode;
 
@@ -1208,8 +1712,13 @@ reh_dasband(g_t *g, atc_t *atc, rea_t *rea)
 		return("DASBAND reply error");
 
 	num = strtol(g->argv[1], &ep, 0);
-	if(num != band->i)
+#ifdef LTE_ATWAR
+	if((band->flags & SM_LTE) && (num == 0))
+		return(NULL);
+#endif // LTE_ATWAR
+	if(num != band->i) {
 		return("band not set");
+	}
 
 	return(NULL);
 }
@@ -1299,16 +1808,18 @@ ats_t ats_mode[] = {
 
 ats_t ats_lte[] = {
 	{ &exe_info, { 1, 1 }, },
-	{ &at_dasband, { 9, 1 }, },
-	{ &at_dalstxbw, { 8, 1 }, },
-	{ &at_dalsrxbw, { 7, 1 }, },
-	{ &at_daschan, { 6, 1 }, },
-	{ &at_dalstxmod, { 5, 1 }, },
-	{ &at_dalswaveform, { 4, 1 }, },
-	{ &at_dalsnsval, { 3, 1 }, },
+	{ &at_dasband, { 10, 1 }, },
+	{ &at_dalstxbw, { 9, 1 }, },
+	{ &at_dalsrxbw, { 8, 1 }, },
+	{ &at_daschan, { 7, 1 }, },
+	{ &at_dalstxmod, { 6, 1 }, },
+	{ &at_dalswaveform, { 5, 1 }, },
+	{ &at_dalsnsval, { 4, 1 }, },
+	{ &at_dalstxpwr, { 3, 1 }, },
 	{ &at_dastxon, { 2, 1 }, },
 	{ &exe_rfpm, { 1, 1 }, },
 	{ &at_dastxoff, { 1, 1 }, },
+	{ &at_dalstxpwr0, { 1, 1 }, },
 	{ 0 },
 };
 
@@ -1779,6 +2290,7 @@ prof_new(g_t *g, pfc_t *pfc, char *s)
 	if( !rfm)
 		return("out of memory");
 	bzero(rfm, sizeof(*rfm));
+	rfm->txpwr = TX_PWR_MIN;
 	rfm->msg = save_str(s);
 	rfm->dbin[0] = RFM_DB_BIN;
 	Msg("profile '%s'\n", rfm->msg);
@@ -1837,7 +2349,7 @@ prof_chan(g_t *g, pfc_t *pfc, char *s)
 	if( !strcmp(s, "low"))
 		channel = chan->ir[0];
 	else if( !strcmp(s, "mid"))
-		channel = (chan->ir[0] + chan->ir[1]) / 2;
+		channel = (chan->ir[0] + chan->ir[1] + 1) / 2;
 	else if( !strcmp(s, "high"))
 		channel = chan->ir[1];
 	else {
@@ -1924,6 +2436,32 @@ prof_txmod(g_t *g, pfc_t *pfc, char *s)
 	if( !(band->flags & txmod->flags))
 		return("invalid txmod for band");
 
+	return(NULL);
+}
+
+// set tx power;
+
+char *
+prof_txpwr(g_t *g, pfc_t *pfc, char *s)
+{
+	rfm_t *rfm = g->rfmc;
+	int txpwr;
+	char *ep, *xp;
+	long int channel;
+
+	if( !rfm)
+		return("no rf measurement declared");
+	if( !rfm->band)
+		return("no band defined yet");
+	if(rfm->txpwr > TX_PWR_MIN)
+		return("redefinition of tx power");
+
+	txpwr = strtol(s, &ep, 0);
+	xp = skip_spc(ep);
+	if((xp <= s) || *xp)
+		return("invalid tx power");
+
+	rfm->txpwr = txpwr;
 	return(NULL);
 }
 
@@ -2021,6 +2559,7 @@ pfc_t profile_cmds[] = {
 	{ "band", prof_band, SM_ALL },
 	{ "channel", prof_chan, SM_ALL },
 	{ "txmod", prof_txmod, SM_ALL },
+	{ "txpwr", prof_txpwr, SM_ALL },
 	{ "pe", prof_pe, SM_ALL },
 	{ "dbin", prof_dbin, SM_ALL },
 	{ 0 },
@@ -2033,7 +2572,9 @@ enum {
 	PROF_BAND,
 	PROF_CHAN,
 	PROF_TXMOD,
+	PROF_TXPWR,
 	PROF_PE,
+	PROF_DBIN,
 	N_PROF,
 };
 
@@ -2191,7 +2732,7 @@ rfm_validate(g_t *g, rfm_t *rfm)
 		if( !chan)
 			Fatal("%s: no channel list for band '%s'\n", rfm->msg, band->str);
 		rfm->chan = chan;
-		rfm->channel = (chan->ir[0] + chan->ir[1]) / 2;
+		rfm->channel = (chan->ir[0] + chan->ir[1] + 1) / 2;
 		Msg("%s: using '%s' mid-band channel %d\n", rfm->msg, band->str, rfm->channel);
 	}
 	freq = smap_freq(band, ufreq_map);
@@ -2217,6 +2758,8 @@ rfm_validate(g_t *g, rfm_t *rfm)
 
 	if( !rfm->txmod)
 		Fatal("%s: no tx modulation specified\n", rfm->msg);
+	if(rfm->txpwr <= TX_PWR_MIN)
+		Fatal("%s: no tx power specified\n", rfm->msg);
 }
 
 // main entry;
@@ -2252,7 +2795,7 @@ main(int argc, char **argv)
 
 	// get options;
 
-	while((c = getopt(argc, argv, "t:f:b:c:m:s:w:o:B:N:hd")) != EOF) {
+	while((c = getopt(argc, argv, "t:f:b:c:m:s:w:p:o:B:N:hd")) != EOF) {
 		switch(c) {
 		case 't':
 			g->tty = optarg;
@@ -2274,6 +2817,9 @@ main(int argc, char **argv)
 			break;
 		case 'w':
 			rfm_opt(g, "-w", PROF_BWIDTH, optarg);
+			break;
+		case 'p':
+			rfm_opt(g, "-p", PROF_TXPWR, optarg);
 			break;
 		case 'o':
 			g->dur = strtol(optarg, NULL, 0);

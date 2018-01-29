@@ -9,6 +9,7 @@ DEFAULT_PACKAGES += \
 	iputils-tracepath \
 	iputils-tracepath6 \
 	kmod-igb \
+	kmod-intel-i40e \
 	kmod-intel-ixgbe \
 	net-tools-arp \
 	net-tools-ifconfig \

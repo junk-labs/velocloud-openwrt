@@ -19,6 +19,7 @@ if [ -z "$VC_BOARD" ]; then
     IFM_BOARD="S1600JP"
     SM_1000_BOARD="X10SRW-F"
     SM_800_BOARD="X10SDV-F"
+    DELL_R640_BOARD="0XFK4K"
 
     # Could be an IFM system, or a SuperMicro system
     # The SuperMicro system could have 8 GbE + 2 SFP, or 8 GbE + 4 GbE.
@@ -29,6 +30,11 @@ if [ -z "$VC_BOARD" ]; then
 
     if [ "$DMI_BOARD" = "$SM_800_BOARD" ]; then
 	echo "edge800sm"
+	exit 0
+    fi
+
+    if [ "$DMI_BOARD" = "$DELL_R640_BOARD" ]; then
+	echo "edge1000r640"
 	exit 0
     fi
 

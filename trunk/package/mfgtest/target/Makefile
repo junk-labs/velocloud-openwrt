@@ -1,9 +1,10 @@
 # Makefile for bladerf server and client;
 
 # test profile config;
-PROFILE=profile.em7455
 PROFILE_EM7455=profile.em7455
 PROFILE_EM7430=profile.em7430
+COLO_EM7455=colo.em7455
+COLO_EM7430=colo.em7430
 TTY=/dev/ttyUSB2
 
 # build machine;
@@ -115,10 +116,10 @@ test-em7430:
 # or use command line options;
 
 colo-7455:
-	-./bins/swtest -t $(TTY) -f $(PROFILE_EM7455) -N $(vcid)
+	-./bins/swtest -t $(TTY) -f $(COLO_EM7455) -N $(vcid)
 
 colo-7430:
-	-./bins/swtest -t $(TTY) -f $(PROFILE_EM7430) -N $(vcid)
+	-./bins/swtest -t $(TTY) -f $(COLO_EM7430) -N $(vcid)
 
 # copy plots out to minnowboard;
 

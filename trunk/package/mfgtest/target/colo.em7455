@@ -1,0 +1,138 @@
+# WCDMA;
+
+new WCDMA-850 mid-band
+band WCDMA-850
+channel mid
+txmod WCDMA
+txpwr 23
+bandwidth 10000000
+
+new WCDMA-900 mid-band
+band WCDMA-900
+channel mid
+txmod WCDMA
+txpwr 23
+bandwidth 10000000
+
+new WCDMA-1900 mid-band
+band WCDMA-1900
+channel mid
+txmod WCDMA
+txpwr 23
+bandwidth 10000000
+
+new WCDMA-2100 mid-band
+band WCDMA-2100
+channel mid
+txmod WCDMA
+txpwr 23
+bandwidth 10000000
+
+# LTE;
+
+new LTE-B1 mid-band
+band LTE-B1
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B2 mid-band
+band LTE-B2
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B3 mid-band
+band LTE-B3
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B4 mid-band
+band LTE-B4
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B5 mid-band
+band LTE-B5
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B7 mid-band
+band LTE-B7
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B8 mid-band
+band LTE-B8
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B12 mid-band
+band LTE-B12
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B13 mid-band
+band LTE-B13
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B20 mid-band
+band LTE-B20
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B25 mid-band
+band LTE-B25
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B26 mid-band
+band LTE-B26
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+# XXX downlink only
+#new LTE-B29 mid-band
+#band LTE-B29
+#channel mid
+#txmod QPSK
+#txpwr 23
+#bandwidth 10
+
+new LTE-B30 mid-band
+band LTE-B30
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+
+new LTE-B41 mid-band
+band LTE-B41
+channel mid
+txmod QPSK
+txpwr 23
+bandwidth 10
+

@@ -856,7 +856,7 @@ void pim_ifchannel_prune(struct interface *ifp,
 			 uint8_t source_flags,
 			 uint16_t holdtime)
 {
-  struct pim_ifchannel *ch;
+  struct pim_ifchannel *ch, *starch = NULL;
   struct pim_interface *pim_ifp;
   int jp_override_interval_msec;
 
@@ -879,30 +879,59 @@ void pim_ifchannel_prune(struct interface *ifp,
     return;
 
   pim_ifp = ifp->info;
+  
+  if (PIM_DEBUG_TRACE)
+      zlog_debug(
+              "%s: Found channel ch %p in ifjoin_state %d sg %s",
+              __PRETTY_FUNCTION__,
+              ch,
+              ch->ifjoin_state,
+              ch->upstream->sg_str);
 
   switch (ch->ifjoin_state) {
   case PIM_IFJOIN_NOINFO:
     if (source_flags & PIM_ENCODE_RPT_BIT)
       {
-	PIM_IF_FLAG_SET_S_G_RPT(ch->flags);
-	ch->ifjoin_state = PIM_IFJOIN_PRUNE_PENDING;
-        if (listcount(pim_ifp->pim_neighbor_list) > 1)
-          jp_override_interval_msec = pim_if_jp_override_interval_msec(ifp);
-        else
-          jp_override_interval_msec = 0; /* schedule to expire immediately */
+          PIM_IF_FLAG_SET_S_G_RPT(ch->flags);
+          ch->ifjoin_state = PIM_IFJOIN_PRUNE_PENDING;
+          if (listcount(pim_ifp->pim_neighbor_list) > 1)
+              jp_override_interval_msec = pim_if_jp_override_interval_msec(ifp);
+          else
+              jp_override_interval_msec = 0; /* schedule to expire immediately */
           /* If we called ifjoin_prune() directly instead, care should
              be taken not to use "ch" afterwards since it would be
              deleted. */
 
-	THREAD_OFF(ch->t_ifjoin_prune_pending_timer);
-	THREAD_OFF(ch->t_ifjoin_expiry_timer);
-	THREAD_TIMER_MSEC_ON(master, ch->t_ifjoin_prune_pending_timer,
-			     on_ifjoin_prune_pending_timer,
-			     ch, jp_override_interval_msec);
-	THREAD_TIMER_ON(master, ch->t_ifjoin_expiry_timer,
-			on_ifjoin_expiry_timer,
-			ch, holdtime);
-        pim_upstream_update_join_desired(ch->upstream);
+          THREAD_OFF(ch->t_ifjoin_prune_pending_timer);
+          THREAD_OFF(ch->t_ifjoin_expiry_timer);
+          THREAD_TIMER_MSEC_ON(master, ch->t_ifjoin_prune_pending_timer,
+                  on_ifjoin_prune_pending_timer,
+                  ch, jp_override_interval_msec);
+          THREAD_TIMER_ON(master, ch->t_ifjoin_expiry_timer,
+                  on_ifjoin_expiry_timer,
+                  ch, holdtime);
+          
+          starch = NULL;
+          if (INADDR_ANY != sg->src.s_addr) {
+              struct prefix_sg any = *sg;
+              any.src.s_addr = INADDR_ANY;
+              starch = pim_ifchannel_find(ifp, &any);
+          } 
+
+          if (starch && ch->upstream) {
+              if (pim_upstream_evaluate_join_desired(ch->upstream)) { 
+                  int output_intf = pim_upstream_inherited_olist (ch->upstream);
+                  if (PIM_DEBUG_TRACE)
+                      zlog_debug(
+                              "%s: SGRpt flag is set, inherit oif from starg_up %s into sg_up %s output_intf %d",
+                              __PRETTY_FUNCTION__,
+                              starch->upstream->sg_str,
+                              ch->upstream->sg_str,
+                              output_intf);
+              }
+          }
+          
+          pim_upstream_update_join_desired(ch->upstream);
       }
     break;
   case PIM_IFJOIN_PRUNE_PENDING:

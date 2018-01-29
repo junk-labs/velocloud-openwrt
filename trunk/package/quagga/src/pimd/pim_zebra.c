@@ -1139,7 +1139,21 @@ void pim_forward_start(struct pim_ifchannel *ch)
   if (up->flags & PIM_UPSTREAM_FLAG_MASK_SRC_IGMP)
     mask = PIM_OIF_FLAG_PROTO_IGMP;
 
-  pim_channel_add_oif(up->channel_oil, ch->interface, mask);
+  if (!pim_upstream_is_sg_rpt(up)) {
+      pim_channel_add_oif(up->channel_oil, ch->interface, mask);
+      if (PIM_DEBUG_PIM_TRACE)
+          zlog_debug("%s %s: Adding interface %s to OIL for channel (S,G)=%s",
+                  __FILE__, __PRETTY_FUNCTION__,
+                  ch->interface->name,
+                  up->sg_str);
+  } else {
+      if (PIM_DEBUG_PIM_TRACE)
+          zlog_debug("%s %s: Skipping (s,g,rpt) upstream %p channel (S,G)=%s interface %s",
+                  __FILE__, __PRETTY_FUNCTION__,
+                  up,
+                  up->sg_str,
+                  ch->interface->name);
+  }
 }
 
 void pim_forward_stop(struct pim_ifchannel *ch)

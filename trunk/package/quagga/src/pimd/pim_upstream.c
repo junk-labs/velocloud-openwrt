@@ -1432,6 +1432,16 @@ pim_upstream_inherited_olist_decide (struct pim_upstream *up)
       pim_ifp = ch->interface->info;
       if (!pim_ifp)
 	continue;
+      
+      if (PIM_DEBUG_TRACE)
+      {
+          zlog_debug ("%s: up %p (S,G)=%s ch %p (S,G)=%s",
+                  __PRETTY_FUNCTION__, 
+                  up,
+                  up->sg_str,
+                  ch,
+                  ch->sg_str);
+      }
 
       if (pim_upstream_evaluate_join_desired_interface (up, ch))
 	{
@@ -1440,6 +1450,16 @@ pim_upstream_inherited_olist_decide (struct pim_upstream *up)
           if (ch->sg.src.s_addr == INADDR_ANY && ch->upstream != up)
             flag = PIM_OIF_FLAG_PROTO_STAR;
           pim_channel_add_oif (up->channel_oil, ch->interface, flag);
+          if (PIM_DEBUG_TRACE)
+          {
+              zlog_debug ("%s: Adding up %p (S,G)=%s ch %p (S,G)=%s %s",
+                      __PRETTY_FUNCTION__, 
+                      up,
+                      up->sg_str,
+                      ch,
+                      ch->sg_str,
+                      ch->interface->name);
+          }
 	  output_intf++;
 	}
     }

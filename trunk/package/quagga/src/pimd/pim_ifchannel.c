@@ -46,6 +46,8 @@
 #include "pim_upstream.h"
 #include "pim_ssm.h"
 
+static int on_ifjoin_expiry_timer(struct thread *t);
+
 int
 pim_ifchannel_compare (struct pim_ifchannel *ch1, struct pim_ifchannel *ch2)
 {
@@ -133,6 +135,55 @@ pim_ifchannel_find_new_children (struct pim_ifchannel *ch)
 	  listnode_add_sort (ch->sources, child);
 	}
     }
+}
+
+static void
+pim_ifchannel_stop_sg_rpt_ifjoin_expiry_timer(struct pim_ifchannel *ch, enum pim_ifjoin_state ifjoin_state, uint16_t
+        holdtime)
+{
+  struct pim_interface *pim_ifp = ch->interface->info;
+  struct pim_ifchannel *child;
+  struct listnode *ch_node;
+  
+  for (ALL_LIST_ELEMENTS_RO (pim_ifp->pim_ifchannel_list, ch_node, child))
+    {
+      if ((child->sg.src.s_addr != INADDR_ANY) &&
+	  (child->sg.grp.s_addr == ch->sg.grp.s_addr) &&
+	  (child != ch))
+	{
+        if (PIM_DEBUG_TRACE)
+            zlog_debug(
+                    "%s: Processing ifjoin expiry timer on channel ch %p in ifjoin_state %d sg %s",
+                    __PRETTY_FUNCTION__,
+                    child,
+                    child->ifjoin_state,
+                    child->upstream->sg_str);
+
+        if (PIM_IF_FLAG_TEST_S_G_RPT(child->flags) && (ifjoin_state == child->ifjoin_state)) {
+            if (child->t_ifjoin_expiry_timer) {
+                unsigned long remain =
+                    thread_timer_remain_second(child->t_ifjoin_expiry_timer);
+                if (remain > holdtime) {
+                    // do nothing
+                } else {
+                    if (PIM_DEBUG_TRACE)
+                        zlog_debug(
+                                "%s: Set ifjoin expiry timer to expire immly on channel ch %p in ifjoin_state %d sg %s",
+                                __PRETTY_FUNCTION__,
+                                child,
+                                child->ifjoin_state,
+                                child->upstream->sg_str);
+                    THREAD_OFF(child->t_ifjoin_expiry_timer);
+                    THREAD_TIMER_ON(master, child->t_ifjoin_expiry_timer, 
+                            on_ifjoin_expiry_timer,
+                            child, 0);
+                }
+            }
+        }
+	}
+    }
+
+    return;
 }
 
 void pim_ifchannel_free(struct pim_ifchannel *ch)
@@ -584,13 +635,36 @@ static void ifjoin_to_noinfo(struct pim_ifchannel *ch)
 static int on_ifjoin_expiry_timer(struct thread *t)
 {
   struct pim_ifchannel *ch;
+  struct prefix_sg sg;
+  struct pim_upstream *starup = NULL;
 
   ch = THREAD_ARG(t);
 
   ch->t_ifjoin_expiry_timer = NULL;
+  
+  sg = ch->sg;
+  if (INADDR_ANY != sg.src.s_addr) {
+      struct prefix_sg any = sg;
+      any.src.s_addr = INADDR_ANY;
+      starup = pim_upstream_find(&any);
+      ifjoin_to_noinfo(ch);
+  } else {
+      ifjoin_to_noinfo(ch);
+      starup = pim_upstream_find(&sg);
+  }
 
-  ifjoin_to_noinfo(ch);
   /* ch may have been deleted */
+  if (starup) {
+      pim_upstream_update_join_desired(starup);
+      pim_jp_agg_single_upstream_send(&starup->rpf,
+              starup,
+              true);
+
+      if (PIM_DEBUG_TRACE)
+          zlog_debug("%s: IFCHANNEL%s Triggering JOIN on starup upstream",
+                  __PRETTY_FUNCTION__,
+                  pim_str_sg_dump(&starup->sg));
+  } 
 
   return 0;
 }
@@ -601,30 +675,94 @@ static int on_ifjoin_prune_pending_timer(struct thread *t)
   int send_prune_echo; /* boolean */
   struct interface *ifp;
   struct pim_interface *pim_ifp;
+  struct prefix_sg sg;
+  struct pim_upstream *starup = NULL;
 
   ch = THREAD_ARG(t);
 
+  if (PIM_DEBUG_TRACE)
+      zlog_debug("%s: IFCHANNEL%s %s Prune Pending Timer Popped",
+              __PRETTY_FUNCTION__,
+              pim_str_sg_dump(&ch->sg),
+              pim_ifchannel_ifjoin_name(ch->ifjoin_state,
+                  ch->flags));
+
   ch->t_ifjoin_prune_pending_timer = NULL;
 
-  if (ch->ifjoin_state == PIM_IFJOIN_PRUNE_PENDING)
-    {
-      /* Send PruneEcho(S,G) ? */
-      ifp = ch->interface;
-      pim_ifp = ifp->info;
-      send_prune_echo = (listcount(pim_ifp->pim_neighbor_list) > 1);
+  sg = ch->sg;
 
-      ifjoin_to_noinfo(ch);
-      /* from here ch may have been deleted */
+  if (ch->ifjoin_state == PIM_IFJOIN_PRUNE_PENDING) 
+      {
+          /* Send PruneEcho(S,G) ? */
+          ifp = ch->interface;
+          pim_ifp = ifp->info;
+          if (!PIM_IF_FLAG_TEST_S_G_RPT(ch->flags)) {
+              send_prune_echo = (listcount(pim_ifp->pim_neighbor_list) > 1);
 
-      if (send_prune_echo)
-        {
-          struct pim_rpf rpf;
+              /* from here ch may have been deleted */
 
-          rpf.source_nexthop.interface = ifp;
-          rpf.rpf_addr.u.prefix4 = pim_ifp->primary_address;
-          pim_jp_agg_single_upstream_send(&rpf, ch->upstream, 0);
-        }
-    }
+              if (send_prune_echo)
+              {
+                  struct pim_rpf rpf;
+
+                  rpf.source_nexthop.interface = ifp;
+                  rpf.rpf_addr.u.prefix4 = pim_ifp->primary_address;
+                  pim_jp_agg_single_upstream_send(&rpf, ch->upstream, 0);
+                  if (PIM_DEBUG_TRACE)
+                      zlog_debug("%s: IFCHANNEL%s Sending Prune to SG-SPT rpf",
+                              __PRETTY_FUNCTION__,
+                              pim_str_sg_dump(&ch->sg));
+              }
+              if (INADDR_ANY != sg.src.s_addr) {
+                  struct prefix_sg any = sg;
+                  any.src.s_addr = INADDR_ANY;
+                  starup = pim_upstream_find(&any);
+                  ifjoin_to_noinfo(ch);
+              } else {
+                  ifjoin_to_noinfo(ch);
+                  starup = pim_upstream_find(&sg);
+              }
+
+              if (starup) {
+                  pim_upstream_update_join_desired(starup);
+                  pim_jp_agg_single_upstream_send(&starup->rpf,
+                          starup,
+                          true);
+                  
+                  if (PIM_DEBUG_TRACE)
+                      zlog_debug("%s: IFCHANNEL%s Triggering JOIN on starup upstream",
+                              __PRETTY_FUNCTION__,
+                              pim_str_sg_dump(&starup->sg));
+              } else {
+                  if (PIM_DEBUG_TRACE)
+                      zlog_debug("%s: IFCHANNEL%s No starup",
+                              __PRETTY_FUNCTION__,
+                              pim_str_sg_dump(&ch->sg));
+              }
+
+          } else {
+              /* If SGRpt flag is set on ifchannel, Trigger SGRpt
+               *  message on RP path upon prune timer expiry.
+               */
+              ch->ifjoin_state = PIM_IFJOIN_PRUNE;
+              if (ch->upstream) {
+                  struct pim_upstream *parent =
+                      ch->upstream->parent;
+
+                  pim_upstream_update_join_desired(ch->upstream);
+
+                  pim_jp_agg_single_upstream_send(&parent->rpf,
+                          parent,
+                          true);
+                  if (PIM_DEBUG_TRACE)
+                      zlog_debug("%s: IFCHANNEL%s %s Sending JOIN only to sgRPT parent rpf",
+                              __PRETTY_FUNCTION__,
+                              pim_str_sg_dump(&ch->sg),
+                              pim_ifchannel_ifjoin_name(ch->ifjoin_state,
+                                  ch->flags));
+              }
+          }
+      }
   else
     {
       zlog_warn("%s: IFCHANNEL%s Prune Pending Timer Popped while in %s state",
@@ -786,6 +924,14 @@ void pim_ifchannel_join_add(struct interface *ifp,
   pim_ifp = ifp->info;
   zassert(pim_ifp);
 
+  if (PIM_DEBUG_TRACE)
+      zlog_debug(
+              "%s: Found channel ch %p in ifjoin_state %d sg %s",
+              __PRETTY_FUNCTION__,
+              ch,
+              ch->ifjoin_state,
+              ch->upstream->sg_str);
+
   switch (ch->ifjoin_state) {
   case PIM_IFJOIN_NOINFO:
     pim_ifchannel_ifjoin_switch(__PRETTY_FUNCTION__, ch, PIM_IFJOIN_JOIN);
@@ -793,6 +939,7 @@ void pim_ifchannel_join_add(struct interface *ifp,
       pim_upstream_inherited_olist (ch->upstream);
       pim_forward_start(ch);
     }
+
     break;
   case PIM_IFJOIN_JOIN:
     zassert(!ch->t_ifjoin_prune_pending_timer);
@@ -822,6 +969,8 @@ void pim_ifchannel_join_add(struct interface *ifp,
       }
     }
     THREAD_OFF(ch->t_ifjoin_expiry_timer);
+    // Here run thro' child (s,g,rpt) entries and stop its t_ifjoin_expiry_timer 
+    pim_ifchannel_stop_sg_rpt_ifjoin_expiry_timer(ch, PIM_IFJOIN_PRUNE, holdtime);
     break;
   case PIM_IFJOIN_PRUNE:
     if (source_flags & PIM_ENCODE_RPT_BIT)
@@ -892,7 +1041,9 @@ void pim_ifchannel_prune(struct interface *ifp,
   case PIM_IFJOIN_NOINFO:
     if (source_flags & PIM_ENCODE_RPT_BIT)
       {
-          PIM_IF_FLAG_SET_S_G_RPT(ch->flags);
+			if (!(source_flags & PIM_ENCODE_WC_BIT))
+                PIM_IF_FLAG_SET_S_G_RPT(ch->flags);
+
           ch->ifjoin_state = PIM_IFJOIN_PRUNE_PENDING;
           if (listcount(pim_ifp->pim_neighbor_list) > 1)
               jp_override_interval_msec = pim_if_jp_override_interval_msec(ifp);

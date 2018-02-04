@@ -1104,7 +1104,7 @@ pim_upstream_keep_alive_timer (struct thread *t)
       zlog_debug ("kat expired on %s; remove stream reference", up->sg_str);
     PIM_UPSTREAM_FLAG_UNSET_SRC_STREAM(up->flags);
     pim_upstream_del(up, __PRETTY_FUNCTION__);
-  }
+  } 
 
   return 0;
 }
@@ -1449,16 +1449,17 @@ pim_upstream_inherited_olist_decide (struct pim_upstream *up)
 
           if (ch->sg.src.s_addr == INADDR_ANY && ch->upstream != up)
             flag = PIM_OIF_FLAG_PROTO_STAR;
-          pim_channel_add_oif (up->channel_oil, ch->interface, flag);
-          if (PIM_DEBUG_TRACE)
-          {
-              zlog_debug ("%s: Adding up %p (S,G)=%s ch %p (S,G)=%s %s",
-                      __PRETTY_FUNCTION__, 
-                      up,
-                      up->sg_str,
-                      ch,
-                      ch->sg_str,
-                      ch->interface->name);
+          if (0 == pim_channel_add_oif (up->channel_oil, ch->interface, flag)) {
+              if (PIM_DEBUG_TRACE)
+              {
+                  zlog_debug ("%s: Adding up %p (S,G)=%s ch %p (S,G)=%s %s",
+                          __PRETTY_FUNCTION__, 
+                          up,
+                          up->sg_str,
+                          ch,
+                          ch->sg_str,
+                          ch->interface->name);
+              }
           }
 	  output_intf++;
 	}

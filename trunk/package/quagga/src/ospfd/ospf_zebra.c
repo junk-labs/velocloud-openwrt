@@ -1025,7 +1025,8 @@ ospf_access_list_update_timer (struct thread *thread)
   /* foreach all external info. */
   for (type = 0; type <= ZEBRA_ROUTE_MAX; type++)
   {
-      if ((ZEBRA_ROUTE_STATIC == type) || (ZEBRA_ROUTE_KERNEL == type)) {
+      if ((ZEBRA_ROUTE_STATIC == type) || (ZEBRA_ROUTE_KERNEL == type) ||
+          (ZEBRA_ROUTE_BGP == type)) {
           rt = EXTERNAL_INFO (type);
           
           if (!rt)

@@ -79,58 +79,6 @@
  
 --- a/src/drivers/driver_wired.c
 +++ b/src/drivers/driver_wired.c
-@@ -165,6 +165,7 @@ static void handle_read(int sock, void *eloop_ctx, void *sock_ctx)
- }
- 
- 
-+/*
- static void handle_dhcp(int sock, void *eloop_ctx, void *sock_ctx)
- {
- 	int len;
-@@ -179,7 +180,7 @@ static void handle_dhcp(int sock, void *eloop_ctx, void *sock_ctx)
- 		return;
- 	}
- 
--	/* must contain at least dhcp_message->chaddr */
-+	// must contain at least dhcp_message->chaddr 
- 	if (len < 44) {
- 		wpa_printf(MSG_MSGDUMP, "handle_dhcp: too short (%d)", len);
- 		return;
-@@ -195,6 +196,7 @@ static void handle_dhcp(int sock, void *eloop_ctx, void *sock_ctx)
- 	event.new_sta.addr = mac_address;
- 	wpa_supplicant_event(eloop_ctx, EVENT_NEW_STA, &event);
- }
-+*/
- #endif /* __linux__ */
- 
- 
-@@ -203,8 +205,8 @@ static int wired_init_sockets(struct wpa_driver_wired_data *drv, u8 *own_addr)
- #ifdef __linux__
- 	struct ifreq ifr;
- 	struct sockaddr_ll addr;
--	struct sockaddr_in addr2;
--	int n = 1;
-+	//struct sockaddr_in addr2;
-+	//int n = 1;
- 
- 	drv->sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_PAE));
- 	if (drv->sock < 0) {
-@@ -258,6 +260,7 @@ static int wired_init_sockets(struct wpa_driver_wired_data *drv, u8 *own_addr)
- 	os_memcpy(own_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
- 
- 	/* setup dhcp listen socket for sta detection */
-+	/*
- 	if ((drv->dhcp_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
- 		perror("socket call failed for dhcp");
- 		return -1;
-@@ -298,6 +301,7 @@ static int wired_init_sockets(struct wpa_driver_wired_data *drv, u8 *own_addr)
- 		perror("bind");
- 		return -1;
- 	}
-+	*/
- 
- 	return 0;
- #else /* __linux__ */
 @@ -608,6 +612,12 @@ static void wpa_driver_wired_deinit(void *priv)
  	os_free(drv);
  }
@@ -215,6 +163,6 @@
  
 +void wpa_msg_bin(void* ctx, int level, char* buf, size_t len);
 +
- typedef void (*wpa_msg_cb_func)(void *ctx, int level, int global,
- 				const char *txt, size_t len);
  
+ /**
+  * wpa_msg_global_only - Conditional printf for ctrl_iface monitors

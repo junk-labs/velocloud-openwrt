@@ -68,6 +68,10 @@
 #define MRT_VERSION  (MRT_BASE+6)    /* Get the kernel multicast version     */
 #define MRT_ASSERT   (MRT_BASE+7)    /* Activate PIM assert mode             */
 #define MRT_PIM      (MRT_BASE+8)    /* enable PIM code      */
+#ifdef HAVE_ZEBRA_MQ
+#define MRT_PIM_ADD_NEIGHBOR  (MRT_BASE+9)  /* Add a PIM neighbor */
+#define MRT_PIM_DEL_NEIGHBOR  (MRT_BASE+10) /* Delete a PIM neighbor */
+#endif
 #endif
 
 #ifndef HAVE_VIFI_T

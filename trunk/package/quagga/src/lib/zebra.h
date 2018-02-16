@@ -437,6 +437,8 @@ struct in_pktinfo
 #define ZEBRA_MCAST_JOIN_SOURCE_GROUP       208
 #define ZEBRA_MRT_ADD_VIF                   209
 #define ZEBRA_MRT_DEL_VIF                   210
+#define ZEBRA_MRT_ADD_PIM_NEIGHBOR          211
+#define ZEBRA_MRT_DEL_PIM_NEIGHBOR          212
 
 #define ZEBRA_MESSAGE_MAX                 255
 #else 

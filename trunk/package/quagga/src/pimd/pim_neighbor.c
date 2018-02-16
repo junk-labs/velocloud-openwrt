@@ -40,6 +40,7 @@
 #include "pim_zebra.h"
 #include "pim_join.h"
 #include "pim_jp_agg.h"
+#include "zclient.h"
 
 static void dr_election_by_addr(struct interface *ifp)
 {
@@ -485,6 +486,12 @@ struct pim_neighbor *pim_neighbor_add(struct interface *ifp,
 {
   struct pim_interface *pim_ifp;
   struct pim_neighbor *neigh;
+  char src_str[INET_ADDRSTRLEN];
+#ifdef HAVE_ZEBRA_MQ
+  struct zeb_pim_nbr pim_nbr;
+  int err;
+#endif
+
 
   neigh = pim_neighbor_new(ifp, source_addr,
 			   hello_options,
@@ -536,6 +543,32 @@ struct pim_neighbor *pim_neighbor_add(struct interface *ifp,
   pim_rp_setup ();
 
   pim_neighbor_rpf_update();
+
+  if (PIM_DEBUG_PIM_TRACE) {
+    pim_inet4_dump("<src?>", neigh->source_addr, src_str, sizeof(src_str));
+    zlog_debug("%s: adding PIM neighbor %s on interface %s",
+	       __PRETTY_FUNCTION__,
+	       src_str, ifp->name);
+  }
+
+#ifdef HAVE_ZEBRA_MQ
+  /*
+   * Send PIM neighbor add to vc-zebra
+   */
+  pim_nbr.ipaddr = neigh->source_addr;
+  pim_nbr.intf = pim_ifp->mroute_vif_index;
+  pim_nbr.dr_priority = neigh->dr_priority;
+
+  err = zclient_send_mrt_add_pim_nbr(qpim_zclient_update, &pim_nbr);
+  if (err) {
+    if (PIM_DEBUG_MROUTE)
+      zlog_warn("%s %s: failure: setsockopt(fd=%d,IPPROTO_IP,MRT_ADD_PIM_NEIGHBOR): errno=%d: %s",
+		__FILE__, __PRETTY_FUNCTION__,
+		qpim_mroute_socket_fd,
+		errno, safe_strerror(errno));
+  }
+#endif
+
   return neigh;
 }
 
@@ -593,6 +626,10 @@ void pim_neighbor_delete(struct interface *ifp,
 {
   struct pim_interface *pim_ifp;
   char src_str[INET_ADDRSTRLEN];
+#ifdef HAVE_ZEBRA_MQ
+  struct zeb_pim_nbr pim_nbr;
+  int err;
+#endif
 
   pim_ifp = ifp->info;
   zassert(pim_ifp);
@@ -645,9 +682,29 @@ void pim_neighbor_delete(struct interface *ifp,
 	       src_str, ifp->name);
   }
 
+#ifdef HAVE_ZEBRA_MQ
+  /*
+   * Send PIM neighbor delete to vc-zebra
+   */
+  pim_nbr.ipaddr = neigh->source_addr;
+  pim_nbr.intf = pim_ifp->mroute_vif_index;
+  pim_nbr.dr_priority = neigh->dr_priority;
+#endif
+
   listnode_delete(pim_ifp->pim_neighbor_list, neigh);
 
   pim_neighbor_free(neigh);
+
+#ifdef HAVE_ZEBRA_MQ
+  err = zclient_send_mrt_del_pim_nbr(qpim_zclient_update, &pim_nbr);
+  if (err) {
+    if (PIM_DEBUG_MROUTE)
+      zlog_warn("%s %s: failure: setsockopt(fd=%d,IPPROTO_IP,MRT_DEL_PIM_NEIGHBOR): errno=%d: %s",
+		__FILE__, __PRETTY_FUNCTION__,
+		qpim_mroute_socket_fd,
+		errno, safe_strerror(errno));
+  }
+#endif
 
   pim_neighbor_rpf_update();
 }
@@ -761,6 +818,12 @@ void pim_neighbor_update(struct pim_neighbor *neigh,
 			 struct list *addr_list)
 {
   struct pim_interface *pim_ifp = neigh->interface->info;
+#ifdef HAVE_ZEBRA_MQ
+  struct zeb_pim_nbr pim_nbr;
+  int err;
+  char src_str[INET_ADDRSTRLEN];
+  uint32_t old_dr_priority = neigh->dr_priority;
+#endif
 
   /* Received holdtime ? */
   if (PIM_OPTION_IS_SET(hello_options, PIM_OPTION_MASK_HOLDTIME)) {
@@ -804,4 +867,32 @@ void pim_neighbor_update(struct pim_neighbor *neigh,
     Copy flags
    */
   neigh->hello_options = hello_options;
+
+#ifdef HAVE_ZEBRA_MQ
+  /*
+   * Send PIM neighbor add to vc-zebra only if dr-priority changes
+   */
+  if (old_dr_priority != neigh->dr_priority) {
+
+      pim_nbr.ipaddr = neigh->source_addr;
+      pim_nbr.intf = pim_ifp->mroute_vif_index;
+      pim_nbr.dr_priority = neigh->dr_priority;
+
+      if (PIM_DEBUG_PIM_TRACE) {
+          pim_inet4_dump("<src?>", neigh->source_addr, src_str, sizeof(src_str));
+          zlog_debug("%s: adding/updating PIM neighbor %s on interface %s",
+                  __PRETTY_FUNCTION__,
+                  src_str, neigh->interface->name);
+      }
+
+      err = zclient_send_mrt_add_pim_nbr(qpim_zclient_update, &pim_nbr);
+      if (err) {
+          if (PIM_DEBUG_MROUTE)
+              zlog_warn("%s %s: failure: setsockopt(fd=%d,IPPROTO_IP,MRT_ADD_PIM_NEIGHBOR): errno=%d: %s",
+                      __FILE__, __PRETTY_FUNCTION__,
+                      qpim_mroute_socket_fd,
+                      errno, safe_strerror(errno));
+      }
+  }
+#endif
 }

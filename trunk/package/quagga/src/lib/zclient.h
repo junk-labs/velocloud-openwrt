@@ -181,6 +181,12 @@ struct zeb_mfcctl {
   unsigned int   mfcc_wrong_if;
   int            mfcc_expire;
 };
+
+struct zeb_pim_nbr {
+  struct in_addr ipaddr;             /* IP address of neighbor */
+  vifi_t         intf;               /* Where it is learnt */
+  int            dr_priority;
+};
 #endif
 
 
@@ -258,6 +264,10 @@ extern int
 zclient_send_mrt_add_mfc(struct zclient *zclient, struct zeb_mfcctl *oil);
 extern int
 zclient_send_mrt_del_mfc(struct zclient *zclient, struct zeb_mfcctl *oil);
+extern int
+zclient_send_mrt_add_pim_nbr(struct zclient *zclient, struct zeb_pim_nbr *pnbr);
+extern int
+zclient_send_mrt_del_pim_nbr(struct zclient *zclient, struct zeb_pim_nbr *pnbr);
 #else
 extern int
 zclient_send_mrt_add_mfc(struct zclient *zclient, struct mfcctl *oil);

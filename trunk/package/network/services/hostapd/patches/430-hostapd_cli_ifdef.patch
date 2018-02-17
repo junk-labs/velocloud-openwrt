@@ -1,22 +1,6 @@
 --- a/hostapd/hostapd_cli.c
 +++ b/hostapd/hostapd_cli.c
-@@ -67,7 +67,6 @@ static const char *commands_help =
- #ifdef CONFIG_IEEE80211W
- "   sa_query <addr>      send SA Query to a station\n"
- #endif /* CONFIG_IEEE80211W */
--#ifdef CONFIG_WPS
- "   wps_pin <uuid> <pin> [timeout] [addr]  add WPS Enrollee PIN\n"
- "   wps_check_pin <PIN>  verify PIN checksum\n"
- "   wps_pbc              indicate button pushed to initiate PBC\n"
-@@ -80,7 +79,6 @@ static const char *commands_help =
- "   wps_ap_pin <cmd> [params..]  enable/disable AP PIN\n"
- "   wps_config <SSID> <auth> <encr> <key>  configure AP\n"
- "   wps_get_status       show current WPS status\n"
--#endif /* CONFIG_WPS */
- "   get_config           show current configuration\n"
- "   help                 show this usage help\n"
- "   interface [ifname]   show interfaces/select interface\n"
-@@ -353,7 +351,6 @@ static int hostapd_cli_cmd_sa_query(stru
+@@ -417,7 +417,6 @@ static int hostapd_cli_cmd_sa_query(stru
  #endif /* CONFIG_IEEE80211W */
  
  
@@ -24,7 +8,7 @@
  static int hostapd_cli_cmd_wps_pin(struct wpa_ctrl *ctrl, int argc,
  				   char *argv[])
  {
-@@ -579,7 +576,6 @@ static int hostapd_cli_cmd_wps_config(st
+@@ -643,7 +642,6 @@ static int hostapd_cli_cmd_wps_config(st
  			 ssid_hex, argv[1]);
  	return wpa_ctrl_command(ctrl, buf);
  }
@@ -32,19 +16,19 @@
  
  
  static int hostapd_cli_cmd_disassoc_imminent(struct wpa_ctrl *ctrl, int argc,
-@@ -1027,7 +1023,6 @@ static struct hostapd_cli_cmd hostapd_cl
- #ifdef CONFIG_IEEE80211W
- 	{ "sa_query", hostapd_cli_cmd_sa_query },
+@@ -1476,7 +1474,6 @@ static const struct hostapd_cli_cmd host
+ 	{ "sa_query", hostapd_cli_cmd_sa_query, hostapd_complete_stations,
+ 	  "<addr> = send SA Query to a station" },
  #endif /* CONFIG_IEEE80211W */
 -#ifdef CONFIG_WPS
- 	{ "wps_pin", hostapd_cli_cmd_wps_pin },
- 	{ "wps_check_pin", hostapd_cli_cmd_wps_check_pin },
- 	{ "wps_pbc", hostapd_cli_cmd_wps_pbc },
-@@ -1041,7 +1036,6 @@ static struct hostapd_cli_cmd hostapd_cl
- 	{ "wps_ap_pin", hostapd_cli_cmd_wps_ap_pin },
- 	{ "wps_config", hostapd_cli_cmd_wps_config },
- 	{ "wps_get_status", hostapd_cli_cmd_wps_get_status },
+ 	{ "wps_pin", hostapd_cli_cmd_wps_pin, NULL,
+ 	  "<uuid> <pin> [timeout] [addr] = add WPS Enrollee PIN" },
+ 	{ "wps_check_pin", hostapd_cli_cmd_wps_check_pin, NULL,
+@@ -1501,7 +1498,6 @@ static const struct hostapd_cli_cmd host
+ 	  "<SSID> <auth> <encr> <key> = configure AP" },
+ 	{ "wps_get_status", hostapd_cli_cmd_wps_get_status, NULL,
+ 	  "= show current WPS status" },
 -#endif /* CONFIG_WPS */
- 	{ "disassoc_imminent", hostapd_cli_cmd_disassoc_imminent },
- 	{ "ess_disassoc", hostapd_cli_cmd_ess_disassoc },
- 	{ "bss_tm_req", hostapd_cli_cmd_bss_tm_req },
+ 	{ "disassoc_imminent", hostapd_cli_cmd_disassoc_imminent, NULL,
+ 	  "= send Disassociation Imminent notification" },
+ 	{ "ess_disassoc", hostapd_cli_cmd_ess_disassoc, NULL,

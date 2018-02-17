@@ -1,0 +1,309 @@
+diff -r -u a/src/ap/ieee802_1x.c b/src/ap/ieee802_1x.c
+--- a/src/ap/ieee802_1x.c	2018-02-13 06:00:00.895024251 -0800
++++ b/src/ap/ieee802_1x.c	2018-02-14 18:47:01.402393893 -0800
+@@ -2771,4 +2771,20 @@
+ 		 */
+ 		ap_sta_delayed_1x_auth_fail_disconnect(hapd, sta);
+ 	}
++	else if (strcmp(hapd->driver->name, "wired") == 0) {
++		/* Explicitly call sta_remove for wired clients */
++		hostapd_sta_add(hapd, sta->addr,
++				/*aid=*/0,
++				/*capability=*/0,
++				/*supp_rates=*/0,
++				/*supp_rates_len=*/0,
++				/*listen_interval=*/0,
++				/*ht_capab=*/0,
++				/*vht_capab=*/0,
++				/*flags=*/0,
++				/*qosinfo=*/0,
++				/*vht_opmode=*/0,
++				/*supp_p2p_ps=*/0,
++				/*set=*/1);
++	}
+ }
+diff -r -u a/src/drivers/driver_wired.c b/src/drivers/driver_wired.c
+--- a/src/drivers/driver_wired.c	2018-02-13 04:53:16.022371160 -0800
++++ b/src/drivers/driver_wired.c	2018-02-14 20:03:48.480341714 -0800
+@@ -28,6 +28,8 @@
+ #ifdef __sun__
+ #include <sys/sockio.h>
+ #endif /* __sun__ */
++#include <dirent.h>
++#include <sys/stat.h>
+ 
+ #ifdef _MSC_VER
+ #pragma pack(push, 1)
+@@ -322,6 +324,148 @@
+ 	return res;
+ }
+ 
++//-------------------------------------------------------------------
++// MAC addr auth list interface
++//-------------------------------------------------------------------
++
++const char *symlink_base = "/var/run/hostapd_authmac";
++
++static int clean_directory(const char *dirname, int keep_dir)
++{
++	struct dirent *p;
++	DIR *d = opendir(dirname);
++	if (!d) {
++		wpa_printf(MSG_ERROR,
++                           "wired: clean_directory: unable to clean up %s: %s",
++                           dirname, strerror(errno));
++		return -1;
++	}
++	int errors = 0;
++	while ((p = readdir(d)) != 0) {
++		if (strcmp(p->d_name, ".") == 0 ||
++		    strcmp(p->d_name, "..") == 0) {
++			continue; // don't try to delete "." and ".."!
++		}
++		struct stat statbuf;
++		char fpath[PATH_MAX];
++		snprintf(fpath, PATH_MAX, "%s/%s", dirname, p->d_name);
++		if (lstat(fpath, &statbuf) != 0) {
++			wpa_printf(MSG_ERROR,
++	                           "wired: clean_directory: unable to stat %s: %s",
++	                           fpath, strerror(errno));
++			(void)unlink(fpath);   // desperate - no harm in trying
++			errors++;
++			continue;
++		}
++		if (S_ISDIR(statbuf.st_mode)) {
++			// subdirectory cleanup will report its own errors..
++			if (clean_directory(fpath, /*keep_dir=*/FALSE) != 0) {
++				errors++;
++			}
++		} else if (unlink(fpath) != 0) {
++			wpa_printf(MSG_ERROR,
++	                           "wired: clean_directory: unable to remove %s: %s",
++	                           fpath, strerror(errno));
++			errors++;
++		}
++	}
++	closedir(d);
++
++	if (!keep_dir) {
++		if (rmdir(dirname) != 0) {
++			wpa_printf(MSG_ERROR,
++	                           "wired: clean_directory: unable to remove directory %s: %s",
++	                           dirname, strerror(errno));
++			errors++;
++		}
++	}
++	return (errors == 0 ? 0 : -1);
++}
++
++static int init_macauth_notify(const char *ifname)
++{
++	char fpath[PATH_MAX];
++	struct stat statbuf;
++
++	if ((mkdir(symlink_base, 0700) != 0 && errno != EEXIST)) {
++		wpa_printf(MSG_ERROR,
++			   "wired: %s: unable to create notification directory %s: %s",
++			   symlink_base, strerror(errno));
++		return -1;
++	}
++
++	snprintf(fpath, PATH_MAX, "%s/%s", symlink_base, ifname);
++
++	if (stat(fpath, &statbuf) == 0) {
++		if (S_ISDIR(statbuf.st_mode)) {
++			clean_directory(fpath, /*keep_dir=*/TRUE);
++			return 0;
++		} else {
++			if (unlink(fpath) != 0) {
++				wpa_printf(MSG_ERROR,
++		                           "wired: init_macauth_notify: unable to remove bogus %s: %s",
++		                           fpath, strerror(errno));
++			}
++			return -1;
++		}
++	}
++	// create the directory
++	if (mkdir(fpath, 0700) != 0 && errno != EEXIST) {
++		wpa_printf(MSG_ERROR,
++	                           "wired: init_macauth_notify: unable to create directory %s: %s",
++	                           fpath, strerror(errno));
++	}
++}
++
++static int cleanup_macauth_notify(const char *ifname)
++{
++	char fpath[PATH_MAX];
++
++	snprintf(fpath, PATH_MAX, "%s/%s", symlink_base, ifname);
++	clean_directory(fpath, /*keep_dir=*/FALSE);
++}
++
++static int notify_macauth_add(const char *ifname, const u8 *addr)
++{
++	char fpath[PATH_MAX];
++	char tsbuf[20];
++	struct timeval t;
++
++	wpa_printf(MSG_INFO, "wired: %s: enabling mac " MACSTR,
++		   ifname, MAC2STR(addr));
++
++	gettimeofday(&t, 0);
++	snprintf(tsbuf, 20, "%lu", t.tv_sec * 1000 + (t.tv_usec / 1000));
++	snprintf(fpath, PATH_MAX, "%s/%s/" MACSTR,
++		 symlink_base, ifname, MAC2STR(addr));
++
++	if (symlink(tsbuf, fpath) != 0 && errno != EEXIST) {
++		wpa_printf(MSG_ERROR,
++			  "wired: %s: unable to notify mac enable of " MACSTR,
++			   ifname, MAC2STR(addr));
++		return -1;
++	}
++	return 0;
++}
++
++static int notify_macauth_remove(const char *ifname, const u8 *addr)
++{
++	char fpath[PATH_MAX];
++
++	wpa_printf(MSG_INFO, "wired: %s: disabling mac " MACSTR,
++		   ifname, MAC2STR(addr));
++
++	snprintf(fpath, PATH_MAX, "%s/%s/" MACSTR,
++		 symlink_base, ifname, MAC2STR(addr));
++
++	if (unlink(fpath) != 0 && errno != ENOENT) {
++		wpa_printf(MSG_ERROR,
++			  "wired: %s: unable to notify mac disable of " MACSTR,
++			   ifname, MAC2STR(addr));
++		return -1;
++	}
++	return 0;
++}
+ 
+ static void * wired_driver_hapd_init(struct hostapd_data *hapd,
+ 				     struct wpa_init_params *params)
+@@ -345,6 +489,9 @@
+ 		return NULL;
+ 	}
+ 
++	// set up for notifying mac auths
++	init_macauth_notify(params->ifname);
++
+ 	return drv;
+ }
+ 
+@@ -388,6 +535,9 @@
+ {
+ 	struct wpa_driver_wired_data *drv = priv;
+ 
++	// clean up mac auth notifications
++	cleanup_macauth_notify(drv->common.ifname);
++
+ 	driver_wired_deinit_common(&drv->common);
+ 	os_free(drv);
+ }
+@@ -399,6 +549,91 @@
+     return -1;
+ }
+ 
++/* station processing debugging routines */
++
++static int wired_sta_add(void *priv, struct hostapd_sta_add_params *params)
++{
++	struct wpa_driver_wired_data *drv = priv;
++
++	wpa_printf(MSG_DEBUG, "wired: sta_add: %s STA " MACSTR "(ifname %s)",
++		   params->set ? "Set" : "Add", MAC2STR(params->addr),
++		   drv->common.ifname);
++
++	// Add mac to filter
++	notify_macauth_add(drv->common.ifname, params->addr);
++
++	return 0;
++}
++
++static int wired_sta_remove(void *priv, const u8 *addr)
++{
++	struct wpa_driver_wired_data *drv = priv;
++
++	wpa_printf(MSG_DEBUG, "wired: sta_remove -> STA remove " MACSTR
++		   "(ifname %s)",
++		   MAC2STR(addr), drv->common.ifname);
++
++	// Remove mac from filter
++	notify_macauth_remove(drv->common.ifname, addr);
++
++	return 0;
++}
++
++static int wired_sta_set_flags(void *priv, const u8 *addr,
++			       unsigned int total_flags,
++			       unsigned int flags_or,
++			       unsigned int flags_and)
++{
++	struct wpa_driver_wired_data *drv = priv;
++	struct nl_msg *msg;
++	struct nlattr *flags;
++
++	wpa_printf(MSG_DEBUG, "wired: Set STA flags - ifname=%s addr=" MACSTR
++		   " total_flags=0x%x flags_or=0x%x flags_and=0x%x authorized=%d",
++		   drv->common.ifname, MAC2STR(addr), total_flags, flags_or, flags_and,
++		   !!(total_flags & WPA_STA_AUTHORIZED));
++	return 0;
++}
++
++
++static int wired_set_sta_vlan(void *priv, const u8 *addr,
++			      const char *ifname, int vlan_id)
++{
++	struct wpa_driver_wired_data *drv = priv;
++
++	wpa_printf(MSG_DEBUG, "nl80211: %s[%d]: set_sta_vlan(" MACSTR
++		   ", ifname=%s[%d], vlan_id=%d)",
++		   drv->common.ifname, if_nametoindex(drv->common.ifname),
++		   MAC2STR(addr), ifname, if_nametoindex(ifname), vlan_id);
++	return 0;
++}
++
++static int wired_sta_deauth(void *priv, const u8 *own_addr, const u8 *addr,
++			    int reason)
++{
++	struct wpa_driver_wired_data *drv = priv;
++
++	wpa_printf(MSG_DEBUG, "nl80211: sta_deauth(" MACSTR
++		   ", ifname=%s[%d], reason=%d)",
++		   MAC2STR(addr),
++		   drv->common.ifname, if_nametoindex(drv->common.ifname),
++		   reason);
++	return 0;
++}
++
++static int wired_sta_disassoc(void *priv, const u8 *own_addr, const u8 *addr,
++			      int reason)
++{
++	struct wpa_driver_wired_data *drv = priv;
++
++	wpa_printf(MSG_DEBUG, "nl80211: sta_disassoc(" MACSTR
++		   ", ifname=%s[%d], reason=%d)",
++		   MAC2STR(addr),
++		   drv->common.ifname, if_nametoindex(drv->common.ifname),
++		   reason);
++	return 0;
++}
++
+ const struct wpa_driver_ops wpa_driver_wired_ops = {
+ 	.name = "wired",
+ 	.desc = "Wired Ethernet driver",
+@@ -411,4 +646,11 @@
+ 	.init = wpa_driver_wired_init,
+ 	.deinit = wpa_driver_wired_deinit,
+         .get_inact_sec = wpa_driver_wired_get_inact_sec,
++	// station processing debugging:
++	.sta_add = wired_sta_add,
++	.sta_remove = wired_sta_remove,
++	.sta_set_flags = wired_sta_set_flags,
++	.set_sta_vlan = wired_set_sta_vlan,
++	.sta_deauth = wired_sta_deauth,
++	.sta_disassoc = wired_sta_disassoc,
+ };

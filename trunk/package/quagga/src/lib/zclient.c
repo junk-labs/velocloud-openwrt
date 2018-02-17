@@ -1387,6 +1387,56 @@ zclient_send_mrt_del_mfc(struct zclient *zclient, struct zeb_mfcctl *oil)
     return zclient_send_message(zclient);
 }
 
+#ifdef HAVE_ZEBRA_MQ
+int
+zclient_send_mrt_add_pim_nbr(struct zclient *zclient, struct zeb_pim_nbr *pnbr)
+{
+    struct stream *s;
+
+    if (!zclient) {
+        zlog_debug("%s: Bad zclient", __FUNCTION__);
+        return -1;
+    }
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MRT_ADD_PIM_NEIGHBOR);
+
+    stream_write(s, pnbr, sizeof(struct zeb_pim_nbr));
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+
+int
+zclient_send_mrt_del_pim_nbr(struct zclient *zclient, struct zeb_pim_nbr *pnbr)
+{
+    struct stream *s;
+
+    if (!zclient) {
+        zlog_debug("%s: Bad zclient", __FUNCTION__);
+        return -1;
+    }
+
+    s = zclient->obuf;
+    stream_reset(s);
+
+    if (zclient_debug)
+        zlog_debug ("zclient send %s", __FUNCTION__);
+    zclient_create_header (s, ZEBRA_MRT_DEL_PIM_NEIGHBOR);
+
+    stream_write(s, pnbr, sizeof(struct zeb_pim_nbr));
+
+    /* Put length at the first point of the stream. */
+    stream_putw_at (s, 0, stream_get_endp (s));
+    return zclient_send_message(zclient);
+}
+#endif
+
 int
 zclient_send_mcast_join_source_group(struct zclient *zclient, uint32_t group_addr, uint32_t source_addr, uint32_t
         ifindex)

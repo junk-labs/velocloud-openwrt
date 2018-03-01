@@ -338,7 +338,7 @@ ifneq ($(CONFIG_EC2_IMAGES),)
   ifneq ($(CONFIG_VELOCLOUD_UPDATABLE_IMAGE),)
     define Image/Build/vc-ec2-updatable
 	# Build AWS (EC2) Updatable Image
-	tar -C $(BIN_DIR) \
+	tar --numeric-owner --owner=0 --group=0 -C $(BIN_DIR) \
 		-cvzSf $(BIN_DIR)/$(IMG_PREFIX)-updatable-ec2-$(1).tgz \
 		$(IMG_PREFIX)-updatable-$(1).img
     endef

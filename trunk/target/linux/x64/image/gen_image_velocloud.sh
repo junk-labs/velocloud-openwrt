@@ -93,7 +93,7 @@ if [ ! -z "$EMBEDDED" ]; then
     # Generate an "installer tarball" for Dolphin and newer hardware platforms
     if [ -r $IROOT/$INST_PATH/root-x64/root/installer ]; then
         cp -a $IROOT/$INST_PATH/root-x64/root/installer $IROOT
-        tar cjf "$EMBEDDED" -C $IROOT installer $INST_PATH
+        tar --numeric-owner --owner=0 --group=0 -cjf "$EMBEDDED" -C $IROOT installer $INST_PATH
     fi
 fi
 rm -rf "$IROOT"

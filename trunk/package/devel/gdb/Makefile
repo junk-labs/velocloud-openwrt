@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gdb
-PKG_VERSION:=7.9.1
+PKG_VERSION:=8.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@GNU/gdb
-PKG_MD5SUM:=35374c77a70884eb430c97061053a36e
+PKG_MD5SUM:=f46487561f9a16916a8102316f7fd105
 
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
@@ -55,8 +55,8 @@ endef
 # XXX: add --disable-werror to prevent build failure with arm
 CONFIGURE_ARGS+= \
 	--with-system-readline \
-	--with-expat --with-python=$(HOST_PYTHON_BIN) \
-	--disable-werror
+	--with-expat  \
+	--disable-werror --disable-sim
 
 CONFIGURE_VARS+= \
 	ac_cv_search_tgetent="$(TARGET_LDFLAGS) -lncurses -lreadline"

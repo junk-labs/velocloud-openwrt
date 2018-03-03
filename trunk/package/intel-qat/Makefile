@@ -71,6 +71,7 @@ Build/Prepare/Patches := \
 	002-build-perf.patch \
 	003-sha-init.patch \
 	004-config-etc-qat.patch \
+	005-bogus-inline.patch \
 
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)

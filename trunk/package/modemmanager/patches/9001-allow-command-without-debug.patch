@@ -1,0 +1,11 @@
+--- a/src/mm-iface-modem.c	2018-03-06 17:04:25.869225037 -0800
++++ b/src/mm-iface-modem.c	2018-03-07 14:06:06.431777788 -0800
+@@ -717,7 +717,7 @@
+     }
+ 
+     /* If we are not in Debug mode, report an error */
+-    if (!mm_context_get_debug ()) {
++    if (0 && !mm_context_get_debug ()) {
+         g_dbus_method_invocation_return_error (ctx->invocation,
+                                                MM_CORE_ERROR,
+                                                MM_CORE_ERROR_UNAUTHORIZED,

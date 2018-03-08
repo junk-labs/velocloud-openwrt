@@ -66,12 +66,7 @@ CONFIGURE_ARGS += \
 	--without-polkit \
 	--without-udev \
 	--without-suspend-resume \
-	--with-systemdsystemunitdir=no \
-	--without-interface-3gpp-ussd \
-	--without-interface-messaging \
-	--without-interface-voice \
-	--without-interface-oma \
-	--without-interface-firmware
+	--with-systemdsystemunitdir=no
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/ModemManager

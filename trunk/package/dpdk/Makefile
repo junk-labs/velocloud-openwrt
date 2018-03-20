@@ -7,11 +7,11 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=dpdk
 PKG_VERSION:=17.02
-PKG_RELEASE:=1
-PKG_FULL_VERSION=$(PKG_VERSION)-$(PKG_RELEASE)
-
+PKG_RELEASE:=3
 PKG_GIT_URL=git@git.assembla.com:velocloud.dpdk.git
 PKG_GIT_COMMIT=153eddedaf3cfe0bb4b84ece7ec0a00fe6055c8f
+PKG_GIT_SHORT=$(shell git rev-parse --short $(PKG_GIT_COMMIT))
+PKG_FULL_VERSION=$(PKG_VERSION)-$(PKG_RELEASE)-$(PKG_GIT_SHORT)
 
 PKG_GIT_DIR=$(TOPDIR)/git-src/dpdk
 PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
@@ -61,6 +61,7 @@ endef
 
 define Host/Install
 	$(INSTALL_DIR) $(STAGING_DIR_HOST)/hostpkg
+	$(RM) -fr $(STAGING_DIR_HOST)/hostpkg/gatewayd-dpdk_*.deb
 	$(CP) $(HOST_BUILD_DIR)/*.deb $(STAGING_DIR_HOST)/hostpkg
 endef
 

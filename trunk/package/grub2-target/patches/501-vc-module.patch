@@ -15,7 +15,7 @@
    enable = emu;
 --- /dev/null
 +++ b/grub-core/commands/vc.c
-@@ -0,0 +1,1076 @@
+@@ -0,0 +1,1221 @@
 +// vc.c
 +// velocloud specific commands;
 +
@@ -27,6 +27,7 @@
 +#include <grub/i18n.h>
 +#include <grub/mm.h>
 +#include <grub/cmos.h>
++#include <grub/time.h>
 +
 +enum cmos_offs {
 +	CMOS_FRESET = 0x10,
@@ -521,6 +522,134 @@
 +	grub_outl(pcu->out[idx], addr);
 +}
 +
++// TCO registers;
++// offsets from abase for 16-bit access;
++
++#define TCO_RLD(base) (base + 0x00)	// rd: current value, wr: reload;
++#define TCO2_STS(base) (base + 0x06)	// TCO2 status reg;
++#define TCO1_CTL(base) (base + 0x08)	// TCO2 control reg;
++#define TCO2_CTL(base) (base + 0x0a)	// TCO2 control reg;
++#define TCO2_TMR(base) (base + 0x12)	// TCO2 timer initial value;
++
++#define TCO_RLD_LOAD 0x01
++#define TCO1_CTL_HALT 0x0800
++#define TCO2_TMR_MASK 0x03ff
++
++// stop tco;
++
++static grub_err_t
++c2k_tco_stop(grub_uint32_t base)
++{
++	grub_uint16_t val;
++
++	// set TCO HALT bit;
++
++	val = grub_inw(TCO1_CTL(base));
++	val |= TCO1_CTL_HALT;
++	grub_outw(val, TCO1_CTL(base));
++
++	// check stopped;
++
++	val = grub_inw(TCO1_CTL(base));
++	if( !(val & TCO1_CTL_HALT))
++		return(GRUB_ERR_IO);
++	return(GRUB_ERR_NONE);
++}
++
++// start tco;
++
++static grub_err_t
++c2k_tco_start(grub_uint32_t base)
++{
++	grub_uint16_t val;
++
++	// force timer to reload value;
++	// clear the HALT bit;
++
++	grub_outw(TCO_RLD_LOAD, TCO_RLD(base));
++	val = grub_inw(TCO1_CTL(base));
++	val &= ~TCO1_CTL_HALT;
++	grub_outw(val, TCO1_CTL(base));
++
++	// check started;
++
++	val = grub_inw(TCO1_CTL(base));
++	if(val & TCO1_CTL_HALT)
++		return(GRUB_ERR_IO);
++	return(GRUB_ERR_NONE);
++}
++
++// set tco;
++
++static grub_err_t
++c2k_tco_set(grub_uint32_t base, grub_uint32_t to)
++{
++	grub_uint16_t val;
++
++	// timer is only 10 bits;
++
++	if((to < 4) || (to > TCO2_TMR_MASK))
++		return(GRUB_ERR_BAD_ARGUMENT);
++
++	val = grub_inw(TCO2_TMR(base));
++	val &= ~TCO2_TMR_MASK;
++	val |= to;
++	grub_outw(val, TCO2_TMR(base));
++
++	// check value;
++	// ok because not running;
++
++	val = grub_inw(TCO2_TMR(base));
++	val &= TCO2_TMR_MASK;
++	if(val != to)
++		return(GRUB_ERR_IO);
++	return(GRUB_ERR_NONE);
++}
++
++// handle atom c2000 watchdog;
++
++static grub_err_t
++c2k_wdt(grub_uint32_t to)
++{
++	grub_pci_device_t dev;
++	grub_pci_address_t addr;
++	grub_pci_id_t id;
++	grub_uint32_t abase, tco;
++	grub_err_t err;
++
++	dev.bus = 0x00;
++	dev.device = 0x1f;
++	dev.function = 0;
++
++	addr = grub_pci_make_address(dev, GRUB_PCI_REG_PCI_ID);
++	id = grub_pci_read(addr);
++	if(id != 0x1f388086)
++		return GRUB_ERR_UNKNOWN_DEVICE;
++
++	// check abase is valid;
++
++	addr = grub_pci_make_address(dev, REG_LPC_ABASE);
++	abase = grub_pci_read(addr);
++	if(vc_verbose)
++		grub_printf("abase 0x%x\n", abase);
++	if((abase & (REG_LPC_ABASE_EN | REG_LPC_ABASE_IO)) != (REG_LPC_ABASE_EN | REG_LPC_ABASE_IO))
++		return grub_error(GRUB_ERR_BAD_DEVICE, N_("abase not enabled"));
++	abase &= REG_LPC_ABASE_MASK;
++
++	tco = abase + 0x60;
++	err = c2k_tco_stop(tco);
++	if(err)
++		grub_printf("could not stop wdt\n");
++	if(to == 0)
++		return(err);
++	err = c2k_tco_set(tco, to);
++	if(err)
++		grub_printf("error %d setting wdt (%d sec)\n", err, to);
++	err = c2k_tco_start(tco);
++	if(err)
++		grub_printf("could not start wdt\n");
++	return(err);
++}
 +
 +// edge500: init gpio and i2c;
 +
@@ -909,23 +1038,7 @@
 +static grub_err_t
 +grub_vc500_wdt(void)
 +{
-+	grub_pci_device_t dev;
-+	grub_pci_address_t addr;
-+	grub_pci_id_t id;
-+
-+	dev.bus = 0x00;
-+	dev.device = 0x1f;
-+	dev.function = 0;
-+
-+	addr = grub_pci_make_address (dev, GRUB_PCI_REG_PCI_ID);
-+	id = grub_pci_read(addr);
-+	if(id != 0x1f388086)
-+		return GRUB_ERR_UNKNOWN_DEVICE;
-+
-+
-+grub_printf("# id = %x\n", id);
-+//XXX
-+return GRUB_ERR_NONE;
++	return(c2k_wdt(brd->to));
 +}
 +
 +// edge5x0: read CMOS byte which was saved button state from coreboot;
@@ -945,13 +1058,34 @@
 +	return(fr_no);
 +}
 +
++// edge5x0: arm watchdog;
++// coreboot does run the watchdog;
++// but there are occasions to turn it off, such as memtest;
++
++static grub_err_t
++grub_vc5x0_wdt(void)
++{
++	return(c2k_wdt(brd->to));
++}
++
++// edge510: arm watchdog;
++// coreboot does run the watchdog;
++// but there are occasions to turn it off, such as memtest;
++
++static grub_err_t
++grub_vc510_wdt(void)
++{
++//XXX pic watchdog;
++	return(c2k_wdt(brd->to));
++}
++
 +// known boards;
 +
 +static struct vc_brd vc_brds[] = {
 +	{ "EDGE500", grub_vc500_init, grub_vc500_logo, grub_vc500_rb, grub_vc500_wdt, 3*60, },
-+	{ "EDGE510", NULL, NULL, grub_vc5x0_rb, NULL, 3*60, },
-+	{ "EDGE520", NULL, NULL, grub_vc5x0_rb, NULL, 3*60, },
-+	{ "EDGE540", NULL, NULL, grub_vc5x0_rb, NULL, 3*60, },
++	{ "EDGE510", NULL, NULL, grub_vc5x0_rb, grub_vc510_wdt, 3*60, },
++	{ "EDGE520", NULL, NULL, grub_vc5x0_rb, grub_vc5x0_wdt, 3*60, },
++	{ "EDGE540", NULL, NULL, grub_vc5x0_rb, grub_vc5x0_wdt, 3*60, },
 +	{ NULL, NULL, NULL, NULL, NULL, 0, },
 +};
 +
@@ -1029,7 +1163,18 @@
 +static grub_err_t
 +grub_vc_wdt(int argc, char **args)
 +{
++	grub_uint32_t to;
 +	grub_err_t err;
++
++	// optional arg is timeout in secs;
++
++	if(argc >= 2) {
++		to = grub_strtoul(args[1], NULL, 0);
++		brd->to = to;
++	}
++
++	// call device handler;
++	// timeout of 0 is turning it off;
 +
 +	err = GRUB_ERR_UNKNOWN_DEVICE;
 +	if(brd->wdt)

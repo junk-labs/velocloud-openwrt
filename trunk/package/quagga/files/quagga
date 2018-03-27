@@ -96,6 +96,10 @@ select_subset() {
 	fi
 }
 
+# Cleanup and archive any existing quagga daemons bgp/ospd/pimd related core files.
+
+/opt/vc/bin/cleanup_cores.sh
+
 # check command
 
 case ${COMMAND}

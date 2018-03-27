@@ -5537,6 +5537,8 @@ bgp_redistribute_add (struct bgp *bgp, struct prefix *p,
  
  	  if (bi)
  	    {
+          bi->type = type;
+
           if (type == ZEBRA_ROUTE_USER)
             bi->sub_type = BGP_ROUTE_REDISTRIBUTE_USER;
           else

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/!svn/ver/9507/luci/trunk/applications/luci-wol/luasrc/controller
+END
+wol.lua
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/!svn/ver/9507/luci/trunk/applications/luci-wol/luasrc/controller/wol.lua
+END

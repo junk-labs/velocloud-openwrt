@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/!svn/ver/9619/luci/trunk/applications/luci-upnp/luasrc/model/cbi/upnp
+END
+upnp.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9569/luci/trunk/applications/luci-upnp/luasrc/model/cbi/upnp/upnp.lua
+END

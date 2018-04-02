@@ -1,0 +1,13 @@
+
+boot with kernel args: velocloud_vc.bbfw=1 gpio_pcu.bbfw=1
+	cd /root
+
+dump SPD EEPROM in hex format
+	eeprog -8 -f -x -r 0:256 /dev/i2c-4 0x50
+
+read SPD EEPROM to file
+	eeprog -8 -f -r 0:256 /dev/i2c-4 0x50 > /root/XXX-old.bin
+
+write SPD EEPROM
+	cat /root/XXX-new.bin | eeprog -8 -f -w 0 /dev/i2c-4 0x50
+

@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/8688/luci/trunk/protocols/relay/luasrc/model/network
+END
+proto_relay.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/8688/luci/trunk/protocols/relay/luasrc/model/network/proto_relay.lua
+END

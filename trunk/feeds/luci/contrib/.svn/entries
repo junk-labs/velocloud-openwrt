@@ -1,0 +1,49 @@
+10
+
+dir
+10274
+http://svn.luci.subsignal.org/luci/trunk/contrib
+http://svn.luci.subsignal.org
+
+
+
+2014-04-24T21:42:58.586662Z
+9977
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+luadoc
+dir
+
+uhttpd
+dir
+
+package
+dir
+
+lar
+dir
+
+luasrcdiet
+dir
+
+fwd
+dir
+
+uci
+dir
+

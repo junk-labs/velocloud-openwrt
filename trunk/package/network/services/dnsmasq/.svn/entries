@@ -1,0 +1,47 @@
+10
+
+dir
+47252
+svn://svn.mein.io/openwrt/branches/chaos_calmer/package/network/services/dnsmasq
+svn://svn.mein.io/openwrt
+
+
+
+2015-07-27T11:49:48.840796Z
+46511
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+Makefile
+file
+
+
+
+
+
+cd549637f2497cf50280de8f4d275263
+2015-06-15T08:00:46.183876Z
+45987
+cyrus
+has-props
+
+files
+dir
+
+patches
+dir
+

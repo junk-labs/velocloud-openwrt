@@ -1,0 +1,163 @@
+10
+
+dir
+10274
+http://svn.luci.subsignal.org/luci/trunk/applications
+http://svn.luci.subsignal.org
+
+
+
+2014-04-27T13:45:53.491945Z
+9978
+soma
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+luci-pbx-voicemail
+dir
+
+luci-commands
+dir
+
+freifunk-community
+dir
+
+luci-ntpc
+dir
+
+luci-firewall
+dir
+
+luci-voice-diag
+dir
+
+luci-wshaper
+dir
+
+luci-p910nd
+dir
+
+luci-p2pblock
+dir
+
+luci-freifunk-widgets
+dir
+
+luci-olsr
+dir
+
+myapplication
+dir
+
+luci-samba
+dir
+
+luci-olsr-viz
+dir
+
+luci-transmission
+dir
+
+luci-splash
+dir
+
+luci-statistics
+dir
+
+luci-voice-core
+dir
+
+luci-coovachilli
+dir
+
+luci-watchcat
+dir
+
+luci-radvd
+dir
+
+luci-olsr-services
+dir
+
+luci-multiwan
+dir
+
+luci-wol
+dir
+
+luci-qos
+dir
+
+luci-polipo
+dir
+
+luci-hd-idle
+dir
+
+luci-ahcp
+dir
+
+luci-meshwizard
+dir
+
+luci-ltqtapi
+dir
+
+luci-freifunk-diagnostics
+dir
+
+luci-freifunk-policyrouting
+dir
+
+luci-vnstat
+dir
+
+luci-mmc-over-gpio
+dir
+
+luci-upnp
+dir
+
+luci-openvpn
+dir
+
+luci-tinyproxy
+dir
+
+luci-asterisk
+dir
+
+luci-ushare
+dir
+
+luci-ddns
+dir
+
+luci-pbx
+dir
+
+luci-siitwizard
+dir
+
+luci-diag-core
+dir
+
+luci-minidlna
+dir
+
+luci-diag-devinfo
+dir
+

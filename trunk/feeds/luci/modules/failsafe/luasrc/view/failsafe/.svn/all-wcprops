@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/9310/luci/trunk/modules/failsafe/luasrc/view/failsafe
+END
+upgrade.htm
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/!svn/ver/9310/luci/trunk/modules/failsafe/luasrc/view/failsafe/upgrade.htm
+END
+reboot.htm
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/9310/luci/trunk/modules/failsafe/luasrc/view/failsafe/reboot.htm
+END
+flashops.htm
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/9310/luci/trunk/modules/failsafe/luasrc/view/failsafe/flashops.htm
+END
+applyreboot.htm
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9310/luci/trunk/modules/failsafe/luasrc/view/failsafe/applyreboot.htm
+END

@@ -1,0 +1,95 @@
+Instructions for Local Edit/Compile/Debug
+=========================================
+
+For best results, here are two possible workflows you can adopt for
+working on quagga sources.
+
+1. The OpenWrt Way
+==================
+
+This is generally simple, but can be tedious, and you have to do it on a
+machine that has enough horsepower to build the full OpenWrt tree. (Typically
+we tend to work on the build1-losaltos server - 172.16.3.150).
+
+a. Check out the openwrt tree and build it once, for one target:
+
+    make edge500
+
+This can take a few hours, if you do it on a slow machine.
+
+Now you cd to "trunk", which will be the base of your activities.
+
+b. To Edit/compile, you make the changes to the sources in the following
+   build directory:
+
+      build_dir/target-x86_64_eglibc-2.15/quagga-<version>
+
+c. Edit the files as you like, and then, from the "trunk" directory,
+   issue the command
+
+      make package/quagga/compile
+
+d. This will generate binaries under the build_dir location above, in
+   the pkg-install directory, and also generate openwrt packages (.ipks)
+   in bin/x64-eglibc/packages.
+
+e. When you are ready to check in the changes, you need to copy the changed
+   files, and new files, to the corresponding location under 
+   trunk/package/quagga/src (and delete source files that you deleted).
+
+   To be sure that your changes are ready to check in, delete the build
+   directory (build_dir/.../quagga-<version>), and re-issue the "make"
+   command above from the "trunk" directory. If this builds cleanly, then
+   your changes should be ready to check in (from trunk/package/quagga).
+
+HINT: The best way to ensure that you pick up the right set of changes is
+to make a full copy of the build directory above after step 1, using "cp -a".
+When you're ready to start checking in changes, you can do a recursive diff
+between the two directories and see what files you have touched easily.
+
+
+2. Edit/Compile/Debug on other machines (without full OpenWrt builds):
+========================================================================
+
+I have checked in an alternate setup, where you can run a local script
+(SetupBuild) to set up a build directory locally (under package/quagga,
+as a sibling of "src"), and run configure.
+
+After this, you will be able to make changes under the "build" directory,
+and just run "make" from the build directory.  If you want to pick up the
+executables and libraries that you'll need to move elsewhere to test, you
+can run (from the build directory):
+
+   make install DESTDIR=`(cd ../install && pwd)`
+
+and this will create install/{usr,etc}/...
+
+HINT: Again, you SHOULD make a copy of the "build" directory immediately
+after you run "SetupBuild", so that you can do a recursive diff between
+the saved build directory and the current one.  You can run "make clean"
+in the build directory if you want to limit the chatter about object files
+in the diff output.
+
+3. Building Debian .deb
+==========================
+
+First follow step #2 above for building the package on a machine without the
+openwrt toochain. Then go to the build/ directory as mentioned there and 
+execute "debuild -i -us -uc -b -d" .. And you will get a .deb file in the parent
+of the build directory. The debian control files are bundled into debian.tgz here and used only when step #2 is done and NOT used in the standard openWRT build 
+process
+
+For the debian build to go through, the following packages are needed. Note that
+the last line with the long list of packages like texline etc.. were suggested 
+when a debuild clean was executed, I am not sure if all of that is needed, it took a hell of a long time to install all those packages
+
+NOTE: On 14.04 ubuntu, this debian package that gets built installs fine, but 
+on 12.04 it complains it needs iproute2, but 12.04 doesnt support iproute2, 
+instead it uses iproute. So in debian/control file in the Depends section,
+change iproute2 to iproute and rebuild debian specifically for 12.04
+
+  sudo apt-get install devscripts
+  sudo apt-get install debhelper 
+  sudo apt-get install dh-autoreconf
+  sudo apt-get install libreadline-dev
+  sudo apt-get install texlive-latex-base texlive-generic-recommended texlive-fonts-recommended libpam0g-dev libpam-dev libcap-dev imagemagick ghostscript groff libpcre3-dev chrpath libsnmp-dev

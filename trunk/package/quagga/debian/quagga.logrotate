@@ -1,0 +1,18 @@
+/var/log/quagga/*.log {
+        size 10M
+        sharedscripts
+        compress
+        missingok
+        rotate 10
+        notifempty
+        create 644 root root
+
+        postrotate
+		for i in zebra bgpd ripd ospfd ripngd ospf6d isisd babeld; do
+                        if [ -e /var/run/quagga/$i.pid ] ; then
+				kill -USR1 `cat /var/run/quagga/$i.pid`
+                        fi
+
+                done
+        endscript
+}

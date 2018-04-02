@@ -1,0 +1,197 @@
+10
+
+dir
+43223
+svn://svn.mein.io/openwrt/branches/barrier_breaker/tools
+svn://svn.mein.io/openwrt
+
+
+
+2014-10-26T11:27:15.926877Z
+43065
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+libelf
+dir
+
+sparse
+dir
+
+flock
+dir
+
+padjffs2
+dir
+
+dosfstools
+dir
+
+findutils
+dir
+
+xz
+dir
+
+upslug2
+dir
+
+cloog
+dir
+
+libtool
+dir
+
+automake
+dir
+
+qemu
+dir
+
+mkimage
+dir
+
+firmware-utils
+dir
+
+mpc
+dir
+
+cmake
+dir
+
+m4
+dir
+
+squashfs4
+dir
+
+mtd-utils
+dir
+
+bc
+dir
+
+pkg-config
+dir
+
+scons
+dir
+
+yaffs2
+dir
+
+missing-macros
+dir
+
+mm-macros
+dir
+
+ppl
+dir
+
+squashfs
+dir
+
+elftosb
+dir
+
+quilt
+dir
+
+flex
+dir
+
+patch
+dir
+
+xorg-macros
+dir
+
+lzma
+dir
+
+mpfr
+dir
+
+genext2fs
+dir
+
+ccache
+dir
+
+xfce-macros
+dir
+
+bison
+dir
+
+e2fsprogs
+dir
+
+sed
+dir
+
+upx
+dir
+
+Makefile
+file
+
+
+
+
+
+814b13127148c4eec45c2313e0a336fe
+2014-10-26T11:27:15.926877Z
+43065
+nbd
+has-props
+
+mtools
+dir
+
+wrt350nv2-builder
+dir
+
+autoconf
+dir
+
+patch-image
+dir
+
+lzma-old
+dir
+
+mklibs
+dir
+
+gmp
+dir
+
+include
+dir
+
+sstrip
+dir
+
+b43-tools
+dir
+
+ipkg-utils
+dir
+

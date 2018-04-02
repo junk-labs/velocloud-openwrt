@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/9866/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system
+END
+leds.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/7037/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/leds.lua
+END
+admin.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/8153/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/admin.lua
+END
+backupfiles.lua
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/7798/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/backupfiles.lua
+END
+crontab.lua
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/9769/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/crontab.lua
+END
+ipkg.lua
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/7773/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/ipkg.lua
+END
+buttons.lua
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/5472/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/buttons.lua
+END
+fstab.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/6562/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/fstab.lua
+END
+startup.lua
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/9670/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/startup.lua
+END
+system.lua
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9339/luci/trunk/modules/admin-full/luasrc/model/cbi/admin_system/system.lua
+END

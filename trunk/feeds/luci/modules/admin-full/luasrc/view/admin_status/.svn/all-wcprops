@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/9916/luci/trunk/modules/admin-full/luasrc/view/admin_status
+END
+index.htm
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9916/luci/trunk/modules/admin-full/luasrc/view/admin_status/index.htm
+END
+wireless.htm
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/9530/luci/trunk/modules/admin-full/luasrc/view/admin_status/wireless.htm
+END
+dmesg.htm
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/5448/luci/trunk/modules/admin-full/luasrc/view/admin_status/dmesg.htm
+END
+load.htm
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/9530/luci/trunk/modules/admin-full/luasrc/view/admin_status/load.htm
+END
+syslog.htm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/5448/luci/trunk/modules/admin-full/luasrc/view/admin_status/syslog.htm
+END
+routes.htm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/7168/luci/trunk/modules/admin-full/luasrc/view/admin_status/routes.htm
+END
+connections.htm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9511/luci/trunk/modules/admin-full/luasrc/view/admin_status/connections.htm
+END
+iptables.htm
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/6827/luci/trunk/modules/admin-full/luasrc/view/admin_status/iptables.htm
+END
+bandwidth.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/9014/luci/trunk/modules/admin-full/luasrc/view/admin_status/bandwidth.htm
+END

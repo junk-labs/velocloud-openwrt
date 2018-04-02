@@ -1,0 +1,177 @@
+LTC4266a I2C driver for VeloCloud, Inc.
+
+
+The LTC4266a I2C driver for VeloCloud assumes GPIO bit-banging with the LTC4266a at address 0x20.
+
+This is the typical layout of sysfs structure for this device:
+
+root@vc:/sys/devices/platform/i2c-gpio.1/i2c-1/1-0020# ls
+chip_mode    chip_reset   fw_rev       name         power        total_mA
+chip_notify  driver       modalias     port_attr    subsystem    uevent
+
+Two modes of operation for driver: manual(default), auto which is configured by 
+sysfs 'chip_mode':
+
+Manual mode allows power on ordering to be done by a userspace daemon and "remembers"
+powered on devices after a warm reboot.  Controlling software must account and configure
+iCUT/iLIM values on a per PD class basis.
+
+Auto mode will autonomously control all aspects of PDs plugged in to a port, where power on
+priority is port [1..4]. This is the "Plug and Play" mode of operation for the driver allowing
+PDs to be plugged/powered on/off (within power limit contraints).
+
+Chip reset will hard reset the chipset back to initial state (default mode of operation)
+with no ports powered. Consider this to the "big hammer" to correct a suspected wedged chipset
+back to a sane state.
+
+Total allowable mA for LTC4266 PoE is configurable for the pwr supply.  Current default mA
+is '700' which may be adjusted for a different power supply.
+
+chip_notify is typically used in conjunction with eventfd to notify user(daemon) of events that
+have occurred -- this can be detect/classify of a PD/pwr good (after enabling port pwr)/tCUT and
+disconnect.
+
+A dynamic major # is registered for a chrdev interface to register an eventfd with the ltc4266
+driver:
+
+cat /proc/devices
+...
+247 hidraw
+248 vc-poe
+249 uio
+...
+
+Note that the ltc4266 driver registers chrdev interface with a major # 248(minor 0).  This is interesting
+to then create a device node:
+
+mknod -m rw vc-poe c 248 0
+
+Further, here's a sampe piece of code which registers eventfd for notification:
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/eventfd.h>
+#include <sys/syscall.h>
+#include <time.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <poll.h>
+#include <fcntl.h>
+
+int main(int argc, char **argv)
+{
+        int weventfd;
+        ssize_t s;
+        uint64_t u;
+        struct pollfd fds = { .events = POLLIN };
+
+        fds.fd = eventfd(0, 0);
+        if (fds.fd < 0) {
+                printf("Opening eventfd file\n");
+                strerror(errno);
+                return 1;
+        }
+
+        weventfd = open("/dev/vc-poe", O_RDWR);
+        if (weventfd < 0) {
+                strerror(errno);
+                return 1;
+        }
+        ioctl(weventfd, 1, fds.fd);
+
+        while (poll(&fds, 1, -1) > 0) {
+                s = read(fds.fd, &u, sizeof(uint64_t));
+                if (s != sizeof(uint64_t)) {
+                        printf("Found invalid object\n");
+                        exit (1);
+
+                }
+		printf("We have an event:0x%x\n", (uint32_t)u);
+        }
+        return 0;
+}
+
+Note that there is a race between notification and event changes to chip_notify.  Software 
+may not get correct state changes.  However, the eventfd counter (uint64_t) is encoded with the 
+port ID (lower 16bits):  8 4 2 1
+			 ^ ^ ^ ^
+			 4 3 2 1 port
+
+And upper 48 bits for encoded event:
+
+        POWER_ENABLE_INTERRUPT 	unused
+        POWER_GOOD_INTERRUPT	17
+        DISCONNECT_INTERRUPT	18
+        DETECT_INTERRUPT	19
+        CLASS_INTERRUPT		20
+        tCUT_INTERRUPT		21
+        tSTART_INTERRUPT	22
+        UVLO48_INTERRUPT	unused
+        UVLO3_INTERRUPT		unused
+        FETBAD_INTERRUPT	unused
+        OVERTEMP_INTERRUPT	unused
+        POWER_OFF_INTERRUPT	27
+
+You may use event notification with chip_notify for the current state of hardware:
+
+root@vc:/sys/devices/platform/i2c-gpio.1/i2c-1/1-0020# cat chip_notify 
+Port 1 PD: class 4 pwr good
+Port 2 PD: (null) (null)
+Port 3 PD: (null) (null)
+Port 4 PD: (null) (null)
+
+Port attributes for i2c-ltc4266:
+
+root@vc:/sys/devices/platform/i2c-gpio.1/i2c-1/1-0020# ls port_attr/
+icut_p1   icut_p4   ilim_p3   mA_p2     pwr_p1    pwr_p4    reset_p3  volts_p2
+icut_p2   ilim_p1   ilim_p4   mA_p3     pwr_p2    reset_p1  reset_p4  volts_p3
+icut_p3   ilim_p2   mA_p1     mA_p4     pwr_p3    reset_p2  volts_p1  volts_p4 
+
+reset_p[1..4] will power cycle the port which is isn't technically a reset per se, but is what the
+programming guide recommends as a reset condition for a port.  Any powered PDs will remain off
+after a port reset, pending power on after a detect/classify cycle.
+
+volts_p[1..4] show the voltage per port during both detect/classify and power on/gd.  Note that resolution
+is 1 LSB = 5.835mV.
+
+mA_p[1..4] show the mA per port during both detect/classify and power on/gd.  Note that resolution 
+is 1 LSB = 122.07uA where rSENSE = .25 ohms.
+
+pwr_p[1..4] are r/w "on"/"off" per port.  This provides control over which port
+may be powered with an attached PD.
+
+icut_p[1..4]/ilim_p[1..4] should be be set to the recommended table according to the Linear Technology
+"LTC4266A/LTC4266C Software Interface" guide:
+
+rSENSE == 0.25 (only support provided by i2c-ltc4266):
+
+PD CLASS         ILIM        ICUT
+
+Class 1          80h         06h
+Class 2          80h         0Bh
+Class 3          80h         14h
+Class 4          C0h         22h
+Class 0          80h         14h
+
+These are the *recommended* values.  Note that when the driver operates in manual mode do setting 
+icut_p[1..4]/ilim_p[1..4] apply.
+
+What is not supported:
+
+FETbad -- FET may be bad, requiring a power off/power on sequence to a port.  This requires more 
+in-depth research into a diagnostics mode to determine when a FET is bad.
+
+OVERTEMP -- Chipset overtemp that will keep chipset in reset until condition is under temp.  This
+may wedge the chipset during the the overtemp condition.  Need to add another 'diag' state to detect
+and properly deal with this (usually) fatal condition.
+
+Watchdog -- this chipset has a watchdog feature that may be enabled with a i2c SCL pin no-activity
+for 2.5s before resetting all ports.
+
+Diag mode -- May eventually want to place this chipset into manual mode and run single pulse cycles
+for both detect/classify for both debug of PSE and (attached) PDs.
+
+

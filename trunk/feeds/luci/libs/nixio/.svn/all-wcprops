@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/!svn/ver/9411/luci/trunk/libs/nixio
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/!svn/ver/9194/luci/trunk/libs/nixio/Makefile
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/4437/luci/trunk/libs/nixio/README
+END
+standalone.mk
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/5059/luci/trunk/libs/nixio/standalone.mk
+END
+NOTICE
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/4437/luci/trunk/libs/nixio/NOTICE
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/4437/luci/trunk/libs/nixio/LICENSE
+END
+.gitignore
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/4590/luci/trunk/libs/nixio/.gitignore
+END
+nixio-0.3-1.rockspec
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/5064/luci/trunk/libs/nixio/nixio-0.3-1.rockspec
+END

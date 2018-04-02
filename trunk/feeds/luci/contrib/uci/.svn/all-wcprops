@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/!svn/ver/9952/luci/trunk/contrib/uci
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/9952/luci/trunk/contrib/uci/Makefile
+END
+.gitignore
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/3591/luci/trunk/contrib/uci/.gitignore
+END

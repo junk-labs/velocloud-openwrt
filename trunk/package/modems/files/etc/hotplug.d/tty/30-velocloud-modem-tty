@@ -1,0 +1,432 @@
+!/bin/sh
+
+# Copyright (C) 2013-2014 Velocloud Inc
+
+usb_serial_detect() {
+	local status=1
+	local tries=0
+	local device=$1
+	while [ $status -ne 0 -a $tries -le 3 ]; do
+		gcom -d "$device" -s /etc/gcom/vccheck.gcom | grep 'OK' &>/dev/null
+		status=$?
+		tries=$((tries + 1))
+	done
+	if [ $status -ne 0 ]; then
+		# Not a serial port
+		log "No output from device $device"
+		return
+	fi
+	log "Detected device $device is found"
+	echo $device
+}
+
+gettty_device() {
+	local ttydevice=$DEVICENAME
+
+	if [ ! -e /dev/$ttydevice ]; then
+		log "Serial device does not exists... Waiting!"
+		sleep 1
+		# Wait for tty file exists
+		if [ ! -e /dev/$ttydevice ]; then
+			ttydevice=""
+			return
+		fi
+	fi
+	log "Device /dev/$ttydevice exists"
+
+	ttydevice=$(usb_serial_detect "/dev/$ttydevice")
+	echo $ttydevice
+}
+
+get_cdma_gsm() {
+	local tries=0
+	local device=$1
+	while [ $tries -le 3 ]; do
+		# Run AT+GCAP to query device capabilities
+		local gcap_output=$(gcom -d "$device" -s /etc/gcom/getcaps.gcom 2>/dev/null)
+		if [ $? -ne 0 ]; then
+			tries=$((tries + 1))
+			continue;
+		fi
+		# 3GPP device?
+		for key in "GSM" "LTE"; do
+			if [ $(echo $gcap_output 2>/dev/null | grep $key | wc -l) -eq 1 ]; then
+				echo "GSM"
+				return
+			fi
+		done
+		# 3GPP2 device?
+		for key in "IS707" "IS-856" "CDMA"; do
+			if [ $(echo $gcap_output 2>/dev/null | grep $key | wc -l) -eq 1 ]; then
+				echo "CDMA"
+				return
+			fi
+		done
+		# so...
+		break
+	done
+
+	echo "unknown"
+}
+
+get_imei_number() {
+	local tempfile=$1
+	local cdmagsm=$2
+	local imei_number=""
+	if [ $cdmagsm == "GSM" ]; then
+		imei_number=$(awk '{if(match($0, "IMEI:")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+	elif [ $cdmagsm == "CDMA" ]; then
+		imei_number=$(awk '{if(match($0, "ESN:")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+	fi
+	echo $imei_number
+}
+
+get_imsi_number() {
+    # IMSI N/A in CDMA/EVDO devices without SIM
+    if [ $cdmagsm == "CDMA" ]; then
+        echo ""
+        return
+    fi
+
+	local device=$1
+    local cdmagsm=$2
+	local imsi_tries=3
+	local tempfile="$tmpdir/$usbifname.siminfo"
+	local imsicmd="gcom -d $dialdevice -s /etc/gcom/vcgetimsi.gcom"
+	local imsi_number
+	while [ -z $imsi_number ] && [ "$imsi_tries" -ne 0 ]; do
+		$imsicmd | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
+		imsi_number=$(cat $tempfile | awk '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}$/)){print $i;break} } }')
+		imsi_tries=$(expr $imsi_tries - 1)
+	done
+	rm -f $tempfile
+	echo $imsi_number
+}
+
+get_linkid() {
+	local imsi_number=$1
+	local imei_number=$2
+	local linkid
+
+	if [ -z "$imsi_number" ] || [ "$imsi_number" == "ERROR" ] || [ "$imsi_number" == "N/A" ]; then
+		linkid=$imei_number
+	else
+		linkid=$imsi_number
+	fi
+	echo $linkid
+}
+
+update_hardware_info() {
+    device=$1
+    cdmagsm=$2
+	local tempfile="$tmpdir/$usbifname.cardinfo"
+
+    # Read hardware details into a temporary file
+	local cardinfo_tries=3
+	while [ ! -s $tempfile ] && [ "$cardinfo_tries" -ne 0 ]; do
+	    gcom -d $device -s /etc/gcom/vcgetcardinfo.gcom | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
+		cardinfo_tries=$(expr $cardinfo_tries - 1)
+	done
+    if [ ! -s $tempfile ]; then
+        log "Couldn't read hardware info"
+        return
+    fi
+
+    # Basic hardware details
+	local man=$(awk '{if(match(tolower($0), "manufacturer")) {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+	local mod=$(awk '{if(match(tolower($0), "model"))        {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+	local rev=$(awk '{if(match(tolower($0), "revision"))     {for(i=2;i<=NF;i++) { printf $i" "};exit}}' $tempfile)
+
+    log "Manufacturer: $man"
+    log "Model: $mod"
+    log "Revision: $rev"
+
+    # Build link id.
+    # Notes:
+    #  * IMSI is only applicable when the device has a SIM, so 3GPP-only
+    #  * IMEI is only applicable when the device is 3GPP
+    #  * ESN may be used as unique device id for 3GPP2 devices
+    #
+	local imei_number=$(get_imei_number $tempfile $cdmagsm)
+	local imsi_number=$(get_imsi_number $device $cdmagsm)
+	local linkid=$(get_linkid "$imsi_number" "$imei_number")
+	log "Link ID: $linkid"
+
+	rm -f $tempfile
+
+	uci -c $modem_config_path set modems.$usbifname.manufacturer=''"$man"''
+	uci -c $modem_config_path set modems.$usbifname.modelnumber=''"$mod"''
+	uci -c $modem_config_path set modems.$usbifname.revisionnumber=''"$rev"''
+	uci -c $modem_config_path set modems.$usbifname.linkid=''"$linkid"''
+	uci -c $modem_config_path commit modems
+}
+
+start_pppd_script() {
+	$modem_script_path/modem_service.sh $usbifname start 2>&1 >/dev/null &
+}
+
+# QMI hybrid modems are a pain in the butt, it can support data over
+# qmi_wwan driver wwanX interface. But its control is all done over
+# serial ttyUSB using AT commands. Later the 30-usb_ip script will call
+# modem_service.sh as part of the hotplug event for the wwanX interface,
+# and at that point we need to let the modem_service.sh script know which
+# serial interface is the "control" interface for this mode, so we just
+# set the mgmt device parameter here and call it a day, rest all gets
+# done from 30-usb_ip
+handle_qmi_hybrid() {
+	local ifname
+
+	count=1
+	while [ $count -le 10 ];
+	do
+		imei=`gcom -d $ttydevice -s /etc/gcom/getimei.gcom | grep -E '[0-9]+'`
+		if [ ! -z "$imei" ]; then
+			break
+		fi
+		sleep 2
+		count=$(($count+1))
+	done
+
+	touch $modem_config_path/modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	# Modems that are set to auto-connect don't support APN setting
+	if [ "$product" != "1410:9022" ]; then
+		uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	else
+		log "Modem with PID/VID $product doesn't support APN management"
+	fi
+	uci -c $modem_config_path commit modems
+
+	# In qmi-hybrid modems we trigger the profile generation as soon as we get
+	# the management TTY
+	apn=$(at_get_apn $ttydevice $usbifname)
+	${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
+
+	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=qmihybrid"
+
+	# If we have the WWAN net iface name already defined, we're ready to go;
+	# otherwise we'll need to wait and it will get launched when the net iface
+	# is processed.
+	ifname=$(uci_get_modem_ifname $usbifname)
+	if [ -z "$ifname" ]; then
+		log "WWAN net not yet defined in qmihybrid modem: deferred"
+		return
+	fi
+
+	log "WWAN modem setup: QMI-hybrid"
+	$modem_script_path/modem_service.sh $usbifname start
+}
+
+# Sierra Direct IP devices are controlled through AT commands in a TTY,
+# while the data goes through the WWAN exposed with the sierra_net kernel
+# driver. Later the 30-usb_ip script will call modem_service.sh as part of
+# the hotplug event for the wwanX interface, and at that point we need to
+# let the modem_service.sh script know which serial interface is the
+# "control" interface for this mode, so we just set the mgmt device parameter
+# here and call it a day, rest all gets done from 30-usb_ip
+handle_sierranet() {
+	local ifname
+
+	count=1
+	while [ $count -le 3 ];
+	do
+		imei=`gcom -d $ttydevice -s /etc/gcom/getimei.gcom | grep -E '[0-9]+'`
+		if [ ! -z "$imei" ]; then
+			break
+		fi
+		sleep 2
+		count=$(($count+1))
+	done
+
+	if [ -z $imei ]; then
+		log "Cannot load IMEI from $ttydevice, ignoring device."
+		return
+	fi
+
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	uci -c $modem_config_path commit modems
+
+	# In sierranet modems we trigger the profile generation as soon as we get
+	# the management TTY
+	apn=$(at_get_apn $ttydevice $usbifname)
+	${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
+
+	log "DEVICE=$DEVICENAME: USBIF=$usbifname TTY=$ttydevice imei=$imei TYPE=sierranet"
+
+	# If we have the WWAN net iface name already defined, we're ready to go;
+	# otherwise we'll need to wait and it will get launched when the net iface
+	# is processed.
+	ifname=$(uci_get_modem_ifname $usbifname)
+	if [ -z "$ifname" ]; then
+		log "WWAN net not yet defined in sierranet modem: deferred"
+		return
+	fi
+
+	log "WWAN modem setup: Sierra Direct IP"
+	$modem_script_path/modem_service.sh $usbifname start
+}
+
+add_to_config() {
+
+	# Action for the each USB
+	local ttydevice
+	local modemtype
+	local product
+	local ret
+
+	if [ -z "$usbifname" ]
+	then
+		# log "Not a modem:devpath=$DEVPATH"
+		return
+	fi
+
+	log "Hotplug add event: serial"
+
+	# Common initialization
+	init_modem_support
+
+	# This is the common profile path
+	profile=${modem_config_path}/${usbifname}.profile
+
+	product=$(cat $usbpath/../uevent | awk -F= '/PRODUCT/ { print $2}')
+	if [ -z "$product" ]; then
+		log "Ignoring tty device, no product: DEVICENAME:$DEVICENAME"
+		return
+	fi
+	product="${product%/*}"
+	# Normalize the USB ID so that it's ####:#### (4 chars each)
+	product=$(printf "%04x:%04x" "0x${product%/*}" "0x${product#*/}")
+
+	# Ignore if no device file
+	ttydevice=$(gettty_device)
+	if [ -z "$ttydevice" ]; then
+		log "No TTY device: $usbpath"
+		return
+	fi
+
+	modemtype=$(get_modem_type "$DEVICENAME" "$product")
+	#log "product = $product, modem type = $modemtype"
+	if [ "$modemtype" == "ignore" ]; then
+		log "Ignoring tty device: DEVICENAME:$DEVICENAME"
+		return
+	elif [ "$modemtype" == "qmihybrid" ]; then
+		handle_qmi_hybrid
+		return
+	elif [ "$modemtype" == "sierranet" ]; then
+		handle_sierranet
+		return
+	elif [ "$modemtype" == "None" ]; then
+		log "Hybrid modem selected for $modemtype: DEVICENAME:$DEVICENAME"
+		return
+	fi
+
+	log "DEVICE=$DEVICENAME: TYPE=$modemtype, VID/PID: $product"
+
+	ret=$(check_device_config $usbifname)
+	if [ "$ret" == "True" ]; then
+		# We got a TTY for dial-up already; so use this second one for management,
+        # unless there is one already
+	    uci -c $modem_config_path -X get modems.$usbifname.mgmt 2>&1 >/dev/null
+	    if [ $? -ne 0 ]; then
+		    log "Device $ttydevice set to be used as management device"
+	        uci -c $modem_config_path set modems.$usbifname.mgmt="$ttydevice"
+	        uci -c $modem_config_path commit modems
+		    return
+        fi
+
+		log "Device $ttydevice not needed (dial-up and management TTYs already set)"
+        return
+    fi
+
+    # 3GPP or 3GPP2?
+    local cdmagsm=$(get_cdma_gsm $ttydevice)
+
+	log "Device $ttydevice set to be used as dial-up device ($cdmagsm)"
+
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.ifname=''"$ttydevice"''
+	uci -c $modem_config_path set modems.$usbifname.cdmagsm=''"$cdmagsm"''
+	uci -c $modem_config_path set modems.$usbifname.type=''"serial"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	uci -c $modem_config_path commit modems
+
+    # Update other hardware configuration
+    update_hardware_info $ttydevice $cdmagsm
+
+	# Create profile for the PPP based connection, but look for APN only if this
+    # is a GSM/3GPP device (not needed for CDMA/3GPP2 devices).
+    local apn=""
+    if [ "$cdmagsm" == "GSM" ]; then
+	    apn=$(at_get_apn $ttydevice $usbifname)
+    fi
+	${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
+
+	log "Starting pppd script for $ttydevice"
+	start_pppd_script
+}
+
+# Main starts here
+
+# Variables for Unit Test
+#DEVPATH="/devices/pci0000:00/0000:00:17.0/0000:01:00.0/0000:02:08.3/usb2/2-2/2-2:1.0/"
+#DEVICENAME="2-2:1.0"
+#ACTION=remove
+
+#Nexcom
+#DEVPATH=/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.2/1-1.2:1.0/ttyUSB0
+#DEVICENAME=ttyUSB0
+#ACTION=add
+
+. /etc/modems/usb_common # has the USB numbering
+
+local usbpath="/sys/$DEVPATH/"
+local dialdevice=""
+local mgmtdevice=""
+local usbifname=$(usb_wan_naming $usbpath) # Will get the bus and port number
+
+# ignore event if we cannot get a USBX or MODEMX name
+if [ -z "$usbifname" ] || [ "$usbifname" == "error" ]; then
+	return
+fi
+
+set_eventdir "$usbifname: usb: $DEVICENAME"
+
+debug_hotplugevents
+cleanup_etc_config_modems
+
+# If ModemManager is installed and available, check whether the modem is
+# blacklisted there, and if it isn't, we launch the ModemManager specific
+# logic.
+if [ -f /etc/modemmanager/25-modemmanager-common ]; then
+	. /etc/modemmanager/25-modemmanager-common
+	local BLACKLIST_REASON=$(check_modemmanager_blacklist $usbpath)
+	if [ -z "${BLACKLIST_REASON}" ]; then
+		# ModemManager specific logic
+		if [ "$ACTION" = add ]; then
+			mm_add_to_config
+		elif [ "$ACTION" = remove ]; then
+			remove_device_config
+		fi
+		return
+	fi
+fi
+
+case "$DEVICENAME" in
+    console|ttyS[0-9]*)
+	# do NOT write to console or "real" serial terminals
+	;;
+    *)
+	if [ "$ACTION" = add ]; then
+		add_to_config
+	elif [ "$ACTION" = remove ]; then
+		remove_device_config
+	fi
+	;;
+esac

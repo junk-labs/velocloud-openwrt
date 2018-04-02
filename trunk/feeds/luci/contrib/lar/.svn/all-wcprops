@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/!svn/ver/4872/luci/trunk/contrib/lar
+END
+md5.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/4426/luci/trunk/contrib/lar/md5.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/4872/luci/trunk/contrib/lar/Makefile
+END
+lar.c
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/4426/luci/trunk/contrib/lar/lar.c
+END
+lar.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/4427/luci/trunk/contrib/lar/lar.h
+END
+larlib.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/4429/luci/trunk/contrib/lar/larlib.c
+END
+md5.c
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/4426/luci/trunk/contrib/lar/md5.c
+END
+cli.c
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/4426/luci/trunk/contrib/lar/cli.c
+END
+lar.pl
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/4410/luci/trunk/contrib/lar/lar.pl
+END

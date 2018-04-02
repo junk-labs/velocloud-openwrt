@@ -1,0 +1,13 @@
+Combined Patch Release Notes
+Product			Microcode Patch
+Avoton B0 Stepping	M01406D8125
+
+patch	change description
+
+125		GuestRFLAGS.IOPL3 set while #PF on SW_INT VOE in VM86
+		Updated Anti-Rollback
+		
+123		Corrected C6 SRAM index when restoring PIC_CR_PWRDN_OVERRIDE
+	        Updated Anti-Rollback
+		Mitigation for a security issue
+

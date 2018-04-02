@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/8159/luci/trunk/libs/lucid-http/luasrc/lucid
+END
+http.lua
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/!svn/ver/4839/luci/trunk/libs/lucid-http/luasrc/lucid/http.lua
+END

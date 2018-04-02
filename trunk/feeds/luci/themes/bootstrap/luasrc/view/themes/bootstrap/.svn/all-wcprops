@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/9657/luci/trunk/themes/bootstrap/luasrc/view/themes/bootstrap
+END
+header.htm
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/9657/luci/trunk/themes/bootstrap/luasrc/view/themes/bootstrap/header.htm
+END
+footer.htm
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/!svn/ver/8313/luci/trunk/themes/bootstrap/luasrc/view/themes/bootstrap/footer.htm
+END

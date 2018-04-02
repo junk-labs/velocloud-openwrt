@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/4360/luci/trunk/applications/luci-asterisk/luasrc/asterisk
+END
+cc_idd.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/4360/luci/trunk/applications/luci-asterisk/luasrc/asterisk/cc_idd.lua
+END

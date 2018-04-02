@@ -1,0 +1,82 @@
+10
+
+dir
+10274
+http://svn.luci.subsignal.org/luci/trunk/libs
+http://svn.luci.subsignal.org
+
+
+
+2014-04-24T21:42:48.503871Z
+9975
+jow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+ipkg
+dir
+
+luaneightbl
+dir
+
+lucid
+dir
+
+sgi-wsapi
+dir
+
+json
+dir
+
+sgi-luci
+dir
+
+web
+dir
+
+lucid-http
+dir
+
+httpclient
+dir
+
+sys
+dir
+
+sgi-cgi
+dir
+
+lucid-rpc
+dir
+
+px5g
+dir
+
+fastindex
+dir
+
+nixio
+dir
+
+rpcc
+dir
+
+sgi-uhttpd
+dir
+
+core
+dir
+

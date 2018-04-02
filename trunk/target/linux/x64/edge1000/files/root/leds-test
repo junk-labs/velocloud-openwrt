@@ -1,0 +1,58 @@
+#!/bin/bash
+
+USB=/dev/ttyUSB0
+DEFCOL="FF0000"
+
+stty -F $USB speed 115200
+
+echo 'setting default to' $DEFCOL
+echo "E$DEFCOL" > $USB
+
+echo 'all OFF'
+echo 'S000000' > $USB
+sleep 1
+echo 'full red'
+echo 'SFF0000' > $USB
+sleep 1
+echo 'full green'
+echo 'S00FF00' > $USB
+sleep 1
+echo 'full blue'
+echo 'S0000FF' > $USB
+sleep 1
+echo 'full white'
+echo 'SFFFFFF' > $USB
+sleep 1
+
+echo "red intensity"
+for v in {0..9} {A..F} {F..A} {9..0}
+do
+  rgb=S${v}00000
+  echo "$rgb" > $USB
+  sleep 0.1
+done
+
+echo "green intensity"
+for v in {0..9} {A..F} {F..A} {9..0}
+do
+  rgb=S00${v}000
+  echo "$rgb" > $USB
+  sleep 0.1
+done
+
+echo "blue intensity"
+for v in {0..9} {A..F} {F..A} {9..0}
+do
+  rgb=S0000${v}0
+  echo "$rgb" > $USB
+  sleep 0.1
+done
+
+echo "white intensity"
+for v in {0..9} {A..F} {F..A} {9..0}
+do
+  rgb=S${v}0${v}0${v}0
+  echo "$rgb" > $USB
+  sleep 0.1
+done
+

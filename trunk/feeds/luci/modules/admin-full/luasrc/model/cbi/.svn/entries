@@ -1,0 +1,40 @@
+10
+
+dir
+10274
+http://svn.luci.subsignal.org/luci/trunk/modules/admin-full/luasrc/model/cbi
+http://svn.luci.subsignal.org
+
+
+
+2014-06-03T08:51:33.224018Z
+10266
+Cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+admin_services
+dir
+
+admin_status
+dir
+
+admin_system
+dir
+
+admin_network
+dir
+

@@ -1,0 +1,61 @@
+--- a/src/tcs/tcsi_admin.c
++++ b/src/tcs/tcsi_admin.c
+@@ -161,6 +161,35 @@
+ 	return result;
+ }
+ 
++#ifdef VC_INST
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <unistd.h>
++
++// check for vc installer;
++
++int
++vc_installer(void)
++{
++	int pcl, n, rl = 0;
++	char cmdline[1000];
++
++	pcl = open("/proc/cmdline", O_RDONLY, 0);
++	if(pcl >= 0) {
++		n = read(pcl, cmdline, sizeof(cmdline));
++		cmdline[sizeof(cmdline)-1] = 0;
++		if(n > 0) {
++			cmdline[n] = 0;
++			if(strstr(cmdline, "vc.install"))
++				rl = 'i';
++		}
++		close(pcl);
++	}
++	return(rl);
++}
++#endif // VC_INST
++
+ TSS_RESULT
+ TCSP_PhysicalPresence_Internal(TCS_CONTEXT_HANDLE hContext, /* in */
+ 			TCPA_PHYSICAL_PRESENCE fPhysicalPresence) /* in */
+@@ -171,6 +200,14 @@
+ 	BYTE txBlob[TSS_TPM_TXBLOB_SIZE];
+ 	char runlevel;
+ 
++#ifdef VC_INST
++	runlevel = vc_installer();
++	if(runlevel != 'i') {
++		LogInfo("Physical Presence command denied: "
++			"Must be in velocloud installer.");
++		return TCSERR(TSS_E_NOTIMPL);
++	}
++#else // VC_INST
+ 	runlevel = platform_get_runlevel();
+ 
+ 	if (runlevel != 's' && runlevel != 'S' && runlevel != '1') {
+@@ -178,6 +215,7 @@
+ 				" user mode.");
+ 		return TCSERR(TSS_E_NOTIMPL);
+ 	}
++#endif // VC_INST
+ 
+ 	if ((result = ctx_verify_context(hContext)))
+ 		return result;

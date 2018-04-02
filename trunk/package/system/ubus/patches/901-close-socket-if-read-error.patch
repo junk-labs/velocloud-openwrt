@@ -1,0 +1,28 @@
+Bug #14442 - avoid infinite select/recv ubus loops
+
+This is to avoid certain rare conditions where blocking reads
+fail with some unknown error (probably because of socket buf
+exhaustion).
+
+In the old 2015-05-25 snapshot, this would cause ubus clients
+or the server to go into a tight loop trying to read the socket.
+
+This fix just makes the process treat the socket as a premature
+"end of file" if it gets a read error, causing that command to
+fail, but the process to survive.
+
+--- a/libubus-io.c	2016-09-29 17:47:08.504958937 -0700
++++ b/libubus-io.c	2016-09-29 17:46:54.549587983 -0700
+@@ -294,8 +294,11 @@
+ 	iov.iov_base = (char *)ctx->msgbuf.data + sizeof(hdrbuf.data);
+ 	iov.iov_len = blob_len(ctx->msgbuf.data);
+ 	if (iov.iov_len > 0 &&
+-	    recv_retry(ctx->sock.fd, &iov, true, NULL) <= 0)
++	    (r = recv_retry(ctx->sock.fd, &iov, true, NULL)) <= 0) {
++		if (r < 0)
++			ctx->sock.eof = true;
+ 		return false;
++	}
+ 
+ 	return true;
+ }

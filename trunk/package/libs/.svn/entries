@@ -1,0 +1,136 @@
+10
+
+dir
+43223
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/libs
+svn://svn.mein.io/openwrt
+
+
+
+2014-10-19T16:54:33.116213Z
+42964
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+gettext
+dir
+
+uclibc++
+dir
+
+sysfsutils
+dir
+
+libevent2
+dir
+
+nettle
+dir
+
+libbsd
+dir
+
+polarssl
+dir
+
+libnl
+dir
+
+zlib
+dir
+
+uclient
+dir
+
+libnetfilter-conntrack
+dir
+
+libtool
+dir
+
+libreadline
+dir
+
+libnfnetlink
+dir
+
+ustream-ssl
+dir
+
+toolchain
+dir
+
+libusb
+dir
+
+ncurses
+dir
+
+gettext-full
+dir
+
+libroxml
+dir
+
+libconfig
+dir
+
+ocf-crypto-headers
+dir
+
+cyassl
+dir
+
+libusb-compat
+dir
+
+lzo
+dir
+
+libubox
+dir
+
+libiconv-full
+dir
+
+libiconv
+dir
+
+libpcap
+dir
+
+librpc
+dir
+
+libmnl
+dir
+
+libjson-c
+dir
+
+libnl-tiny
+dir
+
+popt
+dir
+
+openssl
+dir
+
+gmp
+dir
+

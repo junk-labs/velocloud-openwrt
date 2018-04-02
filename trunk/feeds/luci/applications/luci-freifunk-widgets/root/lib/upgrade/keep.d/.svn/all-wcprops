@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9300/luci/trunk/applications/luci-freifunk-widgets/root/lib/upgrade/keep.d
+END
+freifunk-widgets
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9300/luci/trunk/applications/luci-freifunk-widgets/root/lib/upgrade/keep.d/freifunk-widgets
+END

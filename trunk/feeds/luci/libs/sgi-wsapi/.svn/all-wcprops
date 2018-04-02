@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/!svn/ver/4369/luci/trunk/libs/sgi-wsapi
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/!svn/ver/3591/luci/trunk/libs/sgi-wsapi/Makefile
+END

@@ -1,0 +1,40 @@
+10
+
+dir
+10274
+http://svn.luci.subsignal.org/luci/trunk/modules/admin-core/luasrc
+http://svn.luci.subsignal.org
+
+
+
+2014-01-17T15:46:56.753281Z
+9949
+Cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ab181a69-ba2e-0410-a84d-ff88ab4c47bc
+
+view
+dir
+
+model
+dir
+
+tools
+dir
+
+controller
+dir
+

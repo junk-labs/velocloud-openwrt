@@ -1,0 +1,103 @@
+See bug #12568, and the link it points to, for a discussion..
+
+When normalizing the data requests, the number of blocks to allocate
+must not be higher than the number of blocks per group.
+The current implementation does not take care of that and it may
+hit a kernel panic if the number of blocks per group is very low.
+
+This patch fixes the bug by ensuring that the number of blocks to allocate
+is always less or equal to the number of blocks per group.
+
+How to reproduce the bug:
+
+#mkfs.ext4 -g 1024 /dev/sdX
+#mount /dev/sdX /mnt
+#dd if=/dev/zero of=/mnt/test bs=1M count=10
+
+[  147.779177] ------------[ cut here ]------------
+[  147.780015] kernel BUG at fs/ext4/mballoc.c:3145!
+[  147.780015] invalid opcode: 0000 [#1] SMP
+[  147.780015] Modules linked in: nfsd auth_rpcgss nfs_acl nfs lockd fscache sunrpc loop snd_pcm cirrus snd_timer ttm snd drm_kms_helper soundcore drm parport_pc parport i2c_piix4 pcspkr i2c_core xfs libcrc32c e1000 floppy
+[  147.780015] CPU: 0 PID: 66 Comm: kworker/u8:3 Not tainted 3.14.0-rc4+ #12
+[  147.780015] Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
+[  147.780015] Workqueue: writeback bdi_writeback_workfn (flush-7:0)
+[  147.780015] task: ffff88002ec16300 ti: ffff88002ed20000 task.ti: ffff88002ed20000
+[  147.780015] RIP: 0010:[<ffffffff812b779c>]  [<ffffffff812b779c>] ext4_mb_normalize_request+0x60c/0x660
+[  147.780015] RSP: 0018:ffff88002ed21778  EFLAGS: 00010206
+[  147.780015] RAX: ffff88002e3bb000 RBX: 0000000000000800 RCX: 0000000000000006
+[  147.780015] RDX: 0000000000000800 RSI: 0000000000000046 RDI: ffff88002e3bb800
+[  147.780015] RBP: ffff88002ed217e8 R08: 000000000000000a R09: 00000000000003a2
+[  147.780015] R10: 0000000000000000 R11: 00000000000003a1 R12: ffff880000c17000
+[  147.780015] R13: 0000000000000000 R14: 0000000000000800 R15: ffff88003d1fc2f8
+[  147.780015] FS:  0000000000000000(0000) GS:ffff88003fc00000(0000) knlGS:0000000000000000
+[  147.780015] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[  147.780015] CR2: ffffffffff600400 CR3: 000000001c218000 CR4: 00000000000006f0
+[  147.780015] Stack:
+[  147.780015]  00000000014ca000 0000000000000800 ffff88002e3bb000 ffff88003d1fc0b0
+[  147.780015]  ffff88002ed21980 0000080000000800 ffffffff812bd912 ffff88003d1fc2f8
+[  147.780015]  ffff88002ed217f8 ffff88002ed21980 ffff88002e3bb000 ffff88002ed21970
+[  147.780015] Call Trace:
+[  147.780015]  [<ffffffff812bd912>] ? ext4_mb_new_blocks+0x122/0x8d0
+[  147.780015]  [<ffffffff812bdbe3>] ext4_mb_new_blocks+0x3f3/0x8d0
+[  147.780015]  [<ffffffff8116df7e>] ? free_hot_cold_page_list+0x4e/0xa0
+[  147.780015]  [<ffffffff811bc72a>] ? __kmalloc+0x1ea/0x230
+[  147.780015]  [<ffffffff812af4a8>] ? ext4_ext_find_extent+0x228/0x2b0
+[  147.780015]  [<ffffffff812af4a8>] ? ext4_ext_find_extent+0x228/0x2b0
+[  147.780015]  [<ffffffff812b38c1>] ext4_ext_map_blocks+0x611/0xfd0
+[  147.780015]  [<ffffffff81284f55>] ext4_map_blocks+0x2b5/0x4d0
+[  147.780015]  [<ffffffff81289dd1>] ext4_writepages+0x621/0xd00
+[  147.780015]  [<ffffffff81171bbe>] do_writepages+0x1e/0x40
+[  147.780015]  [<ffffffff811fecb0>] __writeback_single_inode+0x40/0x200
+[  147.780015]  [<ffffffff811ff5d1>] writeback_sb_inodes+0x1c1/0x410
+[  147.780015]  [<ffffffff811ff9e4>] wb_writeback+0xf4/0x2c0
+[  147.780015]  [<ffffffff810a0f2f>] ? set_worker_desc+0x6f/0x80
+[  147.780015]  [<ffffffff81202d98>] bdi_writeback_workfn+0x118/0x440
+[  147.780015]  [<ffffffff8109d99a>] process_one_work+0x17a/0x410
+[  147.780015]  [<ffffffff8109ed9c>] worker_thread+0x11c/0x370
+[  147.780015]  [<ffffffff8109ec80>] ? manage_workers.isra.21+0x2b0/0x2b0
+[  147.780015]  [<ffffffff810a55b9>] kthread+0xc9/0xe0
+[  147.780015]  [<ffffffff81010000>] ? ftrace_raw_event_xen_mc_flush+0x50/0x180
+[  147.780015]  [<ffffffff810a54f0>] ? flush_kthread_worker+0x80/0x80
+[  147.780015]  [<ffffffff816ffc3c>] ret_from_fork+0x7c/0xb0
+[  147.780015]  [<ffffffff810a54f0>] ? flush_kthread_worker+0x80/0x80
+[  147.780015] Code: 1a a4 81 31 c0 e8 05 50 43 00 49 8b 44 24 08 8b 75 b8 48 c7 c7 c3 1a a4 81 48 8b 80 f8 02 00 00 48 8b 50 18 31 c0 e8 e4 4f 43 00 <0f> 0b 44 89 ee 48 c7 c7 b7 1a a4 81 31 c0 e8 d1 4f 43 00 49 8b
+[  147.780015] RIP  [<ffffffff812b779c>] ext4_mb_normalize_request+0x60c/0x660
+[  147.780015]  RSP <ffff88002ed21778>
+[  147.830356] ---[ end trace b82d39f39fe4e04a ]---
+[  147.831058] Kernel panic - not syncing: Fatal exception
+
+Signed-off-by: Maurizio Lombardi <mlombard@xxxxxxxxxx>
+---
+ fs/ext4/mballoc.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
+index 08ddfda..546575a 100644
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -3059,6 +3059,21 @@ ext4_mb_normalize_request(struct ext4_allocation_context *ac,
+ 		size	  = ac->ac_o_ex.fe_len << bsbits;
+ 	}
+ 	size = size >> bsbits;
++
++	/* In any case, the size cannot be greater than the number
++	 * of maximum free blocks per group.
++	 */
++	if (size > EXT4_BLOCKS_PER_GROUP(ac->ac_sb)) {
++		int sz_log2;
++
++		size = EXT4_BLOCKS_PER_GROUP(ac->ac_sb);
++
++		/* Recalculate the start offset */
++		sz_log2 = __fls(size << bsbits);
++		start_off = ((loff_t) ac->ac_o_ex.fe_logical >>
++					(sz_log2 - bsbits)) << sz_log2;
++	}
++
+ 	start = start_off >> bsbits;
+ 
+ 	/* don't cover already allocated blocks in selected range */
+-- 
+Maurizio Lombardi
+
+

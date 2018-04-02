@@ -1,0 +1,112 @@
+10
+
+dir
+40995
+svn://svn.mein.io/openwrt/packages/multimedia
+svn://svn.mein.io/openwrt
+
+
+
+2014-05-20T04:51:45.500144Z
+40795
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+darkice
+dir
+
+tvheadend
+dir
+
+gst-plugins-good
+dir
+
+ffmpeg
+dir
+
+motion
+dir
+
+kissdx
+dir
+
+peercast
+dir
+
+shairport
+dir
+
+icecast
+dir
+
+crtmpserver
+dir
+
+graphicsmagick
+dir
+
+puppy
+dir
+
+mjpg-streamer
+dir
+
+gmediaserver
+dir
+
+xupnpd
+dir
+
+hasciicam
+dir
+
+rygel
+dir
+
+gphoto2
+dir
+
+gst-plugins-base
+dir
+
+ushare
+dir
+
+fswebcam
+dir
+
+gstreamer
+dir
+
+gst-plugins-ugly
+dir
+
+minidlna
+dir
+
+imagemagick
+dir
+
+gst-ffmpeg
+dir
+
+gst-plugins-bad
+dir
+
+ftpd-topfield
+dir
+

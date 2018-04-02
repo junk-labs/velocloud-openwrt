@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/bindings/lua
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/bindings/lua/Makefile
+END

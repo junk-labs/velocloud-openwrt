@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/!svn/ver/9563/luci/trunk/modules/failsafe
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/9310/luci/trunk/modules/failsafe/Makefile
+END

@@ -1,0 +1,1121 @@
+From 103af2acc9e168034d91322268e984c86c981ece Mon Sep 17 00:00:00 2001
+From: Aleksander Morgado <aleksander@aleksander.es>
+Date: Mon, 25 Jul 2016 18:42:17 +0200
+Subject: [PATCH 08/12] build: allow disabling 3GPP USSD interface support
+
+---
+ cli/mmcli-modem-3gpp.c                         | 47 ++++++++++++++++++++----
+ configure.ac                                   | 15 ++++++++
+ include/Makefile.am                            |  4 ++
+ include/ModemManager-enums-3gpp-ussd.h         | 49 +++++++++++++++++++++++++
+ include/ModemManager-enums.h                   | 16 --------
+ include/ModemManager-version.h.in              | 15 ++++++++
+ include/ModemManager.h                         |  3 ++
+ libmm-glib/Makefile.am                         | 20 ++++++++--
+ libmm-glib/generated/Makefile.am               | 24 ++++++++++--
+ libmm-glib/libmm-glib.h                        |  4 +-
+ libmm-glib/mm-manager.c                        |  2 +
+ libmm-glib/mm-object.c                         |  4 ++
+ libmm-glib/mm-object.h                         | 11 ++++--
+ plugins/altair/mm-broadband-modem-altair-lte.c | 13 ++++++-
+ plugins/huawei/mm-broadband-modem-huawei.c     | 22 +++++++++--
+ src/Makefile.am                                |  9 ++++-
+ src/mm-broadband-modem-qmi.c                   | 15 +++++++-
+ src/mm-broadband-modem.c                       | 51 +++++++++++++++++++++++++-
+ 18 files changed, 280 insertions(+), 44 deletions(-)
+ create mode 100644 include/ModemManager-enums-3gpp-ussd.h
+
+diff --git a/cli/mmcli-modem-3gpp.c b/cli/mmcli-modem-3gpp.c
+index a785d02..d73563d 100644
+--- a/cli/mmcli-modem-3gpp.c
++++ b/cli/mmcli-modem-3gpp.c
+@@ -41,7 +41,9 @@ typedef struct {
+     GCancellable *cancellable;
+     MMObject *object;
+     MMModem3gpp *modem_3gpp;
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     MMModem3gppUssd *modem_3gpp_ussd;
++#endif
+ } Context;
+ static Context *ctx;
+ 
+@@ -49,10 +51,13 @@ static Context *ctx;
+ static gboolean scan_flag;
+ static gboolean register_home_flag;
+ static gchar *register_in_operator_str;
++
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+ static gboolean ussd_status_flag;
+ static gchar *ussd_initiate_str;
+ static gchar *ussd_respond_str;
+ static gboolean ussd_cancel_flag;
++#endif
+ 
+ static GOptionEntry entries[] = {
+     { "3gpp-scan", 0, 0, G_OPTION_ARG_NONE, &scan_flag,
+@@ -67,6 +72,7 @@ static GOptionEntry entries[] = {
+       "Request a given modem to register in the network of the given operator",
+       "[MCCMNC]"
+     },
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     { "3gpp-ussd-status", 0, 0, G_OPTION_ARG_NONE, &ussd_status_flag,
+       "Show status of any ongoing USSD session",
+       NULL
+@@ -83,6 +89,7 @@ static GOptionEntry entries[] = {
+       "Request to cancel any ongoing USSD session",
+       NULL
+     },
++#endif
+     { NULL }
+ };
+ 
+@@ -113,10 +120,13 @@ mmcli_modem_3gpp_options_enabled (void)
+     n_actions = (scan_flag +
+                  register_home_flag +
+                  !!register_in_operator_str +
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+                  ussd_status_flag +
+                  !!ussd_initiate_str +
+                  !!ussd_respond_str +
+-                 ussd_cancel_flag);
++                 ussd_cancel_flag +
++#endif
++                 0);
+ 
+     if (n_actions > 1) {
+         g_printerr ("error: too many 3GPP actions requested\n");
+@@ -128,6 +138,7 @@ mmcli_modem_3gpp_options_enabled (void)
+     if (scan_flag)
+         mmcli_force_async_operation ();
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     /* USSD initiate and respond will wait for URCs to get finished, so
+      * these are truly async. */
+     if (ussd_initiate_str || ussd_respond_str)
+@@ -135,6 +146,7 @@ mmcli_modem_3gpp_options_enabled (void)
+ 
+     if (ussd_status_flag)
+         mmcli_force_sync_operation ();
++#endif
+ 
+     checked = TRUE;
+     return !!n_actions;
+@@ -150,8 +162,10 @@ context_free (Context *ctx)
+         g_object_unref (ctx->cancellable);
+     if (ctx->modem_3gpp)
+         g_object_unref (ctx->modem_3gpp);
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     if (ctx->modem_3gpp_ussd)
+         g_object_unref (ctx->modem_3gpp_ussd);
++#endif
+     if (ctx->object)
+         g_object_unref (ctx->object);
+     if (ctx->manager)
+@@ -175,6 +189,8 @@ ensure_modem_3gpp (void)
+     /* Success */
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ static void
+ ensure_modem_3gpp_ussd (void)
+ {
+@@ -191,6 +207,8 @@ ensure_modem_3gpp_ussd (void)
+     /* Success */
+ }
+ 
++#endif
++
+ void
+ mmcli_modem_3gpp_shutdown (void)
+ {
+@@ -291,6 +309,8 @@ register_ready (MMModem3gpp  *modem_3gpp,
+     mmcli_async_operation_done ();
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ static void
+ print_ussd_status (void)
+ {
+@@ -397,6 +417,8 @@ ussd_cancel_ready (MMModem3gppUssd *modem_3gpp_ussd,
+     mmcli_async_operation_done ();
+ }
+ 
++#endif /* MM_INTERFACE_3GPP_USSD_SUPPORTED */
++
+ static void
+ get_modem_ready (GObject      *source,
+                  GAsyncResult *result,
+@@ -404,18 +426,21 @@ get_modem_ready (GObject      *source,
+ {
+     ctx->object = mmcli_get_modem_finish (result, &ctx->manager);
+     ctx->modem_3gpp = mm_object_get_modem_3gpp (ctx->object);
+-    ctx->modem_3gpp_ussd = mm_object_get_modem_3gpp_ussd (ctx->object);
+-
+-    /* Setup operation timeout */
+     if (ctx->modem_3gpp)
+         mmcli_force_operation_timeout (G_DBUS_PROXY (ctx->modem_3gpp));
++
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++    ctx->modem_3gpp_ussd = mm_object_get_modem_3gpp_ussd (ctx->object);
+     if (ctx->modem_3gpp_ussd)
+         mmcli_force_operation_timeout (G_DBUS_PROXY (ctx->modem_3gpp_ussd));
++#endif
+ 
+     ensure_modem_3gpp ();
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     if (ussd_status_flag)
+         g_assert_not_reached ();
++#endif
+ 
+     /* Request to scan networks? */
+     if (scan_flag) {
+@@ -438,6 +463,7 @@ get_modem_ready (GObject      *source,
+         return;
+     }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     /* Request to initiate USSD session? */
+     if (ussd_initiate_str) {
+         ensure_modem_3gpp_ussd ();
+@@ -475,6 +501,7 @@ get_modem_ready (GObject      *source,
+                                    NULL);
+         return;
+     }
++#endif /* MM_INTERFACE_3GPP_USSD_SUPPORTED */
+ 
+     g_warn_if_reached ();
+ }
+@@ -507,22 +534,26 @@ mmcli_modem_3gpp_run_synchronous (GDBusConnection *connection)
+                                         mmcli_get_common_modem_string (),
+                                         &ctx->manager);
+     ctx->modem_3gpp = mm_object_get_modem_3gpp (ctx->object);
+-    ctx->modem_3gpp_ussd = mm_object_get_modem_3gpp_ussd (ctx->object);
+-
+-    /* Setup operation timeout */
+     if (ctx->modem_3gpp)
+         mmcli_force_operation_timeout (G_DBUS_PROXY (ctx->modem_3gpp));
++
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++    ctx->modem_3gpp_ussd = mm_object_get_modem_3gpp_ussd (ctx->object);
+     if (ctx->modem_3gpp_ussd)
+         mmcli_force_operation_timeout (G_DBUS_PROXY (ctx->modem_3gpp_ussd));
++#endif
+ 
+     ensure_modem_3gpp ();
+ 
+     if (scan_flag)
+         g_assert_not_reached ();
++
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     if (ussd_initiate_str)
+         g_assert_not_reached ();
+     if (ussd_respond_str)
+         g_assert_not_reached ();
++#endif
+ 
+     /* Request to register the modem? */
+     if (register_in_operator_str || register_home_flag) {
+@@ -538,6 +569,7 @@ mmcli_modem_3gpp_run_synchronous (GDBusConnection *connection)
+         return;
+     }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     /* Request to show USSD status? */
+     if (ussd_status_flag) {
+         ensure_modem_3gpp_ussd ();
+@@ -560,6 +592,7 @@ mmcli_modem_3gpp_run_synchronous (GDBusConnection *connection)
+         ussd_cancel_process_reply (result, error);
+         return;
+     }
++#endif
+ 
+     g_warn_if_reached ();
+ }
+diff --git a/configure.ac b/configure.ac
+index cc58539..3f86308 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -337,6 +337,20 @@ case $with_qmi in
+ esac
+ 
+ dnl-----------------------------------------------------------------------------
++dnl 3GPP USSD interface
++dnl
++
++AC_ARG_WITH(interface-3gpp-ussd, AS_HELP_STRING([--without-interface-3gpp-ussd], [Build without 3GPP USSD interface support]), [], [with_interface_3gpp_ussd=yes])
++AM_CONDITIONAL(WITH_INTERFACE_3GPP_USSD, test "x$with_interface_3gpp_ussd" = "xyes")
++if test "x$with_interface_3gpp_ussd" = "xyes"; then
++    MM_INTERFACE_3GPP_USSD_SUPPORTED=1
++else
++    with_interface_3gpp_ussd=no
++    MM_INTERFACE_3GPP_USSD_SUPPORTED=0
++fi
++AC_SUBST(MM_INTERFACE_3GPP_USSD_SUPPORTED)
++
++dnl-----------------------------------------------------------------------------
+ dnl Location interface
+ dnl
+ 
+@@ -528,6 +542,7 @@ echo "
+       suspend/resume support:  ${with_suspend_resume}
+ 
+     Optional interfaces:
++      3GPP ussd:               ${with_interface_3gpp_ussd}
+       location:                ${with_interface_location}
+       messaging:               ${with_interface_messaging}
+       time:                    ${with_interface_time}
+diff --git a/include/Makefile.am b/include/Makefile.am
+index bfde1b8..8e339f9 100644
+--- a/include/Makefile.am
++++ b/include/Makefile.am
+@@ -11,6 +11,10 @@ include_HEADERS = \
+ 	ModemManager-version.h \
+ 	ModemManager.h
+ 
++if WITH_INTERFACE_3GPP_USSD
++include_HEADERS += ModemManager-enums-3gpp-ussd.h
++endif
++
+ if WITH_INTERFACE_LOCATION
+ include_HEADERS += ModemManager-enums-location.h
+ endif
+diff --git a/include/ModemManager-enums-3gpp-ussd.h b/include/ModemManager-enums-3gpp-ussd.h
+new file mode 100644
+index 0000000..d6f83ed
+--- /dev/null
++++ b/include/ModemManager-enums-3gpp-ussd.h
+@@ -0,0 +1,49 @@
++/* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details:
++ *
++ * Copyright (C) 2011 Red Hat, Inc.
++ * Copyright (C) 2011 Google, Inc.
++ * Copyright (C) 2016 Aleksander Morgado <aleksander@aleksander.es>
++ */
++
++#ifndef _MODEMMANAGER_ENUMS_3GPP_USSD_H_
++#define _MODEMMANAGER_ENUMS_3GPP_USSD_H_
++
++#if !defined (__MODEM_MANAGER_H_INSIDE__)
++#error "Only <ModemManager.h> can be included directly."
++#endif
++
++/**
++ * SECTION:mm-enums-3gpp-ussd
++ * @short_description: Common enumerations and types in the API.
++ *
++ * This section defines enumerations and types that are used in the
++ * ModemManager 3GPP USSD interface.
++ **/
++
++/**
++ * MMModem3gppUssdSessionState:
++ * @MM_MODEM_3GPP_USSD_SESSION_STATE_UNKNOWN: Unknown state.
++ * @MM_MODEM_3GPP_USSD_SESSION_STATE_IDLE: No active session.
++ * @MM_MODEM_3GPP_USSD_SESSION_STATE_ACTIVE: A session is active and the mobile is waiting for a response.
++ * @MM_MODEM_3GPP_USSD_SESSION_STATE_USER_RESPONSE: The network is waiting for the client's response.
++ *
++ * State of a USSD session.
++ */
++typedef enum { /*< underscore_name=mm_modem_3gpp_ussd_session_state >*/
++    MM_MODEM_3GPP_USSD_SESSION_STATE_UNKNOWN       = 0,
++    MM_MODEM_3GPP_USSD_SESSION_STATE_IDLE          = 1,
++    MM_MODEM_3GPP_USSD_SESSION_STATE_ACTIVE        = 2,
++    MM_MODEM_3GPP_USSD_SESSION_STATE_USER_RESPONSE = 3,
++} MMModem3gppUssdSessionState;
++
++#endif /*  _MODEMMANAGER_ENUMS_3GPP_USSD_H_ */
+diff --git a/include/ModemManager-enums.h b/include/ModemManager-enums.h
+index 1b99a57..db94608 100644
+--- a/include/ModemManager-enums.h
++++ b/include/ModemManager-enums.h
+@@ -647,20 +647,4 @@ typedef enum { /*< underscore_name=mm_modem_3gpp_subscription_state >*/
+     MM_MODEM_3GPP_SUBSCRIPTION_STATE_OUT_OF_DATA   = 3,
+ } MMModem3gppSubscriptionState;
+ 
+-/**
+- * MMModem3gppUssdSessionState:
+- * @MM_MODEM_3GPP_USSD_SESSION_STATE_UNKNOWN: Unknown state.
+- * @MM_MODEM_3GPP_USSD_SESSION_STATE_IDLE: No active session.
+- * @MM_MODEM_3GPP_USSD_SESSION_STATE_ACTIVE: A session is active and the mobile is waiting for a response.
+- * @MM_MODEM_3GPP_USSD_SESSION_STATE_USER_RESPONSE: The network is waiting for the client's response.
+- *
+- * State of a USSD session.
+- */
+-typedef enum { /*< underscore_name=mm_modem_3gpp_ussd_session_state >*/
+-    MM_MODEM_3GPP_USSD_SESSION_STATE_UNKNOWN       = 0,
+-    MM_MODEM_3GPP_USSD_SESSION_STATE_IDLE          = 1,
+-    MM_MODEM_3GPP_USSD_SESSION_STATE_ACTIVE        = 2,
+-    MM_MODEM_3GPP_USSD_SESSION_STATE_USER_RESPONSE = 3,
+-} MMModem3gppUssdSessionState;
+-
+ #endif /*  _MODEMMANAGER_ENUMS_H_ */
+diff --git a/include/ModemManager-version.h.in b/include/ModemManager-version.h.in
+index fad35f7..c831e18 100644
+--- a/include/ModemManager-version.h.in
++++ b/include/ModemManager-version.h.in
+@@ -67,6 +67,21 @@
+      (MM_MAJOR_VERSION == (major) && MM_MINOR_VERSION == (minor) && MM_MICRO_VERSION >= (micro)))
+ 
+ /**
++ * MM_INTERFACE_3GPP_USSD_SUPPORTED:
++ *
++ * Symbol to expose whether 3GPP USSD interface is supported. The symbol is always
++ * defined and set to either or 1 or 0.
++ *
++ * E.g.:
++ * |[
++ *  #if MM_INTERFACE_3GPP_USSD_SUPPORTED
++ *      // do something
++ *  #endif
++ * ]|
++ */
++#define MM_INTERFACE_3GPP_USSD_SUPPORTED @MM_INTERFACE_3GPP_USSD_SUPPORTED@
++
++/**
+  * MM_INTERFACE_LOCATION_SUPPORTED:
+  *
+  * Symbol to expose whether Location interface is supported. The symbol is always
+diff --git a/include/ModemManager.h b/include/ModemManager.h
+index 9c4c0f3..7e54fa2 100644
+--- a/include/ModemManager.h
++++ b/include/ModemManager.h
+@@ -37,6 +37,9 @@
+ 
+ /* Public headers with enumerations and flags */
+ #include <ModemManager-enums.h>
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++# include <ModemManager-enums-3gpp-ussd.h>
++#endif
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ # include <ModemManager-enums-location.h>
+ #endif
+diff --git a/libmm-glib/Makefile.am b/libmm-glib/Makefile.am
+index bc7c9c6..bcefc0a 100644
+--- a/libmm-glib/Makefile.am
++++ b/libmm-glib/Makefile.am
+@@ -18,8 +18,6 @@ libmm_glib_la_SOURCES = \
+ 	mm-modem.c \
+ 	mm-modem-3gpp.h \
+ 	mm-modem-3gpp.c \
+-	mm-modem-3gpp-ussd.h \
+-	mm-modem-3gpp-ussd.c \
+ 	mm-modem-cdma.h \
+ 	mm-modem-cdma.c \
+ 	mm-modem-simple.h \
+@@ -48,6 +46,13 @@ libmm_glib_la_SOURCES = \
+ 	mm-kernel-event-properties.c \
+ 	$(NULL)
+ 
++if WITH_INTERFACE_3GPP_USSD
++libmm_glib_la_SOURCES += \
++	mm-modem-3gpp-ussd.h \
++	mm-modem-3gpp-ussd.c \
++	$(NULL)
++endif
++
+ if WITH_INTERFACE_LOCATION
+ libmm_glib_la_SOURCES += \
+ 	mm-modem-location.h \
+@@ -155,7 +160,6 @@ include_HEADERS = \
+ 	mm-object.h \
+ 	mm-modem.h \
+ 	mm-modem-3gpp.h \
+-	mm-modem-3gpp-ussd.h \
+ 	mm-modem-cdma.h \
+ 	mm-modem-simple.h \
+ 	mm-sim.h \
+@@ -170,6 +174,12 @@ include_HEADERS = \
+ 	mm-kernel-event-properties.h \
+ 	$(NULL)
+ 
++if WITH_INTERFACE_3GPP_USSD
++include_HEADERS += \
++	mm-modem-3gpp-ussd.h \
++	$(NULL)
++endif
++
+ if WITH_INTERFACE_LOCATION
+ include_HEADERS += \
+ 	mm-modem-location.h \
+@@ -257,6 +267,10 @@ PUBLIC_H = \
+ 	ModemManager.h \
+ 	$(NULL)
+ 
++if WITH_INTERFACE_3GPP_USSD
++PUBLIC_H += ModemManager-enums-3gpp-ussd.h
++endif
++
+ if WITH_INTERFACE_LOCATION
+ PUBLIC_H += ModemManager-enums-location.h
+ endif
+diff --git a/libmm-glib/generated/Makefile.am b/libmm-glib/generated/Makefile.am
+index b05a4b2..88c435a 100644
+--- a/libmm-glib/generated/Makefile.am
++++ b/libmm-glib/generated/Makefile.am
+@@ -32,10 +32,13 @@ GENERATED_DOC = \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.xml \
+-	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Simple.xml \
+ 	$(NULL)
+ 
++if WITH_INTERFACE_3GPP_USSD
++GENERATED_DOC += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml
++endif
++
+ if WITH_INTERFACE_LOCATION
+ GENERATED_DOC += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Location.xml
+ endif
+@@ -81,6 +84,10 @@ ENUM_FILES = \
+ 	$(top_srcdir)/include/ModemManager-enums.h \
+ 	$(NULL)
+ 
++if WITH_INTERFACE_3GPP_USSD
++ENUM_FILES += $(top_srcdir)/include/ModemManager-enums-3gpp-ussd.h
++endif
++
+ if WITH_INTERFACE_LOCATION
+ ENUM_FILES += $(top_srcdir)/include/ModemManager-enums-location.h
+ endif
+@@ -161,10 +168,13 @@ mm_gdbus_modem_generated = \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.xml \
+-	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml \
+ 	mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Simple.xml \
+ 	$(NULL)
+ 
++if WITH_INTERFACE_3GPP_USSD
++mm_gdbus_modem_generated += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml
++endif
++
+ if WITH_INTERFACE_LOCATION
+ mm_gdbus_modem_generated += mm-gdbus-doc-org.freedesktop.ModemManager1.Modem.Location.xml
+ endif
+@@ -197,10 +207,16 @@ mm_gdbus_modem_deps = \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.ModemCdma.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Modem3gpp.xml \
+-	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml \
+ 	$(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Simple.xml \
+ 	$(NULL)
+ 
++mm_gdbus_modem_extra_annotations = $(NULL)
++
++if WITH_INTERFACE_3GPP_USSD
++mm_gdbus_modem_deps += $(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd.xml
++mm_gdbus_modem_extra_annotations += --annotate "org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd" org.gtk.GDBus.C.Name Modem3gppUssd
++endif
++
+ if WITH_INTERFACE_LOCATION
+ mm_gdbus_modem_deps += $(top_srcdir)/introspection/org.freedesktop.ModemManager1.Modem.Location.xml
+ endif
+@@ -238,7 +254,7 @@ mm-gdbus-modem.c: $(mm_gdbus_modem_deps)
+ 		--c-generate-object-manager \
+ 		--annotate "org.freedesktop.ModemManager1.Modem.ModemCdma" org.gtk.GDBus.C.Name ModemCdma \
+ 		--annotate "org.freedesktop.ModemManager1.Modem.Modem3gpp" org.gtk.GDBus.C.Name Modem3gpp \
+-		--annotate "org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd" org.gtk.GDBus.C.Name Modem3gppUssd \
++		$(mm_gdbus_modem_extra_annotations) \
+ 		$^ \
+ 		$(NULL)
+ $(filter-out mm-gdbus-modem.c, $(mm_gdbus_modem_generated)): $(mm_gdbus_modem_deps) mm-gdbus-modem.c
+diff --git a/libmm-glib/libmm-glib.h b/libmm-glib/libmm-glib.h
+index 7d17790..079cea7 100644
+--- a/libmm-glib/libmm-glib.h
++++ b/libmm-glib/libmm-glib.h
+@@ -36,7 +36,9 @@
+ # include <mm-object.h>
+ # include <mm-modem.h>
+ # include <mm-modem-3gpp.h>
+-# include <mm-modem-3gpp-ussd.h>
++# if MM_INTERFACE_3GPP_USSD_SUPPORTED
++#  include <mm-modem-3gpp-ussd.h>
++# endif
+ # include <mm-modem-cdma.h>
+ # include <mm-modem-simple.h>
+ # if MM_INTERFACE_LOCATION_SUPPORTED
+diff --git a/libmm-glib/mm-manager.c b/libmm-glib/mm-manager.c
+index 3603c9e..8b90b4a 100644
+--- a/libmm-glib/mm-manager.c
++++ b/libmm-glib/mm-manager.c
+@@ -90,7 +90,9 @@ get_proxy_type (GDBusObjectManagerClient *manager,
+ #endif
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.ModemCdma",      GSIZE_TO_POINTER (MM_TYPE_MODEM_CDMA));
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Modem3gpp",      GSIZE_TO_POINTER (MM_TYPE_MODEM_3GPP));
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd", GSIZE_TO_POINTER (MM_TYPE_MODEM_3GPP_USSD));
++#endif
+         g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Simple",         GSIZE_TO_POINTER (MM_TYPE_MODEM_SIMPLE));
+         /* g_hash_table_insert (lookup_hash, "org.freedesktop.ModemManager1.Modem.Contacts",    GSIZE_TO_POINTER (MM_GDBUS_TYPE_MODEM_CONTACTS_PROXY)); */
+         g_once_init_leave (&once_init_value, 1);
+diff --git a/libmm-glib/mm-object.c b/libmm-glib/mm-object.c
+index f70e3a6..7d390ea 100644
+--- a/libmm-glib/mm-object.c
++++ b/libmm-glib/mm-object.c
+@@ -158,6 +158,8 @@ mm_object_peek_modem_3gpp (MMObject *self)
+     return (MMModem3gpp *)mm_gdbus_object_peek_modem3gpp (MM_GDBUS_OBJECT (self));
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ /*****************************************************************************/
+ 
+ /**
+@@ -194,6 +196,8 @@ mm_object_peek_modem_3gpp_ussd (MMObject *self)
+     return (MMModem3gppUssd *)mm_gdbus_object_peek_modem3gpp_ussd (MM_GDBUS_OBJECT (self));
+ }
+ 
++#endif /* MM_INTERFACE_3GPP_USSD_SUPPORTED */
++
+ /*****************************************************************************/
+ 
+ /**
+diff --git a/libmm-glib/mm-object.h b/libmm-glib/mm-object.h
+index 136ae2b..0553324 100644
+--- a/libmm-glib/mm-object.h
++++ b/libmm-glib/mm-object.h
+@@ -33,7 +33,9 @@
+ #include "mm-gdbus-modem.h"
+ #include "mm-modem.h"
+ #include "mm-modem-3gpp.h"
+-#include "mm-modem-3gpp-ussd.h"
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++# include "mm-modem-3gpp-ussd.h"
++#endif
+ #include "mm-modem-cdma.h"
+ #include "mm-modem-simple.h"
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+@@ -94,16 +96,19 @@ gchar       *mm_object_dup_path (MMObject *self);
+ 
+ MMModem          *mm_object_get_modem            (MMObject *self);
+ MMModem3gpp      *mm_object_get_modem_3gpp       (MMObject *self);
+-MMModem3gppUssd  *mm_object_get_modem_3gpp_ussd  (MMObject *self);
+ MMModemCdma      *mm_object_get_modem_cdma       (MMObject *self);
+ MMModemSimple    *mm_object_get_modem_simple     (MMObject *self);
+ 
+ MMModem          *mm_object_peek_modem           (MMObject *self);
+ MMModem3gpp      *mm_object_peek_modem_3gpp      (MMObject *self);
+-MMModem3gppUssd  *mm_object_peek_modem_3gpp_ussd (MMObject *self);
+ MMModemCdma      *mm_object_peek_modem_cdma      (MMObject *self);
+ MMModemSimple    *mm_object_peek_modem_simple    (MMObject *self);
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++MMModem3gppUssd  *mm_object_get_modem_3gpp_ussd  (MMObject *self);
++MMModem3gppUssd  *mm_object_peek_modem_3gpp_ussd (MMObject *self);
++#endif
++
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ MMModemLocation  *mm_object_get_modem_location   (MMObject *self);
+ MMModemLocation  *mm_object_peek_modem_location  (MMObject *self);
+diff --git a/plugins/altair/mm-broadband-modem-altair-lte.c b/plugins/altair/mm-broadband-modem-altair-lte.c
+index d2fd60c..cde16fd 100644
+--- a/plugins/altair/mm-broadband-modem-altair-lte.c
++++ b/plugins/altair/mm-broadband-modem-altair-lte.c
+@@ -33,7 +33,9 @@
+ #include "mm-errors-types.h"
+ #include "mm-iface-modem.h"
+ #include "mm-iface-modem-3gpp.h"
+-#include "mm-iface-modem-3gpp-ussd.h"
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++# include "mm-iface-modem-3gpp-ussd.h"
++#endif
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ # include "mm-iface-modem-messaging.h"
+ #endif
+@@ -45,7 +47,10 @@
+ 
+ static void iface_modem_init (MMIfaceModem *iface);
+ static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
++
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+ static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
++#endif
+ 
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ static void iface_modem_messaging_init (MMIfaceModemMessaging *iface);
+@@ -54,7 +59,9 @@ static void iface_modem_messaging_init (MMIfaceModemMessaging *iface);
+ G_DEFINE_TYPE_EXTENDED (MMBroadbandModemAltairLte, mm_broadband_modem_altair_lte, MM_TYPE_BROADBAND_MODEM, 0,
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP_USSD, iface_modem_3gpp_ussd_init)
++#endif
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_MESSAGING, iface_modem_messaging_init)
+ #endif
+@@ -1436,6 +1443,8 @@ iface_modem_init (MMIfaceModem *iface)
+     iface->setup_flow_control_finish = NULL;
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ static void
+ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+ {
+@@ -1444,6 +1453,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+     iface->check_support_finish = NULL;
+ }
+ 
++#endif
++
+ static void
+ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+ {
+diff --git a/plugins/huawei/mm-broadband-modem-huawei.c b/plugins/huawei/mm-broadband-modem-huawei.c
+index 3a230db..bb41f48 100644
+--- a/plugins/huawei/mm-broadband-modem-huawei.c
++++ b/plugins/huawei/mm-broadband-modem-huawei.c
+@@ -38,7 +38,6 @@
+ #include "mm-base-modem-at.h"
+ #include "mm-iface-modem.h"
+ #include "mm-iface-modem-3gpp.h"
+-#include "mm-iface-modem-3gpp-ussd.h"
+ #include "mm-iface-modem-cdma.h"
+ #include "mm-broadband-modem-huawei.h"
+ #include "mm-broadband-bearer-huawei.h"
+@@ -46,6 +45,10 @@
+ #include "mm-bearer-list.h"
+ #include "mm-sim-huawei.h"
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++# include "mm-iface-modem-3gpp-ussd.h"
++#endif
++
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ # include "mm-iface-modem-location.h"
+ #endif
+@@ -65,13 +68,16 @@
+ 
+ static void iface_modem_init (MMIfaceModem *iface);
+ static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
+-static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
+ static void iface_modem_cdma_init (MMIfaceModemCdma *iface);
+ 
+ static MMIfaceModem *iface_modem_parent;
+ static MMIfaceModem3gpp *iface_modem_3gpp_parent;
+ static MMIfaceModemCdma *iface_modem_cdma_parent;
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
++#endif
++
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ static void iface_modem_location_init (MMIfaceModemLocation *iface);
+ static MMIfaceModemLocation *iface_modem_location_parent;
+@@ -93,8 +99,10 @@ static void iface_modem_signal_init (MMIfaceModemSignal *iface);
+ G_DEFINE_TYPE_EXTENDED (MMBroadbandModemHuawei, mm_broadband_modem_huawei, MM_TYPE_BROADBAND_MODEM, 0,
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
+-                        G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP_USSD, iface_modem_3gpp_ussd_init)
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_CDMA, iface_modem_cdma_init)
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++                        G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP_USSD, iface_modem_3gpp_ussd_init)
++#endif
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_LOCATION, iface_modem_location_init)
+ #endif
+@@ -2471,6 +2479,8 @@ huawei_modem_create_bearer (MMIfaceModem *self,
+                              ctx);
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ /*****************************************************************************/
+ /* USSD encode/decode (3GPP-USSD interface) */
+ 
+@@ -2526,6 +2536,8 @@ decode (MMIfaceModem3gppUssd *self,
+     return utf8;
+ }
+ 
++#endif /* MM_INTERFACE_3GPP_USSD_SUPPORTED */
++
+ /*****************************************************************************/
+ 
+ static void
+@@ -4675,6 +4687,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+     iface->load_operator_name_finish = modem_3gpp_load_operator_name_finish;
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ static void
+ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+ {
+@@ -4682,6 +4696,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+     iface->decode = decode;
+ }
+ 
++#endif
++
+ static void
+ iface_modem_cdma_init (MMIfaceModemCdma *iface)
+ {
+diff --git a/src/Makefile.am b/src/Makefile.am
+index a0bdad0..9c16ef6 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -281,8 +281,6 @@ ModemManager_SOURCES = \
+ 	mm-iface-modem.c \
+ 	mm-iface-modem-3gpp.h \
+ 	mm-iface-modem-3gpp.c \
+-	mm-iface-modem-3gpp-ussd.h \
+-	mm-iface-modem-3gpp-ussd.c \
+ 	mm-iface-modem-cdma.h \
+ 	mm-iface-modem-cdma.c \
+ 	mm-iface-modem-simple.h \
+@@ -297,6 +295,13 @@ ModemManager_SOURCES = \
+ 	mm-plugin.h \
+ 	$(NULL)
+ 
++if WITH_INTERFACE_3GPP_USSD
++ModemManager_SOURCES += \
++	mm-iface-modem-3gpp-ussd.h \
++	mm-iface-modem-3gpp-ussd.c \
++	$(NULL)
++endif
++
+ if WITH_INTERFACE_LOCATION
+ ModemManager_SOURCES += \
+ 	mm-iface-modem-location.h \
+diff --git a/src/mm-broadband-modem-qmi.c b/src/mm-broadband-modem-qmi.c
+index caa46bf..56119a3 100644
+--- a/src/mm-broadband-modem-qmi.c
++++ b/src/mm-broadband-modem-qmi.c
+@@ -32,7 +32,9 @@
+ #include "mm-modem-helpers-qmi.h"
+ #include "mm-iface-modem.h"
+ #include "mm-iface-modem-3gpp.h"
+-#include "mm-iface-modem-3gpp-ussd.h"
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++# include "mm-iface-modem-3gpp-ussd.h"
++#endif
+ #include "mm-iface-modem-cdma.h"
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ # include "mm-iface-modem-messaging.h"
+@@ -57,9 +59,12 @@
+ 
+ static void iface_modem_init (MMIfaceModem *iface);
+ static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
+-static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
+ static void iface_modem_cdma_init (MMIfaceModemCdma *iface);
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
++#endif
++
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ static void iface_modem_messaging_init (MMIfaceModemMessaging *iface);
+ static MMIfaceModemMessaging *iface_modem_messaging_parent;
+@@ -85,7 +90,9 @@ static void iface_modem_firmware_init (MMIfaceModemFirmware *iface);
+ G_DEFINE_TYPE_EXTENDED (MMBroadbandModemQmi, mm_broadband_modem_qmi, MM_TYPE_BROADBAND_MODEM, 0,
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP_USSD, iface_modem_3gpp_ussd_init)
++#endif
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_CDMA, iface_modem_cdma_init)
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_MESSAGING, iface_modem_messaging_init)
+@@ -11580,6 +11587,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+     iface->load_operator_name_finish = modem_3gpp_load_operator_name_finish;
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ static void
+ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+ {
+@@ -11588,6 +11597,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+     iface->check_support_finish = NULL;
+ }
+ 
++#endif
++
+ static void
+ iface_modem_cdma_init (MMIfaceModemCdma *iface)
+ {
+diff --git a/src/mm-broadband-modem.c b/src/mm-broadband-modem.c
+index f7fb1c5..61fde38 100644
+--- a/src/mm-broadband-modem.c
++++ b/src/mm-broadband-modem.c
+@@ -31,7 +31,9 @@
+ #include "mm-broadband-modem.h"
+ #include "mm-iface-modem.h"
+ #include "mm-iface-modem-3gpp.h"
+-#include "mm-iface-modem-3gpp-ussd.h"
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++# include "mm-iface-modem-3gpp-ussd.h"
++#endif
+ #include "mm-iface-modem-cdma.h"
+ #include "mm-iface-modem-simple.h"
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+@@ -72,9 +74,12 @@
+ 
+ static void iface_modem_init (MMIfaceModem *iface);
+ static void iface_modem_3gpp_init (MMIfaceModem3gpp *iface);
+-static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
+ static void iface_modem_cdma_init (MMIfaceModemCdma *iface);
+ static void iface_modem_simple_init (MMIfaceModemSimple *iface);
++
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++static void iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface);
++#endif
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ static void iface_modem_location_init (MMIfaceModemLocation *iface);
+ #endif
+@@ -100,7 +105,9 @@ static void iface_modem_firmware_init (MMIfaceModemFirmware *iface);
+ G_DEFINE_TYPE_EXTENDED (MMBroadbandModem, mm_broadband_modem, MM_TYPE_BASE_MODEM, 0,
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM, iface_modem_init)
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP, iface_modem_3gpp_init)
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_3GPP_USSD, iface_modem_3gpp_ussd_init)
++#endif
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_CDMA, iface_modem_cdma_init)
+                         G_IMPLEMENT_INTERFACE (MM_TYPE_IFACE_MODEM_SIMPLE, iface_modem_simple_init)
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+@@ -130,7 +137,9 @@ enum {
+     PROP_0,
+     PROP_MODEM_DBUS_SKELETON,
+     PROP_MODEM_3GPP_DBUS_SKELETON,
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     PROP_MODEM_3GPP_USSD_DBUS_SKELETON,
++#endif
+     PROP_MODEM_CDMA_DBUS_SKELETON,
+     PROP_MODEM_SIMPLE_DBUS_SKELETON,
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+@@ -219,12 +228,14 @@ struct _MMBroadbandModemPrivate {
+     GPtrArray *modem_3gpp_registration_regex;
+     MMModem3gppFacility modem_3gpp_ignored_facility_locks;
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     /*<--- Modem 3GPP USSD interface --->*/
+     /* Properties */
+     GObject *modem_3gpp_ussd_dbus_skeleton;
+     /* Implementation helpers */
+     gboolean use_unencoded_ussd;
+     GSimpleAsyncResult *pending_ussd_action;
++#endif
+ 
+     /*<--- Modem CDMA interface --->*/
+     /* Properties */
+@@ -4512,6 +4523,8 @@ modem_3gpp_enable_unsolicited_registration_events (MMIfaceModem3gpp *self,
+                                                      user_data));
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ /*****************************************************************************/
+ /* Cancel USSD (3GPP/USSD interface) */
+ 
+@@ -5204,6 +5217,8 @@ modem_3gpp_ussd_check_support (MMIfaceModem3gppUssd *self,
+                               result);
+ }
+ 
++#endif /* MM_INTERFACE_3GPP_USSD_SUPPORTED */
++
+ #if MM_INTERFACE_MESSAGING_SUPPORTED
+ 
+ /*****************************************************************************/
+@@ -9024,7 +9039,9 @@ typedef enum {
+ #endif
+     DISABLING_STEP_IFACE_CONTACTS,
+     DISABLING_STEP_IFACE_CDMA,
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     DISABLING_STEP_IFACE_3GPP_USSD,
++#endif
+     DISABLING_STEP_IFACE_3GPP,
+     DISABLING_STEP_IFACE_MODEM,
+     DISABLING_STEP_LAST,
+@@ -9125,7 +9142,9 @@ disable_finish (MMBaseModem *self,
+ 
+ INTERFACE_DISABLE_READY_FN (iface_modem,           MM_IFACE_MODEM,           TRUE)
+ INTERFACE_DISABLE_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+ INTERFACE_DISABLE_READY_FN (iface_modem_3gpp_ussd, MM_IFACE_MODEM_3GPP_USSD, TRUE)
++#endif
+ INTERFACE_DISABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ INTERFACE_DISABLE_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
+@@ -9344,6 +9363,7 @@ disabling_step (DisablingContext *ctx)
+         /* Fall down to next step */
+         ctx->step++;
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     case DISABLING_STEP_IFACE_3GPP_USSD:
+         if (ctx->self->priv->modem_3gpp_ussd_dbus_skeleton) {
+             mm_dbg ("Modem has 3GPP/USSD capabilities, disabling the Modem 3GPP/USSD interface...");
+@@ -9355,6 +9375,7 @@ disabling_step (DisablingContext *ctx)
+         }
+         /* Fall down to next step */
+         ctx->step++;
++#endif
+ 
+     case DISABLING_STEP_IFACE_3GPP:
+         if (ctx->self->priv->modem_3gpp_dbus_skeleton) {
+@@ -9417,7 +9438,9 @@ typedef enum {
+     ENABLING_STEP_STARTED,
+     ENABLING_STEP_IFACE_MODEM,
+     ENABLING_STEP_IFACE_3GPP,
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     ENABLING_STEP_IFACE_3GPP_USSD,
++#endif
+     ENABLING_STEP_IFACE_CDMA,
+     ENABLING_STEP_IFACE_CONTACTS,
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+@@ -9533,7 +9556,9 @@ enable_finish (MMBaseModem *self,
+ 
+ INTERFACE_ENABLE_READY_FN (iface_modem,           MM_IFACE_MODEM,           TRUE)
+ INTERFACE_ENABLE_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+ INTERFACE_ENABLE_READY_FN (iface_modem_3gpp_ussd, MM_IFACE_MODEM_3GPP_USSD, TRUE)
++#endif
+ INTERFACE_ENABLE_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ INTERFACE_ENABLE_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
+@@ -9655,6 +9680,7 @@ enabling_step (EnablingContext *ctx)
+         /* Fall down to next step */
+         ctx->step++;
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     case ENABLING_STEP_IFACE_3GPP_USSD:
+         if (ctx->self->priv->modem_3gpp_ussd_dbus_skeleton) {
+             mm_dbg ("Modem has 3GPP/USSD capabilities, enabling the Modem 3GPP/USSD interface...");
+@@ -9665,6 +9691,7 @@ enabling_step (EnablingContext *ctx)
+         }
+         /* Fall down to next step */
+         ctx->step++;
++#endif
+ 
+     case ENABLING_STEP_IFACE_CDMA:
+         if (ctx->self->priv->modem_cdma_dbus_skeleton) {
+@@ -9889,7 +9916,9 @@ typedef enum {
+     INITIALIZE_STEP_SETUP_SIMPLE_STATUS,
+     INITIALIZE_STEP_IFACE_MODEM,
+     INITIALIZE_STEP_IFACE_3GPP,
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     INITIALIZE_STEP_IFACE_3GPP_USSD,
++#endif
+     INITIALIZE_STEP_IFACE_CDMA,
+     INITIALIZE_STEP_IFACE_CONTACTS,
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+@@ -10111,7 +10140,9 @@ iface_modem_initialize_ready (MMBroadbandModem *self,
+     }
+ 
+ INTERFACE_INIT_READY_FN (iface_modem_3gpp,      MM_IFACE_MODEM_3GPP,      TRUE)
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+ INTERFACE_INIT_READY_FN (iface_modem_3gpp_ussd, MM_IFACE_MODEM_3GPP_USSD, FALSE)
++#endif
+ INTERFACE_INIT_READY_FN (iface_modem_cdma,      MM_IFACE_MODEM_CDMA,      TRUE)
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+ INTERFACE_INIT_READY_FN (iface_modem_location,  MM_IFACE_MODEM_LOCATION,  FALSE)
+@@ -10194,6 +10225,7 @@ initialize_step (InitializeContext *ctx)
+         /* Fall down to next step */
+         ctx->step++;
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     case INITIALIZE_STEP_IFACE_3GPP_USSD:
+         if (mm_iface_modem_is_3gpp (MM_IFACE_MODEM (ctx->self))) {
+             /* Initialize the 3GPP/USSD interface */
+@@ -10204,6 +10236,7 @@ initialize_step (InitializeContext *ctx)
+         }
+         /* Fall down to next step */
+         ctx->step++;
++#endif
+ 
+     case INITIALIZE_STEP_IFACE_CDMA:
+         if (mm_iface_modem_is_cdma (MM_IFACE_MODEM (ctx->self))) {
+@@ -10374,7 +10407,9 @@ initialize_step (InitializeContext *ctx)
+                  * a firmware update, switch, or provisioning could fix.
+                  */
+                 mm_iface_modem_3gpp_shutdown (MM_IFACE_MODEM_3GPP (ctx->self));
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+                 mm_iface_modem_3gpp_ussd_shutdown (MM_IFACE_MODEM_3GPP_USSD (ctx->self));
++#endif
+                 mm_iface_modem_cdma_shutdown (MM_IFACE_MODEM_CDMA (ctx->self));
+ #if MM_INTERFACE_LOCATION_SUPPORTED
+                 mm_iface_modem_location_shutdown (MM_IFACE_MODEM_LOCATION (ctx->self));
+@@ -10606,10 +10641,12 @@ set_property (GObject *object,
+         g_clear_object (&self->priv->modem_3gpp_dbus_skeleton);
+         self->priv->modem_3gpp_dbus_skeleton = g_value_dup_object (value);
+         break;
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     case PROP_MODEM_3GPP_USSD_DBUS_SKELETON:
+         g_clear_object (&self->priv->modem_3gpp_ussd_dbus_skeleton);
+         self->priv->modem_3gpp_ussd_dbus_skeleton = g_value_dup_object (value);
+         break;
++#endif
+     case PROP_MODEM_CDMA_DBUS_SKELETON:
+         g_clear_object (&self->priv->modem_cdma_dbus_skeleton);
+         self->priv->modem_cdma_dbus_skeleton = g_value_dup_object (value);
+@@ -10744,9 +10781,11 @@ get_property (GObject *object,
+     case PROP_MODEM_3GPP_DBUS_SKELETON:
+         g_value_set_object (value, self->priv->modem_3gpp_dbus_skeleton);
+         break;
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     case PROP_MODEM_3GPP_USSD_DBUS_SKELETON:
+         g_value_set_object (value, self->priv->modem_3gpp_ussd_dbus_skeleton);
+         break;
++#endif
+     case PROP_MODEM_CDMA_DBUS_SKELETON:
+         g_value_set_object (value, self->priv->modem_cdma_dbus_skeleton);
+         break;
+@@ -10910,10 +10949,12 @@ dispose (GObject *object)
+         g_clear_object (&self->priv->modem_3gpp_dbus_skeleton);
+     }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     if (self->priv->modem_3gpp_ussd_dbus_skeleton) {
+         mm_iface_modem_3gpp_ussd_shutdown (MM_IFACE_MODEM_3GPP_USSD (object));
+         g_clear_object (&self->priv->modem_3gpp_ussd_dbus_skeleton);
+     }
++#endif
+ 
+     if (self->priv->modem_cdma_dbus_skeleton) {
+         mm_iface_modem_cdma_shutdown (MM_IFACE_MODEM_CDMA (object));
+@@ -11057,6 +11098,8 @@ iface_modem_3gpp_init (MMIfaceModem3gpp *iface)
+     iface->scan_networks_finish = modem_3gpp_scan_networks_finish;
+ }
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
++
+ static void
+ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+ {
+@@ -11085,6 +11128,8 @@ iface_modem_3gpp_ussd_init (MMIfaceModem3gppUssd *iface)
+     iface->cancel_finish = modem_3gpp_ussd_cancel_finish;
+ }
+ 
++#endif /* MM_INTERFACE_3GPP_USSD_SUPPORTED */
++
+ static void
+ iface_modem_cdma_init (MMIfaceModemCdma *iface)
+ {
+@@ -11266,9 +11311,11 @@ mm_broadband_modem_class_init (MMBroadbandModemClass *klass)
+                                       PROP_MODEM_3GPP_DBUS_SKELETON,
+                                       MM_IFACE_MODEM_3GPP_DBUS_SKELETON);
+ 
++#if MM_INTERFACE_3GPP_USSD_SUPPORTED
+     g_object_class_override_property (object_class,
+                                       PROP_MODEM_3GPP_USSD_DBUS_SKELETON,
+                                       MM_IFACE_MODEM_3GPP_USSD_DBUS_SKELETON);
++#endif
+ 
+     g_object_class_override_property (object_class,
+                                       PROP_MODEM_CDMA_DBUS_SKELETON,
+-- 
+2.10.2
+

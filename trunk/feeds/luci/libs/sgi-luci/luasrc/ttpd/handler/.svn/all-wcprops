@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/3843/luci/trunk/libs/sgi-luci/luasrc/ttpd/handler
+END
+luci.lua
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/3843/luci/trunk/libs/sgi-luci/luasrc/ttpd/handler/luci.lua
+END

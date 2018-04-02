@@ -1,0 +1,54 @@
+--- a/configure.in	2014-04-07 18:12:23.562933172 -0700
++++ b/configure.in	2014-04-18 12:42:17.193383278 -0700
+@@ -2729,6 +2729,7 @@
+  mremap nice pathconf pause plock poll pthread_init \
+  putenv readlink realpath \
+  select sem_open sem_timedwait sem_getvalue sem_unlink setegid seteuid \
++ clock_nanosleep \
+  setgid \
+  setlocale setregid setreuid setsid setpgid setpgrp setuid setvbuf snprintf \
+  setlocale setregid setreuid setresuid setresgid \
+--- a/pyconfig.h.in	2014-04-07 18:12:24.834933143 -0700
++++ b/pyconfig.h.in	2014-04-18 13:21:53.725317958 -0700
+@@ -115,6 +115,9 @@
+ /* Define to 1 if you have the `clock' function. */
+ #undef HAVE_CLOCK
+ 
++/* Define to 1 if you have the `clock_nanosleep' function. */
++#undef HAVE_CLOCK_NANOSLEEP
++
+ /* Define to 1 if you have the `confstr' function. */
+ #undef HAVE_CONFSTR
+ 
+--- a/Modules/timemodule.c	2012-04-09 16:07:34.000000000 -0700
++++ b/Modules/timemodule.c	2014-04-18 13:30:21.069305175 -0700
+@@ -932,7 +932,28 @@
+ floatsleep(double secs)
+ {
+ /* XXX Should test for MS_WINDOWS first! */
+-#if defined(HAVE_SELECT) && !defined(__BEOS__) && !defined(__EMX__)
++#if defined(HAVE_CLOCK_NANOSLEEP)
++    struct timespec t;
++    double frac;
++    int err;
++    frac = fmod(secs, 1.0);
++    secs = floor(secs);
++    t.tv_sec = (long)secs;
++    t.tv_nsec = (long)(frac*1000000000.0);
++    Py_BEGIN_ALLOW_THREADS
++    if ((err = clock_nanosleep(CLOCK_MONOTONIC, 0, &t, 0)) != 0) {
++#ifdef EINTR
++        if (err != EINTR) {
++#else
++        if (1) {
++#endif
++            Py_BLOCK_THREADS
++            PyErr_SetFromErrno(PyExc_IOError);
++            return -1;
++        }
++    }
++    Py_END_ALLOW_THREADS
++#elif defined(HAVE_SELECT) && !defined(__BEOS__) && !defined(__EMX__)
+     struct timeval t;
+     double frac;
+     frac = fmod(secs, 1.0);

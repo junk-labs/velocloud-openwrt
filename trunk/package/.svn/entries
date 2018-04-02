@@ -1,0 +1,89 @@
+10
+
+dir
+43223
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package
+svn://svn.mein.io/openwrt
+
+
+
+2014-11-08T12:27:41.860202Z
+43215
+cyrus
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+libs
+dir
+
+network
+dir
+
+base-files
+dir
+
+firmware
+dir
+
+Makefile
+file
+
+
+
+
+2014-09-03T23:42:10.081712Z
+e89ba2b42a3b655ac335a3a63b81b775
+2014-08-09T12:11:34.136805Z
+42089
+jow
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5967
+
+devel
+dir
+
+kernel
+dir
+
+utils
+dir
+
+boot
+dir
+
+system
+dir
+

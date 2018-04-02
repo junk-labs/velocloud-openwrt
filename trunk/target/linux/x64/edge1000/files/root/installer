@@ -1,0 +1,340 @@
+#!/bin/sh
+# installer for velocloud image;
+
+INST_UUID=`cat /proc/cmdline | tr ' ' '\n' | grep vc.install | sed -e 's/vc.install=//'`
+INST_DEV=`blkid -U $INST_UUID`
+INST_ROOT=/tmp/mnt-inst
+MNT_ROOT=/tmp/mnt-root
+
+# edge500 on-board flash;
+DISK=sda
+DRIVE=hd0
+PARTYPE=gpt
+FSTYPE="-t ext4"
+
+IMG_ROOT=$INST_ROOT
+IMG_PATH=$IMG_ROOT/images
+
+ROOT_PATH=$IMG_PATH/root-x64
+LOG_PATH=$INST_ROOT
+
+PARTED=/usr/sbin/parted
+MKFS=/usr/sbin/mkfs.ext4
+
+GRUB_PATH=$IMG_PATH/inst.grub
+GRUB_BIN=$GRUB_PATH/bin
+GRUB_DIR=$GRUB_PATH/boot/grub
+
+DEVMAP=$GRUB_DIR/device.map
+GRUB_CFG_SRC=$GRUB_DIR/grub-velocloud.cfg
+GRUB_CFG=$GRUB_DIR/grub.cfg
+GRUB_ENV=$GRUB_DIR/grubenv
+
+# check root uuid
+
+check_root_uuid() {
+	if [ x"$1" == "x" ]; then
+		echo "error: no partition $2 on disk $DEVICE"
+		umount $INST_ROOT
+		exit 13
+	fi
+}
+
+DEF_ID=0
+
+if [ $# -lt 1 ]; then
+	echo "usage: $0 [-d dev] [-p] [-grub] root-id [...]"
+	echo "  -d dsk    install to disk other than sda"
+	echo "  -vga      force use of vga console for grub and kernel"
+	echo "  -r dev    force root device for runtime (if different from install time)"
+	echo "  -p        force new partition layout, implies -grub"
+	echo "  -grub     force grub installation"
+	echo "  root-id   0=factory 1=first 2=second partition"
+	echo "  at least one of -p, -grub or root-id must be given"
+	exit 1
+fi
+
+# process options;
+
+DRUN=""
+force_vga=0;
+part_disk=0
+inst_grub=0
+
+while true; do
+	case $1 in
+	-d) DISK="$2"; shift; shift; continue ;;
+	-vga) force_vga=1; shift; continue ;;
+	-r) DRUN="$2"; shift; shift; continue ;;
+	-p) part_disk=1; inst_grub=1; shift; continue ;;
+	-grub) inst_grub=1; shift; continue ;;
+	*) break ;;
+	esac
+done
+
+# set final device names for installer and runtime;
+
+if [ x"$DRUN" == x"" ]; then
+	DRUN=$DISK
+fi
+DEVICE=/dev/${DISK}
+DEVRUN=/dev/${DRUN}
+DEVPART=$DEVICE
+RUNPART=$DEVRUN
+
+# mount installer partition;
+
+mkdir -m 700 -p $INST_ROOT
+mount $FSTYPE $INST_DEV $INST_ROOT
+if [ $? -ne 0 ]; then
+	echo "error: could not mount $INST_DEV on $INST_ROOT"
+	exit 2
+fi
+
+# check install image directory;
+
+if [ ! -d $IMG_ROOT ]; then
+	echo "error: image root $IMG_ROOT not a directory"
+	umount $INST_ROOT
+	exit 3
+fi
+if [ ! -r $IMG_PATH/root-size ]; then
+	echo "error: cannot read root size from $IMG_PATH/root-size"
+	umount $INST_ROOT
+	exit 4
+fi
+ROOT_SIZE=`cat $IMG_PATH/root-size`
+echo "images in $IMG_PATH"
+
+DISK_BLOCKS=`cat /sys/block/$DISK/size`
+DISK_MB=$(($DISK_BLOCKS / 2 / 1024))
+echo "disk $DEVICE is ${DISK_MB}MB"
+
+# partition sizing;
+
+GRUB_OFF=1
+GRUB_END=2
+GRUB_IDX=1
+
+BOOT_OFF=$GRUB_END
+BOOT_END=$(($BOOT_OFF + 18))
+BOOT_IDX=2
+BOOT_PART=$DRIVE,$PARTYPE$BOOT_IDX
+BOOT_DEV=${DEVPART}${BOOT_IDX}
+
+ROOT0_OFF=$BOOT_END
+ROOT0_END=$(($ROOT0_OFF + $ROOT_SIZE))
+ROOT0_IDX=3
+ROOT0_PART=$DRIVE,$PARTYPE$ROOT0_IDX
+ROOT0_DEV=${DEVPART}${ROOT0_IDX}
+
+ROOT1_OFF=$ROOT0_END
+ROOT1_END=$(($ROOT1_OFF + $ROOT_SIZE))
+ROOT1_IDX=4
+ROOT1_PART=$DRIVE,$PARTYPE$ROOT1_IDX
+ROOT1_DEV=${DEVPART}${ROOT1_IDX}
+
+ROOT2_OFF=$ROOT1_END
+ROOT2_END=$(($ROOT2_OFF + $ROOT_SIZE))
+ROOT2_IDX=5
+ROOT2_PART=$DRIVE,$PARTYPE$ROOT2_IDX
+ROOT2_DEV=${DEVPART}${ROOT2_IDX}
+
+USER_OFF=$ROOT2_END
+USER_END=$(($DISK_MB - 10))
+USER_IDX=6
+USER_DEV=${DEVPART}${USER_IDX}
+
+# check minimun user size;
+
+if [ $USER_END -lt 100 ]; then
+	echo "error: disk $DEVICE is too small to install, roots are ${ROOT_SIZE}MB each"
+	umount $INST_ROOT
+	exit 5
+fi
+
+# re-partition the drive;
+# this automatically caused a grub installation;
+
+if [ "$part_disk" == "1" ] ; then
+	echo "creating new partition layout on $DEVICE, root size ${ROOT_SIZE}MB ..."
+
+	$PARTED -s $DEVICE \
+		unit MiB \
+		mklabel $PARTYPE \
+		mkpart grub $GRUB_OFF $GRUB_END \
+		set $GRUB_IDX bios_grub on \
+		mkpart boot $BOOT_OFF $BOOT_END \
+		set $BOOT_IDX boot on \
+		mkpart root0 $ROOT0_OFF $ROOT0_END \
+		set $ROOT0_IDX boot off \
+		mkpart root1 $ROOT1_OFF $ROOT1_END \
+		set $ROOT1_IDX boot off \
+		mkpart root2 $ROOT2_OFF $ROOT2_END \
+		set $ROOT2_IDX boot off \
+		mkpart user $USER_OFF $USER_END \
+		set $USER_IDX boot off \
+		print
+	sync
+	partprobe -s
+	sync
+
+	echo "making boot filesystem on $BOOT_DEV ..."
+	$MKFS -q -i 8192 -L boot -m 5 $BOOT_DEV
+
+	echo "making user filesystem on $USER_DEV ..."
+	$MKFS -q -i 16384 -L user -m 1 $USER_DEV
+fi
+
+# check that we have a gpt disk;
+
+DISK_TYPE=`parted -s $DEVICE print | grep 'Partition Table: ' | sed -e 's/Partition Table: //'`
+if [ "$DISK_TYPE" != "gpt" ]; then
+	echo "error: disk $DEVICE is not a GPT disk"
+	umount $INST_ROOT
+	exit 12
+fi
+
+ROOT0_UUID=`sgdisk -i $ROOT0_IDX $DEVICE | grep 'unique GUID' | sed -e 's/^.*: //'`
+check_root_uuid $ROOT0_UUID $ROOT0_IDX
+
+ROOT1_UUID=`sgdisk -i $ROOT1_IDX $DEVICE | grep 'unique GUID' | sed -e 's/^.*: //'`
+check_root_uuid $ROOT1_UUID $ROOT1_IDX
+
+ROOT2_UUID=`sgdisk -i $ROOT2_IDX $DEVICE | grep 'unique GUID' | sed -e 's/^.*: //'`
+check_root_uuid $ROOT2_UUID $ROOT2_IDX
+
+# setup embedded grub modules;
+
+GRUB2_MODULES=
+if [ -r $IMG_PATH/grub-modules ]; then
+	GRUB2_MODULES=`cat $IMG_PATH/grub-modules`
+fi
+if [ -z "$GRUB2_MODULES" ]; then
+	echo "error: no GRUB2_MODULES (maybe not passed from build)"
+	umount $INST_ROOT
+	exit 6
+fi
+GRUB2_MODULES="$GRUB2_MODULES test echo loadenv"
+
+mkdir -m 700 -p $MNT_ROOT
+
+if [ "$inst_grub" == "1" ]; then
+	# configure device map;
+
+	echo "installing grub to $DEVICE ..."
+	echo "($DRIVE) $DEVICE" > $DEVMAP
+	echo "configfile ($BOOT_PART)/boot/grub/grub.cfg" \
+		> $GRUB_DIR/grub-early.cfg
+
+	echo "making empty grub environment block ..."
+	$GRUB_BIN/grub-editenv $GRUB_ENV create
+
+	# make the new core image;
+
+	echo "making grub core image ..."
+	$GRUB_BIN/grub-mkimage \
+		-d $GRUB_DIR \
+		-o $GRUB_DIR/core.img \
+        -O i386-pc \
+        -c $GRUB_DIR/grub-early.cfg \
+        $GRUB2_MODULES
+
+	# install MBR and core.img;
+
+	echo "setting up grub MBR on $DEVICE ..."
+	$GRUB_BIN/grub-bios-setup \
+		--device-map=$DEVMAP \
+		-d $GRUB_DIR \
+		-r "$BOOT_PART" \
+		$DEVICE
+
+	# mount boot partition and install grub config
+
+	echo "install to $DEVICE, runtime on $DEVRUN"
+	sed \
+		-e s#@BOOT_PART@#$BOOT_PART#g \
+		-e s#@ROOT0_PART@#$ROOT0_PART#g \
+		-e s#@ROOT1_PART@#$ROOT1_PART#g \
+		-e s#@ROOT2_PART@#$ROOT2_PART#g \
+		-e s#@ROOT0_DEV@#PARTUUID=$ROOT0_UUID#g \
+		-e s#@ROOT1_DEV@#PARTUUID=$ROOT1_UUID#g \
+		-e s#@ROOT2_DEV@#PARTUUID=$ROOT2_UUID#g \
+		-e s#root=@PARTUUID@##g \
+		$GRUB_CFG_SRC \
+		> $GRUB_CFG
+
+	if [ "$force_vga" == "1" ]; then
+		cp $GRUB_CFG ${GRUB_CFG}.serial
+		sed \
+			-e 's/^serial pch0/#&/' \
+			-e 's/^terminal_input/#&/' \
+			-e 's/earlyprintk=pch[^[:blank:]]*/earlyprintk=vga/g' \
+			-e 's/console=ttyPCH[^[:blank:]]*/console=tty0/g' \
+			${GRUB_CFG}.serial \
+			> $GRUB_CFG
+	fi
+
+	echo "installing grub modules/configs in boot partition $BOOT_DEV ..."
+	mount $FSTYPE $BOOT_DEV $MNT_ROOT
+	if [ $? -ne 0 ]; then
+		echo "error: could not mount $BOOT_DEV on $MNT_ROOT"
+		umount $INST_ROOT
+		exit 7
+	fi
+	mkdir -p $MNT_ROOT/boot/grub
+	if [ $? -ne 0 ]; then
+		echo "error: could not make /boot/grub on $BOOT_DEV"
+		umount $INST_ROOT
+		exit 8
+	fi
+	rsync -qa --stats --log-file $LOG_PATH/log-boot \
+		$GRUB_DIR/ $MNT_ROOT/boot/grub/
+	if [ $? -ne 0 ]; then
+		echo "error: could not copy $GRUB_DIR/ to /boot/grub/ on $BOOT_DEV"
+		umount $INST_ROOT
+		exit 9
+	fi
+	umount $MNT_ROOT
+fi
+
+# install the roots into each given root-id;
+
+while [ x"$1" != "x" ]; do
+	label=$1
+	shift
+	dev=""
+	case "$label" in
+		0) dev=$ROOT0_DEV ;;
+		1) dev=$ROOT1_DEV ;;
+		2) dev=$ROOT2_DEV ;;
+		*) echo "error: $label: no such root-id, ignored" ;;
+	esac
+	if [ ! -z "$dev" ]; then
+		echo "making root$label filesystem on $dev ..."
+		$MKFS -q -i 8192 -L root$label -m 5 $dev
+
+		echo "installing root to root$label on $dev ..."
+		mount $FSTYPE $dev $MNT_ROOT
+		if [ $? -ne 0 ]; then
+			echo "error: could not mount $dev on $MNT_ROOT"
+			exit 10
+		fi
+		rsync -qa --stats --log-file $LOG_PATH/log-root$label \
+			$ROOT_PATH/ $MNT_ROOT/
+		if [ $? -ne 0 ]; then
+			umount $dev
+			echo "error: could not copy root to $dev"
+			exit 11
+		fi
+		sync
+		umount $dev
+		sleep 2
+	fi
+done
+
+umount $INST_ROOT
+rm -rf $MNT_ROOT $INST_ROOT
+
+exit 0
+

@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sounds
+END
+agent-alreadyon.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/8036/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sounds/agent-alreadyon.gsm
+END
+beep.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sounds/beep.gsm
+END
+auth-thankyou.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/8036/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sounds/auth-thankyou.gsm
+END
+agent-pass.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/8037/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sounds/agent-pass.gsm
+END
+agent-incorrect.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/8037/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sounds/agent-incorrect.gsm
+END
+auth-incorrect.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sounds/auth-incorrect.gsm
+END
+vm-goodbye.gsm
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/9679/luci/trunk/applications/luci-pbx/root/etc/pbx-asterisk/sounds/vm-goodbye.gsm
+END

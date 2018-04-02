@@ -1,0 +1,568 @@
+diff -Naur quagga-0.99.24/ospfd/ospfd.h quagga-0.99.24.new/ospfd/ospfd.h
+--- quagga-0.99.24/ospfd/ospfd.h	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospfd.h	2016-02-12 10:38:58.677447813 -0800
+@@ -208,6 +208,7 @@
+   struct thread *t_spf_calc;	        /* SPF calculation timer. */
+   struct thread *t_ase_calc;		/* ASE calculation timer. */
+   struct thread *t_external_lsa;	/* AS-external-LSA origin timer. */
++  struct thread *t_interface_access_list_update;   /* Interface access list update timer. */
+ #ifdef HAVE_OPAQUE_LSA
+   struct thread *t_opaque_lsa_self;	/* Type-11 Opaque-LSAs origin event. */
+ #endif /* HAVE_OPAQUE_LSA */
+diff -Naur quagga-0.99.24/ospfd/ospf_flood.c quagga-0.99.24.new/ospfd/ospf_flood.c
+--- quagga-0.99.24/ospfd/ospf_flood.c	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_flood.c	2016-02-12 10:38:58.673447813 -0800
+@@ -340,9 +340,56 @@
+   return 0;
+ }
+ 
++int
++ospf_interface_access_list_check(struct ospf_interface *oi, struct ospf_lsa *lsa)
++{
++    struct ospf_if_params *params;
++    struct prefix_ipv4 p = {.family = AF_INET, .prefixlen = 0};
++    struct in_addr mask;
++    char pstr[32] = {0};
++
++    if (OSPF_AS_EXTERNAL_LSA != lsa->data->type) {
++        return 0;
++    }
++
++    if (!oi->ifp) {
++        return 0;
++    }
++
++    params = IF_DEF_PARAMS (oi->ifp);
++
++    if (!params) {
++        return 0;
++    }
++
++    if (!params->access_list__config) {
++        return 0;
++    }
++
++    if (params->if_access_list.list) {
++        mask.s_addr = *(u_int32_t *) ((char *) lsa->data + sizeof (struct lsa_header));
++        
++        p.prefix.s_addr = lsa->data->id.s_addr;
++        p.prefixlen = ip_masklen(mask);
++        
++        prefix2str((const struct prefix *) &p, pstr, sizeof(pstr)); 
++
++        if (FILTER_DENY == access_list_apply(params->if_access_list.list, &p)) {
++            zlog_debug ("interface_access_list_check DENY: int: %s lsa key: %s",
++                    IF_NAME (oi), dump_lsa_key(lsa));
++            return 1;
++        } else {
++            zlog_debug ("interface_access_list_check PERMIT: int: %s lsa key: %s",
++                    IF_NAME (oi), dump_lsa_key(lsa));
++        }
++    }
++
++    return 0;
++}
++
+ /* OSPF LSA flooding -- RFC2328 Section 13.3. */
+-static int
+-ospf_flood_through_interface (struct ospf_interface *oi,
++int
++ospf_flood_through_interface_no_acl (struct ospf_interface *oi,
+ 			      struct ospf_neighbor *inbr,
+ 			      struct ospf_lsa *lsa)
+ {
+@@ -351,7 +398,7 @@
+   int retx_flag;
+ 
+   if (IS_DEBUG_OSPF_EVENT)
+-    zlog_debug ("ospf_flood_through_interface(): "
++    zlog_debug ("ospf_flood_through_interface_no_acl(): "
+ 	       "considering int %s, INBR(%s), LSA[%s]",
+ 	       IF_NAME (oi), inbr ? inet_ntoa (inbr->router_id) : "NULL",
+                dump_lsa_key (lsa));
+@@ -374,7 +421,7 @@
+ 
+       onbr = rn->info;
+       if (IS_DEBUG_OSPF_EVENT)
+-	zlog_debug ("ospf_flood_through_interface(): considering nbr %s (%s)",
++	zlog_debug ("ospf_flood_through_interface_no_acl(): considering nbr %s (%s)",
+ 		   inet_ntoa (onbr->router_id),
+                    LOOKUP (ospf_nsm_state_msg, onbr->state));
+ 
+@@ -393,7 +440,7 @@
+       if (onbr->state < NSM_Full)
+ 	{
+ 	  if (IS_DEBUG_OSPF_EVENT)
+-	    zlog_debug ("ospf_flood_through_interface(): nbr adj is not Full");
++	    zlog_debug ("ospf_flood_through_interface_no_acl(): nbr adj is not Full");
+ 	  ls_req = ospf_ls_request_lookup (onbr, lsa);
+ 	  if (ls_req != NULL)
+ 	    {
+@@ -519,7 +566,7 @@
+       if (oi->state == ISM_Backup)
+ 	{
+ 	  if (IS_DEBUG_OSPF_NSSA)
+-	    zlog_debug ("ospf_flood_through_interface(): "
++	    zlog_debug ("ospf_flood_through_interface_no_acl(): "
+ 		       "ISM_Backup NOT SEND to int %s", IF_NAME (oi));
+ 	  return 1;
+ 	}
+@@ -533,7 +580,7 @@
+      value of MaxAge). */
+   /* XXX HASSO: Is this IS_DEBUG_OSPF_NSSA really correct? */
+   if (IS_DEBUG_OSPF_NSSA)
+-    zlog_debug ("ospf_flood_through_interface(): "
++    zlog_debug ("ospf_flood_through_interface_no_acl(): "
+ 	       "DR/BDR sending upd to int %s", IF_NAME (oi));
+ 
+   /*  RFC2328  Section 13.3
+@@ -558,6 +605,51 @@
+   return 0;
+ }
+ 
++/* OSPF LSA flooding -- RFC2328 Section 13.3. */
++static int
++ospf_flood_through_interface (struct ospf_interface *oi,
++			      struct ospf_neighbor *inbr,
++			      struct ospf_lsa *lsa)
++{
++
++  if (IS_DEBUG_OSPF_EVENT)
++    zlog_debug ("ospf_flood_through_interface(): "
++	       "considering int %s, INBR(%s), LSA[%s]",
++	       IF_NAME (oi), inbr ? inet_ntoa (inbr->router_id) : "NULL",
++               dump_lsa_key (lsa));
++
++  if (!ospf_if_is_enable (oi))
++    return 0;
++
++  if (ospf_interface_access_list_check(oi, lsa)) {
++      zlog_debug ("ospf_flood_through_interface DENY: int: %s lsa key: %s",
++              IF_NAME (oi), dump_lsa_key(lsa));
++      ospf_flood_maxage_through_interface(oi, lsa);
++      return 0;
++  }
++
++  return ospf_flood_through_interface_no_acl (oi, inbr, lsa);
++}
++
++/* OSPF MAXAGE flooding thro interface */
++int
++ospf_flood_maxage_through_interface(struct ospf_interface *oi, struct ospf_lsa *lsa)
++{
++    struct ospf_lsa *lsa_maxage = NULL;
++
++    if (!CHECK_FLAG (lsa->flags, OSPF_LSA_DISCARD)) {
++        lsa_maxage = ospf_lsa_dup(lsa); 
++        
++        lsa_maxage->data->ls_age = htons (OSPF_LSA_MAXAGE);
++        lsa_maxage->tv_recv = recent_relative_time ();
++        lsa_maxage->tv_orig = lsa->tv_recv;
++        ospf_flood_through_interface_no_acl(oi, NULL, lsa_maxage);
++
++    }
++
++    return 0;
++}
++
+ int
+ ospf_flood_through_area (struct ospf_area *area,
+ 			 struct ospf_neighbor *inbr, struct ospf_lsa *lsa)
+diff -Naur quagga-0.99.24/ospfd/ospf_flood.h quagga-0.99.24.new/ospfd/ospf_flood.h
+--- quagga-0.99.24/ospfd/ospf_flood.h	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_flood.h	2016-02-12 10:38:58.673447813 -0800
+@@ -23,6 +23,14 @@
+ #ifndef _ZEBRA_OSPF_FLOOD_H
+ #define _ZEBRA_OSPF_FLOOD_H
+ 
++extern int
++ospf_flood_maxage_through_interface(struct ospf_interface *oi, struct ospf_lsa *lsa);
++extern int
++ospf_flood_through_interface_no_acl (struct ospf_interface *oi,
++			      struct ospf_neighbor *inbr,
++			      struct ospf_lsa *lsa);
++extern int
++ospf_interface_access_list_check(struct ospf_interface *oi, struct ospf_lsa *lsa);
+ extern int ospf_flood (struct ospf *, struct ospf_neighbor *,
+ 		       struct ospf_lsa *, struct ospf_lsa *);
+ extern int ospf_flood_through (struct ospf *, struct ospf_neighbor *,
+diff -Naur quagga-0.99.24/ospfd/ospf_interface.c quagga-0.99.24.new/ospfd/ospf_interface.c
+--- quagga-0.99.24/ospfd/ospf_interface.c	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_interface.c	2016-02-12 10:38:58.673447813 -0800
+@@ -48,6 +48,7 @@
+ #ifdef HAVE_SNMP
+ #include "ospfd/ospf_snmp.h"
+ #endif /* HAVE_SNMP */
++#include "ospfd/ospf_zebra.h"
+ 
+ 
+ int
+@@ -635,6 +636,90 @@
+ }
+ 
+ void
++ospf_if_set_access_list(struct interface *ifp, const char *access_list_name)
++{
++  struct ospf_if_params *params;
++      
++  params = IF_DEF_PARAMS (ifp);
++  
++  /* Lookup access-list for interface. */
++  params->if_access_list.list = access_list_lookup(AFI_IP, access_list_name);
++  
++  /* Clear previous access-list name. */
++  if (params->if_access_list.name) {
++      free(params->if_access_list.name);
++  }
++  
++  /* Set access-list name. */
++  params->if_access_list.name = strdup (access_list_name);
++  
++  zlog_debug ("%s() '%s' access-list is set to interface %s", __func__, access_list_name, ifp->name);
++
++  return;
++}
++
++void
++ospf_if_unset_access_list(struct interface *ifp, const char *access_list_name)
++{
++  struct ospf_if_params *params;
++      
++  params = IF_DEF_PARAMS (ifp);
++  
++  /* Unset access-list for interface. */
++  params->if_access_list.list = NULL;
++
++  /* Clear previous access-list name. */
++  if (params->if_access_list.name) {
++      free(params->if_access_list.name);
++  }
++
++  /* Set access-list name to NULL. */
++  params->if_access_list.name = NULL;
++  
++  zlog_debug ("%s() '%s' access-list is unset from interface %s", __func__, access_list_name, ifp->name);
++
++  return;
++}
++
++void
++ospf_if_fire_interface_access_list_change_timer(struct ospf *ospf)
++{
++    ospf_interface_access_list_update(ospf);
++    
++    return;
++}
++
++int
++ospf_if_update_access_list(struct interface *ifp, struct ospf *ospf, char *name)
++{
++  struct ospf_if_params *params;
++  struct access_list *old = NULL;
++      
++  params = IF_DEF_PARAMS (ifp);
++  
++  /* Clear previous access-list name. */
++  if (params->if_access_list.name) {
++      /* Lookup access-list for interface. */
++      old = params->if_access_list.list;
++
++      params->if_access_list.list = access_list_lookup(AFI_IP, params->if_access_list.name);
++
++      // No change... previously an empty list and now too an empty list
++      if (!old && !params->if_access_list.list) {
++          return 0;
++      }
++
++      // check if access list is removed or the list is modified
++      if (!params->if_access_list.list || (0 == strcmp(params->if_access_list.name, name))) {
++          zlog_debug ("ospf_if_update_access_list() '%s' access-list is updated for interface %s", params->if_access_list.name, ifp->name);
++          return 1;
++      }
++  }
++
++  return 0;
++}
++
++void
+ ospf_if_update_params (struct interface *ifp, struct in_addr addr)
+ {
+   struct route_node *rn;
+diff -Naur quagga-0.99.24/ospfd/ospf_interface.h quagga-0.99.24.new/ospfd/ospf_interface.h
+--- quagga-0.99.24/ospfd/ospf_interface.h	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_interface.h	2016-02-12 10:38:58.673447813 -0800
+@@ -74,6 +74,14 @@
+   DECLARE_IF_PARAM (struct list *, auth_crypt);    /* List of Auth cryptographic data. */
+   DECLARE_IF_PARAM (int, auth_type);               /* OSPF authentication type */
+   
++  /* Interface access-list for outbound LSA-5 permit/deny */
++  struct 
++  {
++    char *name;
++    struct access_list *list;
++  } if_access_list;
++  u_char access_list__config:1;               /* OSPF interface access-list */
++  
+   /* Other, non-configuration state */
+   u_int32_t network_lsa_seqnum;		/* Network LSA seqnum */
+ };
+@@ -196,7 +204,7 @@
+     struct list *ls_ack;
+     struct in_addr dst;
+   } ls_ack_direct;
+-
++  
+   /* Timer values. */
+   u_int32_t v_ls_ack;			/* Delayed Link State Acknowledgment */
+ 
+@@ -263,6 +271,14 @@
+ 						  struct in_addr);
+ extern void ospf_del_if_params (struct ospf_if_params *);
+ extern void ospf_free_if_params (struct interface *, struct in_addr);
++extern void
++ospf_if_set_access_list(struct interface *ifp, const char *access_list_name);
++extern void
++ospf_if_unset_access_list(struct interface *ifp, const char *access_list_name);
++extern void
++ospf_if_fire_interface_access_list_change_timer(struct ospf *ospf);
++extern int
++ospf_if_update_access_list(struct interface *ifp, struct ospf *ospf, char *name);
+ extern void ospf_if_update_params (struct interface *, struct in_addr);
+ 
+ extern int ospf_if_new_hook (struct interface *);
+diff -Naur quagga-0.99.24/ospfd/ospf_packet.c quagga-0.99.24.new/ospfd/ospf_packet.c
+--- quagga-0.99.24/ospfd/ospf_packet.c	2016-02-12 10:39:17.481447183 -0800
++++ quagga-0.99.24.new/ospfd/ospf_packet.c	2016-02-12 10:38:58.673447813 -0800
+@@ -3234,6 +3234,14 @@
+               }
+ #endif /* HAVE_OPAQUE_LSA */
+ 
++            if (ospf_interface_access_list_check(oi, lsa)) {
++                zlog_debug ("make_db_desc: int: %s lsa key: %s",
++                        IF_NAME (oi), dump_lsa_key(lsa));
++                /* Remove LSA from DB summary list. */
++                ospf_lsdb_delete (lsdb, lsa);
++                continue;
++            }
++
+ 	    if (!CHECK_FLAG (lsa->flags, OSPF_LSA_DISCARD))
+ 	      {
+ 		struct lsa_header *lsah;
+diff -Naur quagga-0.99.24/ospfd/ospf_vty.c quagga-0.99.24.new/ospfd/ospf_vty.c
+--- quagga-0.99.24/ospfd/ospf_vty.c	2015-03-02 15:50:57.000000000 -0800
++++ quagga-0.99.24.new/ospfd/ospf_vty.c	2016-02-12 10:38:58.677447813 -0800
+@@ -5481,6 +5481,72 @@
+        "Router priority\n"
+        "Priority\n")
+ 
++DEFUN (ip_ospf_access_list,
++       ip_ospf_access_list_cmd,
++       "ip ospf access-list WORD",
++       "IP Information\n"
++       "OSPF interface commands\n"
++       "Out access-list\n")
++{
++  struct interface *ifp = vty->index;
++  struct ospf_if_params *params;
++  struct ospf *ospf = ospf_lookup();
++      
++  params = IF_DEF_PARAMS (ifp);
++
++  fprintf(stderr, "Access-list name %s\n", argv[0]);
++
++  ospf_if_set_access_list(ifp, argv[0]);
++
++  SET_IF_PARAM (params, access_list);
++  
++  if (ospf) {
++      ospf_if_fire_interface_access_list_change_timer(ospf);
++  }
++
++  return CMD_SUCCESS;
++}
++
++ALIAS (ip_ospf_access_list,
++       ospf_access_list_cmd,
++       "ospf access-list WORD",
++       "IP Information\n"
++       "OSPF interface commands\n"
++       "Out access-list\n")
++
++DEFUN (no_ip_ospf_access_list,
++       no_ip_ospf_access_list_cmd,
++       "no ip ospf access-list WORD",
++       "IP Information\n"
++       "OSPF interface commands\n"
++       "Out access-list\n")
++{
++  struct interface *ifp = vty->index;
++  struct ospf_if_params *params;
++  struct ospf *ospf = ospf_lookup();
++      
++  params = IF_DEF_PARAMS (ifp);
++
++  fprintf(stderr, "No access-list name %s\n", argv[0]);
++
++  ospf_if_unset_access_list(ifp, argv[0]); 
++
++  UNSET_IF_PARAM (params, access_list);
++
++  if (ospf) {
++      ospf_if_fire_interface_access_list_change_timer(ospf);
++  }
++
++  return CMD_SUCCESS;
++}
++
++ALIAS (no_ip_ospf_access_list,
++       no_ospf_access_list_cmd,
++       "no ospf access-list WORD",
++       "IP Information\n"
++       "OSPF interface commands\n"
++       "Out access-list\n")
++
+ DEFUN (no_ip_ospf_priority,
+        no_ip_ospf_priority_addr_cmd,
+        "no ip ospf priority A.B.C.D",
+@@ -6871,7 +6937,13 @@
+            vty_out (vty, " %s", inet_ntoa (rn->p.u.prefix4));
+         vty_out (vty, "%s", VTY_NEWLINE);
+       }
+-
++    
++    if (OSPF_IF_PARAM_CONFIGURED (params, access_list)) {
++        if (params->if_access_list.name) {
++            vty_out (vty, " ip ospf access-list %s", params->if_access_list.name);
++        }
++        vty_out (vty, "%s", VTY_NEWLINE);
++    }
+ 
+ 	while (1)
+ 	  {
+@@ -7488,6 +7560,12 @@
+   install_element (INTERFACE_NODE, &no_ip_ospf_priority_addr_cmd);
+   install_element (INTERFACE_NODE, &no_ip_ospf_priority_cmd);
+ 
++  /* "ip ospf access-list" commands. */
++  install_element (INTERFACE_NODE, &ip_ospf_access_list_cmd);
++  install_element (INTERFACE_NODE, &ospf_access_list_cmd);
++  install_element (INTERFACE_NODE, &no_ip_ospf_access_list_cmd);
++  install_element (INTERFACE_NODE, &no_ospf_access_list_cmd);
++
+   /* "ip ospf retransmit-interval" commands. */
+   install_element (INTERFACE_NODE, &ip_ospf_retransmit_interval_addr_cmd);
+   install_element (INTERFACE_NODE, &ip_ospf_retransmit_interval_cmd);
+diff -Naur quagga-0.99.24/ospfd/ospf_zebra.c quagga-0.99.24.new/ospfd/ospf_zebra.c
+--- quagga-0.99.24/ospfd/ospf_zebra.c	2016-02-12 10:39:17.481447183 -0800
++++ quagga-0.99.24.new/ospfd/ospf_zebra.c	2016-02-12 10:38:58.677447813 -0800
+@@ -970,6 +970,52 @@
+   return CMD_SUCCESS;
+ }
+ 
++/* interface access-list update timer. */
++static int
++ospf_access_list_update_timer (struct thread *thread)
++{
++  struct route_node *rn;
++  struct route_table *rt;
++  int type = 0;
++  struct ospf *ospf;
++  struct external_info *ei;
++  struct ospf_lsa *lsa;
++
++  ospf = ospf_lookup ();
++  if (ospf == NULL)
++    return 0;
++
++  ospf->t_interface_access_list_update = NULL;
++
++  zlog_info ("Zebra[Redistribute]: interface access-list update timer fired!");
++
++  /* foreach all external info. */
++  for (type = 0; type <= ZEBRA_ROUTE_MAX; type++)
++  {
++      if ((ZEBRA_ROUTE_STATIC == type) || (ZEBRA_ROUTE_KERNEL == type)) {
++          rt = EXTERNAL_INFO (type);
++          
++          if (!rt)
++              continue;
++          
++          for (rn = route_top (rt); rn; rn = route_next (rn))
++              if ((ei = rn->info) != NULL)
++              {
++                  if(NULL != (lsa = ospf_external_info_find_lsa (ospf, &ei->p))) {
++                      fprintf(stderr, "LSA_REFRESH_FORCE for found lsa\n");
++                      ospf_external_lsa_refresh (ospf, lsa, ei, LSA_REFRESH_FORCE);
++                  } else {
++                      fprintf(stderr, "No lsa found for prefix\n");
++                      ospf_external_lsa_originate (ospf, ei);
++                  }
++              }
++      }
++  }
++  
++  return 0;
++}
++
++
+ /* distribute-list update timer. */
+ static int
+ ospf_distribute_list_update_timer (struct thread *thread)
+@@ -1033,6 +1079,21 @@
+                       (void *) type, OSPF_DISTRIBUTE_UPDATE_DELAY);
+ }
+ 
++/* Update interface access-list and set timer to apply access-list. */
++void
++ospf_interface_access_list_update (struct ospf *ospf)
++{
++  /* If exists previously invoked thread, then let it continue. */
++  if (ospf->t_interface_access_list_update)
++    return;
++
++  /* Set timer. */
++  ospf->t_interface_access_list_update =
++    thread_add_timer (master, ospf_access_list_update_timer,
++                      (void *) NULL, OSPF_DISTRIBUTE_UPDATE_DELAY);
++}
++
++
+ /* If access-list is updated, apply some check. */
+ static void
+ ospf_filter_update (struct access_list *access)
+@@ -1042,6 +1103,8 @@
+   int abr_inv = 0;
+   struct ospf_area *area;
+   struct listnode *node;
++  struct interface *ifp;
++  int intf_list_update = 0;
+ 
+   /* If OSPF instatnce does not exist, return right now. */
+   ospf = ospf_lookup ();
+@@ -1098,6 +1161,14 @@
+           abr_inv++;
+         }
+     }
++  
++  /* Update interface access-list */
++  for (ALL_LIST_ELEMENTS_RO (iflist, node, ifp)) {
++      intf_list_update += ospf_if_update_access_list(ifp, ospf, access->name);
++  }
++  if (intf_list_update) {
++      ospf_if_fire_interface_access_list_change_timer(ospf);
++  }
+ 
+   /* Schedule ABR tasks -- this will be changed -- takada. */
+   if (IS_OSPF_ABR (ospf) && abr_inv)
+diff -Naur quagga-0.99.24/ospfd/ospf_zebra.h quagga-0.99.24.new/ospfd/ospf_zebra.h
+--- quagga-0.99.24/ospfd/ospf_zebra.h	2016-02-12 10:39:17.481447183 -0800
++++ quagga-0.99.24.new/ospfd/ospf_zebra.h	2016-02-12 10:38:58.677447813 -0800
+@@ -55,6 +55,8 @@
+ extern int ospf_distribute_check_connected (struct ospf *,
+ 					    struct external_info *);
+ extern void ospf_distribute_list_update (struct ospf *, uintptr_t);
++extern void
++ospf_interface_access_list_update (struct ospf *ospf);
+ 
+ extern int ospf_is_type_redistributed (int);
+ extern void ospf_distance_reset (struct ospf *);

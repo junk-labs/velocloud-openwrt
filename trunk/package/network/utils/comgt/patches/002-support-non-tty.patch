@@ -1,0 +1,176 @@
+--- a/comgt.c
++++ b/comgt.c
+@@ -91,6 +91,7 @@ unsigned long hstart,hset;
+ char NullString[]={ "" };
+ BOOL lastcharnl=1; /* Indicate that last char printed from getonebyte
+                                was a nl, so no new one is needed */
++BOOL tty=1;
+ 
+ 
+ //"open com \"/dev/modem\"\nset com 38400n81\nset senddelay 0.05\nsend \"ATi^m\"\nget 2 \" ^m\" $s\nprint \"Response : \",$s,\"\\n\"\nget 2 \" ^m\" $s\nprint \"Response :\",$s,\"\\n\"\nget 2 \" ^m\" $s\nprint \"Response : \",$s,\"\\n\"\n\n";
+@@ -918,6 +919,8 @@ BOOL getonoroff(void) {
+ }
+ 
+ void setcom(void) {
++  if (!tty)
++    return;
+   stbuf.c_cflag &= ~(CBAUD | CSIZE | CSTOPB | CLOCAL | PARENB);
+   stbuf.c_cflag |= (speed | bits | CREAD | clocal | parity | stopbits );
+   if (ioctl(comfd, TCSETA, &stbuf) < 0) {
+@@ -1224,7 +1227,7 @@ void doclose(void) {
+   if(strcmp(token,"hardcom")==0) {
+     if(comfd== -1) serror("Com device not open",1);
+     vmsg("Closing device");
+-    if (ioctl(comfd, TCSETA, &svbuf) < 0) {
++    if (tty && ioctl(comfd, TCSETA, &svbuf) < 0) {
+       sprintf(msg,"Can't ioctl set device %s.\n",device);
+       serror(msg,1);
+     }
+@@ -1266,28 +1269,38 @@ void opengt(void) {
+       ext(1);
+     }
+   }
+-  if (ioctl (comfd, TCGETA, &svbuf) < 0) {
++
++  if (isatty (comfd))
++    tty=1;
++  else
++    tty=0;
++
++  if (tty && ioctl (comfd, TCGETA, &svbuf) < 0) {
+     sprintf(msg,"Can't control %s, please try again.\n",device);
+     serror(msg,1);
+   }
++
+   setenv("COMGTDEVICE",device,1);
+-  ioctl(comfd, TCGETA, &stbuf);
+-  speed=stbuf.c_cflag & CBAUD;
+-  if (high_speed == 0)  strcpy(cspeed,"115200");
+-  else strcpy(cspeed,"57600");
+-  bits=stbuf.c_cflag & CSIZE;
+-  clocal=stbuf.c_cflag & CLOCAL;
+-  stopbits=stbuf.c_cflag & CSTOPB;
+-  parity=stbuf.c_cflag & (PARENB | PARODD);
+-  stbuf.c_iflag &= ~(IGNCR | ICRNL | IUCLC | INPCK | IXON | IXANY | IGNPAR );
+-  stbuf.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONLRET);
+-  stbuf.c_lflag &= ~(ICANON | XCASE | ECHO | ECHOE | ECHONL);
+-  stbuf.c_lflag &= ~(ECHO | ECHOE);
+-  stbuf.c_cc[VMIN] = 1;
+-  stbuf.c_cc[VTIME] = 0;
+-  stbuf.c_cc[VEOF] = 1;
+-  setcom();
+-  dormir(200000); /* Wait a bit (DTR raise) */
++
++  if (tty) {
++    ioctl(comfd, TCGETA, &stbuf);
++    speed=stbuf.c_cflag & CBAUD;
++    if (high_speed == 0)  strcpy(cspeed,"115200");
++    else strcpy(cspeed,"57600");
++    bits=stbuf.c_cflag & CSIZE;
++    clocal=stbuf.c_cflag & CLOCAL;
++    stopbits=stbuf.c_cflag & CSTOPB;
++    parity=stbuf.c_cflag & (PARENB | PARODD);
++    stbuf.c_iflag &= ~(IGNCR | ICRNL | IUCLC | INPCK | IXON | IXANY | IGNPAR );
++    stbuf.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONLRET);
++    stbuf.c_lflag &= ~(ICANON | XCASE | ECHO | ECHOE | ECHONL);
++    stbuf.c_lflag &= ~(ECHO | ECHOE);
++    stbuf.c_cc[VMIN] = 1;
++    stbuf.c_cc[VTIME] = 0;
++    stbuf.c_cc[VEOF] = 1;
++    setcom();
++    dormir(200000); /* Wait a bit (DTR raise) */
++  }
+   sprintf(msg,"Opened %s as FD %d",device,comfd);
+   vmsg(msg);
+ }
+@@ -1303,46 +1316,51 @@ void opendevice(void) {
+   }
+   else comfd=0;
+ 
+-  if (ioctl (comfd, TCGETA, &svbuf) < 0) {
+-    sprintf(msg,"Can't ioctl get device %s.\n",device);
+-    serror(msg,1);
++  if (isatty (comfd))
++    tty=1;
++  else
++    tty=0;
++
++  if (tty) {
++    if (ioctl (comfd, TCGETA, &svbuf) < 0) {
++        sprintf(msg,"Can't ioctl get device %s.\n",device);
++        serror(msg,1);
++    }
++    ioctl(comfd, TCGETA, &stbuf);
++    speed=stbuf.c_cflag & CBAUD;
++    switch(speed) {
++      case B0: strcpy(cspeed,"0");break;
++      case B50: strcpy(cspeed,"50");break;
++      case B75: strcpy(cspeed,"75");break;
++      case B110: strcpy(cspeed,"110");break;
++      case B300: strcpy(cspeed,"300");break;
++      case B600: strcpy(cspeed,"600");break;
++      case B1200: strcpy(cspeed,"1200");break;
++      case B2400: strcpy(cspeed,"2400");break;
++      case B4800: strcpy(cspeed,"4800");break;
++      case B9600: strcpy(cspeed,"9600");break;
++      case B19200: strcpy(cspeed,"19200");break;
++      case B38400: strcpy(cspeed,"38400");break;
++      case B115200:
++        if (high_speed == 0) strcpy(cspeed,"115200");
++        else strcpy(cspeed,"57600");
++        break;
++      case B460800: strcpy(cspeed, "460800");break;
++    }
++    bits=stbuf.c_cflag & CSIZE;
++    clocal=stbuf.c_cflag & CLOCAL;
++    stopbits=stbuf.c_cflag & CSTOPB;
++    parity=stbuf.c_cflag & (PARENB | PARODD);
++    stbuf.c_iflag &= ~(IGNCR | ICRNL | IUCLC | INPCK | IXON | IXANY | IGNPAR );
++    stbuf.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONLRET);
++    stbuf.c_lflag &= ~(ICANON | XCASE | ECHO | ECHOE | ECHONL);
++    stbuf.c_lflag &= ~(ECHO | ECHOE);
++    stbuf.c_cc[VMIN] = 1;
++    stbuf.c_cc[VTIME] = 0;
++    stbuf.c_cc[VEOF] = 1;
++    setcom();
++    dormir(200000); /* Wait a bit (DTR raise) */
+   }
+-  ioctl(comfd, TCGETA, &stbuf);
+-  speed=stbuf.c_cflag & CBAUD;
+-  switch(speed) {
+-    case B0: strcpy(cspeed,"0");break;
+-    case B50: strcpy(cspeed,"50");break;
+-    case B75: strcpy(cspeed,"75");break;
+-    case B110: strcpy(cspeed,"110");break;
+-    case B300: strcpy(cspeed,"300");break;
+-    case B600: strcpy(cspeed,"600");break;
+-    case B1200: strcpy(cspeed,"1200");break;
+-    case B2400: strcpy(cspeed,"2400");break;
+-    case B4800: strcpy(cspeed,"4800");break;
+-    case B9600: strcpy(cspeed,"9600");break;
+-    case B19200: strcpy(cspeed,"19200");break;
+-    case B38400: strcpy(cspeed,"38400");break;
+-    case B115200:
+-                {
+-                  if (high_speed == 0) strcpy(cspeed,"115200");
+-                  else strcpy(cspeed,"57600");
+-                  break;
+-                }
+-    case B460800: strcpy(cspeed, "460800");break;
+-  }
+-  bits=stbuf.c_cflag & CSIZE;
+-  clocal=stbuf.c_cflag & CLOCAL;
+-  stopbits=stbuf.c_cflag & CSTOPB;
+-  parity=stbuf.c_cflag & (PARENB | PARODD);
+-  stbuf.c_iflag &= ~(IGNCR | ICRNL | IUCLC | INPCK | IXON | IXANY | IGNPAR );
+-  stbuf.c_oflag &= ~(OPOST | OLCUC | OCRNL | ONLCR | ONLRET);
+-  stbuf.c_lflag &= ~(ICANON | XCASE | ECHO | ECHOE | ECHONL);
+-  stbuf.c_lflag &= ~(ECHO | ECHOE);
+-  stbuf.c_cc[VMIN] = 1;
+-  stbuf.c_cc[VTIME] = 0;
+-  stbuf.c_cc[VEOF] = 1;
+-  setcom();
+-  dormir(200000); /* Wait a bit (DTR raise) */
+   sprintf(msg,"Opened %s as FD %d",device,comfd);
+   vmsg(msg);
+ }

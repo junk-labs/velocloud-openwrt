@@ -1,0 +1,14 @@
+Make ubus output line-buffered always, so that it can be piped into
+scripts when running "ubus listen".
+
+--- a/cli.c	2015-03-19 19:24:38.039323567 -0700
++++ b/cli.c	2015-03-19 19:25:18.915325738 -0700
+@@ -324,6 +324,8 @@
+ 	int ret = 0;
+ 	int i, ch;
+ 
++	setlinebuf(stdout);
++
+ 	progname = argv[0];
+ 
+ 	while ((ch = getopt(argc, argv, "vs:t:S")) != -1) {

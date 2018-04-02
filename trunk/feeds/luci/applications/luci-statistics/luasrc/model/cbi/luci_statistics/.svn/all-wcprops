@@ -1,0 +1,155 @@
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9812/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics
+END
+iptables.lua
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/7369/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/iptables.lua
+END
+unixsock.lua
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/6060/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/unixsock.lua
+END
+uptime.lua
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/9812/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/uptime.lua
+END
+netlink.lua
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/7987/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/netlink.lua
+END
+nut.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/9534/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/nut.lua
+END
+processes.lua
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/7996/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/processes.lua
+END
+memory.lua
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/7990/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/memory.lua
+END
+load.lua
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/6060/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/load.lua
+END
+conntrack.lua
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/7990/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/conntrack.lua
+END
+olsrd.lua
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/!svn/ver/9591/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/olsrd.lua
+END
+exec.lua
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/7993/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/exec.lua
+END
+dns.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/7987/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/dns.lua
+END
+rrdtool.lua
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/6060/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/rrdtool.lua
+END
+email.lua
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/!svn/ver/7987/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/email.lua
+END
+cpu.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/6060/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/cpu.lua
+END
+tcpconns.lua
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/6060/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/tcpconns.lua
+END
+df.lua
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/7987/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/df.lua
+END
+collectd.lua
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9521/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/collectd.lua
+END
+network.lua
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/6060/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/network.lua
+END
+disk.lua
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/7987/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/disk.lua
+END
+iwinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/8059/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/iwinfo.lua
+END
+irq.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/7987/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/irq.lua
+END
+csv.lua
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/6060/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/csv.lua
+END
+ping.lua
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/6509/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/ping.lua
+END
+interface.lua
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/7987/luci/trunk/applications/luci-statistics/luasrc/model/cbi/luci_statistics/interface.lua
+END

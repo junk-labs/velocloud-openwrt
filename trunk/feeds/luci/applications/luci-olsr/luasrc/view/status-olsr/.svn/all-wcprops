@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/9906/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr
+END
+legend.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/9906/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/legend.htm
+END
+neighbors.htm
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/9874/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/neighbors.htm
+END
+routes.htm
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/routes.htm
+END
+interfaces.htm
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/interfaces.htm
+END
+common_js.htm
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/common_js.htm
+END
+smartgw.htm
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/smartgw.htm
+END
+hna.htm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/hna.htm
+END
+overview.htm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9792/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/overview.htm
+END
+error_olsr.htm
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/error_olsr.htm
+END
+mid.htm
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/mid.htm
+END
+topology.htm
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9680/luci/trunk/applications/luci-olsr/luasrc/view/status-olsr/topology.htm
+END

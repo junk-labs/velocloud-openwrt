@@ -1,0 +1,695 @@
+10
+
+dir
+40995
+svn://svn.mein.io/openwrt/packages/libs
+svn://svn.mein.io/openwrt
+
+
+
+2014-05-20T04:51:47.831464Z
+40796
+florian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+libpam
+dir
+
+libmicrohttpd
+dir
+
+mysql
+dir
+
+libdlna
+dir
+
+glibmm
+dir
+
+aalib
+dir
+
+credis
+dir
+
+libtheora
+dir
+
+libugpio
+dir
+
+gupnp-vala
+dir
+
+clearsilver
+dir
+
+gnutls
+dir
+
+file
+dir
+
+libsrtp
+dir
+
+ftplib
+dir
+
+gssdp
+dir
+
+libIDL2
+dir
+
+libdbi
+dir
+
+libao
+dir
+
+libnatpmp
+dir
+
+shflags
+dir
+
+avahi
+dir
+
+fftw3
+dir
+
+libyaml
+dir
+
+iksemel
+dir
+
+pcre
+dir
+
+xmpp4r
+dir
+
+libpar2
+dir
+
+libffi
+dir
+
+libcroco
+dir
+
+libnfc
+dir
+
+libcli
+dir
+
+ezxml
+dir
+
+qrencode
+dir
+
+db47
+dir
+
+libmpeg2
+dir
+
+libdbi-drivers
+dir
+
+openldap
+dir
+
+gperf
+dir
+
+libmpd
+dir
+
+rblibtorrent
+dir
+
+libgphoto2
+dir
+
+libsdl
+dir
+
+jansson
+dir
+
+libpthread-stubs
+dir
+
+libzstream
+dir
+
+check
+dir
+
+libxslt
+dir
+
+google-authenticator
+dir
+
+alsa-lib
+dir
+
+gsl
+dir
+
+matrixssl
+dir
+
+gsm
+dir
+
+libgee
+dir
+
+uclibc++
+dir
+
+elfutils
+dir
+
+libmad
+dir
+
+libgpg-error
+dir
+
+libotr
+dir
+
+axtls
+dir
+
+ossp-js
+dir
+
+libaio
+dir
+
+poco
+dir
+
+libsigc++
+dir
+
+libid3tag
+dir
+
+postgresql
+dir
+
+clinkc
+dir
+
+liboping
+dir
+
+libvncserver
+dir
+
+gupnp-dlna
+dir
+
+cyrus-sasl
+dir
+
+libtwin
+dir
+
+bluez-libs
+dir
+
+libdirectfb
+dir
+
+libdvbpsi
+dir
+
+libnet-1.0.x
+dir
+
+libassuan
+dir
+
+argtable
+dir
+
+libsml
+dir
+
+apr
+dir
+
+librpcsecgss
+dir
+
+libdmapsharing
+dir
+
+ustl
+dir
+
+radiusclient-ng
+dir
+
+gupnp
+dir
+
+libvorbis
+dir
+
+giflib
+dir
+
+gupnp-av
+dir
+
+glib2
+dir
+
+libfreecwmp
+dir
+
+ldns
+dir
+
+libspe2
+dir
+
+libdvdread
+dir
+
+nmeap
+dir
+
+intltool
+dir
+
+flac
+dir
+
+libmcrypt
+dir
+
+libxml2
+dir
+
+libsoup
+dir
+
+libtasn1
+dir
+
+libart
+dir
+
+libusbmuxd
+dir
+
+libvorbisidec
+dir
+
+libdnet
+dir
+
+libsdl_sound
+dir
+
+libmpcdec
+dir
+
+opencdk
+dir
+
+freetype
+dir
+
+libosip2
+dir
+
+gmp
+dir
+
+jpeg
+dir
+
+libimobiledevice
+dir
+
+rrdtool-1.0.x
+dir
+
+libnfsidmap
+dir
+
+libamsel
+dir
+
+nettle
+dir
+
+libcrypto++
+dir
+
+radlib
+dir
+
+neon
+dir
+
+libsocketcan
+dir
+
+lttng-ust
+dir
+
+liblo
+dir
+
+libogg
+dir
+
+libfreefare
+dir
+
+libssh2
+dir
+
+libmikmod
+dir
+
+libxapian
+dir
+
+libowfat
+dir
+
+libevent
+dir
+
+libsynce
+dir
+
+libupnp
+dir
+
+sctp
+dir
+
+tcp_wrappers
+dir
+
+libsndfile
+dir
+
+libftdi
+dir
+
+newt
+dir
+
+leptonica
+dir
+
+libnet-1.1.x
+dir
+
+speex
+dir
+
+libsamplerate
+dir
+
+slang2
+dir
+
+tiff
+dir
+
+libzip
+dir
+
+libdaemon
+dir
+
+tokyocabinet
+dir
+
+libgcrypt
+dir
+
+pthsem
+dir
+
+libidn
+dir
+
+liburcu
+dir
+
+libnetfilter-queue
+dir
+
+libmpdclient
+dir
+
+dbus-glib
+dir
+
+spandsp
+dir
+
+libpfm
+dir
+
+libpng
+dir
+
+unixodbc
+dir
+
+mxml
+dir
+
+libcelt
+dir
+
+keynote
+dir
+
+loudmouth
+dir
+
+protobuf-c
+dir
+
+vips
+dir
+
+classpath
+dir
+
+libfreenect
+dir
+
+ucl
+dir
+
+eventlog
+dir
+
+libatomicops
+dir
+
+libptmalloc3
+dir
+
+xmlrpc-c
+dir
+
+phidget21
+dir
+
+libshout
+dir
+
+libcap
+dir
+
+libv4l
+dir
+
+apr-util
+dir
+
+serdisplib
+dir
+
+libinklevel
+dir
+
+confuse
+dir
+
+curl
+dir
+
+
+
+delete
+
+id3lib
+dir
+
+howl
+dir
+
+libcunit
+dir
+
+liboil
+dir
+
+c-ares
+dir
+
+glib
+dir
+
+libsdl_mixer
+dir
+
+libqmi
+dir
+
+argp-standalone
+dir
+
+expat
+dir
+
+libmicroxml
+dir
+
+libexif
+dir
+
+libmms
+dir
+
+ortp
+dir
+
+libnids
+dir
+
+libtorrent
+dir
+
+libaudiofile
+dir
+
+gd
+dir
+
+libmbus
+dir
+
+st2205tool
+dir
+
+libol
+dir
+
+orbit2
+dir
+
+taglib
+dir
+
+libnetfilter-log
+dir
+
+libipfix
+dir
+
+fcgi
+dir
+
+fribidi
+dir
+
+gdbm
+dir
+
+faad2
+dir
+
+nacl
+dir
+
+libgssapi
+dir
+
+libmodbus
+dir
+
+libplist
+dir
+
+sqlite2
+dir
+
+sqlite3
+dir
+
+librsync
+dir
+
+boost
+dir
+
+wxbase
+dir
+
+cgilib
+dir
+
+wt
+dir
+
+libdaq
+dir
+
+gpgme
+dir
+
+protobuf
+dir
+

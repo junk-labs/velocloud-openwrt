@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd
+END
+kepler-1.1-snapshot-20070521-1825.tar.gz
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/kepler-1.1-snapshot-20070521-1825.tar.gz
+END
+tdate_parse.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/tdate_parse.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/Makefile
+END
+axhttpd.c
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/axhttpd.c
+END
+axhttp.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/axhttp.h
+END
+htpasswd.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/htpasswd.c
+END
+kepler.patch
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/kepler.patch
+END
+proc.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/proc.c
+END
+Config.in
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/httpd/Config.in
+END

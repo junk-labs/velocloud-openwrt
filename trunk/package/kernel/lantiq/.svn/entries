@@ -1,0 +1,67 @@
+10
+
+dir
+43223
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/kernel/lantiq
+svn://svn.mein.io/openwrt
+
+
+
+2014-11-03T08:32:50.487041Z
+43161
+blogic
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+ltq-ifxos
+dir
+
+ltq-vdsl
+dir
+
+ltq-adsl-mei
+dir
+
+ltq-adsl-fw
+dir
+
+ltq-deu
+dir
+
+ltq-tapi
+dir
+
+ltq-hcd
+dir
+
+ltq-ptm
+dir
+
+ltq-vdsl-mei
+dir
+
+ltq-atm
+dir
+
+ltq-vdsl-fw
+dir
+
+ltq-vmmc
+dir
+
+ltq-adsl
+dir
+

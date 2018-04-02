@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/7011/luci/trunk/applications/luci-olsr-viz/htdocs/cgi-bin
+END
+vizdata.sh
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/6639/luci/trunk/applications/luci-olsr-viz/htdocs/cgi-bin/vizdata.sh
+END
+olsr-viz.sh
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/7011/luci/trunk/applications/luci-olsr-viz/htdocs/cgi-bin/olsr-viz.sh
+END

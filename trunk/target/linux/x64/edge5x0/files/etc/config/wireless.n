@@ -1,0 +1,33 @@
+
+config wifi-device 'wlan0'
+	option disabled '0'
+	option country 'US'
+	option type 'mac80211'
+	option hwmode '11ng'
+	option path 'pci0000:00/0000:00:02.0/0000:02:00.0'
+	option htmode 'HT20'
+	list ht_capab 'LDPC'
+	list ht_capab 'SHORT-GI-20'
+	list ht_capab 'SHORT-GI-40'
+	list ht_capab 'TX-STBC'
+	list ht_capab 'RX-STBC1'
+	list ht_capab 'DSSS_CCK-40'
+	option channel '1'
+
+config wifi-iface
+	option device 'wlan0'
+	option network 'sta'
+	option mode 'sta'
+	option ssid 'upstream-ap'
+	option key 'upstream-passphrase'
+	option encryption 'psk2+aes'
+
+config wifi-iface
+	option device 'wlan0'
+	option network 'lan'
+	option mode 'ap'
+	option wmm '1'
+	option ssid 'vc-wifi'
+	option key 'vcsecret'
+	option encryption 'psk2+aes'
+

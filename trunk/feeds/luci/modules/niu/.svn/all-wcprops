@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/!svn/ver/9563/luci/trunk/modules/niu
+END
+COPYING.icons
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/5551/luci/trunk/modules/niu/COPYING.icons
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/5417/luci/trunk/modules/niu/Makefile
+END

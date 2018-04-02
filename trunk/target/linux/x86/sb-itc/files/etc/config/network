@@ -1,0 +1,29 @@
+
+config interface 'loopback'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option ifname 'sw0 sw1 sw2 sw3'
+	option proto 'static'
+	option type 'bridge'
+	option ipaddr '192.168.2.1'
+	option netmask '255.255.255.0'
+
+config interface 'dsl'
+	option ifname 'eth0'
+	option proto 'dhcp'
+	option hostname 'vc-dsl'
+
+config interface 'cm'
+	option ifname 'eth1'
+	option proto 'dhcp'
+	option hostname 'vc-cm'
+
+config interface 'sta'
+	option ifname 'wlan0-1'
+	option proto 'dhcp'
+	option hostname 'vc-sta'
+

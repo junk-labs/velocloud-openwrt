@@ -1,0 +1,11 @@
+--- a/quickassist/adf/user/config_ctl/include/adf_config.h
++++ b/quickassist/adf/user/config_ctl/include/adf_config.h
+@@ -90,7 +90,7 @@
+ #define ADF_CFG_MAIN                    main
+ 
+ /* Directory where the configuration is located. */
+-#define ADF_CFG_FILE_DIR                ("/etc")
++#define ADF_CFG_FILE_DIR                ("/etc/qat")
+ 
+ /* The device node to open. */
+ #define ADF_CFG_IOCTL_DEVICE            ("/dev/icp_adf_ctl")

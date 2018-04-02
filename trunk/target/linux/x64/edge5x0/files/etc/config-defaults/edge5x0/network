@@ -1,0 +1,39 @@
+
+config interface 'loopback'
+	option ifname 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+
+config interface 'lan'
+	option ifname 'sw0p0 sw0p1 sw0p2 sw0p3 sw1p0 sw1p1 sw1p2 sw1p3'
+	option proto 'static'
+	option type 'bridge'
+	option ipaddr '10.0.1.1'
+	option netmask '255.255.255.0'
+
+config interface 'wan0'
+	option ifname 'eth2'
+	option proto 'dhcp'
+	option hostname 'vc-wan0'
+
+config interface 'wan1'
+	option ifname 'eth3'
+	option proto 'dhcp'
+	option hostname 'vc-wan1'
+
+config interface 'sfp0'
+	option ifname 'eth4'
+	option proto 'dhcp'
+	option hostname 'vc-sfp0'
+ 
+config interface 'sfp1'
+	option ifname 'eth5'
+	option proto 'dhcp'
+	option hostname 'vc-sfp1'
+
+config interface 'sta'
+	option ifname 'wlan0-1'
+	option proto 'dhcp'
+	option hostname 'vc-sta'
+

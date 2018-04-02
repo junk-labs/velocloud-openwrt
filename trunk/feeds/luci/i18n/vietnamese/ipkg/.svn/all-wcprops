@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/5275/luci/trunk/i18n/vietnamese/ipkg
+END
+postinst
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/5275/luci/trunk/i18n/vietnamese/ipkg/postinst
+END

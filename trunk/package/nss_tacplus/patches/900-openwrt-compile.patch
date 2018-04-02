@@ -1,0 +1,45 @@
+Changes to the Makefile to allow openwrt flags to be passed in
+cleanly.  Also added an "install" target.
+
+--- a/Makefile	2016-06-03 13:48:25.000000000 -0700
++++ b/Makefile	2016-06-03 14:12:56.067831868 -0700
+@@ -6,8 +6,6 @@
+ CC=	gcc
+ CFLAGS=	-D_FORTIFY_SOURCE=2 -fstack-protector -std=gnu99 -Werror -Wall \
+ 	-ggdb -fPIC -I/usr/local/lib
+-LDFLAGS=-shared -Wl,-soname,libnss_tacplus.so.2 -Wl,-rpath=/usr/local/lib
+-
+ 
+ OBJECTS=$(patsubst %.c, %.o, $(wildcard src/*.c))
+ HEADERS=$(wildcard src/*.h)
+@@ -15,7 +13,7 @@
+ TEST_OBJECTS=	$(patsubst %.c, %.o, $(wildcard test/*.c))
+ TEST_HEADERS=	$(wildcard test/*.h)
+ 
+-default: $(TARGET)
++default: $(TARGET) $(TEST_TARGET)
+ all: default
+ test: $(TEST_TARGET)
+ 
+@@ -27,12 +25,20 @@
+ .PRECIOUS: $(TARGET) $(TEST_TARGET) (OBJECTS)
+ 
+ $(TARGET): $(OBJECTS)
+-	$(CC) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
++	$(CC) -shared $(CFLAGS) $(OBJECTS) $(LDFLAGS) -o $@ $(LIBS)
+ 
+ $(TEST_TARGET): $(TEST_OBJECTS)
+ 	-mkdir -p bin
+ 	$(CC) $(TEST_OBJECTS) $(TEST_LIBS) $(TEST_LDFLAGS) -o $@
+ 
++DESTDIR=/usr/local
++
++install:
++	install -D -m 0755 -d $(DESTDIR)/lib
++	install -D -m 0755 $(TARGET) $(DESTDIR)/lib
++	install -D -m 0755 -d $(DESTDIR)/bin
++	install -D -m 0755 $(TEST_TARGET) $(DESTDIR)/bin
++
+ clean:
+ 	-rm -f src/*.o test/*.o
+ 	-rm -f $(TARGET) $(TEST_TARGET)

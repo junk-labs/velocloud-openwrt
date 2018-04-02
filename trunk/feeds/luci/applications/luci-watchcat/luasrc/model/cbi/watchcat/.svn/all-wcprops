@@ -1,0 +1,11 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/8574/luci/trunk/applications/luci-watchcat/luasrc/model/cbi/watchcat
+END
+watchcat.lua
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/8574/luci/trunk/applications/luci-watchcat/luasrc/model/cbi/watchcat/watchcat.lua
+END

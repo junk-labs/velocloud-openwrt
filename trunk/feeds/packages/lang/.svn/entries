@@ -1,0 +1,307 @@
+10
+
+dir
+40995
+svn://svn.mein.io/openwrt/packages/lang
+svn://svn.mein.io/openwrt
+
+
+
+2014-06-01T15:24:32.254816Z
+40897
+nbd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+simplejson
+dir
+
+pyclips
+dir
+
+luaexpat
+dir
+
+perl-www-mechanize
+dir
+
+perl-www-curl
+dir
+
+eggdrop
+dir
+
+perl-html-tagset
+dir
+
+pyevent
+dir
+
+pypcap
+dir
+
+pyopenssl
+dir
+
+python-rsfile
+dir
+
+sqlite3-ruby
+dir
+
+php5-pecl-dio
+dir
+
+jamvm
+dir
+
+xapian-bindings
+dir
+
+python2-chardet
+dir
+
+luavstruct
+dir
+
+php5
+dir
+
+php-pear
+dir
+
+python-pyosc
+dir
+
+pymysql
+dir
+
+luabitop
+dir
+
+ruby
+dir
+
+python
+dir
+
+logilab-astng
+dir
+
+python-flup
+dir
+
+jsonpath
+dir
+
+python-json
+dir
+
+pybluez
+dir
+
+pyxdg
+dir
+
+python-pydaemon
+dir
+
+php5-pecl-apc
+dir
+
+perl-html-parser
+dir
+
+python-crypto
+dir
+
+4th
+dir
+
+php-pear-db
+dir
+
+perl-uri
+dir
+
+lsqlite3
+dir
+
+egenix-mx
+dir
+
+php5-pecl-libevent
+dir
+
+luasoap
+dir
+
+sigscheme
+dir
+
+kid
+dir
+
+php5-pecl-bcompiler
+dir
+
+erlang
+dir
+
+gst-python
+dir
+
+telepathy-python
+dir
+
+distribute
+dir
+
+perl-test-harness
+dir
+
+tcl
+dir
+
+vala
+dir
+
+twisted
+dir
+
+luaprofiler
+dir
+
+pygobject
+dir
+
+mako
+dir
+
+yapsnmp
+dir
+
+pyserial
+dir
+
+ipython
+dir
+
+perl-dbi
+dir
+
+python-mimms
+dir
+
+perl-html-tree
+dir
+
+perl
+dir
+
+pyusb
+dir
+
+luacurl
+dir
+
+php5-pecl-http
+dir
+
+python-sip
+dir
+
+python-dbus
+dir
+
+luasec
+dir
+
+perl-lockfile-simple
+dir
+
+arm
+dir
+
+perl-compress-bzip2
+dir
+
+psycopg
+dir
+
+python-curl
+dir
+
+perl-www
+dir
+
+luafilesystem
+dir
+
+luasocket
+dir
+
+python-cjson
+dir
+
+python-imaging-library
+dir
+
+logilab-common
+dir
+
+pyrrd
+dir
+
+python-eeml
+dir
+
+luasql
+dir
+
+urbi
+dir
+
+python-ifconfig
+dir
+
+cython
+dir
+
+luaposix
+dir
+
+python-webpy
+dir
+
+numpy
+dir
+
+pysqlite
+dir
+
+pyyaml
+dir
+
+php-pear-xmlrpc
+dir
+
+perl-net-telnet
+dir
+
+python-django
+dir
+

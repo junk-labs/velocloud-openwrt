@@ -1,0 +1,95 @@
+10
+
+dir
+40995
+svn://svn.mein.io/openwrt/packages
+svn://svn.mein.io/openwrt
+
+
+
+2014-06-02T17:03:33.165529Z
+40978
+kerneis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+devel
+dir
+
+utils
+dir
+
+lang
+dir
+
+skels
+dir
+
+mail
+dir
+
+ipv6
+dir
+
+.gitignore
+file
+
+
+
+
+2014-06-17T22:32:04.090136Z
+da87fa36d74e7258ba8ef5edfec5e3c7
+2013-09-25T14:20:37.988576Z
+38176
+luka
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+20
+
+net
+dir
+
+admin
+dir
+
+sound
+dir
+
+libs
+dir
+
+multimedia
+dir
+

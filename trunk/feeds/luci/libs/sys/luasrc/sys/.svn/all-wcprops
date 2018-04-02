@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/!svn/ver/9797/luci/trunk/libs/sys/luasrc/sys
+END
+zoneinfo.lua
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/5047/luci/trunk/libs/sys/luasrc/sys/zoneinfo.lua
+END
+iptparser.lua
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/!svn/ver/9797/luci/trunk/libs/sys/luasrc/sys/iptparser.lua
+END

@@ -1,0 +1,85 @@
+#
+# List of USB modem devices identified by idVendor:idProduct which will never be
+# used through ModemManager.
+#
+# After the idVendor:idProduct, a explicit message may be optionally given which
+# will be logged whenever the events for the device are ignored.
+#
+
+# Alcatel
+1bbb:0195 rndis
+
+# Bandrich
+1a8d:1001 ecm
+1a8d:100c ecm
+1a8d:100d ecm
+
+# Cmotech
+16d8:700b rndis
+
+# Freedompop
+198f:8160 autoconnected device
+198f:e160 autoconnected device
+
+# Huawei
+12d1:14dc hi-link based autoconnected device (e.g. E3372)
+12d1:14db hi-link based autoconnected device (e.g. E8372)
+12d1:14bc hi-link based autoconnected device (e.g. K3773)
+12d1:142d ecm
+12d1:1432 ecm
+12d1:14ae ecm (e.g. K3806)
+12d1:1576 ecm (e.g. K4201)
+12d1:1577 ecm
+12d1:1590 ecm
+12d1:1400 ecm
+12d1:14f7 ecm
+12d1:14fa ecm
+12d1:1578 ecm
+12d1:14f8 ecm
+12d1:1575 ecm
+12d1:1579 ecm
+12d1:157b ecm
+12d1:157f ecm
+12d1:1c50 ecm
+12d1:15bf ecm
+
+# Infomark
+19f2:1700 ecm
+
+# Novatel Wireless
+1410:7042 ecm
+1410:7031 ecm
+1410:7001 ecm
+1410:7030 ecm
+1410:7003 ecm
+1410:6032 ecm
+1410:b005 ecm
+1410:b00b ecm
+1410:b009 ecm
+
+# SK Teletech
+10a9:6085 rndis
+
+# Pantech UML295
+10a9:6064 autoconnected device
+
+# Quanta
+0408:ea45 ecm
+
+# ZTE
+19d2:1405 autoconnected device with webadmin control in 192.168.0.1 (e.g. MF823)
+19d2:1181 ecm
+19d2:1003 ecm
+19d2:1015 ecm
+19d2:1024 ecm
+19d2:1173 ecm
+19d2:1039 rndis
+19d2:1040 ecm
+19d2:1032 ecm
+19d2:1403 rndis
+19d2:1538 ecm
+19d2:0142 ecm
+19d2:1589 ecm
+19d2:0349 ecm
+19d2:1408 ecm
+19d2:0387 ecm

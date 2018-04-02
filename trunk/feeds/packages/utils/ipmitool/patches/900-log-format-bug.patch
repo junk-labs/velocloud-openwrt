@@ -1,0 +1,11 @@
+--- a/src/ipmievd.c	2014-08-11 10:31:15.000000000 -0700
++++ b/src/ipmievd.c	2015-03-12 14:19:24.538236471 -0700
+@@ -331,7 +331,7 @@
+ 		break;
+ 
+ 	default:
+-		lprintf(LOG_NOTICE, "%s%s sensor - %s",
++		lprintf(LOG_NOTICE, "%s%s sensor - %d %s",
+ 			eintf->prefix, type,
+ 			evt->sel_type.standard_type.sensor_num, desc ? : "");
+ 		break;

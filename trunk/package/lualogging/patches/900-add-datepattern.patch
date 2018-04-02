@@ -1,0 +1,99 @@
+diff --git a/src/logging.lua b/src/logging.lua
+index 5883400..6cd97ff 100644
+--- a/src/logging.lua
++++ b/src/logging.lua
+@@ -145,8 +145,9 @@ end
+ -------------------------------------------------------------------------------
+ -- Prepares the log message
+ -------------------------------------------------------------------------------
+-function logging.prepareLogMsg(pattern, dt, level, message)
++function logging.prepareLogMsg(pattern, datePattern, level, message)
+ 	local logMsg = pattern or "%date %level %message\n"
++	local dt = os.date(datePattern)
+ 	message = string.gsub(message, "%%", "%%%%")
+ 	logMsg = string.gsub(logMsg, "%%date", dt)
+ 	logMsg = string.gsub(logMsg, "%%level", level)
+diff --git a/src/logging/console.lua b/src/logging/console.lua
+index 433c4d8..40c69db 100644
+--- a/src/logging/console.lua
++++ b/src/logging/console.lua
+@@ -9,9 +9,9 @@
+ 
+ local logging = require"logging"
+ 
+-function logging.console(logPattern)
++function logging.console(logPattern, datePattern)
+ 	return logging.new( function(self, level, message)
+-		io.stdout:write(logging.prepareLogMsg(logPattern, os.date(), level, message))
++		io.stdout:write(logging.prepareLogMsg(logPattern, datePattern, level, message))
+ 		return true
+ 	end)
+ end
+diff --git a/src/logging/email.lua b/src/logging/email.lua
+index ae2ee8a..88103b8 100644
+--- a/src/logging/email.lua
++++ b/src/logging/email.lua
+@@ -22,10 +22,10 @@ function logging.email(params)
+ 	end
+ 
+ 	return logging.new( function(self, level, message)
+-		local s = logging.prepareLogMsg(params.logPattern, os.date(), level, message)
++		local s = logging.prepareLogMsg(params.logPattern, params.datePattern, level, message)
+ 		if params.headers.subject then
+ 			params.headers.subject =
+-				logging.prepareLogMsg(params.headers.subject, os.date(), level, message)
++				logging.prepareLogMsg(params.headers.subject, params.datePattern, level, message)
+ 		end
+ 		local msg = { headers = params.headers, body = s }
+ 		params.source = smtp.message(msg)
+diff --git a/src/logging/file.lua b/src/logging/file.lua
+index aade0b5..05f1a36 100644
+--- a/src/logging/file.lua
++++ b/src/logging/file.lua
+@@ -39,7 +39,7 @@ function logging.file(filename, datePattern, logPattern)
+ 		if not f then
+ 			return nil, msg
+ 		end
+-		local s = logging.prepareLogMsg(logPattern, os.date(), level, message)
++		local s = logging.prepareLogMsg(logPattern, datePattern, level, message)
+ 		f:write(s)
+ 		return true
+ 	end)
+diff --git a/src/logging/rolling_file.lua b/src/logging/rolling_file.lua
+index 3095671..b810d16 100644
+--- a/src/logging/rolling_file.lua
++++ b/src/logging/rolling_file.lua
+@@ -53,7 +53,7 @@ local openRollingFileLogger = function (self)
+ end
+ 
+ 
+-function logging.rolling_file(filename, maxFileSize, maxBackupIndex, logPattern)
++function logging.rolling_file(filename, maxFileSize, maxBackupIndex, logPattern, datePattern)
+ 	if type(filename) ~= "string" then
+ 		filename = "lualogging.log"
+ 	end
+@@ -69,7 +69,7 @@ function logging.rolling_file(filename, maxFileSize, maxBackupIndex, logPattern)
+ 		if not f then
+ 			return nil, msg
+ 		end
+-		local s = logging.prepareLogMsg(logPattern, os.date(), level, message)
++		local s = logging.prepareLogMsg(logPattern, datePattern, level, message)
+ 		f:write(s)
+ 		return true
+ 	end)
+diff --git a/src/logging/socket.lua b/src/logging/socket.lua
+index 74b01d7..96a2cd4 100644
+--- a/src/logging/socket.lua
++++ b/src/logging/socket.lua
+@@ -10,9 +10,9 @@
+ local logging = require"logging"
+ local socket = require"socket"
+ 
+-function logging.socket(address, port, logPattern)
++function logging.socket(address, port, logPattern, datePattern)
+ 	return logging.new( function(self, level, message)
+-		local s = logging.prepareLogMsg(logPattern, os.date(), level, message)
++		local s = logging.prepareLogMsg(logPattern, datePattern, level, message)
+ 
+ 		local socket, err = socket.connect(address, port)
+ 		if not socket then

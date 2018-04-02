@@ -1,0 +1,12 @@
+
+# qemu configuration
+
+if PACKAGE_qemu
+
+	config QEMU
+		bool "QEMU for virtual machines on vwlocloud edge"
+		help
+			Say Y if you want to run guest OSes on the Velocloud edge.
+		default y
+
+endif

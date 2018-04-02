@@ -1,0 +1,393 @@
+#!/bin/sh
+
+. /etc/modems/modem.path
+export PYTHONPATH=/opt/vc/lib/python
+local eventdir
+
+set_eventdir()
+{
+	eventdir=$1
+}
+
+log()
+{
+	logger -t "usbmodems" "$eventdir: $@"
+}
+
+init_modem_support()
+{
+	# The tmpdir must be created early
+	mkdir -p $tmpdir
+}
+
+mm_add_to_config()
+{
+	# Common initialization
+	init_modem_support
+
+	# This is the common profile path
+	profile=${modem_config_path}/${usbifname}.profile
+
+	log "Hotplug add event: MM device in $usbifname: $usbpath"
+	ret=$(check_device_config $usbifname)
+	if [ "$ret" == "True" ]; then
+		log "MM device at $usbifname already detected"
+		return
+	fi
+
+	# Set the 'device' property so that from now on it's only processed
+	# once. We want to launch the MM management script for this device
+	# only once!
+	local physdev_sysfs_path=$(find_physdev_sysfs_path $usbpath)
+
+	touch $modem_config_path/modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.device=''"MM"''
+	uci -c $modem_config_path set modems.$usbifname.type=''"modemmanager"''
+	uci -c $modem_config_path set modems.$usbifname.sysfs=''"$physdev_sysfs_path"''
+	uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+	uci -c $modem_config_path commit modems
+
+	log "initialized configuration for ${usbifname}"
+
+	$modem_script_path/modem_service.sh $usbifname start 2>&1 >/dev/null &
+}
+
+usb_wan_naming()
+{
+	local usbpath="$1"
+	local usbname=""
+
+	if [ -r $PYTHONPATH/hardware.py ]; then
+		usbname=$(python - "$usbpath" <<-EOF
+import hardware
+import sys
+usb = hardware.get_usb_by_path(sys.argv[1])
+if usb:
+    print usb
+EOF
+)
+	fi
+	if [ ! -z "$usbname" ]; then
+		echo $usbname
+		return
+	fi
+
+	# if the path is not a usb path, ignore
+	if [ $(echo $usbpath | grep "usb" | wc -l) -eq 0 ]; then
+		# error out somehow
+		echo "error"
+		return
+	fi
+
+	# common usb device path
+	# we consider the fact that a usb device has multiple ports, e.g.:
+	#
+	#    /sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3/1-1.3:1.0/ttyUSB0
+	#    /sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3/1-1.3:1.2/ttyUSB1
+	#    /sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3/1-1.3:1.3/ttyUSB2
+	#    /sys/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.3/1-1.3:1.8/net/wwan0
+	#
+	# what we get is:
+	#    1-1.3
+	#
+	# we abuse the fact that usb device paths will have a ':' and port names
+	# won't.
+	#
+	local shortusbpath=''
+	local tmpusbpath=$usbpath
+	while [ 1 ]; do
+		# the path item with ':' is the one given the port number of each port
+		if [ $(echo $(basename $tmpusbpath) | grep ":" | wc -l) -ne 0 ]; then
+			shortusbpath=$(dirname $tmpusbpath)
+			shortusbpath=$(basename $shortusbpath)
+			break
+		fi
+		tmpusbpath=$(dirname $tmpusbpath)
+		if [ -z "$tmpusbpath" ] || [ "$tmpusbpath" == "/" ]; then
+			# error out somehow
+			echo "error"
+			return
+		fi
+	done
+
+	# create runtime database of shortusbpath vs usbname mappings
+	# e.g.:
+	#   1-1.3 MODEM1
+	#   1-1.4 MODEM2
+	#
+	local usbpaths=/tmp/usbpaths
+	touch $usbpaths
+
+	while read line; do
+		local path=$(echo $line | awk '{print $1}')
+		local name=$(echo $line | awk '{print $2}')
+
+		if [ "$path" == "$shortusbpath" ]; then
+			# found!
+			echo $name
+			return
+		fi
+	done < $usbpaths
+
+	# get the highest existing MODEMx modem from /etc/config/modems/modems
+	# list of modems called MODEMx:
+	local highest=`cat $usbpaths 2>/dev/null | \
+		 grep 'MODEM[0-9]*' | \
+		 awk '{print $2}' | \
+		 sed 's/^MODEM//' | \
+		 sort -nr | \
+		 head -1`
+
+	# store new mapping
+	usbname=$(echo MODEM$((highest+1)))
+	echo "$shortusbpath $usbname" >> $usbpaths
+
+	echo $usbname
+}
+
+at_get_imsi_number() {
+	local dialdevice=$1
+	local usbifname=$2
+	local imsi_tries=3
+	local tempfile="$tmpdir/$usbifname.siminfo"
+	local imsicmd="gcom -d $dialdevice -s /etc/gcom/vcgetimsi.gcom"
+	local imsi_number
+	while [ -z $imsi_number ] && [ "$imsi_tries" -ne 0 ]; do
+		$imsicmd | awk 'NR>1 && $1 !~ /^OK$/ && $1 !~ /^$/ { print }' > $tempfile
+		log "IMSI Info: $(cat $tempfile | xargs echo)"
+
+		imsi_number=$(cat $tempfile | awk '{for(i=1;i<=NF;i++){ if(match($i, /[0-9]{14,15}$/)){print $i;break} } }')
+		imsi_tries=$(expr $imsi_tries - 1)
+	done
+	log "IMSI: $imsi_number"
+	rm -f $tempfile
+	echo $imsi_number
+}
+
+at_get_apn()
+{
+	local dialdevice=$1
+	local usbifname=$2
+	local imsi=$(at_get_imsi_number $dialdevice $usbifname)
+	local mccmnc
+
+	# Look for a match with a 2-digit MNC (i.e. no PCS digit)
+	mccmnc="${imsi:0:5}"
+	if [ ! -z $mccmnc ]; then
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Look for a match with a 3-digit MNC (i.e. with PCS digit)
+	if [ -z $apn ]; then
+		mccmnc="${imsi:0:6}"
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Assume we got a 2 digit MNC from IMSI, so build a 3-digit MNC and recheck
+	if [ -z $apn ]; then
+		mccmnc="${imsi:0:3}0${imsi:3:2}"
+		apn=$(uci -c /etc/config/modems get mcodemap.${mccmnc}.apn 2>/dev/null)
+	fi
+
+	# Note: if APN not found in the mcodemap file, we default to using an
+	# empty APN string (i.e. the automatic one, if stored in the SIM card).
+	# This approach is better than just trying with some random APN.
+
+	echo $apn
+}
+
+check_device_config()
+{
+	local usbifname=$1
+	local ret="False"
+	uci -c $modem_config_path -X get modems.$usbifname.device 2>&1 >/dev/null
+	if [ "$?" == "0" ]; then
+		ret="True"
+	fi
+	echo $ret
+}
+
+remove_device_config()
+{
+	log "Hotplug remove event: $usbifname"
+
+	local pidfile="/$tmpdir/$usbifname.pid"
+	if [ -f $pidfile ]; then
+		$modem_script_path/modem_service.sh $usbifname stop
+		rm -rf $pidfile
+		rm -rf /$tmpdir/$usbifname"_periodic.txt"
+		log "Stopped modem service: $usbifname"
+	fi
+
+	# ignore config removal request if already removed (may happen when a
+	# TTY+NET modem gets multiple hotplug events for each subsystem)
+	uci -c $modem_config_path -X get modems.$usbifname 2>&1 >/dev/null
+	if [ "$?" == "0" ]; then
+		uci -c $modem_config_path delete modems.$usbifname
+		uci -c $modem_config_path commit modems
+		log "Removed modem config: $usbifname"
+	fi
+
+	# ignore config removal request if nothing to remove (may happen when a
+	# TTY-only modem is being removed); note that this logic makes sure that
+	# only configuration of wwan-flagged devices is removed
+	network_type=$(uci -c /etc/config get network.$usbifname.type 2>/dev/null)
+	if [ "$network_type" == "wwan" ]; then
+		uci -c $network_config delete network.$usbifname
+		uci -c $network_config commit network
+		log "Removed network config: $usbifname"
+	fi
+}
+
+get_modem_type()
+{
+	local ifname=$1 # full interface name
+	local interface=${1/[0-9]*} # ttyUSB or eth or wwan
+	local product=$2
+	local hymodemsfile=$modem_script_path/hybridmodems.list
+	local modemtype=""
+	local hybridtype
+
+	#log "get_modem_type: ifname=$ifname interface=$interface product=$product"
+	if [ -z "$product" ]; then
+		echo "ignore"
+		return
+	fi
+
+	if [ "$interface" == "ttyUSB" ]; then
+		modemtype="serial"
+		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
+		#log "get_modem_type: hybridtype=$hybridtype"
+		if [ "$hybridtype" = "ignore" ]; then
+			echo "ignore"
+			return
+		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" != "serial" ]; then
+			modemtype="None" # cdcether or qmiwwan
+		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
+			modemtype="qmihybrid"
+		fi
+		if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "sierranet" ]; then
+			modemtype="sierranet"
+		fi
+	fi
+
+	# Some initial modem type detection based on the current driver in use
+	if [ "$modemtype" == "" ]; then
+		local driverpath=$(readlink /sys/class/net/$ifname/device/driver)
+		driver=$(basename $driverpath)
+
+		#log "get_modem_type: driver is $driver"
+		if [ "$driver" = "huawei_cdc_ncm" ]; then
+			modemtype="huawei-ncm"
+		elif [ "$driver" = "qmi_wwan" ]; then
+			modemtype="qmiwwan"
+		fi
+	fi
+
+	if [ "$modemtype" == "" ]; then
+		local found=0
+		local index=1
+		local mtypes="eth=cdcether usb=cdcether wwan=qmiwwan"
+		local mtotal=$(echo $mtypes | awk '{print NF}')
+		local intf type
+
+		modemtype="None"
+		while [ $index -le $mtotal ]; do
+			intf=$(echo $mtypes | awk -v i=$index '{print $i}' | awk -F= '{print $1}')
+			if [ "$interface" == "$intf" ]; then
+				found=1
+				type=$(echo $mtypes | awk -v i=$index '{print $i}' | awk -F= '{print $2}')
+				break
+			fi
+			index=$(expr $index + 1)
+		done
+		hybridtype=$(awk -v prod="$product" '!/^#/ && $0 ~ prod { print $2}' $hymodemsfile)
+		if [ "$found" -eq 1 ]; then
+			modemtype=$type
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "serial" ]; then
+				modemtype="None" # cdcether or qmiwwan
+			fi
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "qmihybrid" ]; then
+				modemtype="qmihybrid"
+			fi
+			if [ ! -z "$hybridtype" ] && [ "$hybridtype" == "sierranet" ]; then
+				modemtype="sierranet"
+			fi
+		fi
+	fi
+	echo $modemtype
+}
+
+uci_get_modem_type()
+{
+	local usbifname=$1
+	local type
+	type=$(uci -c $modem_config_path get modems.$usbifname.type)
+	echo $type
+}
+
+uci_get_modem_product()
+{
+	local usbifname=$1
+	echo $(uci -c $modem_config_path get modems.$usbifname.product)
+}
+
+uci_get_modem_device()
+{
+	local usbifname=$1
+	echo $(uci -c $modem_config_path get modems.$usbifname.device)
+}
+
+uci_get_modem_ifname()
+{
+	local usbifname=$1
+	echo $(uci -c $modem_config_path get modems.$usbifname.ifname)
+}
+
+debug_hotplugevents()
+{
+	echo "HOTPLUG:`date`:$eventdir" >> /tmp/hotplug-events.txt
+	env | xargs echo >> /tmp/hotplug-events.txt
+}
+
+modem_cleanup() {
+        . /etc/modems/modem.path
+        if [ ! -d $modem_config_path ]; then
+                mkdir -p $modem_config_path
+        fi
+        if [ ! -d $db_dir ]; then
+                mkdir -p $db_dir
+        fi
+        if [ ! -d $tmpdir ];then
+                mkdir -p $tmpdir
+        fi
+
+        # Remove USB1 to USB4 if exists in /etc/config/network
+        for i in 1 2 3 4; do
+                uci delete network.$modem_string$i
+        done
+        uci commit network
+        # Create a fresh file for every reboot
+        > $modem_config_path/modems
+        # USB modem support End
+}
+
+cleanup_etc_config_modems() {
+    (
+        # Take an exclusive lock of fd 9 (connected to /tmp/.modem_cleanup.lock below)
+        # Wait upto 60 seconds for any concurrent scripts to finish
+        #FLOCK_WAIT="-w 60"   # busybox flock doesn't support this
+        FLOCK_WAIT=""
+        flock -x $FLOCK_WAIT 9 || FATAL "Timed out waiting for other hotplug script"
+
+        if [ ! -f /tmp/.modem_hotplug.init  ];
+        then
+            date >> /tmp/.modem_hotplug.init 
+            modem_cleanup
+        fi
+    ) < /dev/null 9> /tmp/.modem_cleanup.lock
+}

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/bindings/csharp
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/bindings/csharp/Makefile
+END
+axTLS.cs
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/bindings/csharp/axTLS.cs
+END

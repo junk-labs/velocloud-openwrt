@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/!svn/ver/5555/luci/trunk/modules/niu/htdocs/luci-static/resources/icons32
+END
+preferences-system.png
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/!svn/ver/5540/luci/trunk/modules/niu/htdocs/luci-static/resources/icons32/preferences-system.png
+END
+network-wireless.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/!svn/ver/5544/luci/trunk/modules/niu/htdocs/luci-static/resources/icons32/network-wireless.png
+END
+network-workgroup.png
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/5540/luci/trunk/modules/niu/htdocs/luci-static/resources/icons32/network-workgroup.png
+END
+preferences-system-network.png
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/5555/luci/trunk/modules/niu/htdocs/luci-static/resources/icons32/preferences-system-network.png
+END
+folder.png
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/5540/luci/trunk/modules/niu/htdocs/luci-static/resources/icons32/folder.png
+END

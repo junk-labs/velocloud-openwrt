@@ -1,0 +1,387 @@
+#!/bin/sh
+
+# Copyright (C) 2013-2015 Velocloud Inc
+
+################################################################################
+#
+#    QMI modem support
+#
+################################################################################
+
+qmi_get_wda_version()
+{
+	qmicli -d "$1" --get-service-version-info | sed -ne "s/\s*wda (\([^']*\))/\1/p"
+}
+
+qmi_get_wda_data_format()
+{
+	qmicli -d "$1" --wda-get-data-format | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
+}
+
+qmi_set_wda_data_format()
+{
+	qmicli -d "$1" --wda-set-data-format="802-3" | sed -ne "s/\s*Link layer protocol: '\([^']*\)'/\1/p"
+}
+
+qmi_set_ctl_data_format()
+{
+	# Note: There's no explicit error if this action fails. It usually just works.
+	qmicli -d "$1" --device-open-net="net-802-3|net-no-qos-header" --dms-noop 1>/dev/null
+}
+
+qmi_set_ctl_sync()
+{
+	# Note: There's no explicit error if this action fails. It usually just works.
+	qmicli -d "$1" --device-open-sync --dms-noop 1>/dev/null
+}
+
+qmi_get_apn()
+{
+	local device=$1
+	local apn=''
+	local mcc=''
+	local mnc=''
+	local mnc2=''
+	local mnc3=''
+	local apnfile='/tmp/'$device'.apn'
+	/usr/bin/qmicli -d /dev/$device --nas-get-home-network > $apnfile
+	mcc=`awk '/MCC/ {gsub("\x27","",$2); print $2}' $apnfile`
+	if [ $? -eq 0 -a ! -z "$mcc" ]; then
+		mnc=`awk '/MNC/ {gsub("\x27","",$2); print $2}' $apnfile`
+		if [ $? -eq 0 -a ! -z "$mnc" ]; then
+			mnc2=$mnc
+			while [ ${#mnc2} -lt 2 ]; do
+				mnc2="0"$mnc2
+			done
+			mnc3=$mnc2
+			while [ ${#mnc3} -lt 3 ]; do
+				mnc3="0"$mnc3
+			done
+		fi
+	fi
+	if [ ! -z $mcc -a ! -z $mnc ]; then
+		# Look for 3 digit MNC first
+		apn=$(uci -c /etc/config/modems get mcodemap.${mcc}${mnc3}.apn)
+		# Otherwise, look for 2 digit MNC
+		if [ -z $apn ]; then
+			apn=$(uci -c /etc/config/modems get mcodemap.${mcc}${mnc2}.apn)
+		fi
+	fi
+
+	# Note: if APN not found in the mcodemap file, we default to using an
+	# empty APN string (i.e. the automatic one, if stored in the SIM card).
+	# This approach is better than just trying with some random APN.
+
+	echo $apn
+}
+
+# All QMI modems need to use the 802.3 link data format (i.e. packets with
+# ethernet headers) instead of raw-ip (i.e. packets without ethernet headers).
+# 802.3 is the format expected by the qmi_wwan kernel driver in the upstream
+# Linux kernel, it cannot be changed programmatically.
+#
+# If the modem supports the WDA service, we'll use that one. Otherwise we'll
+# run a DMS NOOP operation asking for 802.3 in the CTL service (the old way,
+# always supported by modems without WDA).
+qmi_ensure_802_3_data_format()
+{
+	local device=$1
+
+	wda_version=`qmi_get_wda_version $device`
+	if [ ! -z "$wda_version" ]; then
+		cur_mode=`qmi_get_wda_data_format $device`
+		if [ "$cur_mode" != "raw-ip" ]; then
+			# Either OK, or in a bad state; either way, give up
+			return
+		fi
+
+		# mode is raw-ip, and the device is reachable. Try setting to 802-3.
+		echo "Trying to set QMI link layer protocol to 802-3" > /dev/kmsg
+		num_attempts=0
+		max_attempts=18
+		sleep_interval=10
+		cur_mode=`qmi_set_wda_data_format $device`
+		while [ "$cur_mode" = "raw-ip" ]; do
+			# sometimes retries help. Try up to 4 retries at 15 seconds each
+			num_attempts=$((num_attempts+1))
+			if [ $num_attempts -gt $max_attempts ]; then
+				echo "Giving up on trying to set QMI link layer protocol to 802-3" > /dev/kmsg
+				return
+			fi
+			echo "Re-trying to set QMI link layer protocol to 802-3, attempt $num_attempts (out of $max_attempts)" > /dev/kmsg
+			sleep $sleep_interval
+			cur_mode=`qmi_set_wda_data_format $device`
+		done
+	else
+		echo "Trying to set QMI link layer protocol to 802.3... (CTL)" > /dev/kmsg
+		qmi_set_ctl_data_format $device
+	fi
+}
+
+# AC340U seems to have some bug when it starts locking into 2G mode, where the
+# firmware locks up. See ticket #5355 .. We dont want this modem working in 2G
+# mode, so disable 2G. Now this disabling doesnt seem to work unless we reload
+# the qmi diver for the device, so doing a unbind bind to reload the driver. We
+# are doing this only for 340U in specific because we dont know if other models
+# have the problem and if this fix works for them if so. We are not even 100%
+# sure if this fixes AC340U itself in all situations - this is all based on
+# hear-say in modem/qmi aliases.
+qmi_disable_AC340U_2G()
+{
+	local device=$1
+	local vendor=$(cat $usbpath/../../../idVendor)
+	local product=$(cat $usbpath/../../../idProduct)
+	local usbnum=`echo $usbpath | awk 'BEGIN { FS = "/" } ;{ print $(NF-2); }'`
+
+	if [ "$vendor" = "1199" ] && [ "$product" = "9051" ]; then
+		is_gsm=`/usr/bin/qmicli -d $device --nas-get-system-selection-preference | grep "Mode preference" | grep gsm`
+		if [ -z "$is_gsm" ]; then
+       			return;
+		fi
+		/usr/bin/qmicli -d $device --nas-set-system-selection-preference='umts|lte'
+		echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/unbind
+		sleep 2
+		echo "$usbnum" > /sys/bus/usb/drivers/qmi_wwan/bind
+		sleep 2
+	fi
+}
+
+################################################################################
+#
+#    Common
+#
+################################################################################
+
+setup_wwan_modem()
+{
+	local etherdevice=$DEVICENAME
+	local modemtype=$1
+
+	uci -c /etc/config add network interface\\\ '"$usbifname"'
+	uci -c /etc/config set network.$usbifname=interface
+	uci -c /etc/config set network.$usbifname.type='wwan'
+	uci -c /etc/config set network.$usbifname.ifname=''"$etherdevice"''
+	uci -c /etc/config set network.$usbifname.proto='dhcp'
+	uci -c /etc/config set network.$usbifname.hostname=''"vc-$usbifname"''
+	uci -c /etc/config set network.$usbifname.reqopts=''"mtu"''
+	uci -c /etc/config commit network
+	log "Updated network config"
+
+	manufacturer=$(cat /sys$DEVPATH/../../../manufacturer)
+
+	touch $modem_config_path/modems
+	uci -c $modem_config_path add modems interface\\\ '"$usbifname"'
+	uci -c $modem_config_path set modems.$usbifname=interface
+	uci -c $modem_config_path set modems.$usbifname.ifname=''"$etherdevice"''
+	uci -c $modem_config_path set modems.$usbifname.manufacturer=''"$manufacturer"''
+	uci -c $modem_config_path set modems.$usbifname.type=''"$modemtype"''
+	uci -c $modem_config_path set modems.$usbifname.product=''"$product"''
+	uci -c $modem_config_path commit modems
+
+	# huawei-ncm devices are AT-controlled NET devices
+	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
+	if [ $modemtype == "huawei-ncm" ]; then
+		local device=$(ls $usbpath/../../usbmisc)
+		uci -c $modem_config_path set modems.$usbifname.device=''"/dev/$device"''
+		uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+		uci -c $modem_config_path commit modems
+
+		# huawei profile generation
+		# In this case we don't rely on a TTY that may be notified afterwards;
+		# instead, we already have access to the AT-capable cdc-wdm device, so
+		# we create the profile here in the net device handler.
+		#
+		apn=$(at_get_apn $device $usbifname)
+		${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
+
+		# For Huawei NCM modems, we just create the profile at this point.
+		# The modem_service.sh script will launch the connection.
+		log "WWAN modem setup: Huawei NCM"
+		$modem_script_path/modem_service.sh $usbifname start
+		return
+	fi
+
+	# qmiwwan devices are QMI-controlled NET devices
+	# The control port of the device is a /dev/cdc-wdm device exposed through usbmisc
+	if [ $modemtype == "qmiwwan" ]; then
+		local device=$(ls $usbpath/../../usbmisc)
+		uci -c $modem_config_path set modems.$usbifname.device=''"/dev/$device"''
+		uci -c $modem_config_path set modems.$usbifname.apn_supported=''"1"''
+		uci -c $modem_config_path commit modems
+
+		# Start with a sync, so that we reset the endpoint
+		qmi_set_ctl_sync /dev/$device
+
+		# Ensure that 802.3 is used in the QMI modems, as that is what qmi_wwan expects
+		qmi_ensure_802_3_data_format /dev/$device
+
+		# Disable 2G mode for AC340U
+		qmi_disable_AC340U_2G /dev/$device
+
+		# qmi-network profile generation
+		# We don't need to wait for any other control port being notified, we can
+		# already gather the APN to use via QMI.
+		apn=$(qmi_get_apn $device)
+		${modem_script_path}/modem_apn.sh $usbifname auto "$apn" "" ""
+
+		# For QMI modems, we just create the profile at this point.
+		# The modem_service.sh script will launch the connection.
+		log "WWAN modem setup: QMI"
+		$modem_script_path/modem_service.sh $usbifname start
+		return
+	fi
+
+	# qmihybrid devices are AT-controlled NET devices
+	# The control port of the device is a /dev/ttyUSB device exposed through tty
+	if [ $modemtype == "qmihybrid" ]; then
+		local device=$(uci_get_modem_device $usbifname)
+
+		# If we have the tty already defined as mgmt device, we're ready
+		# to go; otherwise we'll need to wait and it will get launched
+		# later when the tty is processed.
+		if [ -z "$device" ]; then
+			log "TTY not yet defined in qmihybrid modem: deferred"
+			return
+		fi
+
+		log "WWAN modem setup: QMI-hybrid"
+		$modem_script_path/modem_service.sh $usbifname start
+		return
+	fi
+
+	# sierranet devices are AT-controlled NET devices
+	# The control port of the device is a /dev/ttyUSB device exposed through tty
+	if [ $modemtype == "sierranet" ]; then
+		local device=$(uci_get_modem_device $usbifname)
+
+		# NOTE: Profile generation where the TTY is processed
+
+		# If we have the tty already defined as mgmt device, we're ready
+		# to go; otherwise we'll need to wait and it will get launched
+		# later when the tty is processed.
+		if [ -z "$device" ]; then
+			log "TTY not yet defined in modem: deferred"
+			return
+		fi
+
+		log "WWAN modem setup: Sierra Direct IP"
+		$modem_script_path/modem_service.sh $usbifname start
+		return
+	fi
+
+	# Plain ECM/NCM device without control port, which we just assume is
+	# connected by default (e.g. a MiFi) without a control port.
+	ubus call network reload
+	status="CONNECTED SUCCESSFULLY"
+	uci -c $modem_config_path set modems.$usbifname.status=''"$status"''
+	uci -c $modem_config_path commit modems
+
+	log "Unmanaged network device: $status"
+	$modem_script_path/modem_service.sh $usbifname start
+}
+
+add_to_config()
+{
+	# Action for the each USB
+	local modemtype
+	local product
+
+	if [ -z "$usbifname" ]
+	then
+		# log "Not a modem:devpath=$DEVPATH"
+		return
+	fi
+
+	log "Hotplug add event: network device $usbpath"
+
+	# Common initialization
+	init_modem_support
+
+	# This is the common profile path
+	profile=${modem_config_path}/${usbifname}.profile
+
+	product=$(cat $usbpath/../../uevent | awk -F= '/PRODUCT/ { print $2}' | tr '/' ':')
+	product=${product%:*}
+
+	modemtype=$(get_modem_type "$DEVICENAME" "$product")
+
+	if [ "$modemtype" == "None" ]; then
+		log "Hybrid modem selected for $modemtype: $INTERFACE DEVICENAME:$DEVICENAME"
+		return
+	fi
+
+	# Already detected and updated network
+	log "DEVICE=$DEVICENAME: TYPE=$modemtype INTERFACE:$INTERFACE"
+
+	if [ "$modemtype" == "qmihybrid" ]; then
+		log "qmihybrid modem, not checking for config presence"
+	elif [ "$modemtype" == "sierranet" ]; then
+		log "sierranet modem, not checking for config presence"
+	else
+		ret=$(check_device_config $usbifname)
+		if [ "$ret" == "True" ]; then
+			# Already dialup tty detected
+			log "net device $modemtype already detected"
+			return
+		fi
+	fi
+
+	setup_wwan_modem "$modemtype" "$product"
+}
+
+# Main starts here
+
+# Environmental Variables
+#USER=root ACTION=remove OLDPWD=/etc HOME=/root SEQNUM=3702 HOTPLUG_TYPE=net IFINDEX=21 PS1=velocloud \u:\w\$ DEVPATH=/devices/pci0000:00/0000:00:17.0/0000:01:00.0/0000:02:02.3/usb1/1-2/1-2:1.0/net/eth4 LOGNAME=root DEVICENAME=eth4 TERM=vt102 SUBSYSTEM=net PATH=/bin:/sbin:/usr/bin:/usr/sbin SHELL=/bin/sh INTERFACE=eth4 PWD=/etc/Exp
+
+# Variables for Unit Test
+#DEVPATH="/devices/pci0000:00/0000:00:16.0/usb1/1-1/1-1.2/1-1.2:1.8/net/wwan0"
+#DEVICENAME="wwan0"
+#INTERFACE="wwan0"
+#PRODUCT="1199/9051/345"
+#ACTION=add
+
+. /etc/modems/usb_common
+. /etc/modems/modem.path
+
+local usbpath="/sys$DEVPATH"
+local usbifname=$(usb_wan_naming $usbpath) # The USB number fixed to the board
+
+# ignore event if we cannot get a USBX or MODEMX name
+if [ -z "$usbifname" ] || [ "$usbifname" == "error" ]; then
+	return
+fi
+
+set_eventdir "$usbifname: net: $INTERFACE"
+
+debug_hotplugevents
+cleanup_etc_config_modems
+
+# If ModemManager is installed and available, check whether the modem is
+# blacklisted there, and if it isn't, we launch the ModemManager specific
+# logic.
+if [ -f /etc/modemmanager/25-modemmanager-common ]; then
+	. /etc/modemmanager/25-modemmanager-common
+	local BLACKLIST_REASON=$(check_modemmanager_blacklist /sys${DEVPATH})
+	if [ -z "${BLACKLIST_REASON}" ]; then
+		# ModemManager specific logic
+		if [ "$ACTION" = add ]; then
+			mm_add_to_config
+		elif [ "$ACTION" = remove ]; then
+			remove_device_config
+		fi
+		return
+	fi
+fi
+
+if [ "$ACTION" = add ]; then
+	add_to_config
+elif [ "$ACTION" = remove ]; then
+	remove_device_config
+fi
+
+# Local Variables:
+# sh-basic-offset: 8
+# indent-tabs-mode: t
+# End:
+# vim: set ts=8 noexpandtab sw=8:

@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2014-2015 Velocloud Networks
+
+START=55
+STOP=45
+
+PROG=/usr/sbin/ipmievd
+SERVICE_PID_FILE=/var/run/ipmievd.pid0
+SERVICE_USE_PID=1
+
+start() {
+	service_start $PROG open
+}
+
+stop() {
+	service_stop $PROG
+}

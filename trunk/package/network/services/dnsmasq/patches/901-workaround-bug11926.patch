@@ -1,0 +1,16 @@
+--- a/src/dhcp-common.c	2015-06-12 13:39:11.000000000 -0700
++++ b/src/dhcp-common.c	2016-04-13 14:45:12.892843932 -0700
+@@ -29,7 +29,12 @@
+   /* dhcp_packet is used by v4 and v6, outpacket only by v6 
+      sizeof(struct dhcp_packet) is as good an initial size as any,
+      even for v6 */
+-  expand_buf(&daemon->dhcp_packet, sizeof(struct dhcp_packet));
++  //expand_buf(&daemon->dhcp_packet, sizeof(struct dhcp_packet));
++  //
++  //workaround for bug 11926; incoming DHCP packet with size
++  //greater than this triggers a bogus EFAULT for the recvmsg,
++  //so start with the maximum size..
++  expand_buf(&daemon->dhcp_packet, 1500);
+ #ifdef HAVE_DHCP6
+   if (daemon->dhcp6)
+     expand_buf(&daemon->outpacket, sizeof(struct dhcp_packet));

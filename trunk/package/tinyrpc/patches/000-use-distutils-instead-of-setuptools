@@ -1,0 +1,32 @@
+diff -ruN tinyrpc-0.5.orig/setup.py tinyrpc-0.5/setup.py
+--- tinyrpc-0.5.orig/setup.py	2013-02-25 01:15:07.000000000 +0530
++++ tinyrpc-0.5/setup.py	2013-05-29 21:28:06.761889560 +0530
+@@ -1,11 +1,18 @@
+ import os
+ 
+-from setuptools import setup, find_packages
++from distutils.core import setup
+ 
+ 
+ def read(fname):
+     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+ 
++packages = [
++    'tinyrpc',
++    'tinyrpc.protocols',
++    'tinyrpc.server',
++    'tinyrpc.transports',
++    'tinyrpc.dispatch'
++]
+ 
+ setup(
+     name='tinyrpc',
+@@ -13,7 +20,7 @@
+     description='A small, modular, transport and protocol neutral RPC '
+                 'library that, among other things, supports JSON-RPC and zmq.',
+     long_description=read('README.rst'),
+-    packages=find_packages(exclude=['test', 'examples']),
++    packages=packages,
+     keywords='json rpc json-rpc jsonrpc 0mq zmq zeromq',
+     author='Marc Brinkmann',
+     author_email='git@marcbrinkmann.de',

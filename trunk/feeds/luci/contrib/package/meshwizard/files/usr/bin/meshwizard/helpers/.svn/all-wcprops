@@ -1,0 +1,197 @@
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers
+END
+setup_wifi_vap.sh
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_wifi_vap.sh
+END
+setup_widgets.sh
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/9302/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_widgets.sh
+END
+setup_dnsmasq.sh
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/9043/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_dnsmasq.sh
+END
+setup_policyrouting.sh
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/7848/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_policyrouting.sh
+END
+setup_uhttpd.sh
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9873/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_uhttpd.sh
+END
+setup_lan_ipv6.sh
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9043/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_lan_ipv6.sh
+END
+setup_dhcp.sh
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_dhcp.sh
+END
+gen_dhcp_ip.sh
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/7208/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/gen_dhcp_ip.sh
+END
+common.awk
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/!svn/ver/7208/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/common.awk
+END
+setup_olsrd.sh
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9908/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_olsrd.sh
+END
+rename-wifi.sh
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/8798/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/rename-wifi.sh
+END
+setup_system.sh
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/7610/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_system.sh
+END
+setup_firewall_interface.sh
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_firewall_interface.sh
+END
+setup_auto-ipv6-interface.sh
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/8895/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_auto-ipv6-interface.sh
+END
+setup_splash.sh
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_splash.sh
+END
+setup_auto-ipv6.sh
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/9043/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_auto-ipv6.sh
+END
+setup_ssh.sh
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/8893/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_ssh.sh
+END
+setup_wifi.sh
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_wifi.sh
+END
+gen_auto-ipv6-dhcpv6-ip.sh
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/!svn/ver/9043/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/gen_auto-ipv6-dhcpv6-ip.sh
+END
+setup_firewall.sh
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9043/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_firewall.sh
+END
+gen_bssid.sh
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/!svn/ver/9577/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/gen_bssid.sh
+END
+setup_lan_static.sh
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/8697/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_lan_static.sh
+END
+read_defaults.sh
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/9320/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/read_defaults.sh
+END
+setup_wan_dhcp.sh
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9043/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_wan_dhcp.sh
+END
+supports_vap.sh
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/supports_vap.sh
+END
+check-range-in-range.sh
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/!svn/ver/7208/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/check-range-in-range.sh
+END
+setup_network.sh
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/9930/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_network.sh
+END
+ipcalc-cidr.sh
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/9818/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/ipcalc-cidr.sh
+END
+setup_wan_static.sh
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/8884/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_wan_static.sh
+END
+restore_default_config.sh
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/!svn/ver/7611/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/restore_default_config.sh
+END
+initial_config.sh
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/9674/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/initial_config.sh
+END
+setup_olsrd_interface.sh
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/9043/luci/trunk/contrib/package/meshwizard/files/usr/bin/meshwizard/helpers/setup_olsrd_interface.sh
+END

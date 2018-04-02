@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/9563/luci/trunk/modules/admin-mini/luasrc/controller/mini
+END
+system.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/9563/luci/trunk/modules/admin-mini/luasrc/controller/mini/system.lua
+END
+index.lua
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/!svn/ver/7362/luci/trunk/modules/admin-mini/luasrc/controller/mini/index.lua
+END
+network.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/7362/luci/trunk/modules/admin-mini/luasrc/controller/mini/network.lua
+END

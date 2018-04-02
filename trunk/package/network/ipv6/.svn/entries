@@ -1,0 +1,49 @@
+10
+
+dir
+43223
+svn://svn.mein.io/openwrt/branches/barrier_breaker/package/network/ipv6
+svn://svn.mein.io/openwrt
+
+
+
+2014-10-25T10:39:31.639242Z
+43057
+cyrus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3c298f89-4303-0410-b956-a3cf2f4a3e73
+
+6in4
+dir
+
+thc-ipv6
+dir
+
+ds-lite
+dir
+
+odhcp6c
+dir
+
+6rd
+dir
+
+6to4
+dir
+
+map
+dir
+

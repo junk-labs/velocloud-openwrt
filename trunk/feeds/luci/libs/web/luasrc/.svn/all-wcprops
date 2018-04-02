@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/!svn/ver/9801/luci/trunk/libs/web/luasrc
+END
+sauth.lua
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/8900/luci/trunk/libs/web/luasrc/sauth.lua
+END
+config.lua
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/3856/luci/trunk/libs/web/luasrc/config.lua
+END
+dispatcher.lua
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/9018/luci/trunk/libs/web/luasrc/dispatcher.lua
+END
+cacheloader.lua
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/!svn/ver/3591/luci/trunk/libs/web/luasrc/cacheloader.lua
+END
+template.lua
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/9492/luci/trunk/libs/web/luasrc/template.lua
+END
+cbi.lua
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/!svn/ver/9507/luci/trunk/libs/web/luasrc/cbi.lua
+END
+http.lua
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/9465/luci/trunk/libs/web/luasrc/http.lua
+END
+i18n.lua
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/!svn/ver/9520/luci/trunk/libs/web/luasrc/i18n.lua
+END

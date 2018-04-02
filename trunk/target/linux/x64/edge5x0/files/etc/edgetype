@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# First, a simple check.
+# If already set in velocloud_vc to one of our customized systems, accept it.
+VC_BOARD=`cat /sys/devices/platform/vc/board 2>/dev/null`
+case "$VC_BOARD" in
+    edge[0-9]*) echo $VC_BOARD; exit 0 ;;
+esac
+
+# Now, more complicated checks
+# DMI_BOARD=`cat /sys/class/dmi/id/board_name`
+# DMI_PRODUCT=`cat /sys/class/dmi/id/product_name`
+# PORTWELL_UNSET="To be filled by O.E.M."
+
+# Dummy
+echo "edge510"
+exit 0

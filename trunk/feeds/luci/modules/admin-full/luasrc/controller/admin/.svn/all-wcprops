@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/9951/luci/trunk/modules/admin-full/luasrc/controller/admin
+END
+uci.lua
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/7362/luci/trunk/modules/admin-full/luasrc/controller/admin/uci.lua
+END
+filebrowser.lua
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/3591/luci/trunk/modules/admin-full/luasrc/controller/admin/filebrowser.lua
+END
+status.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9678/luci/trunk/modules/admin-full/luasrc/controller/admin/status.lua
+END
+system.lua
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/9563/luci/trunk/modules/admin-full/luasrc/controller/admin/system.lua
+END
+index.lua
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/7789/luci/trunk/modules/admin-full/luasrc/controller/admin/index.lua
+END
+network.lua
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/9951/luci/trunk/modules/admin-full/luasrc/controller/admin/network.lua
+END

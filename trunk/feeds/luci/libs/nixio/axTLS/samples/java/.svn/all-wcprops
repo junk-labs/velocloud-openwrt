@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/samples/java
+END
+manifest.mf
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/samples/java/manifest.mf
+END
+axssl.java
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/samples/java/axssl.java
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/4268/luci/trunk/libs/nixio/axTLS/samples/java/Makefile
+END

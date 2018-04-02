@@ -1,0 +1,27 @@
+
+iperf3 is a tool for measuring achievable bandwidth on IP networks.
+
+
+
+For Velocloud Edge
+
+1. The Makefile in this directory was created to enable
+   compile of iperf3 for openwrt. In its current form,
+   the Makefile creates a package in the .ipk format
+
+2. On an OpenWRT target, if installed, iperf3 is the
+   binary installed.
+
+
+
+-------------------------------------------------------------------
+IMPORTANT
+-------------------------------------------------------------------
+The test tool needs iperf3 (instead of iperf or iperf2) since this
+allows us to run the server unattended, and control all test behavior
+(as in iperf2) from the client, as well as extract test results in
+JSON format. This is done to ensure that scripts that work on
+processing the results see a common format.
+
+
+

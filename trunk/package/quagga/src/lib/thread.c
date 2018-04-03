@@ -522,7 +522,7 @@ thread_timer_update(void *node, int actual_position)
 
 /* Allocate new thread master.  */
 struct thread_master *
-thread_master_create ()
+thread_master_create (void)
 {
   struct thread_master *rv;
 
@@ -538,6 +538,12 @@ thread_master_create ()
   rv->background = pqueue_create();
   rv->timer->cmp = rv->background->cmp = thread_timer_cmp;
   rv->timer->update = rv->background->update = thread_timer_update;
+
+#if defined(HAVE_EPOLL)
+  rv->handler.ev_count = EPOLL_MAX_FD_COUNT; 
+  rv->handler.ep_fd = epoll_create(rv->handler.ev_count);
+  rv->handler.evb = (struct epoll_event *) calloc(rv->handler.ev_count, sizeof(struct epoll_event));
+#endif
 
   return rv;
 }
@@ -624,6 +630,10 @@ thread_master_free (struct thread_master *m)
   thread_list_free (m, &m->unuse);
   thread_queue_free (m, m->background);
   
+#if defined(HAVE_EPOLL)
+  XFREE (MTYPE_THREAD_MASTER, m->handler.evb);
+#endif
+
   XFREE (MTYPE_THREAD_MASTER, m);
 
   if (cpu_record)
@@ -664,6 +674,60 @@ thread_timer_remain_second (struct thread *thread)
 
 #define debugargdef  const char *funcname, const char *schedfrom, int fromln
 #define debugargpass funcname, schedfrom, fromln
+
+#if define(HAVE_EPOLL)
+static int
+generic_epoll_events(struct fd_handler *handler, int fd, int ev_cmd, short int events) 
+{
+  struct epoll_event ev = {.events = 0};
+  int epfd = handler->ep_fd;
+  int rv = 0;
+
+  ev.events = events;
+  ev.data.fd = fd;
+
+  rv = epoll_ctl(epfd, ev_cmd, fd, &ev);
+  if (rv) {
+  }
+
+  return rv;
+}
+
+/* generic add thread function */
+static struct thread *
+generic_thread_add(struct thread_master *m, int (*func) (struct thread *),
+                  void *arg, int fd, const char* funcname, int dir)
+{
+  struct thread *thread;
+  int rv = 0;
+
+  u_char type;
+  short int event;
+
+  if (dir == THREAD_READ)
+    {
+      event = (EPOLLIN | EPOLLHUP);
+      type = THREAD_READ;
+    }
+  else
+    {
+      event = (EPOLLOUT | EPOLLHUP);
+      type = THREAD_WRITE;
+    }
+  
+  rv = generic_epoll_events(&m->handler, fd, EPOLL_CTL_ADD, event);
+
+  if (rv) {
+    return NULL;
+  }
+
+  thread = thread_get (m, type, func, arg, funcname);
+  m->handler.pfdcount++;
+
+  return thread;
+}
+
+#endif
 
 /* Get new thread.  */
 static struct thread *

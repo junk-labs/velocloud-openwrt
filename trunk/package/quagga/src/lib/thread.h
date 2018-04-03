@@ -45,6 +45,28 @@ struct thread_list
 
 struct pqueue;
 
+#if defined(HAVE_EPOLL)
+#include <sys/epoll.h>
+#define EPOLL_MAX_FD_COUNT  (4096)
+struct fd_handler {
+  // epoll instance file descriptor
+  int ep_fd;
+  // Number of estimated file descriptors... has to be just some positive number. man epoll_create() for more details
+  int ev_count;
+  // memory area for kernel to return events via epoll_ctl() call
+  struct epoll_event *evb;
+  // Active FD count
+  int pfdcount;
+};
+#else
+struct fd_handler {
+  fd_set readfd;
+  fd_set writefd;
+  fd_set exceptfd;
+};
+#endif
+
+
 /* Master of the theads. */
 struct thread_master
 {
@@ -55,9 +77,7 @@ struct thread_master
   struct thread_list ready;
   struct thread_list unuse;
   struct pqueue *background;
-  fd_set readfd;
-  fd_set writefd;
-  fd_set exceptfd;
+  struct fd_handler handler;
   unsigned long alloc;
 };
 

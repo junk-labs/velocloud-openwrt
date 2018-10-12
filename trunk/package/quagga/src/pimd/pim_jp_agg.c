@@ -315,7 +315,7 @@ pim_jp_agg_switch_interface (struct pim_rpf *orpf,
   /* send Join(S,G) to the current upstream neighbor */
   if (npius) 
     {    
-        pim_jp_agg_add_group (npius->us, up, false);
+        pim_jp_agg_add_group (npius->us, up, true);
     }
 }
 
